@@ -62,6 +62,7 @@ function showView(view) {
   if (Bramble.hardware) Bramble.hardware.visible(view === 'hardware');
   if (Bramble.tasks) Bramble.tasks.visible(view === 'tasks');
   if (Bramble.creator) Bramble.creator.visible(view === 'create');
+  send('audioPreview', { value: ['home', 'wallpaper', 'create', 'arrange'].includes(view) });
   if (Bramble.home) Bramble.home.visible(view === 'home');
 }
 for (const b of document.querySelectorAll('.service')) b.addEventListener('click', () => showView(b.dataset.view));
@@ -86,7 +87,7 @@ webview.addEventListener('message', e => {
   const m = e.data;
   if (m.type === 'audio.level') {
     levelTarget.push(m.level); levelTarget.shift();
-    for (const f of document.querySelectorAll('#hero-preview iframe, .cr-stage iframe')) { try { f.contentWindow.postMessage({ bramble: 'audio', level: m.level }, '*'); } catch (e) { } }
+    for (const f of document.querySelectorAll('#hero-preview iframe, .cr-stage iframe, .wallpaper-map iframe, #h-wallpaper iframe')) { try { f.contentWindow.postMessage({ bramble: 'audio', level: m.level }, '*'); } catch (e) { } }
     if (!levelLoop && document.body.dataset.view === 'wallpaper') levelLoop = requestAnimationFrame(levelFrame);
     return;
   }

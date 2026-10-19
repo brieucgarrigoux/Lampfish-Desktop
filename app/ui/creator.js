@@ -645,7 +645,7 @@
   });
 
   Bramble.creator = {
-    visible(yes) { send('audioPreview', { value: !!yes }); if (yes) layout(); },
+    visible(yes) { if (yes) layout(); },
     event(m) {
       if (m.type !== 'creator.opened') return;
       Object.assign(st, fromConfig(m.config || {}, { logo: m.logo, background: m.background }));
