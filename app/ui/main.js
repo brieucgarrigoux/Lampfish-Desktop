@@ -65,8 +65,16 @@ function showView(view) {
 }
 for (const b of document.querySelectorAll('.service')) b.addEventListener('click', () => showView(b.dataset.view));
 
+const LEVEL_BARS = 36, levels = new Array(LEVEL_BARS).fill(0);
+const levelBars = Array.from({ length: LEVEL_BARS }, () => { const i = document.createElement('i'); $('level-bars').append(i); return i; });
+
 webview.addEventListener('message', e => {
   const m = e.data;
+  if (m.type === 'audio.level') {
+    levels.push(m.level); levels.shift();
+    levels.forEach((v, i) => { levelBars[i].style.height = (3 + v * 21).toFixed(1) + 'px'; });
+    return;
+  }
 
   if (Bramble.home && m.type && (m.type.startsWith('network.') || m.type.startsWith('hardware.') || m.type === 'arrange.map')) Bramble.home.event(m);
   if (m.type && m.type.startsWith('home.')) { if (Bramble.home) Bramble.home.event(m); return; }
@@ -196,6 +204,8 @@ function renderWallpaper(state, before) {
   check('slideshow', String(state.slideshow));
   $('pauseAuto').checked = state.pauseAuto;
   $('pauseOnBattery').checked = state.pauseOnBattery;
+  $('reactive').checked = state.reactive;
+  $('level-row').hidden = !state.reactive;
 
   const wallpaper = currentWallpaper();
   $('speed').disabled = !!wallpaper && wallpaper.type === 'gif';
@@ -382,6 +392,7 @@ for (const group of ['fit', 'slideshow'])
     });
 $('pauseAuto').addEventListener('change', e => send('pauseAuto', { value: e.target.checked }));
 $('pauseOnBattery').addEventListener('change', e => send('pauseOnBattery', { value: e.target.checked }));
+$('reactive').addEventListener('change', e => send('reactive', { value: e.target.checked }));
 $('pause').addEventListener('click', () => send('pause'));
 $('folder').addEventListener('click', () => send('folder'));
 

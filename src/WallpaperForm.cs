@@ -189,6 +189,12 @@ namespace Bramble
             catch (Exception ex) { Program.Log(ex); }
         }
 
+        public void Audio(string level)
+        {
+            var core = view.CoreWebView2;
+            if (core != null) core.ExecuteScriptAsync("window.__audio && window.__audio(" + level + ")");
+        }
+
         public void Effects(Settings r)
         {
             last = r;

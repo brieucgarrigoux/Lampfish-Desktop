@@ -24,6 +24,8 @@
   let light = 1, speed = 1, frozen = false;
   window.__adjust = (l, v) => { light = Number(l) / 50; speed = Math.pow(2, (Number(v) - 50) / 25); };
   window.__adjust(params.get('light') ?? 50, params.get('speed') ?? 50);
+  let audio = 0;
+  window.__audio = l => { audio += (Number(l) - audio) * .45; };
   addEventListener('message', e => {
     const m = e.data || {};
     if (m.bramble === 'adjust') window.__adjust(m.light, m.speed);
@@ -61,16 +63,16 @@
     ctx.fillRect(0, 0, w, h);
 
     const whoosh = .82 + Math.sin(t * .9) * .18;
-    const rh = Math.min(w, h) * .42 * whoosh;
+    const rh = Math.min(w, h) * .42 * whoosh * (1 + audio * .3);
     const halo = ctx.createRadialGradient(w / 2, h * .45, 0, w / 2, h * .45, rh);
-    halo.addColorStop(0, `rgba(142, 66, 182, ${.42 * Math.min(1.6, light)})`);
+    halo.addColorStop(0, `rgba(142, 66, 182, ${.42 * Math.min(1.6, light) * (1 + audio * .9)})`);
     halo.addColorStop(.5, `rgba(110, 42, 138, ${.16 * Math.min(1.6, light)})`);
     halo.addColorStop(1, 'rgba(110, 42, 138, 0)');
     ctx.fillStyle = halo;
     ctx.fillRect(0, 0, w, h);
 
     for (const g of grains) {
-      if (!frozen) { g.y -= g.v * dt * speed; g.x += Math.sin(t * .6 + g.phase) * .15 * speed; }
+      if (!frozen) { g.y -= g.v * dt * speed * (1 + audio * 2.2); g.x += Math.sin(t * .6 + g.phase) * .15 * speed; }
       if (g.y < -10) Object.assign(g, freshGrain(false));
       ctx.globalAlpha = Math.min(1, (.18 + g.z * .5) * light) * (.6 + .4 * Math.sin(t * 2 + g.phase));
       ctx.fillStyle = g.z > .7 ? '#c9a2e6' : '#8e42b6';

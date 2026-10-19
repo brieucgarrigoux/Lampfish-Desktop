@@ -291,3 +291,7 @@ body.resizing .rail-scrollable { pointer-events: none; }
 .keycap:active:not(:disabled), .keycap.pressed { transform: translateY(1px); box-shadow: inset 0 1px 3px rgba(0, 0, 0, .35), 0 0 0 1px #2a0f38, 0 1px 3px rgba(110, 42, 138, .3); }
 .keycap:disabled { cursor: default; }
 .keycap svg { flex: none; width: 15px; height: 15px; }
+
+.level-row { justify-content: center; padding-block: 10px; }
+.level-bars { display: flex; align-items: flex-end; gap: 3px; height: 24px; }
+.level-bars i { width: 5px; height: 3px; border-radius: 2px; background: var(--accent); transition: height .08s linear; }

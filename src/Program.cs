@@ -34,6 +34,7 @@ namespace Bramble
         public int Dim = 0;
         public string Fit = "fill";
         public int Slideshow = 0;
+        public bool Reactive = false;
         public DockSettings Dock = new DockSettings();
         public IconsSettings Icons = new IconsSettings();
         public IconsSettings Folders;
@@ -118,6 +119,7 @@ namespace Bramble
                 Arrange.Start();
                 DiskUsage.Start();
                 Hardware.Start();
+                AudioMeter.Set(R.Reactive);
                 if (requestedFolder != null) { Icons.Ask(requestedFolder); requestedView = "icons"; }
 
                 int iView = Array.IndexOf(args, "--view");
@@ -598,6 +600,7 @@ namespace Bramble
                 case "pause": paused = !paused; UpdateVisibility(); break;
                 case "startup": ToggleStartup(); break;
                 case "weather": R.Weather = !R.Weather; break;
+                case "reactive": R.Reactive = (bool)m["value"]; AudioMeter.Set(R.Reactive); break;
                 case "language":
                 {
                     string l = (string)m["value"];
@@ -628,6 +631,22 @@ namespace Bramble
             SendState();
         }
 
+        public static void WallpaperChanged()
+        {
+            Apply();
+            Effects();
+            Adjust(false);
+            RestartSlideshow();
+            UpdateVisibility();
+        }
+
+        public static void SendAudio(double level)
+        {
+            string text = level.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+            foreach (var s in screens) s.Audio(text);
+            Send(new { type = "audio.level", level = level });
+        }
+
         public static void SendState()
         {
             if (settingsWindow == null) return;
@@ -649,6 +668,7 @@ namespace Bramble
                 paused = paused,
                 startup = StartupEnabled(),
                 weather = R.Weather,
+                reactive = R.Reactive,
                 language = R.Language,
                 about = new
                 {

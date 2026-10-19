@@ -17,6 +17,8 @@
   let light, speed, frozen = false;
   window.__adjust = (l, v) => { light = Number(l) / 50; speed = Math.pow(2, (Number(v) - 50) / 25); };
   window.__adjust(params.get('light') ?? 50, params.get('speed') ?? 50);
+  let audio = 0;
+  window.__audio = l => { audio += (Number(l) - audio) * .45; };
   addEventListener('message', e => {
     const m = e.data || {};
     if (m.bramble === 'adjust') window.__adjust(m.light, m.speed);
@@ -84,16 +86,16 @@
   }
 
   function render(dt) {
-    t += dt * speed;
+    t += dt * speed * (1 + audio * .6);
     ctx.clearRect(0, 0, w, h);
     for (const g of grains) {
-      g.y -= g.speed * dt * speed;
+      g.y -= g.speed * dt * speed * (1 + audio * 1.8);
       const x = g.x + Math.sin(t * .3 + g.phase) * (10 + g.z * 30);
       if (g.y < -150) Object.assign(g, fresh(false));
 
       const level = Math.min(LEVELS - 1, Math.round(Math.abs(g.z - .35) * 9));
       const s = sprites[g.tint][level], k = g.size / s.r;
-      ctx.globalAlpha = Math.min(1, (.25 + g.z * .55) * light) * (1 - level * .08);
+      ctx.globalAlpha = Math.min(1, (.25 + g.z * .55) * light * (1 + audio * .7)) * (1 - level * .08);
       const d = (s.r + s.margin) * k;
       ctx.drawImage(s.c, x - d, g.y - d, d * 2, d * 2);
     }
