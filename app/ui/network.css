@@ -136,18 +136,23 @@
 .security__verdict { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .security__title { font: 600 16px/1.2 "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif; text-shadow: 0 1px 0 rgba(0, 0, 0, .6); }
 .security__why { font-size: 12.5px; color: var(--text-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.security__meter { flex: none; display: flex; gap: 6px; padding: 6px 8px; border-radius: 10px; background: #0b0b10; box-shadow: inset 0 2px 5px rgba(0, 0, 0, .9), 0 1px 0 rgba(255, 255, 255, .07); }
-.security__meter i { position: relative; width: 30px; height: 12px; border-radius: 4px; background: #1b1c24; box-shadow: inset 0 1px 2px rgba(0, 0, 0, .85); }
-.security__meter i.on { background: var(--lamp); box-shadow: 0 0 10px var(--lamp), inset 0 -2px 3px rgba(0, 0, 0, .3); }
-.security__meter i.on::after { content: ""; position: absolute; left: 3px; right: 3px; top: 1.5px; height: 3.5px; border-radius: 2px; background: rgba(255, 255, 255, .5); }
+.security__meter { flex: none; display: flex; gap: 8px; padding: 8px 10px; border-radius: 14px; background: linear-gradient(180deg, #0a0a0e, #15161c); box-shadow: inset 0 2px 6px rgba(0, 0, 0, .95), 0 0 0 1px #07080b, 0 1px 0 1px rgba(255, 255, 255, .08); }
+.security__meter i { position: relative; width: 34px; height: 14px; border-radius: 7px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--lamp) 10%, #121319), color-mix(in srgb, var(--lamp) 18%, #1a1b22));
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, .9), 0 0 0 1.5px #0a0b0f, 0 0 0 2.5px rgba(255, 255, 255, .06); transition: background .25s, box-shadow .25s; }
+.security__meter i.on { background: linear-gradient(180deg, var(--lamp-hi), var(--lamp) 42%, var(--lamp-lo));
+  box-shadow: inset 0 -2px 3px rgba(0, 0, 0, .35), 0 0 0 1.5px #0a0b0f, 0 0 0 2.5px rgba(255, 255, 255, .1), 0 0 12px color-mix(in srgb, var(--lamp) 85%, transparent), 0 0 28px color-mix(in srgb, var(--lamp) 40%, transparent); }
+.security__meter i::after { content: ""; position: absolute; left: 6px; right: 6px; top: 2px; height: 3px; border-radius: 2px; background: rgba(255, 255, 255, .12); }
+.security__meter i.on::after { background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, .75), rgba(255, 255, 255, 0)); }
 .security__checks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: 4px 18px 16px; }
 .check { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 4px 11px; align-content: start; padding: 13px 14px; border-radius: 11px; background: #101116; box-shadow: inset 0 2px 6px rgba(0, 0, 0, .75), 0 1px 0 rgba(255, 255, 255, .06); }
-.jewel { position: relative; grid-row: 1 / 3; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle at 35% 28%, #5a5c68, #23242c 70%); box-shadow: inset 0 -2px 3px rgba(0, 0, 0, .6), 0 0 0 1.5px #08090c, 0 1px 0 1.5px rgba(255, 255, 255, .1); }
-.jewel::after { content: ""; position: absolute; left: 5px; top: 3px; width: 9px; height: 6px; border-radius: 50%; background: rgba(255, 255, 255, .45); }
+.jewel { position: relative; grid-row: 1 / 3; width: 22px; height: 22px; margin: 1px; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle at 40% 32%, #4a4c58, #1c1d24 72%);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, .8), 0 0 0 2px #0a0b0f, 0 0 0 3.5px #4d4f5c, 0 1px 0 3.5px rgba(255, 255, 255, .12); }
+.jewel::after { content: ""; position: absolute; left: 5px; top: 3px; width: 8px; height: 5px; border-radius: 50%; background: linear-gradient(180deg, rgba(255, 255, 255, .65), rgba(255, 255, 255, .05)); }
 .jewel svg { display: none; }
-.check--ok .jewel { background: radial-gradient(circle at 35% 28%, #d2bbff, #8a58ee 55%, #4c1ea8); box-shadow: inset 0 -2px 3px rgba(0, 0, 0, .45), 0 0 0 1.5px #08090c, 0 0 12px rgba(150, 100, 255, .65); }
-.check--warn .jewel { background: radial-gradient(circle at 35% 28%, #ffe3a6, #f0b955 55%, #a8700f); box-shadow: inset 0 -2px 3px rgba(0, 0, 0, .45), 0 0 0 1.5px #08090c, 0 0 12px rgba(240, 185, 85, .6); }
-.check--bad .jewel { background: radial-gradient(circle at 35% 28%, #ffb0b8, #ff5566 55%, #9d1424); box-shadow: inset 0 -2px 3px rgba(0, 0, 0, .45), 0 0 0 1.5px #08090c, 0 0 12px rgba(255, 85, 102, .6); }
+.check--ok .jewel { background: radial-gradient(circle at 40% 32%, #e7d8ff, #9461f3 50%, #4a1fa8); box-shadow: inset 0 -2px 3px rgba(0, 0, 0, .4), 0 0 0 2px #0a0b0f, 0 0 0 3.5px #5b5d6b, 0 0 14px rgba(150, 100, 255, .8), 0 0 30px rgba(150, 100, 255, .35); }
+.check--warn .jewel { background: radial-gradient(circle at 40% 32%, #fff0c8, #f0b955 50%, #a8700f); box-shadow: inset 0 -2px 3px rgba(0, 0, 0, .4), 0 0 0 2px #0a0b0f, 0 0 0 3.5px #5b5d6b, 0 0 14px rgba(240, 185, 85, .75), 0 0 30px rgba(240, 185, 85, .3); }
+.check--bad .jewel { background: radial-gradient(circle at 40% 32%, #ffd0d5, #ff5566 50%, #9d1424); box-shadow: inset 0 -2px 3px rgba(0, 0, 0, .4), 0 0 0 2px #0a0b0f, 0 0 0 3.5px #5b5d6b, 0 0 14px rgba(255, 85, 102, .75), 0 0 30px rgba(255, 85, 102, .3); }
 .check__what { grid-column: 2; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .check__title { font-size: 13px; text-shadow: 0 1px 0 rgba(0, 0, 0, .6); }
 .check__detail { font-size: 12px; color: var(--text-pale); line-height: 1.3; }
