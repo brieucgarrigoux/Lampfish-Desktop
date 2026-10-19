@@ -235,7 +235,7 @@ namespace Bramble
         static Task<CoreWebView2Environment> CreateEnvironment()
         {
             string data = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Bramble");
-            var options = new CoreWebView2EnvironmentOptions("--autoplay-policy=no-user-gesture-required");
+            var options = new CoreWebView2EnvironmentOptions("--autoplay-policy=no-user-gesture-required --disable-http-cache");
             return CoreWebView2Environment.CreateAsync(null, data, options);
         }
 

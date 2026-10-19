@@ -230,6 +230,7 @@
     $('r-server').textContent = sv && sv.ok
       ? tr('Cloudflare server in {0} ({1}) · provider {2}', sv.city || sv.colo, sv.colo, sv.provider || '–') + (down && down.server === 'OVH' ? ' · ' + tr('download measured at OVH (Cloudflare was limiting tests)') : '')
       : tr('Router, Internet, DNS then speed, in about twenty seconds');
+    $('r-server').title = $('r-server').textContent;
 
     renderQuality(running);
     renderUsages();

@@ -38,7 +38,7 @@
 #r-ticks path { stroke: #5a5868; stroke-width: 1.5; }
 #r-ticks text { fill: #8a879c; font: 10.5px var(--numbers); text-anchor: middle; font-variant-numeric: tabular-nums; }
 
-.playback { display: flex; align-items: baseline; justify-content: center; flex-wrap: wrap; column-gap: 6px; min-width: 200px; }
+.playback { min-height: 62px; display: flex; align-items: baseline; justify-content: center; flex-wrap: wrap; column-gap: 6px; min-width: 200px; }
 .playback__value { font: 600 40px/1 "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
 .playback__unit { font-size: 14px; color: var(--text-soft); }
 .playback__value.idle, .playback__value.idle + .playback__unit { color: var(--text-pale); }
@@ -46,8 +46,10 @@
 
 .tester__side { min-width: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 22px; padding: 6px 0; }
 .tester__header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.tester__title { flex: 1; min-width: 0; }
 .tester__title h2 { font-size: 15px; color: var(--text); }
-.server { margin: 3px 0 0; min-height: 2.8em; font-size: 12.5px; line-height: 1.4; color: var(--text-pale); }
+.keycap-pill.keycap-test { min-width: 156px; }
+.server { margin: 3px 0 0; height: 2.8em; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: 12.5px; line-height: 1.4; color: var(--text-pale); }
 
 .keycap-test svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .keycap-test circle { fill: currentColor; stroke: none; }
