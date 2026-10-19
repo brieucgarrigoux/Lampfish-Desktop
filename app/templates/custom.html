@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Custom wallpaper</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #05030a; }
+  #bg { position: fixed; inset: 0; background-position: center; background-repeat: no-repeat; }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; }
+  #dim { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; }
+  #logo { position: fixed; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 2.4vmin; }
+  #logo img { display: block; object-fit: contain; }
+  #logo span { font: 600 6vmin/1 "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif; letter-spacing: -.02em; text-shadow: 0 .4vmin 2vmin rgba(0, 0, 0, .5); white-space: nowrap; }
+</style>
+</head>
+<body>
+<div id="bg"></div>
+<canvas id="fx"></canvas>
+<div id="dim"></div>
+<div id="logo"><img id="logo-image" alt=""><span id="title"></span></div>
+<script>
+(() => {
+  const params = new URLSearchParams(location.search);
+  const thumbnail = params.has('thumbnail');
+  let config = null, light = 1, speed = 1, frozen = false;
+  let audio = 0, audioTarget = 0, lastRaw = 0, lastBeat = 0;
+  const ripples = [];
+
+  window.__adjust = (l, v) => { light = Number(l) / 50; speed = Math.pow(2, (Number(v) - 50) / 25); };
+  window.__adjust(params.get('light') ?? 50, params.get('speed') ?? 50);
+  window.__audio = l => {
+    l = Number(l);
+    const now = performance.now();
+    if (l - lastRaw > .12 && l > .25 && now - lastBeat > 170) { lastBeat = now; if (ripples.length < 8) ripples.push({ age: 0, power: l }); }
+    lastRaw = l;
+    audioTarget = l;
+  };
+  addEventListener('message', e => {
+    const m = e.data || {};
+    if (m.bramble === 'adjust') window.__adjust(m.light, m.speed);
+    if (m.bramble === 'freeze') frozen = m.value;
+    if (m.bramble === 'config') { config = m.config; apply(); }
+  });
+  if (!params.has('preview')) fetch('config.json').then(r => r.json()).then(c => { config = c; apply(); });
+  if (parent !== window) parent.postMessage({ bramble: 'ready' }, '*');
+
+  const bg = document.getElementById('bg'), dim = document.getElementById('dim'), logo = document.getElementById('logo');
+  const logoImage = document.getElementById('logo-image'), title = document.getElementById('title');
+  const canvas = document.getElementById('fx'), ctx = canvas.getContext('2d');
+  let w = 0, h = 0, grains = [];
+
+  function apply() {
+    if (!config) return;
+    const b = config.background || {};
+    bg.style.backgroundImage = '';
+    if (b.type === 'image' && b.image) {
+      bg.style.backgroundColor = b.color || '#05030a';
+      bg.style.backgroundImage = `url("${b.image}")`;
+      bg.style.backgroundSize = b.fit === 'contain' ? 'contain' : 'cover';
+    } else if (b.type === 'gradient') {
+      bg.style.backgroundColor = '';
+      bg.style.backgroundImage = `linear-gradient(${Number(b.angle ?? 160)}deg, ${b.color || '#0b0a12'}, ${b.color2 || '#2a1450'})`;
+      bg.style.backgroundSize = 'auto';
+    } else {
+      bg.style.backgroundColor = b.color || '#0b0a12';
+    }
+    dim.style.opacity = String(Math.max(0, Math.min(.9, Number(b.dim || 0) / 100)));
+
+    const l = config.logo || {};
+    if (l.image) { logoImage.src = l.image; logoImage.hidden = false; } else { logoImage.removeAttribute('src'); logoImage.hidden = true; }
+    logoImage.style.width = (Number(l.size ?? 28)) + 'vmin';
+    logoImage.style.height = 'auto';
+    logoImage.style.maxHeight = (Number(l.size ?? 28)) + 'vmin';
+    logo.style.left = Number(l.x ?? 50) + '%';
+    logo.style.top = Number(l.y ?? 45) + '%';
+
+    const t = config.title || {};
+    title.textContent = t.text || '';
+    title.style.fontSize = (Number(t.size ?? 6)) + 'vmin';
+    title.style.color = t.color || '#ece7f4';
+    resize();
+  }
+
+  function resize() {
+    const r = devicePixelRatio || 1;
+    w = innerWidth; h = innerHeight;
+    canvas.width = w * r; canvas.height = h * r;
+    ctx.setTransform(r, 0, 0, r, 0, 0);
+    const e = (config && config.effects) || {};
+    grains = e.grains ? Array.from({ length: Math.round(w * h / 9000) }, () => grain(true)) : [];
+  }
+  function grain(everywhere) {
+    const z = Math.random();
+    return { x: Math.random() * w, y: everywhere ? Math.random() * h : h + 10, z, r: .6 + z * 1.8, v: 5 + z * 16, phase: Math.random() * 6.3 };
+  }
+
+  let t = 0, before = performance.now(), frames = 0;
+  function draw(now) {
+    if (innerWidth !== w || innerHeight !== h) resize();
+    const dt = Math.min(.05, (now - before) / 1000);
+    before = now;
+    audio += (audioTarget - audio) * Math.min(1, dt * 14);
+    if (!frozen) t += dt * speed;
+    ctx.clearRect(0, 0, w, h);
+
+    const e = (config && config.effects) || {};
+    const l = (config && config.logo) || {};
+    const cx = w * Number(l.x ?? 50) / 100, cy = h * Number(l.y ?? 45) / 100;
+    const reactive = e.reactive !== false;
+    const pulse = reactive ? audio : 0;
+
+    if (e.halo) {
+      const whoosh = .82 + Math.sin(t * .9) * .18;
+      const radius = Math.min(w, h) * .42 * whoosh * (1 + pulse * .7);
+      const rgb = hex(e.haloColor || '#8e42b6');
+      const halo = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+      halo.addColorStop(0, `rgba(${rgb}, ${Math.min(1, .42 * Math.min(1.6, light) * (1 + pulse * 2))})`);
+      halo.addColorStop(.55, `rgba(${rgb}, ${Math.min(1, .16 * Math.min(1.6, light))})`);
+      halo.addColorStop(1, `rgba(${rgb}, 0)`);
+      ctx.fillStyle = halo;
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    if (e.grains) {
+      ctx.fillStyle = e.grainColor || '#c9a2e6';
+      for (const g of grains) {
+        if (!frozen) { g.y -= g.v * dt * speed * (1 + pulse * 5); g.x += Math.sin(t * .6 + g.phase) * .15 * speed; }
+        if (g.y < -10) Object.assign(g, grain(false));
+        ctx.globalAlpha = Math.min(1, (.18 + g.z * .5) * light) * (.6 + .4 * Math.sin(t * 2 + g.phase));
+        ctx.beginPath(); ctx.arc(g.x, g.y, g.r, 0, 6.283); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    if (reactive && e.rings !== false) rings(dt, cx, cy, Math.min(w, h) * Number(l.size ?? 28) / 200, hex(e.haloColor || '#c9a2e6'));
+
+    if (thumbnail && ++frames > 2) return;
+    requestAnimationFrame(draw);
+  }
+
+  function rings(dt, cx, cy, base, rgb) {
+    if (audio > .02) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, base * (1.12 + audio * .12), 0, 6.283);
+      ctx.strokeStyle = `rgba(${rgb}, ${(.08 + audio * .32).toFixed(3)})`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+    for (let i = ripples.length - 1; i >= 0; i--) {
+      const r = ripples[i];
+      r.age += dt;
+      const k = r.age / 1.5;
+      if (k >= 1) { ripples.splice(i, 1); continue; }
+      const eased = 1 - Math.pow(1 - k, 3);
+      ctx.beginPath();
+      ctx.arc(cx, cy, base * (1.15 + eased * (1.6 + r.power)), 0, 6.283);
+      ctx.strokeStyle = `rgba(${rgb}, ${((1 - k) * (.22 + r.power * .4)).toFixed(3)})`;
+      ctx.lineWidth = 1 + (1 - k) * 2.2 * r.power;
+      ctx.stroke();
+    }
+  }
+
+  function hex(c) {
+    const m = /^#?([0-9a-f]{6})$/i.exec(c || '');
+    const n = m ? parseInt(m[1], 16) : 0x8e42b6;
+    return `${n >> 16}, ${(n >> 8) & 255}, ${n & 255}`;
+  }
+
+  addEventListener('resize', resize);
+  resize();
+  requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>

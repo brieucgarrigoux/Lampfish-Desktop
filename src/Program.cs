@@ -66,7 +66,7 @@ namespace Bramble
 
         public static Settings R = new Settings();
         public static Icon AppIcon;
-        static readonly JavaScriptSerializer json = new JavaScriptSerializer();
+        static readonly JavaScriptSerializer json = new JavaScriptSerializer { MaxJsonLength = int.MaxValue };
         static CoreWebView2Environment environment;
         static readonly List<WallpaperForm> screens = new List<WallpaperForm>();
         static SettingsForm settingsWindow;
@@ -565,6 +565,12 @@ namespace Bramble
             if (action.StartsWith("network.")) { Network.Receive(action.Substring(action.IndexOf('.') + 1)); return; }
 
             if (action.StartsWith("tasks.")) { Tasks.Receive(action.Substring(action.IndexOf('.') + 1), m); return; }
+
+            if (action.StartsWith("creator."))
+            {
+                if (Creator.Receive(action.Substring(action.IndexOf('.') + 1), m)) { Save(); SendState(); }
+                return;
+            }
 
             if (action.StartsWith("moods."))
             {

@@ -16,6 +16,7 @@
 <link rel="stylesheet" href="tasks.css">
 <link rel="stylesheet" href="chart.css">
 <link rel="stylesheet" href="moods.css">
+<link rel="stylesheet" href="creator.css">
 <link rel="stylesheet" href="home.css">
 <link rel="stylesheet" href="panels.css">
 </head>
@@ -112,10 +113,13 @@
       <div class="segments tabs" id="wp-tabs" role="tablist" aria-label="Wallpaper sections">
         <button role="tab" data-tab="library">Library<span class="count" id="count"></span></button>
         <button role="tab" data-tab="moods">Moods<span class="count" id="mood-count"></span></button>
+        <button role="tab" data-tab="create">Create</button>
       </div>
       <button class="link" id="folder">Open folder</button>
     </div>
     <div class="grid" id="grid"></div>
+
+    <div id="wp-create" hidden></div>
 
     <div id="wp-moods" hidden>
       <form class="save" id="mood-form">
@@ -647,6 +651,7 @@
 <script src="network.js"></script>
 <script src="tasks.js"></script>
 <script src="moods.js"></script>
+<script src="creator.js"></script>
 <script src="home.js"></script>
 <script src="panels.js"></script>
 <script src="scrollbars.js"></script>
