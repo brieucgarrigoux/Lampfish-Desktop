@@ -258,7 +258,7 @@ body.drag .drop { opacity: 1; visibility: visible; }
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { border: 3px solid transparent; border-radius: 99px; background: #2a2b36 padding-box; }
-::-webkit-scrollbar-thumb:hover { background: #3a3b48 padding-box; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent) padding-box; }
 ::-webkit-scrollbar-thumb:active { background: var(--accent) padding-box; }
 ::-webkit-scrollbar-button { display: none; height: 0; width: 0; }
 ::-webkit-scrollbar-corner { background: transparent; }
@@ -270,7 +270,7 @@ body.drag .drop { opacity: 1; visibility: visible; }
 .thumb-scrollable { position: absolute; top: 0; right: 2px; width: 6px; border-radius: 99px; background: #34353f; opacity: .7; cursor: pointer;
   transition: width .15s, background .15s, opacity .2s; }
 .rail-scrollable:hover .thumb-scrollable, .rail-scrollable.active .thumb-scrollable { opacity: 1; }
-.rail-scrollable:hover .thumb-scrollable { width: 8px; right: 1px; background: #4a4b58; }
+.rail-scrollable:hover .thumb-scrollable { width: 8px; right: 1px; background: var(--accent); }
 .rail-scrollable.dragging .thumb-scrollable { width: 8px; right: 1px; background: var(--accent); cursor: grabbing; opacity: 1; }
 body.resizing .rail-scrollable { pointer-events: none; }
 
