@@ -32,17 +32,20 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Settings: clicking a language several times in a row no longer breaks the window.
 - French: Start time, Number of screens, Kind of program, Enable and Favorite were still in English, and the Wi-Fi security names (WPA2-Personal) are kept as Windows reports them.
 - Icons: the preview size (small, medium, large) now changes the tiles.
+- Arrange: the screen map draws the taskbar instead of dimming a band under the icons.
+- Create: the active gradient direction was highlighted on the opposite arrow.
+- Narrow windows: the Home header wraps and the Tasks tabs scroll instead of overflowing.
 - Arrange: the screen map is centered and no longer slides in from the corner, and the icon size slider shows its real position and refreshes the map after a change.
 
 ### Changed
-- Selection no longer uses corner brackets: a backlit plate with an accent bar in the rail, an accent ring elsewhere.
-- Hardware is a dashboard (large processor tile, memory and graphics, temperature, battery and devices on one row) and the status LEDs are gone.
-- Sounds: the console is a 28 band LED equalizer driven by the real spectrum of the sound, and Listen is a chrome push button.
+- Selection no longer uses corner brackets: a flat violet pill in the rail, an accent ring elsewhere.
+- Hardware is a 12 column dashboard: processor beside memory, then graphics, temperature and battery, then devices, screens, storage and network. The status LEDs are gone.
+- Sounds: the console is a 28 band LED equalizer driven by the real spectrum of the sound, the volume dial lights its LEDs as it turns, and Listen and the connection test share one pill button.
 - Create: every slider resets, ten gradient presets and eight directions, shadow and drift are sliders, a color for rings and ripples, a vibration strength, Particles can stop reacting, wave ring and pulse are on by default.
 - Create: controls on the right, snap guides and a thirds grid, click to type the text, outlines only on hover, small renders as theme thumbnails, particles that no longer reshuffle, effects that can be combined (pulse, ripples, wave ring, vibration), three text styles, a slowly turning gradient.
-- Cards in Hardware, Network, Sounds and Create share one casing, and Hardware values sit in a recessed display with a status LED.
-- Network: the security seal holds a lit, bevelled shield behind a glass dome.
-- Previews in the app react to sound.
+- Cards in Hardware, Network and Sounds share one casing, Hardware values sit in a recessed display, and the Create panel uses the same flat groups as the other panels.
+- Network: the security seal holds a lit, bevelled shield behind a glass dome, the verdict and the three checks use LEDs in metal housings, and the test steps are a stepper with icons.
+- Previews in the app (Wallpaper, Create, Home and Arrange) react to sound.
 - A wallpaper needs a second click (or a second press of Delete) to be removed.
 - The violet plate with the white line berry is the official app icon.
 - Network: the security card has a control panel look (chrome seal, LED meter, jewel lamps, physical key).
