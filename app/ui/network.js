@@ -87,6 +87,22 @@
     $('r-row-sent').setAttribute('d', path(sent));
   }
 
+  Chart.bind($('r-curve'), (f, y) => {
+    if (received.length < 2) return null;
+    const slot = Math.round(f * (POINTS - 1)), i = slot - (POINTS - received.length);
+    if (i < 0 || i >= received.length) return null;
+    const max = Math.max(64 * 1024, ...received, ...sent);
+    const yDown = (116 - 108 * received[i] / max) / 120, ySent = (116 - 108 * sent[i] / max) / 120;
+    const downHot = Math.abs(y - yDown) <= Math.abs(y - ySent);
+    return {
+      at: slot / (POINTS - 1), title: tr('Live traffic'), note: tr('Data received and sent by this connection, once per second'), when: Chart.ago(received.length - 1 - i),
+      lines: [
+        { color: '#9561f3', label: tr('Download'), value: throughput(received[i]), y: yDown, hot: downHot },
+        { color: '#a9abb8', label: tr('Upload'), value: throughput(sent[i]), y: ySent, hot: !downHot },
+      ],
+    };
+  });
+
   const LEDS = 41;
   const leds = [];
   (function ticks() {

@@ -61,6 +61,26 @@
   }
   const CURVE = '<svg class="mini-curve" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true"><path class="area"/><path class="curve"/></svg>';
 
+  const CHARTS = {
+    processor: ['Processor load', 'How busy the processor is'],
+    memory: ['Memory in use', 'Share of the installed memory in use'],
+    graphics: ['Graphics load', 'How busy the graphics chip is'],
+    disk: ['Disk activity', 'Share of the time the disk is busy'],
+    network: ['Network traffic', 'Data received and sent together'],
+  };
+  function hover(key, f) {
+    const kind = key.split('-')[0];
+    const h = histories[kind === 'graphics' ? 'graphics' : key];
+    if (!h || h.length < 2 || !CHARTS[kind]) return null;
+    const slot = Math.round(f * (HISTORY - 1)), i = slot - (HISTORY - h.length);
+    if (i < 0 || i >= h.length) return null;
+    const traffic = kind === 'network', max = traffic ? Math.max(64 * 1024, ...h) : 100;
+    return {
+      at: slot / (HISTORY - 1), title: tr(CHARTS[kind][0]), note: tr(CHARTS[kind][1]), when: Chart.ago(h.length - 1 - i),
+      lines: [{ color: '#9561f3', label: tr(traffic ? 'Traffic' : 'Usage'), value: traffic ? throughput(h[i]) : pct(h[i]), y: (31 - 29 * Math.min(1, h[i] / max)) / 32, hot: true }],
+    };
+  }
+
   function card(key, icon, title, subtitle, extra) {
     const c = document.createElement('article');
     c.className = 'm-card';
@@ -73,6 +93,7 @@
     c.querySelector('h3').textContent = title;
     c.querySelector('.m-model').textContent = subtitle || '';
     c.querySelector('.m-model').title = subtitle || '';
+    Chart.bind(c.querySelector('.mini-curve'), f => hover(key, f));
     c.addEventListener('click', () => choose(key));
     c.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(key); } });
     cards[key] = {
