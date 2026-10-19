@@ -471,6 +471,9 @@ namespace Bramble
                         Program.Send(inventory);
                     }));
                     return false;
+                case "devices":
+                    Devices.Request();
+                    return false;
                 case "stats":
                     if (!ready || measureRunning) return false;
                     measureRunning = true;

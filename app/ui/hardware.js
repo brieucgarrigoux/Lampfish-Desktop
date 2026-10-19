@@ -2,7 +2,7 @@
 
 (function () {
   const HISTORY = 60;
-  let inv = null, stats = null, shown = false, timer = 0;
+  let inv = null, stats = null, devices = null, shown = false, timer = 0;
   let choice = 'processor';
   const histories = {};
   let cards = {};
@@ -40,6 +40,7 @@
     cable: '<rect x="8" y="3.5" width="8" height="7" rx="1.2"/><path d="M10 3.5V6M14 3.5V6M12 10.5v10"/>',
     battery: '<rect x="3.5" y="8" width="15" height="8" rx="1.5"/><path d="M21 11v2"/>',
     screens: '<rect x="3.5" y="4.5" width="17" height="12" rx="1.5"/><path d="M9 20h6M12 16.5V20"/>',
+    devices: '<path d="M12 3.5v13M8.5 7 12 3.5 15.5 7M7 12v3h10v-3M9.5 20.5h5"/>',
     temperature: '<path d="M10 14.5V5a2 2 0 0 1 4 0v9.5a4 4 0 1 1-4 0z"/><path d="M12 11v5"/>',
     system: '<rect x="4" y="4.5" width="16" height="11" rx="1.5"/><path d="M2.5 19.5h19"/>',
   };
@@ -198,11 +199,17 @@
     cards.screens.facts.textContent = '';
     power.push(scr);
 
+    const dv = card('devices', 'devices', 'Connected devices', tr('Plugged in now'));
+    dv.querySelector('.mini-curve').remove();
+    cards.devices.facts.textContent = '';
+
     zone.replaceChildren(header,
       family('Power', performance),
       family('Storage and network', storage),
+      family('Connected', [dv]),
       family('Power and screens', power));
     mark();
+    updateDevices();
     if (stats) update();
   }
 
@@ -283,10 +290,19 @@
     if (inv) renderPanel();
   }
 
+  function updateDevices() {
+    const k = cards.devices;
+    if (!k) return;
+    k.value.textContent = devices ? devices.usb : '–';
+    k.word.textContent = devices ? tr('USB devices') : '';
+    k.facts.textContent = devices ? tr('{0} USB controllers', devices.controllers) : '';
+  }
+
   function choose(key) {
     choice = key;
     mark();
     renderPanel();
+    if (key === 'devices') send('hardware.devices');
   }
 
   function mark() {
@@ -442,6 +458,15 @@
         ['Scaling', e.scale ? e.scale + ' %' : null], ['Port', e.port], ['Year', e.year || null],
       ]));
 
+    if (choice === 'devices') {
+      if (!devices) sections.push(...group(tr('Connected devices'), [[tr('Reading the devices'), '…']]));
+      else {
+        sections.push(...group(tr('Overview'), [[tr('USB devices'), String(devices.usb)], [tr('USB controllers'), String(devices.controllers)], [tr('Recognized devices'), String(devices.items.length)]]));
+        const kinds = [...new Set(devices.items.map(i => i.kind))];
+        for (const kind of kinds)
+          sections.push(...group(tr(kind), devices.items.filter(i => i.kind === kind).map(i => [i.name, i.vendor && !/^\(.*\)$/.test(i.vendor) ? i.vendor : (i.usb ? 'USB' : tr('Built in'))])));
+      }
+    }
     $('m-details').replaceChildren(...sections);
   }
 
@@ -449,12 +474,16 @@
     if (m.type === 'hardware.inventory') {
       inv = m;
 
-      const exists = key => key === 'processor' || key === 'memory' || key === 'screens' || (key === 'battery' && inv.battery)
+      const exists = key => key === 'processor' || key === 'memory' || key === 'screens' || key === 'devices' || (key === 'battery' && inv.battery)
         || (key.startsWith('graphics-') && Number(key.slice('graphics-'.length)) < inv.graphics.length)
         || inv.disks.some(d => 'disk-' + d.number === key) || inv.networks.some(r => 'network-' + r.id === key);
       if (!exists(choice)) choice = 'processor';
       build();
       renderPanel();
+    } else if (m.type === 'hardware.devices') {
+      devices = m;
+      updateDevices();
+      if (choice === 'devices') renderPanel();
     } else if (m.type === 'hardware.stats') {
       stats = m;
       if (inv) update();
@@ -467,9 +496,12 @@
     if (!yes) return;
     send('hardware.inventory');
     send('hardware.stats');
+    send('hardware.devices');
+    let turn = 0;
     timer = setInterval(() => {
       if (!shown || document.visibilityState !== 'visible') return;
       send('hardware.stats');
+      if (++turn % 5 === 0) send('hardware.devices');
     }, 1000);
   }
 
