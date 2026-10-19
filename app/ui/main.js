@@ -316,7 +316,7 @@ function buildGrid() {
     card.className = 'card';
     card.tabIndex = 0;
     card.dataset.name = wallpaper.name;
-    card.innerHTML = `<div class="preview"></div><span class="reticle"></span>
+    card.innerHTML = `<div class="preview"></div>
       <div class="footer"><span class="name"></span><span class="badge">${TYPES[wallpaper.type]}</span></div>
       ${wallpaper.custom ? '<button class="edit" tabindex="-1">Edit</button>' : ''}<button class="remove" tabindex="-1">Remove</button>`;
     card.querySelector('.name').textContent = withoutExtension(wallpaper.name);

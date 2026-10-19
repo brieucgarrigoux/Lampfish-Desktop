@@ -58,8 +58,6 @@
 .h-desktop.hidden { display: none; }
 
 .h-tile, .h-wallpaper { position: relative; outline: none; }
-.h-tile .reticle, .h-wallpaper .reticle { position: absolute; inset: -5px; --l: 12px; display: none; z-index: 1; }
-.h-tile:hover .reticle, .h-tile:focus-visible .reticle, .h-wallpaper:hover .reticle, .h-wallpaper:focus-visible .reticle { display: block; }
 .h-wallpaper { overflow: visible; }
 .h-wallpaper .preview { border-radius: 14px; overflow: hidden; }
 .h-wallpaper:hover { box-shadow: 0 0 0 1px var(--hairline); }

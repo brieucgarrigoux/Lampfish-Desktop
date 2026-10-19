@@ -61,10 +61,8 @@ h2 .count { margin-left: 8px; font: 400 12.5px var(--numbers); font-variant-nume
 .service svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .service:hover { color: var(--text-soft); }
 .service:hover svg { stroke: var(--accent); }
-.service .reticle { position: absolute; inset: 0; --l: 7px; --e: 1.5px; display: none; }
 .service[aria-current="page"] { color: var(--text); background: var(--group); }
 .service[aria-current="page"] svg { stroke: var(--accent); }
-.service[aria-current="page"] .reticle { display: block; }
 
 .contents { min-width: 0; overflow-y: auto; padding: 18px 28px 32px; }
 .view > h1 { margin: 2px 0 18px; }
@@ -134,8 +132,6 @@ body[data-view="settings"] .panel, body[data-view="home"] .panel, body[data-view
 .card .preview { aspect-ratio: 16 / 10; border-radius: 8px; box-shadow: 0 0 0 1px var(--hairline); }
 .card .preview > * { transition: filter .12s; filter: brightness(.82); }
 .card:hover .preview > *, .card.current .preview > * { filter: none; }
-.card .reticle { position: absolute; top: -6px; left: -6px; width: calc(100% + 12px); aspect-ratio: 16 / 10; display: none; }
-.card.current .reticle { display: block; }
 .preview { position: relative; background: #000; overflow: hidden; }
 .preview img, .preview video { width: 100%; height: 100%; object-fit: cover; display: block; }
 .preview iframe {
@@ -292,7 +288,7 @@ body.resizing .rail-scrollable { pointer-events: none; }
   transition: transform .06s, box-shadow .06s, filter .12s;
 }
 .keycap:hover:not(:disabled) { filter: brightness(1.08); }
-.keycap:active:not(:disabled), .keycap.pressed { transform: translateY(1px); box-shadow: inset 0 1px 3px rgba(0, 0, 0, .35), 0 0 0 1px #2a0f38, 0 1px 3px rgba(110, 42, 138, .3); }
+.keycap:active:not(:disabled) { transform: translateY(1px); box-shadow: inset 0 1px 3px rgba(0, 0, 0, .35), 0 0 0 1px #2a0f38, 0 1px 3px rgba(110, 42, 138, .3); }
 .keycap:disabled { cursor: default; }
 .keycap svg { flex: none; width: 15px; height: 15px; }
 

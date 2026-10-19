@@ -28,7 +28,7 @@
       b.title = r.path || 'Windows cursor';
       const frame = document.createElement('span');
       frame.className = 'role__case';
-      frame.innerHTML = '<span class="reticle"></span>';
+      frame.innerHTML = '';
       frame.append(image(r.preview, true));
       const name = document.createElement('span');
       name.className = 'role__name';
@@ -88,7 +88,7 @@
     t.title = c.name + (c.animated ? tr(' (animated)') : '');
     const frame = document.createElement('div');
     frame.className = 'tile__case';
-    frame.innerHTML = '<span class="reticle"></span>';
+    frame.innerHTML = '';
     frame.append(image(c.preview, true));
     const footer = document.createElement('div');
     footer.className = 'tile__footer';
@@ -113,7 +113,7 @@
     const c = document.createElement('button');
     c.className = 'theme' + (th.name === s.theme ? ' current' : '') + (th.bramble ? ' theme--bramble' : '');
     c.dataset.name = th.name;
-    c.innerHTML = '<span class="reticle"></span><span class="theme__showcase"></span><span class="theme__name"></span>';
+    c.innerHTML = '<span class="theme__showcase"></span><span class="theme__name"></span>';
     for (const a of th.showcase) c.querySelector('.theme__showcase').append(image(a, false));
     c.querySelector('.theme__name').textContent = th.title;
     c.addEventListener('click', () => send('mouse.theme', { name: th.name }));

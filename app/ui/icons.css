@@ -2,9 +2,7 @@
 
 .target { display: flex; align-items: center; gap: 20px; padding: 16px 18px; border-radius: 12px; background: var(--group); }
 .target__icon { position: relative; flex: none; width: 88px; height: 88px; display: grid; place-items: center; }
-.target__icon .reticle { position: absolute; inset: 0; --l: 10px; }
 .target__icon img { width: 64px; height: 64px; }
-.target.no-folder .target__icon .reticle { --c: var(--hairline-strong); }
 .target__what { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .target__what .title { font: 600 17px/1.2 "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .target.no-folder .title { color: var(--text-soft); font-weight: 400; }
@@ -36,8 +34,6 @@ img.retro { image-rendering: pixelated; }
 .tile:hover .tile__case { background: var(--group); }
 .tile:focus-visible { outline: none; }
 .tile:focus-visible .tile__case { background: var(--group-up); box-shadow: 0 0 0 1px var(--accent); }
-.tile__case .reticle { position: absolute; inset: 0; --l: 9px; display: none; }
-.tile.current .tile__case .reticle { display: block; }
 
 .star { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; padding: 3px; border: 0; border-radius: 6px; background: none; opacity: 0; transition: opacity .12s; }
 .star svg { width: 16px; height: 16px; fill: none; stroke: var(--text-soft); stroke-width: 1.6; stroke-linejoin: round; }

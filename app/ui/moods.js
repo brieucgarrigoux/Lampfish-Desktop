@@ -31,7 +31,7 @@
   function card(m) {
     const el = document.createElement('article');
     el.className = 'mood' + (m.current ? ' current' : '');
-    el.innerHTML = `<span class="reticle"></span>
+    el.innerHTML = `
       <div class="mood__head"><h3 class="mood__name" title="Double-click to rename"></h3><span class="mood__badge"></span></div>
       <ul class="mood__facts"></ul>
       <div class="mood__auto">

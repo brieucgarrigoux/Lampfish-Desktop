@@ -177,7 +177,7 @@
         l.tabIndex = 0;
         l.dataset.id = e.id;
         l.title = e.help;
-        l.innerHTML = `<span class="reticle"></span><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${GLYPHS[i] || ''}</svg>
+        l.innerHTML = `<svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${GLYPHS[i] || ''}</svg>
           <span class="what"><span class="name-event"></span><span class="sound-event"></span></span>
           <label class="toggler"><input type="checkbox" aria-label="Enable"></label>`;
         l.querySelector('.name-event').textContent = e.label;

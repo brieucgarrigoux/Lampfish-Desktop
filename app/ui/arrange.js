@@ -30,7 +30,7 @@
       b.className = 'arrangement';
       b.setAttribute('role', 'radio');
       b.setAttribute('aria-checked', String(r.arrangement === key));
-      b.innerHTML = thumbnail(key) + '<span class="reticle"></span><span class="name-ag"></span>';
+      b.innerHTML = thumbnail(key) + '<span class="name-ag"></span>';
       b.querySelector('.name-ag').textContent = name;
       b.addEventListener('click', () => send('arrange.arrangement', { value: key }));
       return b;

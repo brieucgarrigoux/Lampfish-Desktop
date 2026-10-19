@@ -8,16 +8,12 @@
 .role__case { position: relative; width: 80px; height: 72px; display: grid; place-items: center; border-radius: 12px; }
 .role__case img, .tile-cursor img { width: 48px; height: 48px; }
 .role__case img.retro, .tile-cursor img.retro { width: 64px; height: 64px; }
-.role__case .reticle { position: absolute; inset: 4px; --l: 9px; display: none; }
-.role.chosen .role__case .reticle { display: block; }
 .role__name { font-size: 12px; color: var(--text-soft); max-width: 84px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .role.chosen .role__name { color: var(--text); }
 
 .themes { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
 .theme { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border: 0; border-radius: 10px; background: var(--group); text-align: left; transition: background .12s; }
 .theme:hover { background: var(--group-up); }
-.theme .reticle { position: absolute; inset: -5px; --l: 10px; display: none; }
-.theme.current .reticle { display: block; }
 .theme__showcase { display: flex; gap: 8px; height: 32px; align-items: center; }
 .theme__showcase img { width: 32px; height: 32px; }
 .theme__name { font-size: 13px; color: var(--text-soft); }

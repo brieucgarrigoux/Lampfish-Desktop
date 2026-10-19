@@ -27,7 +27,7 @@
   for (const [view, name, icon] of SERVICES) {
     const b = document.createElement('button');
     b.className = 'h-tile';
-    b.innerHTML = `<span class="reticle"></span><header><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${icon}</svg><span class="h-name"></span><svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></header>
+    b.innerHTML = `<header><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${icon}</svg><span class="h-name"></span><svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></header>
       <span class="h-value"></span><span class="h-detail"></span><span class="h-visual"></span>`;
     b.querySelector('.h-name').textContent = name;
 
