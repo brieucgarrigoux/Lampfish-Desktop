@@ -17,3 +17,4 @@
 .task__end:hover { box-shadow: inset 0 0 0 1px var(--accent); }
 .task__end.confirm { background: #3a1519; box-shadow: inset 0 0 0 1px #c8444f; color: #ff8a93; }
 #t-empty { position: static; padding: 40px 0; }
+#t-tabs { max-width: 100%; overflow-x: auto; scrollbar-width: none; }

@@ -1,5 +1,5 @@
 .view--home { max-width: 1120px; margin-inline: auto; }
-.home-header { display: flex; align-items: center; gap: 22px; margin: 2px 0 18px; }
+.home-header { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; margin: 2px 0 18px; }
 .home-header img { height: 72px; width: auto; flex: none; }
 .home-header h1 { margin: 0 0 4px; }
 .home-header p { margin: 0; font-size: 13px; color: var(--text-soft); }

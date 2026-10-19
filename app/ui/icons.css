@@ -22,7 +22,7 @@
 
 img.retro { image-rendering: pixelated; }
 
-.title-section--tabs { align-items: center; }
+.title-section--tabs { align-items: center; flex-wrap: wrap; }
 .tabs { flex: none; }
 .tabs button { flex: none; padding: 5px 14px; display: flex; align-items: baseline; gap: 7px; }
 .tabs .count, .source .count, .waiting .count { font: 12px var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); }
