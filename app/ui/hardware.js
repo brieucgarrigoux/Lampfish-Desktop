@@ -140,7 +140,7 @@
 
     const storage = [];
     for (const d of inv.disks) {
-      const volumes = d.volumes.map(v => `<div class="m-volume" data-letter="${v.letter}"><span class="m-volume__name">${v.letter}</span><div class="m-bar"><i style="width:${(100 * (v.size - v.free) / v.size).toFixed(1)}%"></i></div><span class="m-volume__free"></span></div>`).join('');
+      const volumes = d.volumes.map(v => `<div class="m-volume" data-letter="${v.letter}"><span class="m-volume__name">${v.letter}</span><div class="m-bar"><i style="transform:scaleX(${((v.size - v.free) / v.size).toFixed(3)})"></i></div><span class="m-volume__free"></span></div>`).join('');
       const c = card('disk-' + d.number, 'disk', 'Storage', d.name, volumes);
       d.volumes.forEach((v, i) => {
         const free = v.free / v.size;
@@ -202,10 +202,10 @@
     cards.devices.facts.textContent = '';
 
     zone.replaceChildren(header,
-      family('Power', performance),
+      family('Power and screens', power),
+      family('Performance', performance),
       family('Storage and network', storage),
-      family('Connected', [dv]),
-      family('Power and screens', power));
+      family('Connected', [dv]));
     mark();
     updateDevices();
     if (stats) update();
@@ -228,7 +228,7 @@
     r.value.textContent = pct(part);
     r.word.textContent = tr(part < 60 ? 'Comfortable' : part < 85 ? 'Fairly full' : 'Almost full');
     r.el.dataset.level = level(part);
-    r.bar.style.width = part.toFixed(1) + '%';
+    r.bar.style.transform = `scaleX(${(part / 100).toFixed(3)})`;
     r.facts.textContent = tr('{0} of {1}', size(m.used, 1), size(m.total, 1));
     plot(r.curve, record('memory', part), 100);
     if (part >= 90) alerts.push(tr('Memory is almost full'));
@@ -372,6 +372,25 @@
     return [h, g];
   }
 
+  function patch(zone, fresh) {
+    const now = [...zone.children];
+    const same = now.length === fresh.length && fresh.every((n, i) => {
+      const o = now[i];
+      if (o.tagName !== n.tagName) return false;
+      if (n.tagName === 'H2') return o.textContent === n.textContent;
+      const a = [...o.children], b = [...n.children];
+      return a.length === b.length && b.every((r, k) => { const x = a[k].querySelector('.caption'), y = r.querySelector('.caption'); return x && y && x.textContent === y.textContent; });
+    });
+    if (!same) { zone.replaceChildren(...fresh); return; }
+    fresh.forEach((n, i) => {
+      if (n.tagName === 'H2') return;
+      [...n.children].forEach((r, k) => {
+        const o = now[i].children[k].querySelector('.value'), v = r.querySelector('.value');
+        if (o && v && o.textContent !== v.textContent) { o.textContent = v.textContent; o.title = v.title; }
+      });
+    });
+  }
+
   function renderPanel() {
     const s = inv.system, sections = [];
     const lit = s.startup ? (Date.now() - new Date(s.startup)) / 1000 : 0;
@@ -465,7 +484,7 @@
           sections.push(...group(tr(kind), devices.items.filter(i => i.kind === kind).map(i => [i.name, i.vendor && !/^\(.*\)$/.test(i.vendor) ? i.vendor : (i.usb ? 'USB' : tr('Built in'))])));
       }
     }
-    $('m-details').replaceChildren(...sections);
+    patch($('m-details'), sections);
   }
 
   function event(m) {
