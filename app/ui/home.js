@@ -169,7 +169,6 @@
     $('h-weather').title = tr('Feels like {0} °C · humidity {1} %', weather.feels, weather.humidity);
   }
 
-  // The wallpaper page renders at the real screen size, then shrinks, so it keeps the proportions of the desktop.
   let screenSize = null;
   function fitPreview() {
     const wallpaper = $('h-wallpaper');
@@ -191,7 +190,6 @@
     fitPreview();
 
     const width = (map.caseW / e.w * 100).toFixed(3) + '%', height = (map.caseH / e.h * 100).toFixed(3) + '%';
-    // Windows reports where the icon image sits; its cell starts half a margin to the left.
     const iconPx = 48 * (e.scale || 1), shift = Math.max(0, (map.caseW - iconPx) / 2);
     const image = Math.min(100, iconPx / map.caseW * 100).toFixed(1) + '%';
     const seen = new Set();

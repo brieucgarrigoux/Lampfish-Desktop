@@ -9,10 +9,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.VisualBasic.Devices;
-
 namespace Bramble
 {
-
     static class Hardware
     {
 
@@ -48,7 +46,6 @@ namespace Bramble
         static readonly Dictionary<string, long[]> networkBefore = new Dictionary<string, long[]>();
         static readonly ComputerInfo computer = new ComputerInfo();
         static long maxFrequency;
-
         public static void Start()
         {
 
@@ -304,7 +301,6 @@ namespace Bramble
         }
 
         class Monitor { public string Name, Manufacturer, Code; public int Year; public double Inches; public string Port; }
-
         static object Screens()
         {
 
@@ -346,7 +342,6 @@ namespace Bramble
                 var d = new DISPLAY_DEVICE { cb = Marshal.SizeOf(typeof(DISPLAY_DEVICE)) };
                 if (EnumDisplayDevices(s.DeviceName, 0, ref d, EDD_GET_DEVICE_INTERFACE_NAME) && d.DeviceID != null)
                 {
-
                     var parts = d.DeviceID.TrimStart('\\', '?').Split('#');
                     if (parts.Length >= 3) monitors.TryGetValue(parts[0] + "\\" + parts[1] + "\\" + parts[2], out r);
                 }

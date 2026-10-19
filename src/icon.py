@@ -15,7 +15,6 @@ SIZES = (16, 20, 24, 32, 40, 48, 64, 128, 256)
 
 
 def save(img, path):
-    # A file open in a viewer can refuse writes for a moment.
     for _ in range(10):
         try:
             return img.save(path)

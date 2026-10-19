@@ -8,7 +8,6 @@ using Microsoft.Web.WebView2.WinForms;
 
 namespace Bramble
 {
-
     class SettingsForm : Form
     {
         readonly WebView2 view;
@@ -39,7 +38,6 @@ namespace Bramble
             core.SetVirtualHostNameToFolderMapping(WallpaperForm.MediaHost, Program.WallpapersFolder, CoreWebView2HostResourceAccessKind.Allow);
             core.WebMessageReceived += (s, e) =>
             {
-
                 var files = new List<string>();
                 if (e.AdditionalObjects != null)
                     foreach (object o in e.AdditionalObjects)

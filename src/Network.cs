@@ -13,7 +13,6 @@ using System.Web.Script.Serialization;
 
 namespace Bramble
 {
-
     static class Network
     {
         static bool testRunning;
@@ -110,7 +109,6 @@ namespace Bramble
             var w = new Wifi();
             try
             {
-
                 var p = new ProcessStartInfo("netsh", "wlan show interfaces")
                 {
                     RedirectStandardOutput = true, UseShellExecute = false, CreateNoWindow = true,

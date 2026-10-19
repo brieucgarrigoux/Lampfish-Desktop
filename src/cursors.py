@@ -11,7 +11,6 @@ OUTPUT = os.path.join(ROOT, 'app', 'cursor-themes')
 SCALES = [2, 3, 4, 6, 8]
 SCALES_ANI = [2, 3, 4, 8]  # Windows refuses to load an .ani frame with more than four sizes.
 
-# K outline, P body, L highlight, D shadow
 TINTS = {
     'Bramble Berry': {'K': (8, 1, 26), 'P': (136, 87, 224), 'L': (185, 157, 255), 'D': (90, 32, 171)},
     'Bramble Snow':  {'K': (55, 12, 111), 'P': (245, 244, 251), 'L': (255, 255, 255), 'D': (204, 197, 232)},

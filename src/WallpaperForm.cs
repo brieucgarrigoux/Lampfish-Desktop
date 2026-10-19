@@ -8,7 +8,6 @@ using Microsoft.Web.WebView2.WinForms;
 
 namespace Bramble
 {
-
     class WallpaperForm : Form
     {
         public const string AppHost = "app.example", MediaHost = "media.example";
@@ -104,7 +103,6 @@ namespace Bramble
       const l = waiting; waiting = []; l.forEach(cb => raf(cb));
     }
   };
-  // Blur, saturation and dim: one overlay above whatever wallpaper is shown.
   window.__effects = (blur, saturation, dim) => {
     let v = document.getElementById('__bramble_effects');
     if (blur == 0 && saturation == 50 && dim == 0) { if (v) v.remove(); return; }

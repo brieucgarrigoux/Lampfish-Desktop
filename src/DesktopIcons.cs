@@ -5,7 +5,6 @@ using System.Runtime.InteropServices;
 
 namespace Bramble
 {
-
     static class DesktopIcons
     {
         public class Element

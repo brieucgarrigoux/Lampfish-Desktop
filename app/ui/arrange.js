@@ -184,7 +184,6 @@
   new ResizeObserver(() => renderMap()).observe(zone);
 
   function renderPanel() {
-
     $('choice-screen').hidden = r.nbScreens < 2;
     const values = ['all', ...Array.from({ length: r.nbScreens }, (_, i) => String(i + 1))];
     $('screen-target').replaceChildren(...values.map(v => {

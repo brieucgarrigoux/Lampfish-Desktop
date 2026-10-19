@@ -8,7 +8,6 @@ using System.Web.Script.Serialization;
 
 namespace Bramble
 {
-
     static class Weather
     {
         static readonly JavaScriptSerializer json = new JavaScriptSerializer();

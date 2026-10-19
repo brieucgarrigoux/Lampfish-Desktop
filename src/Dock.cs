@@ -8,7 +8,6 @@ using System.Windows.Forms;
 
 namespace Bramble
 {
-
     class Dock : NativeWindow
     {
         class Device { public string Name; public Guid Kind; }
@@ -80,7 +79,6 @@ namespace Bramble
                 var callback = found;
                 if (fresh.Count > 0)
                 {
-
                     var choice = fresh.OrderByDescending(x => Note(x.pattern, x.Name)).First();
                     found = null;
                     quietUntil = DateTime.Now.AddSeconds(8);

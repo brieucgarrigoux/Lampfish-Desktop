@@ -4,7 +4,6 @@ using System.Threading;
 
 namespace Bramble
 {
-
     static class Desktop
     {
         static IntPtr parent, icons, workerW;
@@ -84,7 +83,6 @@ namespace Bramble
                 }
                 if (h == workerW && seen < wallpapers.Count)
                 {
-
                     if (CanFix()) Native.SetWindowPos(workerW, Native.HWND_BOTTOM, 0, 0, 0, 0, Native.SWP_NOMOVE | Native.SWP_NOSIZE | Native.SWP_NOACTIVATE | Async);
                     return;
                 }

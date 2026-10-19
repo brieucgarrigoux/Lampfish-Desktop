@@ -547,7 +547,6 @@ namespace Bramble
                 case "remove": Remove(Text(m, "id")); return true;
                 case "drop":
                 {
-
                     string folder = files.FirstOrDefault(Directory.Exists);
                     if (folder != null) Choose(folder);
                     var others = files.Where(f => !Directory.Exists(f)).ToList();

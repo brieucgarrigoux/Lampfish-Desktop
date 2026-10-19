@@ -11,7 +11,6 @@ using Microsoft.Win32;
 
 namespace Bramble
 {
-
     static class Mouse
     {
         static readonly string CustomFolder = Path.Combine(Program.Root, "cursors");
@@ -121,7 +120,6 @@ namespace Bramble
             }
             Reload();
         }
-
         static void Reload()
         {
 

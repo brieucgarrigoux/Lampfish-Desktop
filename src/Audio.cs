@@ -5,7 +5,6 @@ using System.Text;
 
 namespace Bramble
 {
-
     class Wav
     {
         public int Channels, Frequency;

@@ -89,7 +89,6 @@ namespace Bramble
                 string requestedFolder = RequestedFolder(args);
                 if (!firstInstance)
                 {
-
                     if (requestedFolder != null)
                         try { File.WriteAllText(RequestFile, requestedFolder); } catch { }
                     EventWaitHandle signal;
@@ -311,7 +310,6 @@ namespace Bramble
                 return;
             }
             if (building || restart) return;
-
             if (screens.Count > 0)
             {
                 var dead = screens.FirstOrDefault(f => !f.Alive);
@@ -486,7 +484,6 @@ namespace Bramble
             removalUndo = undo;
             removalDelay.Start();
         }
-
         static void UndoRemoval()
         {
             if (removed == null) return;

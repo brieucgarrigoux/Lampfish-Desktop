@@ -30,7 +30,6 @@ namespace Bramble
 
     static class Sounds
     {
-
         static readonly string[][] Events =
         {
             new[] { "startup", "Startup", "When you sign in", "Chime" },
@@ -99,7 +98,6 @@ namespace Bramble
             };
             SystemEvents.PowerModeChanged += (s, e) =>
             {
-
                 if (e.Mode == PowerModes.Suspend) Trigger("sleep", 2500);
                 else if (e.Mode == PowerModes.Resume) Delay("wake", 1500);
                 else if (e.Mode == PowerModes.StatusChange)
@@ -353,7 +351,6 @@ namespace Bramble
                 case "stop": Player.Stop(); playbackId = null; Program.Send(new { type = "station.stop" }); return false;
                 case "pause":
                 {
-
                     if (playbackId == null) { Program.Send(new { type = "station.refusal", reason = "nothing" }); return false; }
                     if (playbackPause) { Play(playbackId, playbackDeck, playbackFrom); return false; }
                     double elapsed = playbackFrom + (DateTime.Now - playbackStart).TotalSeconds;
@@ -374,7 +371,6 @@ namespace Bramble
                 }
                 case "pair":
                 {
-
                     string[] p = Pairs.FirstOrDefault(x => x[0] == Text(m, "pack"));
                     int i = Array.FindIndex(Events, x => x[0] == Text(m, "event"));
                     if (p == null || i < 0) return false;

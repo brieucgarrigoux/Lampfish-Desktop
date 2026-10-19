@@ -169,7 +169,6 @@ namespace Bramble
                     break;
                 case "center":
                 {
-
                     int w = Math.Max(1, Math.Min(C, (int)Math.Ceiling(Math.Sqrt(n * 2.2))));
                     int h = Math.Min(L, (n + w - 1) / w);
                     int x0 = (C - w) / 2, y0 = (L - h) / 2;
@@ -202,7 +201,6 @@ namespace Bramble
                 int C = g.Columns, L = g.Rows;
                 if (arrangement == "corners")
                 {
-
                     int qc = Math.Max(1, C / 2), ql = Math.Max(1, L / 2);
                     for (int i = 0; i < groups.Count; i++)
                     {
@@ -220,7 +218,6 @@ namespace Bramble
                 }
                 else
                 {
-
                     int x = 0;
                     foreach (var group in groups)
                     {
@@ -233,7 +230,6 @@ namespace Bramble
             }
             else
             {
-
                 bool muted = arrangement != "frame" && arrangement != "center";
                 int remaining = groups.Sum(g => g.Count), e = 0, li = 0, k = 0;
                 var rows = grids.Count > 0 ? Rows(arrangement, grids[0], remaining) : new List<List<Point>>();
@@ -424,7 +420,6 @@ namespace Bramble
                     case "screen": R.Screen = Text(m, "value") ?? "all"; return true;
                     case "auto":
                     {
-
                         bool active = Convert.ToBoolean(m["value"]);
                         if (active) R.BeforeAuto = DesktopIcons.List(false).Select(e => new IconPosition { Id = e.Id, X = e.Position.X, Y = e.Position.Y }).ToList();
                         DesktopIcons.Flag(DesktopIcons.FWF_AUTOARRANGE, active);
@@ -451,7 +446,6 @@ namespace Bramble
                     }
                     case "order":
                     {
-
                         var order = ((System.Collections.ArrayList)m["categories"]).Cast<object>().Select(x => x.ToString()).ToList();
                         if (order.Count != R.Categories.Count || order.Except(R.Categories).Any()) return false;
                         R.Categories = order;
@@ -479,7 +473,6 @@ namespace Bramble
             }
             return false;
         }
-
         public static object State()
         {
             string signature = Signature();
@@ -497,7 +490,6 @@ namespace Bramble
                 configuration = Label(signature),
             };
         }
-
         static string Text(Dictionary<string, object> m, string key)
         {
             object v;

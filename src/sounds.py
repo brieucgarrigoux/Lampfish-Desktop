@@ -83,7 +83,6 @@ def write(pack, name, mono, wet=0.22, length=0.78):
     right = reverb(mono, wet, length, 23)
     n = max(len(left), len(right))
     left += [0.0] * (n - len(left)); right += [0.0] * (n - len(right))
-    # Trim the silent tail, then set the peak to -1 dBFS.
     peak = max(max(abs(v) for v in left), max(abs(v) for v in right)) or 1
     threshold = peak * 0.002
     end = n
@@ -108,7 +107,6 @@ def soften(x, cutoff=6500):
     return low_pass(low_pass(x, cutoff), cutoff * 1.4)
 
 
-# Glass: two glass harmonica notes a fifth apart, soft attack.
 
 def glass_note(f, strength=1.0, duration=1.6):
     body = partials(f, [1, 2.0, 2.99, 4.01], [1, .22, .09, .04], [1.0, .55, .32, .2], duration, .006)
@@ -121,7 +119,6 @@ def glass():
     write('Glass', 'Disconnect', soften(mix(mix(silence(1.9), glass_note(b5, .7), 0), glass_note(e5, .7), .16), 5200), .3, .8)
 
 
-# Chime: small warm bells, major arpeggio.
 
 def bell(f):
     return partials(f, [.5, 1, 2, 2.4, 3], [.25, 1, .35, .12, .06], [2.0, 1.4, .7, .45, .3], 2.2, .006)
@@ -139,7 +136,6 @@ def chime():
     write('Chime', 'Disconnect', soften(d, 5000), .26, .8)
 
 
-# Analog: warm pad, two detuned saws, a breathing filter.
 
 def synth_note(f, duration, open_cutoff, closed_cutoff, attack=.025):
     n = int(duration * RATE)
@@ -174,7 +170,6 @@ def analog():
     write('Analog', 'Disconnect', d, .24, .78)
 
 
-# Retro 8-bit: 25% pulse wave arpeggio, like an 80s console without the harshness.
 
 def pulse(f, duration, duty=.25, vibrato=0.0):
     n = int(duration * RATE)
@@ -201,7 +196,6 @@ def retro():
     write('Retro 8-bit', 'Disconnect', soften(d, 4200), .14, .55)
 
 
-# Crystal: two FM chimes whose shine fades gently.
 
 def ting(f, duration=1.3, index=2.2, ratio=3.5):
     n = int(duration * RATE)
@@ -227,7 +221,6 @@ def crystal():
     write('Crystal', 'Disconnect', soften(d, 6000), .3, .82)
 
 
-# Sci-fi: a soft rising (or falling) sweep, filtered air and a short echo.
 
 def sweep(f1, f2, duration):
     n = int(duration * RATE)
@@ -267,7 +260,6 @@ def scifi():
     write('Sci-fi', 'Disconnect', soften(d, 5500), .28, .75)
 
 
-# Drops: water drops whose pitch slides up.
 
 def drop(f0, rise=2.1):
     n = int(.16 * RATE)
@@ -288,7 +280,6 @@ def drops():
     write('Drops', 'Disconnect', d, .3, .82)
 
 
-# Mechanical: a clicking relay and a small motor.
 
 def click(bright=3200, thump=110, strength=1.0):
     n = int(.05 * RATE)
