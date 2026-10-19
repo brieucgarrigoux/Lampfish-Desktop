@@ -9,7 +9,7 @@
     ip: '<rect x="3.5" y="5" width="17" height="11" rx="1.5"/><path d="M8 20h8M12 16v4"/>',
     world: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 3.5 5.4 3.5 8.5s-1 5.9-3.5 8.5c-2.5-2.6-3.5-5.4-3.5-8.5s1-5.9 3.5-8.5z"/>',
     box: '<rect x="3.5" y="12" width="17" height="7" rx="1.5"/><path d="M7.5 15.5h.01M11 15.5h.01M8 12 6 5M16 12l2-7"/>',
-    dns: '<path d="M4 6h16M4 12h16M4 18h10"/>',
+    dns: '<rect x="3.5" y="4.5" width="17" height="6" rx="1.6"/><rect x="3.5" y="13.5" width="17" height="6" rx="1.6"/><path d="M7 7.5h.01M7 16.5h.01M11 7.5h6M11 16.5h6"/>',
     mask: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 12h16"/>',
     mac: '<rect x="5" y="5" width="14" height="14" rx="2"/><path d="M9 9h6v6H9z"/>',
     card: '<rect x="3.5" y="7" width="17" height="10" rx="1.5"/><path d="M7 17v2.5M11 17v2.5M15 17v2.5M7.5 10.5h4"/>',

@@ -222,7 +222,10 @@ namespace Bramble
                 Step("gateway", gateway == null ? Failure("No router") : Ping(gateway.ToString(), 10));
                 var internet = Ping("1.1.1.1", 10);
                 Step("internet", internet);
-                Step("dns", Dns());
+                var lookup = Stopwatch.StartNew();
+                object resolved = Dns();
+                if (lookup.ElapsedMilliseconds < 700) Thread.Sleep(700 - (int)lookup.ElapsedMilliseconds);
+                Step("dns", resolved);
                 var down = Throughput(false);
                 Step("download", down);
                 var up = Throughput(true);
