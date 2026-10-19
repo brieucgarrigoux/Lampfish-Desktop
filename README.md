@@ -1,4 +1,4 @@
-<p align="center"><img src="brand/app-icon/app-icon-violet-whiteline.png" alt="Bramble" width="128"></p>
+<p align="center"><img src="brand/app-icon/app-icon-violet.png" alt="Bramble" width="128"></p>
 
 <h1 align="center">Bramble Desktop</h1>
 
@@ -72,12 +72,8 @@ Bramble follows [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`.
 
 [MIT](LICENSE)
 
-## Badge
-
-If you share a setup, a wallpaper or a screenshot made with Bramble, you can credit it with this badge.
-
-<p align="center"><img src="brand/badge/powered-by-bramble-pill.png" alt="Powered by Bramble" width="220"></p>
-
-```markdown
-![Powered by Bramble](brand/badge/powered-by-bramble-pill.png)
-```
+<p align="center">
+  <img src="brand/logo/logo-bramble.png" alt="The Bramble berry" width="56">
+  &nbsp;&nbsp;
+  <img src="brand/badge/powered-by-bramble-pill.png" alt="Powered by Bramble" width="200">
+</p>

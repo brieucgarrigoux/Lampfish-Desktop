@@ -1,4 +1,4 @@
-"""Builds src/icon.ico from the app icon (brand/app-icon/app-icon-violet-whiteline.png)
+"""Builds src/icon.ico from the app icon (brand/app-icon/app-icon-violet.png)
 and the in-app PNGs (header, About) from the official berry (brand/logo/berry-color.png).
 
 Usage: python src/icon.py
@@ -8,7 +8,7 @@ import io, os, struct, time
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ICON = os.path.join(ROOT, 'brand', 'app-icon', 'app-icon-violet-whiteline.png')
+ICON = os.path.join(ROOT, 'brand', 'app-icon', 'app-icon-violet.png')
 SOURCE = os.path.join(ROOT, 'brand', 'logo', 'berry-color.png')
 LOGO = os.path.join(ROOT, 'brand', 'logo')
 SIZES = (16, 20, 24, 32, 40, 48, 64, 128, 256)
