@@ -89,8 +89,8 @@
     c.dataset.key = key;
     c.innerHTML = `<span class="reticle"></span>
       <header>${glyph(icon)}<div><h3></h3><p class="m-model"></p></div></header>
-      <div class="m-measure"><span class="m-value">–</span><span class="m-word"></span></div>
-      ${extra || ''}${CURVE}<p class="m-facts"></p>`;
+      <div class="m-display"><div class="m-measure"><span class="m-value">–</span><span class="m-word"></span></div>
+      ${extra || ''}${CURVE}</div><p class="m-facts"></p>`;
     c.querySelector('h3').textContent = title;
     c.querySelector('.m-model').textContent = subtitle || '';
     c.querySelector('.m-model').title = subtitle || '';

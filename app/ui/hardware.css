@@ -20,7 +20,6 @@
 .m-card.chosen { background: var(--group-up); }
 .m-card.chosen .reticle { display: block; }
 .m-card--large { grid-column: 1 / -1; }
-@container hardware (max-width: 560px) { .m-card--large { grid-column: auto; } }
 .m-card header { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .m-card header > div { min-width: 0; }
 .m-card h3 { margin: 0; font-size: 13px; font-weight: 600; color: var(--text-soft); }
@@ -63,7 +62,6 @@
 .m-list-screens span { flex: none; font: 12px var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); }
 
 .only-hardware .row .value { max-width: 60%; overflow: hidden; text-overflow: ellipsis; }
-.m-card > .m-bar { flex: none; }
 .m-card[data-level="up"] .m-bar i { background: var(--danger); }
 
 .cell-relief { display: flex; align-items: center; gap: 0; }
