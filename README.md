@@ -2,7 +2,7 @@
 
 <h1 align="center">Bramble Desktop</h1>
 
-<p align="center">A Windows app to customize and monitor your PC, in one dark, quiet window.</p>
+<p align="center">Personalize and monitor your Windows PC from one calm, dark window.</p>
 
 <p align="center">
   <a href="#services">Services</a> ·
@@ -11,7 +11,7 @@
   <a href="CHANGELOG.md">Changelog</a>
 </p>
 
-Bramble sits in the system tray and brings together what usually takes five different tools. It needs no administrator rights, no account and no server, and it collects no data: everything stays on your PC.
+Bramble lives in the system tray and gathers wallpapers, icons, cursors, sounds, desktop layout, disk usage, network, hardware and running programs in a single app, instead of a patchwork of separate tools. It needs no administrator rights, no account and no server, and it collects no data: everything stays on your PC.
 
 ## Services
 
