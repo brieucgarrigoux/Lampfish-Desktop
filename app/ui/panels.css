@@ -1,0 +1,19 @@
+.handle { position: fixed; top: 0; bottom: 0; width: 8px; z-index: 4; cursor: col-resize; touch-action: none; outline: none; }
+.handle::after { content: ""; position: absolute; top: 0; bottom: 0; left: 3px; width: 2px; background: var(--accent); opacity: 0; transition: opacity .15s .1s; }
+.handle:hover::after, .handle:focus-visible::after, .resizing .handle::after { opacity: 1; transition-delay: 0s; }
+
+body.resizing { cursor: col-resize; user-select: none; }
+body.resizing iframe { pointer-events: none; }
+
+.panel { container: panel / inline-size; }
+
+@container panel (min-width: 520px) {
+  .panel > .only-wallpaper, .panel > .only-station { display: block; columns: 2; column-gap: 18px; }
+  .panel > div > h2 { break-after: avoid; margin: 8px 0 10px; }
+  .panel > div > .group { break-inside: avoid; margin-bottom: 10px; }
+  .panel > div > h2:first-child { margin-top: 0; }
+}
+
+@container panel (max-width: 280px) {
+  .caption small { display: none; }
+}

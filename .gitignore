@@ -1,0 +1,42 @@
+# Build output (published as a GitHub release, not in the repository)
+/Bramble.exe
+/Bramble.exe.config
+/dist/
+__pycache__/
+
+# Downloaded by build.ps1 (WebView2 SDK from NuGet)
+app/lib/
+
+# Caches rebuilt on the fly
+app/icon-cache/
+app/cursor-cache/
+app/trash/
+app/request.txt
+
+# Personal data: settings, logs, the user's own icons, cursors and sounds
+/settings.json
+/errors.log
+/icons/
+/cursors/
+sounds/log.txt
+sounds/My sounds/
+
+# Shortcuts dropped in the wallpaper folder
+wallpapers/*.lnk
+
+# Logo production files: only the brand files the app uses are published
+brand/inspirations/
+brand/logo/berry-white.png
+brand/logo/berry-black.png
+brand/badge/*
+!brand/badge/powered-by-bramble-color-dark.png
+src/badge.py
+src/logo_berry.py
+src/resources/
+
+# System files
+Thumbs.db
+desktop.ini
+
+# Empty clone made by GitHub Desktop inside the folder
+/Bramble Desktop/

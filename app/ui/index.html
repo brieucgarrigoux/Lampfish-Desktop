@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bramble</title>
+<link rel="stylesheet" href="main.css">
+<link rel="stylesheet" href="sounds.css">
+<link rel="stylesheet" href="icons.css">
+<link rel="stylesheet" href="arrange.css">
+<link rel="stylesheet" href="mouse.css">
+<link rel="stylesheet" href="disk.css">
+<link rel="stylesheet" href="hardware.css">
+<link rel="stylesheet" href="network.css">
+<link rel="stylesheet" href="home.css">
+<link rel="stylesheet" href="panels.css">
+</head>
+<body data-view="wallpaper">
+
+<nav class="rail" aria-label="Services" data-resizable="right" data-variable="--width-rail" data-min="76" data-max="230" data-initial="92">
+  <button class="logo-home service" data-view="home" title="Home" aria-label="Home"><img class="logo" src="/brand/logo/logo-bramble-192.png" alt=""></button>
+  <button class="service" data-view="wallpaper" aria-current="page">
+    <span class="reticle"></span>
+    <svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="m3.5 16 5-5 4 4 2.5-2.5 5.5 5.5"/><circle cx="15.5" cy="9.5" r="1.3"/></svg>
+    Wallpaper
+  </button>
+  <button class="service" data-view="icons">
+    <span class="reticle"></span>
+    <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="m12 7.8 1.2 2.6 2.8.3-2.1 1.9.6 2.8-2.5-1.4-2.5 1.4.6-2.8-2.1-1.9 2.8-.3z"/></svg>
+    Icons
+  </button>
+  <button class="service" data-view="arrange">
+    <span class="reticle"></span>
+    <svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><rect x="14" y="14" width="6" height="6" rx="1.2"/></svg>
+    Arrange
+  </button>
+  <hr class="rail-sep">
+  <button class="service" data-view="mouse">
+    <span class="reticle"></span>
+    <svg viewBox="0 0 24 24"><path d="M6 3.5 18 12.3l-5.6.8-3.2 4.9z"/><path d="m12.4 13.1 3.6 6.4"/></svg>
+    Mouse
+  </button>
+  <button class="service" data-view="station">
+    <span class="reticle"></span>
+    <svg viewBox="0 0 24 24"><path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/></svg>
+    Sounds
+  </button>
+  <hr class="rail-sep">
+  <button class="service" data-view="files">
+    <span class="reticle"></span>
+    <svg viewBox="0 0 24 24"><path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/><path d="M12 11v5M12 11a2.5 2.5 0 0 1 2.5 2.5"/></svg>
+    Folders
+  </button>
+  <button class="service" data-view="hardware">
+    <span class="reticle"></span>
+    <svg viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/><rect x="9.5" y="9.5" width="5" height="5" rx=".8"/><path d="M9.5 3.5v3M14.5 3.5v3M9.5 17.5v3M14.5 17.5v3M3.5 9.5h3M3.5 14.5h3M17.5 9.5h3M17.5 14.5h3"/></svg>
+    Hardware
+  </button>
+  <button class="service" data-view="network">
+    <span class="reticle"></span>
+    <svg viewBox="0 0 24 24"><path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.2" r="1.1"/></svg>
+    Network
+  </button>
+  <button class="service service--settings" data-view="settings">
+    <span class="reticle"></span>
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.2M12 18.3v2.2M20.5 12h-2.2M5.7 12H3.5M18 6l-1.6 1.6M7.6 16.4 6 18M18 18l-1.6-1.6M7.6 7.6 6 6"/><circle cx="12" cy="12" r="6.3"/></svg>
+    Settings
+  </button>
+</nav>
+
+<main class="contents">
+
+  <section class="view view--home only-home" aria-label="Home">
+    <div class="home-header">
+      <img src="/brand/badge/powered-by-bramble-color-dark.png" alt="Powered by Bramble">
+      <div class="h-clock"><span class="h-time" id="h-time"></span><span class="h-date" id="h-date"></span></div>
+      <div class="h-weather" id="h-weather" hidden>
+        <svg class="h-weather__icon" id="h-weather-icon" viewBox="0 0 48 48" aria-hidden="true"></svg>
+        <div class="h-weather__text"><span class="h-weather__temp" id="h-weather-temp"></span><span class="h-weather__what" id="h-weather-what"></span></div>
+        <div class="h-weather__details"><span id="h-weather-city"></span><span id="h-weather-details"></span></div>
+      </div>
+    </div>
+    <button class="h-wallpaper" id="h-wallpaper" aria-label="Wallpaper">
+      <span class="reticle"></span>
+      <div class="preview" id="h-wallpaper-preview"></div>
+      <div class="h-desktop" id="h-desktop" aria-hidden="true"></div>
+    </button>
+    <div class="h-tiles" id="h-tiles"></div>
+  </section>
+
+  <section class="view only-wallpaper" aria-label="Wallpaper">
+    <h1>Wallpaper</h1>
+    <div class="hero" id="hero">
+      <div class="preview" id="hero-preview"></div>
+      <div class="effects" id="hero-effects"></div>
+      <div class="strip">
+        <div class="what"><span class="title" id="hero-name"></span><span class="type" id="hero-type"></span></div>
+        <button class="pause" id="pause">Pause</button>
+      </div>
+    </div>
+
+    <div class="title-section">
+      <h2>Library<span class="count" id="count"></span></h2>
+      <button class="link" id="folder">Open folder</button>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section class="view view--mouse only-mouse" aria-label="Mouse">
+    <h1>Mouse</h1>
+    <div class="target showcase-mouse">
+      <div class="showcase__header">
+        <div class="target__what"><span class="title" id="s-theme"></span><span class="path">Pick a role, then a cursor from the library to replace it</span></div>
+        <div class="size-cursor" role="group" aria-label="Pointer size">
+          <button class="size-cursor__step" id="s-minus" aria-label="Smaller" title="Smaller"><svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg></button>
+          <span class="size-cursor__value"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5 18 12.3l-5.6.8-3.2 4.9z"/></svg><b id="s-size-label"></b></span>
+          <button class="size-cursor__step" id="s-plus" aria-label="Larger" title="Larger"><svg viewBox="0 0 24 24"><path d="M6 12h12M12 6v12"/></svg></button>
+        </div>
+        <button class="button" id="s-initial">Reset to default</button>
+      </div>
+      <div class="roles" id="s-roles"></div>
+    </div>
+    <div class="title-section title-section--tabs">
+      <div class="segments tabs" id="s-tabs" role="tablist" aria-label="Cursor library"></div>
+      <button class="link" id="s-folder">Open folder</button>
+    </div>
+    <div id="s-library"><div class="waiting">Reading cursors</div></div>
+  </section>
+
+  <section class="view view--station only-station" aria-label="Sounds">
+    <h1>Sounds</h1>
+    <div class="banner-sound" id="banner-sound">
+      <div class="knob-block">
+        <div class="knob" id="knob" role="slider" tabindex="0" aria-label="Volume" aria-valuemin="0" aria-valuemax="100" title="Volume: drag left or right">
+          <div class="knob__ring" id="knob-ring" aria-hidden="true"></div>
+          <div class="knob__button" aria-hidden="true"><i class="knob__marker"></i></div>
+        </div>
+        <span class="knob__legend">Volume <output id="volume-value"></output></span>
+      </div>
+      <div class="screen-sound">
+        <div class="screen-sound__up">
+          <span class="title" id="banner-event"></span>
+          <span class="screen-sound__state" id="banner-state"></span>
+        </div>
+        <span class="path" id="banner-sound-name"></span>
+        <div class="level" id="level" aria-hidden="true"></div>
+      </div>
+      <button class="keycap keycap-listen" id="banner-listen">
+        <svg class="icon-playback" viewBox="0 0 24 24"><path d="M8 5.5 18.5 12 8 18.5z"/></svg>
+        <svg class="icon-stop" viewBox="0 0 24 24"><path d="M7 7h10v10H7z"/></svg>
+        <span>Listen</span>
+      </button>
+    </div>
+
+    <div class="sounds-zones">
+      <section class="zone-sounds zone-sounds--events" aria-labelledby="title-events">
+        <header class="zone-sounds__header">
+          <span class="step">1</span>
+          <div><h2 id="title-events">On this PC</h2><p>Pick an event, turn it on or off</p></div>
+        </header>
+        <div class="events" id="events"></div>
+      </section>
+      <section class="zone-sounds zone-sounds--library" aria-labelledby="title-library">
+        <header class="zone-sounds__header">
+          <span class="step">2</span>
+          <div><h2 id="title-library">Library<span class="count" id="sounds-count"></span></h2><p>Sound for <strong id="sounds-for"></strong></p></div>
+          <button class="link" id="sounds-folder">Open folder</button>
+        </header>
+        <div class="packs" id="packs"></div>
+      </section>
+    </div>
+    <input type="file" id="sounds-files" accept="audio/*,.wav,.mp3,.m4a,.aac,.ogg,.oga,.opus,.flac,.webm" multiple hidden>
+  </section>
+
+  <section class="view view--icons only-icons" aria-label="Icons">
+    <h1>Icons</h1>
+    <div class="target" id="target">
+      <div class="target__icon"><span class="reticle"></span><img id="target-icon" alt=""></div>
+      <div class="target__what"><span class="title" id="target-name"></span><span class="path" id="target-path"></span></div>
+      <div class="target__actions">
+        <button class="button" id="target-browse">Browse</button>
+        <button class="button" id="target-open">Open</button>
+        <button class="button" id="target-initial">Reset to default</button>
+      </div>
+    </div>
+
+    <div class="title-section title-section--tabs">
+      <div class="segments tabs" id="tabs" role="tablist" aria-label="Icon library"></div>
+      <button class="link" id="icons-folder">Open folder</button>
+    </div>
+    <div class="library" id="library"></div>
+  </section>
+
+  <section class="view view--arrange only-arrange" aria-label="Arrange">
+    <h1>Arrange</h1>
+    <div class="map" id="map" role="group" aria-label="Screen map"><div class="empty">Reading the desktop</div></div>
+
+    <div class="title-section">
+      <h2>Arrangement</h2>
+      <span class="config">One click arranges the icons right away, in the last sort order</span>
+    </div>
+    <div class="arrangements" id="arrangements" role="radiogroup" aria-label="Arrangement"></div>
+
+    <div class="title-section">
+      <h2>Layouts<span class="count" id="layout-count"></span></h2>
+      <span class="config" id="config"></span>
+    </div>
+    <div class="group layouts" id="layouts"></div>
+    <form class="save" id="save" autocomplete="off">
+      <input id="layout-name" maxlength="40" placeholder="Layout name" aria-label="Layout name">
+      <button class="button button--accent">Save</button>
+    </form>
+  </section>
+
+  <section class="view view--files only-files" aria-label="Folders">
+    <h1>Folders</h1>
+    <div class="bar-crumbs">
+      <nav class="crumbs" id="f-crumbs" aria-label="Location"></nav>
+      <div class="crumbs-actions">
+        <button class="link" id="f-copy" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6.5a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"/></svg>Copy path</button>
+        <button class="link" id="f-show" hidden>Show in File Explorer</button>
+      </div>
+    </div>
+    <div class="skeleton" id="f-zone">
+      <canvas id="f-canvas" role="img" aria-label="The folder's contents as rings, detailed in the Contents list of the panel"></canvas>
+      <div class="center" id="f-center"><span class="name-center"></span><span class="value-center"></span><span class="detail-center"></span></div>
+    </div>
+    <p class="footer-files" id="f-footer"></p>
+  </section>
+
+  <section class="view view--network only-network" aria-label="Network">
+    <h1>Network</h1>
+    <div class="target network-header" id="r-header">
+      <svg class="network-type" id="r-type" viewBox="0 0 24 24" aria-hidden="true"></svg>
+      <div class="target__what"><span class="title-row"><span class="title" id="r-name">Reading the connection</span><span class="pill trust" id="r-trust" hidden></span></span><span class="path" id="r-detail"></span></div>
+      <div class="bars" id="r-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <div class="network-ip"><span class="small">Local IP</span><button class="ip copyable" id="r-ip" title="Copy"></button></div>
+    </div>
+
+    <div class="tester" id="r-tester">
+      <div class="dial-block">
+        <div class="gauge" id="r-gauge">
+          <div class="gauge__bezel" aria-hidden="true"></div>
+          <svg class="gauge__dial" viewBox="0 0 260 260" aria-hidden="true">
+            <g id="r-leds"></g>
+            <g id="r-ticks"></g>
+            <g class="needle" id="r-needle"><path d="M127.8 136 130 30l2.2 106z"/><path class="needle__queue" d="M128.6 130h2.8l-.6 18h-1.6z"/></g>
+            <circle class="pivot" cx="130" cy="130" r="10"/>
+            <circle class="pivot__core" cx="130" cy="130" r="3.5"/>
+          </svg>
+          <div class="gauge__glass" aria-hidden="true"></div>
+        </div>
+        <div class="playback">
+          <span class="playback__value" id="r-value">0</span><span class="playback__unit" id="r-unit">Mbit/s</span>
+          <span class="playback__phase" id="r-phase">Ready</span>
+        </div>
+      </div>
+      <div class="tester__side">
+        <div class="tester__header">
+          <div class="tester__title"><h2>Connection test</h2><p class="server" id="r-server"></p></div>
+          <button class="keycap keycap-test" id="r-test" data-state="ready">
+            <svg class="i-ready" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.8 16.5a8.2 8.2 0 1 1 16.4 0"/><path d="m12 16.5 4-5"/><circle cx="12" cy="16.5" r="1.4"/></svg>
+            <svg class="i-progress" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 1 1-8.5 8.5"/></svg>
+            <svg class="i-done" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4v4h-4"/></svg>
+            <span>Run the test</span>
+          </button>
+        </div>
+        <ol class="steps" id="r-steps"></ol>
+        <div class="keys" id="r-keys"></div>
+      </div>
+    </div>
+
+    <div class="title-section"><h2>Line quality</h2><span class="config">Details of the last test</span></div>
+    <div class="group list-stats" id="r-results"></div>
+
+    <div class="title-section"><h2>What the connection can do</h2><span class="config">From the last test</span></div>
+    <div class="group list-stats" id="r-usages"></div>
+
+    <div class="title-section">
+      <h2>Live traffic</h2>
+      <span class="legend-traffic"><span class="received" id="r-received"></span><span class="sent" id="r-sent"></span></span>
+    </div>
+    <div class="traffic"><svg id="r-curve" viewBox="0 0 600 120" preserveAspectRatio="none" aria-hidden="true">
+      <path class="area-received" id="r-area-received"/><path class="row-received" id="r-row-received"/><path class="row-sent" id="r-row-sent"/>
+    </svg></div>
+
+    <div class="title-section">
+      <h2>Test history<span class="count" id="r-count-history"></span></h2>
+      <button class="link" id="r-forget">Clear</button>
+    </div>
+    <div class="group history-tests" id="r-history"></div>
+  </section>
+
+  <section class="view view--hardware only-hardware" aria-label="Hardware">
+    <h1>Hardware</h1>
+    <div class="board" id="m-schema"><div class="empty">Reading the hardware</div></div>
+  </section>
+
+  <section class="view view--settings only-settings" aria-label="Settings">
+    <h1>Settings</h1>
+
+    <h2 class="settings-title">General</h2>
+    <div class="group">
+      <div class="row row--setting">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 3.5 5.4 3.5 8.5s-1 5.9-3.5 8.5c-2.5-2.6-3.5-5.4-3.5-8.5s1-5.9 3.5-8.5z"/></svg><span>Language<small>Automatic follows the Windows language</small></span></span>
+        <div class="segments" id="language" role="radiogroup" aria-label="Language"><button role="radio" data-value="auto">Automatic</button><button role="radio" data-value="en">English</button><button role="radio" data-value="fr">Français</button></div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="startup">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v8"/><path d="M7 6.3a7 7 0 1 0 10 0"/></svg><span>Open with Windows<small>Bramble starts on its own with the computer, without opening its window</small></span></span>
+      </label>
+    </div>
+
+    <h2 class="settings-title">Data</h2>
+    <div class="group">
+      <button class="row action" id="folder-bramble"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/></svg><span>Bramble folder<small id="about-folder"></small></span></span><svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+      <button class="row action" id="log-errors"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h7l4 4v13H7z"/><path d="M14 3.5v4h4M10 12h5M10 15.5h5"/></svg><span>Error log<small id="about-errors"></small></span></span><svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+    </div>
+
+    <h2 class="settings-title">About</h2>
+    <div class="group about">
+      <img src="/brand/logo/logo-bramble-192.png" alt="">
+      <div><strong>Bramble</strong><span id="about-version"></span><small>Customize and monitor Windows, in one window</small></div>
+    </div>
+
+    <div class="group group--danger">
+      <button class="row action stop" id="quit"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l4-4-4-4M14 12H4"/></svg><span>Quit Bramble<small>Stops the wallpaper and every service until next start</small></span></span></button>
+    </div>
+  </section>
+</main>
+
+<aside class="panel" data-resizable="left" data-variable="--width-panel" data-min="260" data-max="640" data-initial="340">
+  <div class="only-wallpaper">
+    <h2>Animation</h2>
+    <div class="group">
+      <div class="setting">
+        <label for="light"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/></svg><span>Light<small>Glow or video brightness</small></span></span><output id="light-value"></output></label>
+        <input type="range" id="light" min="0" max="100" step="5">
+        <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div class="setting">
+        <label for="speed"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 16.5a7.5 7.5 0 1 1 15 0"/><path d="m12 16.5 3.5-4.5"/></svg><span>Speed<small>Animation pace</small></span></span><output id="speed-value"></output></label>
+        <input type="range" id="speed" min="0" max="100" step="5">
+        <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+    </div>
+    <h2>Effects</h2>
+    <div class="group">
+      <div class="setting">
+        <label for="blur"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" stroke-dasharray="2 3"/><circle cx="12" cy="12" r="3.5"/></svg><span>Blur<small>Softens the wallpaper under icons</small></span></span><output id="blur-value"></output></label>
+        <input type="range" id="blur" min="0" max="100" step="5">
+        <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div class="setting">
+        <label for="saturation"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5s6 6.4 6 10.5a6 6 0 0 1-12 0c0-4.1 6-10.5 6-10.5z"/></svg><span>Saturation<small>Color intensity</small></span></span><output id="saturation-value"></output></label>
+        <input type="range" id="saturation" min="0" max="100" step="5">
+        <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div class="setting">
+        <label for="dim"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg><span>Dim<small>Darkens so icons stay readable</small></span></span><output id="dim-value"></output></label>
+        <input type="range" id="dim" min="0" max="100" step="5">
+        <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+    </div>
+    <h2>Display</h2>
+    <div class="group">
+      <div class="choice">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5V17h13.5M3.5 7H17v13.5"/></svg><span>Framing<small>Crop it or show all of it</small></span></span>
+        <div class="segments" id="fit" role="radiogroup" aria-label="Framing"><button role="radio" data-value="fill">Fill</button><button role="radio" data-value="fit">Fit</button></div>
+      </div>
+      <div class="choice">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="7.5" width="13" height="11" rx="1.5"/><path d="M7.5 4.5h11a2 2 0 0 1 2 2v9"/></svg><span>Slideshow<small>Changes wallpaper by itself</small></span></span>
+        <div class="segments" id="slideshow" role="radiogroup" aria-label="Slideshow"><button role="radio" data-value="0">No</button><button role="radio" data-value="15">15 min</button><button role="radio" data-value="60">1 h</button><button role="radio" data-value="1440">1 day</button></div>
+      </div>
+    </div>
+    <h2>Power saving</h2>
+    <div class="group">
+      <label class="toggle">
+        <input type="checkbox" id="pauseAuto">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg><span>Pause in full screen<small>When a window covers the screen</small></span></span>
+      </label>
+      <label class="toggle">
+        <input type="checkbox" id="pauseOnBattery">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="8" width="15" height="8" rx="1.5"/><path d="M21 11v2M6.5 11v2"/></svg><span>Pause on battery<small>Freezes when unplugged</small></span></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="only-station">
+    <h2>Sounds</h2>
+    <div class="group">
+      <label class="toggle">
+        <input type="checkbox" id="power">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v8"/><path d="M7 6.3a7 7 0 1 0 10 0"/></svg><span>Sounds on<small>Plays the events that are on</small></span></span>
+      </label>
+      <label class="toggle">
+        <input type="checkbox" id="silence">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="m16 9.5 5 5M21 9.5l-5 5"/></svg><span>Silent<small>Logs everything, plays nothing</small></span></span>
+      </label>
+    </div>
+    <h2>Status</h2>
+    <div class="group">
+      <div class="row"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="9" width="17" height="7" rx="1.5"/><path d="M7.5 12.5h3M13.5 12.5h3"/></svg><span>My dock<small id="station-name"></small></span></span><span class="value" id="station-state"></span></div>
+      <div class="row station-actions"><button class="link" id="station-choose"></button><button class="link link--discret" id="station-forget">Forget</button></div>
+      <div class="row"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3.5v4M15 3.5v4M7 7.5h10v3a5 5 0 0 1-10 0zM12 15.5v5"/></svg><span>Power<small>Charger or battery</small></span></span><span class="value" id="sounds-mains"></span></div>
+    </div>
+    <h2>History</h2>
+    <div class="group" id="history"></div>
+  </div>
+
+  <div class="only-icons">
+    <h2 id="title-custom">Customized folders</h2>
+    <div class="group" id="list-custom"></div>
+    <h2>Desktop folders</h2>
+    <div class="group" id="list-desktop"></div>
+    <h2>Display</h2>
+    <div class="group">
+      <div class="choice">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span>Preview size<small>More or fewer icons on screen</small></span></span>
+        <div class="segments" id="size-previews" role="radiogroup" aria-label="Preview size"><button role="radio" data-value="small">Small</button><button role="radio" data-value="medium">Medium</button><button role="radio" data-value="large">Large</button></div>
+      </div>
+    </div>
+    <h2>Applying</h2>
+    <div class="group">
+      <label class="toggle">
+        <input type="checkbox" id="under-folders">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 6.5v11a2 2 0 0 0 2 2h4M3.5 6.5a2 2 0 0 1 2-2h3.2l1.5 2h5.3a2 2 0 0 1 2 2v1"/><path d="M12.5 13.5v5a1.5 1.5 0 0 0 1.5 1.5h5a1.5 1.5 0 0 0 1.5-1.5v-3a1.5 1.5 0 0 0-1.5-1.5h-2.5l-1-1.5h-1.5a1.5 1.5 0 0 0-1.5 1.5z"/></svg><span>Subfolders too<small>Same icon for the folders inside</small></span></span>
+      </label>
+    </div>
+    <h2>Maintenance</h2>
+    <div class="group">
+      <button class="row action" id="icons-refresh"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4v4h-4"/></svg><span>Refresh icons<small>If File Explorer keeps the old one</small></span></span><svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+      <button class="row action stop" id="icons-reset-all"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4v4h4"/></svg><span id="reset-all-title">Reset everything<small id="reset-all-help">Every folder gets its icon back</small></span></span></button>
+    </div>
+    <h2>File Explorer</h2>
+    <div class="group">
+      <label class="toggle">
+        <input type="checkbox" id="menu-click">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3.5" width="10" height="17" rx="5"/><path d="M12 3.5v6M12 9.5h5"/></svg><span>Right-click menu<small>Adds “Change icon”</small></span></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="only-arrange">
+    <h2>Sort icons</h2>
+    <div class="group">
+      <div class="choice" id="choice-screen">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="12" rx="1.5"/><path d="M9 20h6M12 16.5V20"/></svg><span>Screen<small>Screen filled by the sort</small></span></span>
+        <div class="segments" id="screen-target" role="radiogroup" aria-label="Screen"></div>
+      </div>
+      <div class="sorts">
+        <p class="help-group">One click arranges the desktop icons right away</p>
+        <div class="sorts__grid">
+        <button class="button-sort" data-sort="name"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 18 8 6l3.5 12M5.7 14h4.6M16.5 6v12M13.5 15l3 3 3-3"/></svg><span>Name</span></button>
+        <button class="button-sort" data-sort="type"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="7.5" cy="7.5" r="3"/><rect x="13.5" y="4.5" width="6" height="6" rx="1"/><path d="m7.5 13.5 3.5 6h-7z"/><circle cx="16.5" cy="16.5" r="3"/></svg><span>Type</span></button>
+        <button class="button-sort" data-sort="date"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14" rx="2"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></svg><span>Date modified</span></button>
+        <button class="button-sort" data-sort="size"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="13.5" width="7" height="7" rx="1.2"/><path d="M13.5 3.5h7v7M20.5 3.5l-8 8"/></svg><span>Size</span></button>
+        <button class="button-sort button-sort--large" data-sort="categories"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><rect x="14" y="14" width="6" height="6" rx="1.2"/></svg><span>Categories</span></button>
+        </div>
+      </div>
+    </div>
+    <h2>Display</h2>
+    <div class="group">
+      <label class="toggle">
+        <input type="checkbox" id="r-auto">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 10-10M14 6.5V4M17.5 10H20M16.6 7.4l1.8-1.8M10.5 4.5l.8 1.2M19.5 13.5l-1.2-.8"/></svg><span>Auto arrange<small>Tight columns, no gaps</small></span></span>
+      </label>
+      <label class="toggle">
+        <input type="checkbox" id="r-grid">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h16M4 15h16M9 4v16M15 4v16"/></svg><span>Align to grid<small>Snaps moved icons</small></span></span>
+      </label>
+      <label class="toggle">
+        <input type="checkbox" id="r-hide">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12s3-6 8.5-6 8.5 6 8.5 6-3 6-8.5 6-8.5-6-8.5-6z"/><circle cx="12" cy="12" r="2.5"/><path d="M4 20 20 4"/></svg><span>Hide icons<small>Empty desktop, icons hidden</small></span></span>
+      </label>
+    </div>
+    <h2>Category order</h2>
+    <p class="help-section">Drag a row to change the order used by the Categories sort</p>
+    <div class="group" id="categories"></div>
+    <h2>Screens</h2>
+    <div class="group">
+      <label class="toggle">
+        <input type="checkbox" id="r-restore">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4v4h4"/></svg><span>Follow screens<small>Brings back the saved layout</small></span></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="only-mouse">
+    <h2>Pointer</h2>
+    <div class="group">
+      <div class="setting">
+        <label for="s-size"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3.5 18 13l-6 .8-3.4 5.2z"/><path d="M15.5 17.5h5M18 15v5"/></svg><span>Pointer size<small>Makes every cursor bigger</small></span></span><output id="s-size-value"></output></label>
+        <input type="range" id="s-size" data-setting="size" min="1" max="15" step="1">
+        <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="s-shadow" data-setting="shadow">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3.5 16 11.5l-5 .7-2.9 4.3z"/><path d="M9.5 20.5c3-.4 6.5-2.5 9-6" stroke-dasharray="1.5 2.5"/></svg><span>Pointer shadow<small>Soft shadow under the cursor</small></span></span>
+      </label>
+    </div>
+    <h2>Movement</h2>
+    <div class="group">
+      <div class="setting">
+        <label for="s-speed"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 16.5a7.5 7.5 0 1 1 15 0"/><path d="m12 16.5 3.5-4.5"/></svg><span>Pointer speed<small>Distance for the same gesture</small></span></span><output id="s-speed-value"></output></label>
+        <input type="range" id="s-speed" data-setting="speed" min="1" max="20" step="1">
+        <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="s-precision" data-setting="precision">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/></svg><span>Enhanced precision<small>Speeds up with quick moves</small></span></span>
+      </label>
+    </div>
+    <h2>Clicks and wheel</h2>
+    <div class="group">
+      <div class="setting">
+        <label for="s-doubleClick"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3.5" width="10" height="17" rx="5"/><path d="M12 3.5v6M10 7.5h4"/></svg><span>Double-click<small>Time between the two clicks</small></span></span><output id="s-doubleClick-value"></output></label>
+        <input type="range" id="s-doubleClick" data-setting="doubleClick" min="200" max="900" step="50">
+        <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div class="setting">
+        <label for="s-knob"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3.5" width="10" height="17" rx="5"/><path d="M12 7v4"/></svg><span>Wheel<small>Lines per notch</small></span></span><output id="s-knob-value"></output></label>
+        <input type="range" id="s-knob" data-setting="knob" min="1" max="20" step="1">
+        <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="s-invert" data-setting="invert">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h13l-3-3M20 16H7l3 3"/></svg><span>Swap buttons<small>Primary click on the right</small></span></span>
+      </label>
+    </div>
+    <h2>Extras</h2>
+    <div class="group">
+      <label class="toggle">
+        <input type="checkbox" id="s-trails" data-setting="trails">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 21 10.5l-4.3.6-2.4 3.7z"/><path d="M3.5 13.5l4-2.5M4.5 18l5-3.5M8.5 21l4-3"/></svg><span>Pointer trails<small>A trail behind the cursor</small></span></span>
+      </label>
+      <label class="toggle">
+        <input type="checkbox" id="s-sonar" data-setting="sonar">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="2"/><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="9" stroke-dasharray="2 3"/></svg><span>Locate with Ctrl<small>Ctrl shows where the pointer is</small></span></span>
+      </label>
+      <label class="toggle">
+        <input type="checkbox" id="s-hide" data-setting="hide">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12s3-6 8.5-6 8.5 6 8.5 6-3 6-8.5 6-8.5-6-8.5-6z"/><circle cx="12" cy="12" r="2.5"/><path d="M4 20 20 4"/></svg><span>Hide while typing<small>Hides while you type</small></span></span>
+      </label>
+      <label class="toggle">
+        <input type="checkbox" id="s-buttonInitial" data-setting="buttonInitial">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="13" width="11" height="6.5" rx="1.5"/><path d="M13 3.5l7 5-3 .4-1.6 2.5z"/></svg><span>Snap to OK<small>Jumps to the OK button</small></span></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="only-files">
+    <h2>Drive or folder analyzed</h2>
+    <div class="group" id="f-sources"></div>
+    <div class="group">
+      <button class="row action" id="f-restart"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4v4h-4"/></svg><span>Run the analysis again<small>Reads the contents again</small></span></span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+    </div>
+    <div class="title-panel" id="f-contents-title" hidden><h2>Contents</h2><button class="link" id="f-copy-names">Copy names</button></div>
+    <div class="group" id="f-contents" hidden></div>
+    <h2 id="f-types-title" hidden>Types</h2>
+    <div class="group" id="f-types" hidden></div>
+  </div>
+
+  <div class="only-network">
+    <h2 id="r-security-title">Trust and security</h2>
+    <div class="group" id="r-security"></div>
+    <h2>Addresses</h2>
+    <p class="help-section">Click an address to copy it</p>
+    <div class="group" id="r-addresses"></div>
+    <h2 id="r-wifi-title">Wi-Fi</h2>
+    <div class="group" id="r-wifi"></div>
+    <h2>Network adapter</h2>
+    <div class="group" id="r-card"></div>
+  </div>
+
+  <div class="only-hardware" id="m-details"></div>
+
+</aside>
+
+<div class="drop" aria-hidden="true"><span class="reticle"></span><p>Drop to add</p></div>
+<div class="toast" id="toast" role="status" aria-live="polite"><span id="toast-text"></span><button id="undo">Undo</button><i></i></div>
+
+<script src="main.js"></script>
+<script src="sounds.js"></script>
+<script src="icons.js"></script>
+<script src="arrange.js"></script>
+<script src="mouse.js"></script>
+<script src="disk.js"></script>
+<script src="hardware.js"></script>
+<script src="network.js"></script>
+<script src="home.js"></script>
+<script src="panels.js"></script>
+<script src="scrollbars.js"></script>
+</body>
+</html>

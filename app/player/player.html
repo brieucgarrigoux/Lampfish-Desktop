@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bramble</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
+
+  .full { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: var(--framing, cover); }
+
+  .media { filter: brightness(var(--shine, 1)); }
+  .scene { position: absolute; inset: 0; animation: derive 50s ease-in-out infinite alternate; }
+  @keyframes derive {
+    from { transform: scale(1.04) translate(-0.8%, -0.5%); }
+    to   { transform: scale(1.10) translate(0.8%, 0.6%); }
+  }
+
+  .glow {
+    position: absolute;
+    width: 80vmax; height: 80vmax;
+    left: calc(50% - 40vmax); top: calc(50% - 40vmax);
+    -webkit-mask-image: radial-gradient(closest-side, #000, rgba(0, 0, 0, .45) 50%, transparent);
+    mask-image: radial-gradient(closest-side, #000, rgba(0, 0, 0, .45) 50%, transparent);
+    mix-blend-mode: screen;
+    will-change: transform, opacity;
+  }
+  .glow canvas {
+    position: absolute;
+    width: 100vw; height: 100vh;
+    left: calc(40vmax - 50vw); top: calc(40vmax - 50vh);
+    will-change: transform;
+  }
+  .empty {
+    display: grid; place-items: center; height: 100%;
+    color: #8a8f98; font: 16px "Segoe UI", sans-serif;
+  }
+</style>
+</head>
+<body>
+<script>
+  const params = new URLSearchParams(location.search);
+  const type = params.get('type');
+  const src = params.get('src');
+  const fit = params.get('fit') === 'fit';
+  if (fit) document.documentElement.style.setProperty('--framing', 'contain');
+
+  let light = Number(params.get('light') ?? 50);
+  let speed = Number(params.get('speed') ?? 50);
+  const intensity = () => light / 50;
+  const cadence = () => Math.pow(2, (speed - 50) / 25);
+  const shine = () => light < 50 ? .6 + .4 * light / 50 : 1 + .25 * (light - 50) / 50;
+
+  let media = null, image = null;
+  const glows = [];
+
+  if (type === 'video') {
+    media = Object.assign(document.createElement('video'), { src, autoplay: true, loop: true, muted: true, playsInline: true });
+    media.className = 'full media';
+    media.addEventListener('loadedmetadata', apply);
+    document.body.append(media);
+  } else if (type === 'gif') {
+    media = Object.assign(document.createElement('img'), { src });
+    media.className = 'full media';
+    document.body.append(media);
+  } else if (type === 'image') {
+    animateImage(src);
+  } else {
+    document.body.innerHTML = '<div class="empty">None wallpaper selected</div>';
+  }
+  apply();
+
+  function apply() {
+    document.documentElement.style.setProperty('--shine', shine());
+    if (media && media.tagName === 'VIDEO') media.playbackRate = cadence();
+    if (image && intensity() > 0 && !glows.length) createGlows();
+    for (const l of glows) l.animation.effect.setKeyframes(images(l.points));
+    for (const a of document.getAnimations()) a.updatePlaybackRate(cadence());
+  }
+
+  window.__adjust = (l, v) => { light = Number(l); speed = Number(v); apply(); };
+
+  addEventListener('message', e => {
+    const m = e.data || {};
+    if (m.bramble === 'adjust') window.__adjust(m.light, m.speed);
+    if (m.bramble === 'freeze') {
+      for (const a of document.getAnimations()) m.value ? a.pause() : a.play();
+      if (media && media.tagName === 'VIDEO') m.value ? media.pause() : media.play();
+    }
+  });
+  if (parent !== window) parent.postMessage({ bramble: 'ready' }, '*');
+
+  function animateImage(src) {
+    const scene = document.createElement('div');
+    scene.className = 'scene';
+    const base = Object.assign(document.createElement('img'), { src });
+    base.className = 'full';
+    scene.append(base);
+    document.body.append(scene);
+
+    base.decode().then(() => { image = base; apply(); });
+  }
+
+  const images = points => points.map(([x, y], k) => ({
+    transform: `translate(${x}px, ${y}px)`,
+    opacity: Math.min(1, (k % 2 ? .55 : .2) * intensity()),
+  }));
+
+  function createGlows() {
+    const scene = image.parentElement;
+    const w = innerWidth, h = innerHeight;
+    const liveCanvas = document.createElement('canvas');
+    liveCanvas.width = Math.round(w / 3);
+    liveCanvas.height = Math.round(h / 3);
+    const ctx = liveCanvas.getContext('2d');
+    ctx.filter = 'blur(10px) saturate(1.8) brightness(1.35)';
+    const s = (fit ? Math.min : Math.max)(liveCanvas.width / image.naturalWidth, liveCanvas.height / image.naturalHeight);
+    const dw = image.naturalWidth * s, dh = image.naturalHeight * s;
+    ctx.drawImage(image, (liveCanvas.width - dw) / 2, (liveCanvas.height - dh) / 2, dw, dh);
+
+    const durations = [29, 37, 46];
+    durations.forEach((duration, i) => {
+      const glow = document.createElement('div');
+      glow.className = 'glow';
+      const copy = document.createElement('canvas');
+      copy.width = liveCanvas.width;
+      copy.height = liveCanvas.height;
+      copy.getContext('2d').drawImage(liveCanvas, 0, 0);
+      glow.append(copy);
+      scene.append(glow);
+
+      const points = Array.from({ length: 5 }, () => [(Math.random() - .5) * w * .8, (Math.random() - .5) * h * .8]);
+      points.push(points[0]);
+      const options = { duration: duration * 1000, iterations: Infinity, easing: 'ease-in-out', delay: -i * 7000 };
+      const animation = glow.animate(images(points), options);
+      copy.animate(points.map(([x, y]) => ({ transform: `translate(${-x}px, ${-y}px)` })), options);
+      glows.push({ animation, points });
+    });
+  }
+</script>
+</body>
+</html>

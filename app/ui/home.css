@@ -1,0 +1,91 @@
+.view--home { max-width: 1120px; margin-inline: auto; }
+.home-header { display: flex; align-items: center; gap: 22px; margin: 2px 0 18px; }
+.home-header img { height: 72px; width: auto; flex: none; }
+.home-header h1 { margin: 0 0 4px; }
+.home-header p { margin: 0; font-size: 13px; color: var(--text-soft); }
+.home-header p::first-letter { text-transform: uppercase; }
+
+.h-wallpaper { position: relative; display: block; width: 100%; aspect-ratio: 2.6 / 1; padding: 0; border: 0; border-radius: 14px; overflow: hidden;
+  background: #000; box-shadow: 0 0 0 1px var(--hairline); cursor: pointer; text-align: left; }
+.h-wallpaper .preview { position: absolute; inset: 0; }
+.h-wallpaper .preview iframe { width: calc(var(--vw, 1920) * 1px); height: calc(var(--vh, 1080) * 1px); transform: scale(var(--k, .25)); }
+.h-wallpaper.fit .preview img, .h-wallpaper.fit .preview video { object-fit: contain; }
+.h-wallpaper.paused .preview > * { filter: brightness(.6) saturate(.5); }
+.h-wallpaper:hover { box-shadow: 0 0 0 1px var(--accent); }
+
+.h-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; margin-top: 16px; }
+.h-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0; padding: 14px 16px; border: 0; border-radius: 12px;
+  background: var(--group); text-align: left; transition: background .12s; }
+.h-tile:hover { background: var(--group-up); }
+.h-tile:hover .chevron { stroke: var(--accent); }
+.h-tile header { display: flex; align-items: center; gap: 10px; width: 100%; margin-bottom: 4px; }
+.h-tile .glyph { width: 28px; height: 28px; padding: 5px; }
+.h-name { flex: 1; font-size: 12.5px; color: var(--text-soft); }
+.h-value { max-width: 100%; font: 600 17px/1.25 "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.h-detail { max-width: 100%; font: 12px var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.h-detail:empty { display: none; }
+.h-bar { width: 100%; height: 4px; margin-top: 4px; border-radius: 2px; background: #24252f; overflow: hidden; }
+.h-bar i { display: block; height: 100%; border-radius: 2px; background: var(--accent); }
+.h-tile.alert .h-value, .h-tile.alert .h-detail { color: var(--danger); }
+.h-tile.alert .h-bar i { background: var(--danger); }
+
+.h-clock { display: flex; flex-direction: column; gap: 2px; padding-left: 22px; border-left: 1px solid var(--hairline-strong); }
+.h-time { font: 600 30px/1 "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.h-date { font-size: 13px; color: var(--text-soft); }
+.h-date::first-letter { text-transform: uppercase; }
+
+.h-weather { margin-left: auto; display: grid; grid-template-columns: auto auto; grid-template-rows: auto auto; column-gap: 12px; align-items: center; padding: 10px 16px 10px 12px; border-radius: 12px; background: var(--group); }
+.h-weather__icon { grid-row: 1 / 3; width: 46px; height: 46px; fill: none; stroke: var(--text); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.h-weather__icon .m-sun { stroke: #e8b65a; }
+.h-weather__icon .m-sun circle { fill: rgba(232, 182, 90, .18); }
+.h-weather__icon .m-moon { stroke: #c9b8e6; fill: rgba(201, 184, 230, .12); }
+.h-weather__icon .m-cloud { fill: #1b1c24; stroke: var(--text); }
+.h-weather__icon .m-drop { stroke: #7fa8e6; }
+.h-weather__icon .m-flake { fill: #e8e9f0; stroke: none; }
+.h-weather__icon .m-lightning { stroke: #e8b65a; }
+.h-weather__icon .m-stroke { stroke: var(--text-soft); }
+.h-weather__text { display: flex; align-items: baseline; gap: 8px; }
+.h-weather__temp { font: 600 22px/1.1 "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif; font-variant-numeric: tabular-nums; }
+.h-weather__what { font-size: 13px; color: var(--text-soft); }
+.h-weather__details { grid-column: 2; display: flex; gap: 8px; font: 12px var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); white-space: nowrap; }
+.h-weather__details span:first-child { color: var(--text-soft); }
+
+.h-wallpaper { aspect-ratio: var(--ratio, 16 / 9); width: 100%; max-width: calc(42vh * (var(--ratio-n, 1.7778))); margin-inline: auto; }
+.h-desktop { position: absolute; inset: 0; border-radius: 14px; overflow: hidden; pointer-events: none; }
+.h-icon { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 4%; padding-top: .4%; box-sizing: border-box; }
+.h-icon img { flex: none; min-height: 0; aspect-ratio: 1; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .6)); }
+.h-icon i { flex: none; max-width: 100%; font: normal 9px/1.2 "Segoe UI", system-ui, sans-serif; color: #fff; text-align: center; text-shadow: 0 1px 2px rgba(0, 0, 0, .9); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.h-desktop.hidden { display: none; }
+
+.h-tile, .h-wallpaper { position: relative; outline: none; }
+.h-tile .reticle, .h-wallpaper .reticle { position: absolute; inset: -5px; --l: 12px; display: none; z-index: 1; }
+.h-tile:hover .reticle, .h-tile:focus-visible .reticle, .h-wallpaper:hover .reticle, .h-wallpaper:focus-visible .reticle { display: block; }
+.h-wallpaper { overflow: visible; }
+.h-wallpaper .preview { border-radius: 14px; overflow: hidden; }
+.h-wallpaper:hover { box-shadow: 0 0 0 1px var(--hairline); }
+
+.h-tiles { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.h-tile { min-height: 150px; padding: 14px 16px 14px; }
+.h-visual { display: flex; align-items: flex-end; width: 100%; min-height: 26px; margin-top: auto; padding-top: 10px; }
+.h-visual:empty { display: none; }
+.h-images { display: flex; gap: 8px; align-items: center; }
+.h-images img { width: 24px; height: 24px; object-fit: contain; }
+.h-images img.retro { image-rendering: pixelated; }
+.h-leds { display: flex; gap: 5px; flex-wrap: wrap; }
+.h-leds i { width: 8px; height: 8px; border-radius: 50%; background: #262733; }
+.h-leds i.on { background: var(--accent); box-shadow: 0 0 5px rgba(142, 66, 182, .8); }
+.h-signal { display: flex; align-items: flex-end; gap: 3px; height: 18px; }
+.h-signal i { width: 5px; border-radius: 2px; background: #2a2b36; }
+.h-signal i:nth-child(1) { height: 25%; } .h-signal i:nth-child(2) { height: 50%; } .h-signal i:nth-child(3) { height: 75%; } .h-signal i:nth-child(4) { height: 100%; }
+.h-signal i.on { background: var(--accent); }
+.h-threads { display: flex; align-items: flex-end; gap: 2px; width: 100%; height: 22px; }
+.h-threads i { flex: 1; height: 100%; border-radius: 1px; background: linear-gradient(to top, var(--accent) var(--h), #24252f var(--h)); }
+.h-cell { display: flex; gap: 2px; padding: 3px; border-radius: 5px; background: linear-gradient(180deg, #3a3c47, #24252e); box-shadow: 0 0 0 1px #08090c, inset 0 1px 0 rgba(255, 255, 255, .15); }
+.h-cell i { width: 7px; height: 14px; border-radius: 1.5px; background: #121219; }
+.h-cell i.on { background: var(--accent); box-shadow: 0 0 4px rgba(142, 66, 182, .8); }
+.h-cell i.low { background: var(--danger); }
+.h-tip { width: 3px; height: 8px; align-self: center; border-radius: 0 2px 2px 0; background: #3a3c47; }
+.h-thumbnail svg { width: 52px; height: 35px; }
+.h-thumbnail .screen-v { fill: #0b0c10; stroke: var(--hairline-strong); }
+.h-thumbnail rect.t0, .h-thumbnail rect.t2 { fill: var(--accent); } .h-thumbnail rect.t1, .h-thumbnail rect.t3 { fill: #6e2a8a; }
+.h-visual .h-bar { margin-top: 0; }
