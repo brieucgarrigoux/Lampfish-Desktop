@@ -65,14 +65,27 @@ function showView(view) {
 }
 for (const b of document.querySelectorAll('.service')) b.addEventListener('click', () => showView(b.dataset.view));
 
-const LEVEL_BARS = 36, levels = new Array(LEVEL_BARS).fill(0);
+const LEVEL_BARS = 48, levelTarget = new Array(LEVEL_BARS).fill(0), levelShown = new Array(LEVEL_BARS).fill(0);
 const levelBars = Array.from({ length: LEVEL_BARS }, () => { const i = document.createElement('i'); $('level-bars').append(i); return i; });
+let levelLoop = 0;
+function levelFrame() {
+  levelLoop = 0;
+  let moving = false;
+  for (let i = 0; i < LEVEL_BARS; i++) {
+    levelShown[i] += (levelTarget[i] - levelShown[i]) * .3;
+    if (Math.abs(levelTarget[i] - levelShown[i]) > .003) moving = true; else levelShown[i] = levelTarget[i];
+    const v = levelShown[i];
+    levelBars[i].style.transform = `scaleY(${(.1 + v * .9).toFixed(3)})`;
+    levelBars[i].style.opacity = (.35 + v * .65).toFixed(2);
+  }
+  if (moving) levelLoop = requestAnimationFrame(levelFrame);
+}
 
 webview.addEventListener('message', e => {
   const m = e.data;
   if (m.type === 'audio.level') {
-    levels.push(m.level); levels.shift();
-    levels.forEach((v, i) => { levelBars[i].style.height = (3 + v * 21).toFixed(1) + 'px'; });
+    levelTarget.push(m.level); levelTarget.shift();
+    if (!levelLoop && document.body.dataset.view === 'wallpaper') levelLoop = requestAnimationFrame(levelFrame);
     return;
   }
 

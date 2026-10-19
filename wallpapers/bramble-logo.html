@@ -24,8 +24,14 @@
   let light = 1, speed = 1, frozen = false;
   window.__adjust = (l, v) => { light = Number(l) / 50; speed = Math.pow(2, (Number(v) - 50) / 25); };
   window.__adjust(params.get('light') ?? 50, params.get('speed') ?? 50);
-  let audio = 0;
-  window.__audio = l => { audio += (Number(l) - audio) * .45; };
+  let audio = 0, audioTarget = 0, lastRaw = 0, lastBeat = 0;
+  window.__audio = l => {
+    l = Number(l);
+    const now = performance.now();
+    if (window.__beat && l - lastRaw > .12 && l > .25 && now - lastBeat > 170) { lastBeat = now; window.__beat(l); }
+    lastRaw = l;
+    audioTarget = l;
+  };
   addEventListener('message', e => {
     const m = e.data || {};
     if (m.bramble === 'adjust') window.__adjust(m.light, m.speed);
@@ -47,14 +53,28 @@
     return { x: Math.random() * w, y: everywhere ? Math.random() * h : h + 10, z, r: .6 + z * 1.8, v: 5 + z * 16, phase: Math.random() * 6.3 };
   }
 
-  function ring() {
-    if (audio < .02) return;
-    const r0 = Math.min(w, h) * .17;
-    for (let k = 0; k < 3; k++) {
+  const ripples = [];
+  window.__beat = l => { if (ripples.length < 8) ripples.push({ age: 0, power: l }); };
+
+  function ring(dt) {
+    const cx = w / 2, cy = h * .45, base = Math.min(w, h) * .165;
+    if (audio > .02) {
       ctx.beginPath();
-      ctx.arc(w / 2, h * .45, r0 * (1 + k * .22 + audio * .35), 0, 6.283);
-      ctx.strokeStyle = `rgba(201, 162, 230, ${(.5 * audio / (1 + k)).toFixed(3)})`;
-      ctx.lineWidth = 2;
+      ctx.arc(cx, cy, base * (1.08 + audio * .12), 0, 6.283);
+      ctx.strokeStyle = `rgba(201, 162, 230, ${(.08 + audio * .32).toFixed(3)})`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+    for (let i = ripples.length - 1; i >= 0; i--) {
+      const r = ripples[i];
+      r.age += dt;
+      const k = r.age / 1.5;
+      if (k >= 1) { ripples.splice(i, 1); continue; }
+      const eased = 1 - Math.pow(1 - k, 3);
+      ctx.beginPath();
+      ctx.arc(cx, cy, base * (1.1 + eased * (1.6 + r.power)), 0, 6.283);
+      ctx.strokeStyle = `rgba(201, 162, 230, ${((1 - k) * (.22 + r.power * .4)).toFixed(3)})`;
+      ctx.lineWidth = 1 + (1 - k) * 2.2 * r.power;
       ctx.stroke();
     }
   }
@@ -65,6 +85,7 @@
     if (innerWidth !== w || innerHeight !== h) resize();
     const dt = Math.min(.05, (now - before) / 1000);
     before = now;
+    audio += (audioTarget - audio) * Math.min(1, dt * 14);
     if (!frozen) t += dt * speed;
 
     const wallpaper = ctx.createRadialGradient(w / 2, h * .46, 0, w / 2, h * .46, Math.max(w, h) * .75);
@@ -92,7 +113,7 @@
     }
     ctx.globalAlpha = 1;
 
-    ring();
+    ring(dt);
     brand.style.transform = `translateY(${(-2 + Math.sin(t * .7) * .6).toFixed(3)}vmin) scale(${(1 + audio * .07).toFixed(3)})`;
     if (thumbnail && ++images > 2) return;
     requestAnimationFrame(draw);

@@ -17,8 +17,14 @@
   let light, speed, frozen = false;
   window.__adjust = (l, v) => { light = Number(l) / 50; speed = Math.pow(2, (Number(v) - 50) / 25); };
   window.__adjust(params.get('light') ?? 50, params.get('speed') ?? 50);
-  let audio = 0;
-  window.__audio = l => { audio += (Number(l) - audio) * .45; };
+  let audio = 0, audioTarget = 0, lastRaw = 0, lastBeat = 0;
+  window.__audio = l => {
+    l = Number(l);
+    const now = performance.now();
+    if (window.__beat && l - lastRaw > .12 && l > .25 && now - lastBeat > 170) { lastBeat = now; window.__beat(l); }
+    lastRaw = l;
+    audioTarget = l;
+  };
   addEventListener('message', e => {
     const m = e.data || {};
     if (m.bramble === 'adjust') window.__adjust(m.light, m.speed);
@@ -86,6 +92,7 @@
   }
 
   function render(dt) {
+    audio += (audioTarget - audio) * Math.min(1, dt * 14);
     t += dt * speed * (1 + audio * 1.2);
     ctx.clearRect(0, 0, w, h);
     for (const g of grains) {

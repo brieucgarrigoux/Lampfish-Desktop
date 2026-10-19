@@ -18,8 +18,14 @@
   let light, speed, frozen = false;
   window.__adjust = (l, v) => { light = Number(l) / 50; speed = Math.pow(2, (Number(v) - 50) / 25); };
   window.__adjust(params.get('light') ?? 50, params.get('speed') ?? 50);
-  let audio = 0;
-  window.__audio = l => { audio += (Number(l) - audio) * .45; };
+  let audio = 0, audioTarget = 0, lastRaw = 0, lastBeat = 0;
+  window.__audio = l => {
+    l = Number(l);
+    const now = performance.now();
+    if (window.__beat && l - lastRaw > .12 && l > .25 && now - lastBeat > 170) { lastBeat = now; window.__beat(l); }
+    lastRaw = l;
+    audioTarget = l;
+  };
 
   addEventListener('message', e => {
     const m = e.data || {};
@@ -50,6 +56,7 @@
     if (canvas.width !== Math.round(innerWidth * scale) || canvas.height !== Math.round(innerHeight * scale)) resize();
     requestAnimationFrame(draw);
     if (time - previous < 33) return;
+    audio += (audioTarget - audio) * Math.min(1, (time - previous) / 70);
     if (!frozen) t += Math.min(time - previous, 100) * speed * (1 + audio * 4);
     previous = time;
     paint();
