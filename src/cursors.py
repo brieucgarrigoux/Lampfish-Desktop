@@ -209,37 +209,11 @@ def cur(g, hotspot, tint, scales=None):
 def chunk(name, data):
     return name + struct.pack('<I', len(data)) + data + (b'\0' if len(data) % 2 else b'')
 
-def ani(frames, hotspot, tint, jiffies=5, rates=None, scales=None):
+def ani(frames, hotspot, tint, jiffies=5):
     anih = struct.pack('<IIIIIIIII', 36, len(frames), len(frames), 0, 0, 0, 0, jiffies, 1)
-    body = b'fram' + b''.join(chunk(b'icon', cur(g, hotspot, tint, scales or SCALES_ANI)) for g in frames)
-    rate = chunk(b'rate', struct.pack('<%dI' % len(rates), *rates)) if rates else b''
-    riff = b'ACON' + chunk(b'anih', anih) + rate + chunk(b'LIST', body)
+    body = b'fram' + b''.join(chunk(b'icon', cur(g, hotspot, tint, SCALES_ANI)) for g in frames)
+    riff = b'ACON' + chunk(b'anih', anih) + chunk(b'LIST', body)
     return b'RIFF' + struct.pack('<I', len(riff)) + riff
-
-LIVE = 'Bramble Spark'
-SWEEP = 10
-
-def sweep(g, step):
-    """Moves a light band across the cursor along its diagonal."""
-    centre = -2 + step * 34 / SWEEP
-    def lit(x, y, c):
-        d = abs(x + y - centre)
-        if c in 'PL' and d <= 1.4: return 'W'
-        if c == 'P' and d <= 3.6: return 'L'
-        return c
-    return [[lit(x, y, c) for x, c in enumerate(row)] for y, row in enumerate(g)]
-
-def live(drawings, folder):
-    tint = dict(TINTS['Bramble Berry'], W=(246, 238, 255))
-    os.makedirs(folder, exist_ok=True)
-    for role, (g, hotspot) in drawings.items():
-        if isinstance(g, list) and isinstance(g[0][0], list):
-            data = ani(g, hotspot, tint)
-        else:
-            frames = [g] + [sweep(g, k) for k in range(SWEEP)]
-            data = ani(frames, hotspot, tint, rates=[120] + [2] * SWEEP, scales=[2, 4, 8])
-        open(os.path.join(folder, role + '.ani'), 'wb').write(data)
-    print(LIVE, len(drawings), 'cursors')
 
 def main():
     drawings = draw()
@@ -252,7 +226,6 @@ def main():
             else:
                 open(os.path.join(folder, role + '.cur'), 'wb').write(cur(g, hotspot, tint))
         print(theme, len(drawings), 'cursors')
-    live(drawings, os.path.join(OUTPUT, LIVE))
 
 if __name__ == '__main__':
     main()

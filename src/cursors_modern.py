@@ -24,23 +24,21 @@ def grow(mask, radius):
     blurred = mask.filter(ImageFilter.GaussianBlur(radius * K / 2))
     return blurred.point(lambda v: 255 if v > 6 else 0).filter(ImageFilter.GaussianBlur(.6))
 
+def ramp(size, top, bottom):
+    t = Image.linear_gradient('L').resize(size)
+    return Image.composite(Image.new('RGBA', size, bottom + (255,)), Image.new('RGBA', size, top + (255,)), t)
+
 def compose(mask, accent=None):
     outline = grow(mask, 1.25)
     shadow = ImageChops.offset(outline, int(.6 * K), int(1.1 * K)).filter(ImageFilter.GaussianBlur(1.1 * K))
+    glow = grow(mask, 2.2).filter(ImageFilter.GaussianBlur(1.6 * K))
     canvas = Image.new('RGBA', mask.size, (0, 0, 0, 0))
-    canvas.paste(Image.new('RGBA', mask.size, (20, 8, 40, 255)), mask=shadow.point(lambda v: int(v * .55)))
-    canvas.paste(Image.new('RGBA', mask.size, (255, 255, 255, 255)), mask=outline)
-    height = mask.size[1]
-    gradient = Image.new('RGBA', mask.size)
-    px = gradient.load()
-    for y in range(height):
-        t = y / (height - 1)
-        row = tuple(round(TOP[i] + (BOTTOM[i] - TOP[i]) * t) for i in range(3)) + (255,)
-        for x in range(mask.size[0]):
-            px[x, y] = row
-    canvas.paste(gradient, mask=mask)
+    canvas.paste(Image.new('RGBA', mask.size, (130, 80, 240, 255)), mask=glow.point(lambda v: int(v * .22)))
+    canvas.paste(Image.new('RGBA', mask.size, (20, 8, 40, 255)), mask=shadow.point(lambda v: int(v * .5)))
+    canvas.paste(ramp(mask.size, (255, 255, 255), (222, 210, 250)), mask=outline)
+    canvas.paste(ramp(mask.size, TOP, BOTTOM), mask=mask)
     inner = ImageChops.subtract(mask, ImageChops.offset(mask, int(1.2 * K), int(1.4 * K)))
-    canvas.paste(Image.new('RGBA', mask.size, (225, 208, 255, 255)), mask=inner.point(lambda v: int(v * .85)))
+    canvas.paste(Image.new('RGBA', mask.size, (232, 218, 255, 255)), mask=inner.point(lambda v: int(v * .85)))
     rim = ImageChops.subtract(mask, ImageChops.offset(mask, -int(1.0 * K), -int(1.2 * K)))
     canvas.paste(Image.new('RGBA', mask.size, (52, 14, 110, 255)), mask=rim.point(lambda v: int(v * .7)))
     sheen = Image.new('L', mask.size, 0)
@@ -49,6 +47,28 @@ def compose(mask, accent=None):
     if accent is not None:
         canvas.paste(Image.new('RGBA', mask.size, (255, 255, 255, 255)), mask=accent)
     return canvas
+
+def band():
+    big = Image.new('L', (UNITS * K * 2, UNITS * K * 2), 0)
+    d = ImageDraw.Draw(big)
+    centre, half = UNITS * K, 5 * K
+    for x in range(centre - half, centre + half):
+        v = 1 - abs(x - centre) / half
+        d.line([(x, 0), (x, UNITS * K * 2)], fill=int(255 * v * v))
+    return big.rotate(-28, resample=Image.BICUBIC)
+
+BAND = None
+
+def glint(base, mask, step, steps):
+    global BAND
+    if BAND is None: BAND = band()
+    span = UNITS * K * 1.1
+    shift = -span / 2 + span * step / (steps - 1)
+    left = int(UNITS * K / 2 + shift)
+    window = BAND.crop((left, UNITS * K // 2, left + UNITS * K, UNITS * K // 2 + UNITS * K))
+    frame = base.copy()
+    frame.paste(Image.new('RGBA', mask.size, (255, 255, 255, 255)), mask=ImageChops.multiply(mask, window.point(lambda v: int(v * .8))))
+    return frame
 
 def arrow(offset=(0, 0)):
     ox, oy = offset
@@ -222,11 +242,16 @@ def cur(image, hotspot, sizes):
         data += d
     return head + entries + data
 
-def ani(images, hotspot, sizes, jiffies=4):
+def ani(images, hotspot, sizes, jiffies=4, rates=None):
     anih = struct.pack('<IIIIIIIII', 36, len(images), len(images), 0, 0, 0, 0, jiffies, 1)
     body = b'fram' + b''.join(cursors.chunk(b'icon', cur(i, hotspot, sizes)) for i in images)
-    riff = b'ACON' + cursors.chunk(b'anih', anih) + cursors.chunk(b'LIST', body)
+    rate = cursors.chunk(b'rate', struct.pack('<%dI' % len(rates), *rates)) if rates else b''
+    riff = b'ACON' + cursors.chunk(b'anih', anih) + rate + cursors.chunk(b'LIST', body)
     return b'RIFF' + struct.pack('<I', len(riff)) + riff
+
+GLINT = ('Arrow', 'Help', 'Crosshair', 'IBeam', 'NWPen', 'UpArrow', 'Hand', 'Pin', 'Person')
+GLINT_STEPS = 8
+GLINT_SIZES = [32, 64, 96]
 
 def main():
     folder = os.path.join(cursors.OUTPUT, THEME)
@@ -236,6 +261,9 @@ def main():
         images = frames_for(value)
         if len(images) > 1:
             open(os.path.join(folder, role + '.ani'), 'wb').write(ani(images, hotspot, SIZES))
+        elif role in GLINT:
+            frames = [images[0]] + [glint(images[0], value, k, GLINT_STEPS) for k in range(GLINT_STEPS)]
+            open(os.path.join(folder, role + '.ani'), 'wb').write(ani(frames, hotspot, GLINT_SIZES, rates=[150] + [3] * GLINT_STEPS))
         else:
             open(os.path.join(folder, role + '.cur'), 'wb').write(cur(images[0], hotspot, SIZES))
     print(THEME, len(drawings), 'cursors')
