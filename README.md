@@ -2,7 +2,7 @@
 
 <h1 align="center">Bramble Desktop</h1>
 
-<p align="center">Personalize and monitor your Windows PC from one calm, dark window.</p>
+<p align="center">Customize and monitor your Windows PC from a single app.</p>
 
 <p align="center">
   <a href="#services">Services</a> ·
