@@ -11,15 +11,16 @@ Bramble sits in the system tray and brings together what usually takes five diff
 | Service | What it does |
 | --- | --- |
 | **Home** | The time, today's weather, your current wallpaper with your real desktop icons on it, and the state of every service at a glance. |
-| **Wallpaper** | Animated wallpapers behind the desktop icons: videos, GIFs, animated images, HTML pages. Pauses on battery or when a window covers the screen. |
+| **Moods** | Saves the wallpaper, cursors and sounds as a mood, applies it in one click or at a set time each day. |
+| **Wallpaper** | Animated wallpapers behind the desktop icons: videos, GIFs, animated images, HTML pages, optionally pulsing with the sound playing. Pauses on battery or when a window covers the screen. |
 | **Icons** | Gives any folder an icon from the Windows library (sorted retro pixel / modern) or your own, from the app or the right-click menu. |
 | **Mouse** | Cursor themes (including three original pixel-art themes), per-role cursors, pointer size, speed, double-click, wheel and extras. |
 | **Sounds** | A sound for fourteen system events (startup, lock, sleep, charger, USB devices, docking station, speed test), with a sound library, loudness matching and import. |
 | **Arrange** | A live map of your screens (one, two, three or more) to sort and lay out desktop icons, with undo, a way back to the original layout, and layouts saved per screen setup. |
 | **Folders** | What takes up space on a drive, as rings (in the spirit of DaisyDisk), without administrator rights. |
-| **Network** | Connection details, live traffic, and a speed test with jitter, loaded latency (graded A to F) and history. |
+| **Network** | Connection details, live traffic, a security check of the connection, and a speed test with jitter, loaded latency (graded A to F) and history. |
 | **Tasks** | What is running, grouped by program with its icon, publisher, memory and processor use, sorted into apps, command-line, background and system programs. Ends a program on request. |
-| **Hardware** | Processor, memory, graphics, storage, battery and screens, read live, with a plain-language health summary. |
+| **Hardware** | Processor, memory, graphics, storage, battery, screens, temperature and connected devices, read live, with a plain-language health summary. |
 
 The interface is in English, with a French translation (automatic, following the Windows language, or chosen in Settings).
 

@@ -6,6 +6,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Moods: a new service that saves the wallpaper, its effects, the cursor theme and the sounds as one mood, applies it in one click, and can start it every day at a set time. Night, Focus and Cinema models are built from the current setup.
+- Wallpaper: an option to make the wallpaper pulse with the sound playing on the PC. It reads the level Windows reports for the speakers, without administrator rights and without recording anything.
+- Hardware: a card for the devices plugged in now (USB devices and controllers, mouse, keyboard, camera, audio, Bluetooth, storage), and a thermometer that rises with the temperature.
+- Network: a Security card under the speed test gauge, with a verdict, three checks (encryption, Windows profile, VPN), the next step to take and a shortcut to the Windows network settings.
+- Charts in Hardware and Network show a guide, the value and the time on hover, with a short explanation of what the line is.
 - Sounds: two events for the speed test, when it starts and when its results are ready.
 - Tasks: its own service listing what is running, grouped by program, with icon, description, publisher, memory and processor use. Filters by kind (apps, developer, background, system) and sortable columns. Programs with a window are asked to close like the X button would; others need a second confirming click. System programs and Bramble itself cannot be ended.
 - Arrange: an icon size slider for the desktop icons.
@@ -19,6 +24,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Arrange: the screen map is centered and no longer slides in from the corner, and the icon size slider shows its real position and refreshes the map after a change.
 
 ### Changed
+- The vertical scroll bar turns violet when hovered.
 - Arrange: Undo and Back to original sit under the screen map.
 - Settings are written to a temporary file first, so a power cut can no longer leave a corrupted settings file.
 - The error log rotates at 256 KB (the previous one is kept as errors.old.log).
