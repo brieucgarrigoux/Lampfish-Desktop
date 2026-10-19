@@ -18,7 +18,8 @@ Bramble sits in the system tray and brings together what usually takes five diff
 | Service | What it does |
 | --- | --- |
 | **Home** | The time, today's weather, your current wallpaper with your real desktop icons on it, and the state of every service at a glance. |
-| **Wallpaper** | Animated wallpapers behind the desktop icons: videos, GIFs, animated images, HTML pages, optionally pulsing with the sound playing, a creator that builds a wallpaper from your logo and background, and moods that apply a wallpaper, cursors and sounds in one click, at a set time or with a set number of screens. Pauses on battery or when a window covers the screen. |
+| **Wallpaper** | Animated wallpapers behind the desktop icons: videos, GIFs, animated images, HTML pages, optionally pulsing with the sound playing, and moods that apply a wallpaper, cursors and sounds in one click, at a set time or with a set number of screens. Pauses on battery or when a window covers the screen. |
+| **Create** | Builds a wallpaper from your logo and background: themes, particles, glow, a sound reaction and a live preview where the logo and the text are dragged into place. |
 | **Icons** | Gives any folder an icon from the Windows library (sorted retro pixel / modern) or your own, from the app or the right-click menu. |
 | **Mouse** | Cursor themes (including three original pixel-art themes), per-role cursors, pointer size, speed, double-click, wheel and extras. |
 | **Sounds** | A sound for fourteen system events (startup, lock, sleep, charger, USB devices, docking station, speed test), with a sound library, loudness matching and import. |

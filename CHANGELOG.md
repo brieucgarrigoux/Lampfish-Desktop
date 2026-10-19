@@ -6,7 +6,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
-- Wallpaper creator, in a tab of the Wallpaper service: builds a wallpaper from your own logo and background (color, gradient or picture), with an optional text, a glow, floating grains, a reaction to sound and a live preview. The result is a plain folder in `wallpapers\`.
+- Create: its own service to build a wallpaper from your logo and background. Six themes (Midnight, Ember, Aurora, Sunset, Neon, Graphite), five kinds of particles (fireflies, stars, embers, snow, bokeh), an edge shade, a glow, a wave ring or ripples that follow the sound, and a live preview where the logo and the text are dragged, resized with the wheel or a corner handle. The result is a plain folder in `wallpapers\`.
 - Moods, in a tab of the Wallpaper service: saves the wallpaper, its effects, the cursor theme and the sounds as one mood, applies it in one click, and can start it every day at a set time or when a chosen number of screens is connected. Night, Focus and Cinema models are built from the current setup.
 - Wallpaper: an option to make the wallpaper pulse with the sound playing on the PC. It reads the level Windows reports for every active audio output, without administrator rights and without recording anything.
 - Hardware: a card for the devices plugged in now (USB devices and controllers, mouse, keyboard, camera, audio, Bluetooth, storage).
@@ -21,11 +21,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Powered by Bramble badge in Settings, About, and in the README.
 
 ### Fixed
+- Arrange: layouts reach the bottom and right edges of the screen. The grid lost a whole row (about 127 px) and now spreads the leftover space between the icons.
+- Settings: clicking a language several times in a row no longer breaks the window.
 - French: Start time, Number of screens, Kind of program, Enable and Favorite were still in English, and the Wi-Fi security names (WPA2-Personal) are kept as Windows reports them.
 - Icons: the preview size (small, medium, large) now changes the tiles.
 - Arrange: the screen map is centered and no longer slides in from the corner, and the icon size slider shows its real position and refreshes the map after a change.
 
 ### Changed
+- A wallpaper needs a second click (or a second press of Delete) to be removed.
+- The violet plate with the white line berry is the official app icon.
+- Network: the security card has a control panel look (chrome seal, LED meter, jewel lamps, physical key).
+- Sounds: the sound is drawn as a smooth, mirrored waveform with a playhead.
+- Hardware: connected devices sit in the first row with battery and temperature.
 - Hardware: Power and screens comes first, the middle group is named Performance, and the page is lighter (the details panel is patched in place, the bars animate with transforms).
 - The sound reaction eases toward the level, the logo wallpaper draws expanding ripples on each beat, and the level meter in Wallpaper is a symmetrical waveform.
 - README: new header, a Badge section, and the services under their own heading.
