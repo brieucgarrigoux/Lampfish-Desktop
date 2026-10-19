@@ -307,17 +307,18 @@ namespace Bramble
             {
                 object v = key == null ? null : key.GetValue("CursorBaseSize");
                 int base_ = v is int ? (int)v : 32;
-                return Math.Max(1, Math.Min(15, (base_ - 32) / 16 + 1));
+                return base_ < 32 ? 0 : Math.Max(1, Math.Min(15, (base_ - 32) / 16 + 1));
             }
         }
 
         static void AdjustSize(int n)
         {
-            n = Math.Max(1, Math.Min(15, n));
-            using (var key = Registry.CurrentUser.CreateSubKey(Key)) key.SetValue("CursorBaseSize", 32 + (n - 1) * 16, RegistryValueKind.DWord);
-            using (var key = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Accessibility")) key.SetValue("CursorSize", n, RegistryValueKind.DWord);
+            n = Math.Max(0, Math.Min(15, n));
+            int pixels = n == 0 ? 16 : 32 + (n - 1) * 16;
+            using (var key = Registry.CurrentUser.CreateSubKey(Key)) key.SetValue("CursorBaseSize", pixels, RegistryValueKind.DWord);
+            using (var key = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Accessibility")) key.SetValue("CursorSize", Math.Max(1, n), RegistryValueKind.DWord);
 
-            SystemParametersInfo(SPI_SETCURSORBASESIZE, 0, new IntPtr(32 + (n - 1) * 16), SPIF_UPDATEINIFILE | SPIF_SENDCHANGE);
+            SystemParametersInfo(SPI_SETCURSORBASESIZE, 0, new IntPtr(pixels), SPIF_UPDATEINIFILE | SPIF_SENDCHANGE);
             Reload();
         }
 

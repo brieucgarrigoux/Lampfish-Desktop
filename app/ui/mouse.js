@@ -140,16 +140,16 @@
     knob: v => v == 1 ? tr('1 line') : tr('{0} lines', v),
   };
 
-  const PX = n => 32 + (n - 1) * 16;
+  const PX = n => n === 0 ? 16 : 32 + (n - 1) * 16;
   function renderSize() {
     const n = s.settings.size;
     $('s-size-label').textContent = PX(n) + ' px';
-    $('s-minus').disabled = n <= 1;
+    $('s-minus').disabled = n <= 0;
     $('s-plus').disabled = n >= 15;
   }
   for (const [id, step] of [['s-minus', -1], ['s-plus', 1]])
     $(id).addEventListener('click', () => {
-      const n = Math.max(1, Math.min(15, s.settings.size + step));
+      const n = Math.max(0, Math.min(15, s.settings.size + step));
       s.settings.size = n;
       renderSize();
       renderSettings();
