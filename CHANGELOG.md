@@ -6,10 +6,24 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Sounds: two events for the speed test, when it starts and when its results are ready.
+- Tasks: its own service listing what is running, grouped by program, with icon, description, publisher, memory and processor use. Filters by kind (apps, developer, background, system) and sortable columns. Programs with a window are asked to close like the X button would; others need a second confirming click. System programs and Bramble itself cannot be ended.
+- Arrange: an icon size slider for the desktop icons.
+- Settings: a switch for the weather on Home, which is the only call that sends your approximate location to outside services.
+- Arrange: every arrangement is remembered. Undo steps back one arrangement at a time (up to ten), and Back to original restores the icons as they were before Bramble first touched them.
 - White-line berry and app icon variants (dark, light, violet), in `brand/`.
 - Powered by Bramble badge in Settings, About, and in the README.
 
+### Fixed
+- Icons: the preview size (small, medium, large) now changes the tiles.
+- Arrange: the screen map is centered and no longer slides in from the corner, and the icon size slider shows its real position and refreshes the map after a change.
+
 ### Changed
+- Arrange: Undo and Back to original sit under the screen map.
+- Settings are written to a temporary file first, so a power cut can no longer leave a corrupted settings file.
+- The error log rotates at 256 KB (the previous one is kept as errors.old.log).
+- Wallpaper pages can no longer read Bramble's own files (settings, log) from the page.
+- When the WebView2 Runtime is missing, Bramble says so and offers the download page.
 - New app icon: the white-line berry on a violet plate (executable, taskbar, tray). The header and About keep the plain berry.
 
 ## [0.1.0] - 2026-10-19
