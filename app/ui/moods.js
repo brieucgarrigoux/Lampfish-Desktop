@@ -117,7 +117,7 @@
 
   const grid = $('grid'), panel = $('wp-moods'), folder = $('folder');
   let tab = 'library';
-  try { tab = ['moods', 'create'].includes(localStorage.getItem('wallpaper.tab')) ? localStorage.getItem('wallpaper.tab') : 'library'; } catch (e) { }
+  try { tab = localStorage.getItem('wallpaper.tab') === 'moods' ? 'moods' : 'library'; } catch (e) { }
   function showTab() {
     for (const b of $('wp-tabs').children) {
       b.setAttribute('aria-selected', String(b.dataset.tab === tab));
@@ -126,8 +126,6 @@
     grid.hidden = tab !== 'library';
     folder.hidden = tab !== 'library';
     panel.hidden = tab !== 'moods';
-    $('wp-create').hidden = tab !== 'create';
-    $('hero').hidden = tab === 'create';
   }
   for (const b of $('wp-tabs').children) b.addEventListener('click', () => {
     tab = b.dataset.tab;

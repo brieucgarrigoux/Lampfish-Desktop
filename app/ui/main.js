@@ -43,8 +43,8 @@ if (LANGUAGE !== 'en') {
     }
   }).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRIBUTES_TRANSLATED });
 }
-const Bramble = { state: null, station: null, icons: null, arrange: null, mouse: null, network: null, files: null, hardware: null, tasks: null, moods: null };
-const VIEWS = ['home', 'wallpaper', 'icons', 'arrange', 'mouse', 'station', 'files', 'hardware', 'tasks', 'network', 'settings'];
+const Bramble = { state: null, station: null, icons: null, arrange: null, mouse: null, network: null, files: null, hardware: null, tasks: null, moods: null, creator: null };
+const VIEWS = ['home', 'wallpaper', 'create', 'icons', 'arrange', 'mouse', 'station', 'files', 'hardware', 'tasks', 'network', 'settings'];
 
 function showView(view) {
   document.body.dataset.view = view;
@@ -61,6 +61,7 @@ function showView(view) {
   if (Bramble.files) Bramble.files.visible(view === 'files');
   if (Bramble.hardware) Bramble.hardware.visible(view === 'hardware');
   if (Bramble.tasks) Bramble.tasks.visible(view === 'tasks');
+  if (Bramble.creator) Bramble.creator.visible(view === 'create');
   if (Bramble.home) Bramble.home.visible(view === 'home');
 }
 for (const b of document.querySelectorAll('.service')) b.addEventListener('click', () => showView(b.dataset.view));
@@ -150,7 +151,7 @@ $('undo').addEventListener('click', () => { $('toast').classList.remove('visible
 let depth = 0;
 const carriesFiles = e => [...e.dataTransfer.types].includes('Files');
 addEventListener('dragenter', e => {
-  if (!carriesFiles(e) || ['arrange', 'files', 'hardware', 'tasks', 'network'].includes(document.body.dataset.view)) return;
+  if (!carriesFiles(e) || ['arrange', 'files', 'hardware', 'tasks', 'create', 'network'].includes(document.body.dataset.view)) return;
   e.preventDefault();
   if (++depth === 1) document.body.classList.add('drag');
 });
