@@ -411,7 +411,7 @@
 
     const head = document.createElement('div');
     head.className = 'security__head';
-    head.innerHTML = glyph('shield') + '<div class="security__verdict"><span class="security__title"></span><span class="security__why"></span></div><div class="security__meter" aria-hidden="true"><i></i><i></i><i></i></div>';
+    head.innerHTML = '<span class="seal"><svg viewBox="0 0 24 24" aria-hidden="true">' + GLYPHS.shield + '</svg></span><div class="security__verdict"><span class="security__title"></span><span class="security__why"></span></div><div class="security__meter" aria-hidden="true"><i></i><i></i><i></i></div>';
     head.querySelector('.security__title').textContent = tr(TRUST[t.level][0]);
     head.querySelector('.security__why').textContent = tr(t.why);
     [...head.querySelector('.security__meter').children].forEach((b, i) => b.classList.toggle('on', i < level));
@@ -421,7 +421,8 @@
     for (const c of checks) {
       const item = document.createElement('div');
       item.className = 'check check--' + c.state;
-      item.innerHTML = `<svg class="check__state" viewBox="0 0 24 24" aria-hidden="true">${SECURITY_GLYPHS[c.state]}</svg><div class="check__what"><span class="check__title"></span><span class="check__detail"></span></div><span class="check__value"></span>`;
+      item.innerHTML = `<span class="jewel" role="img"><svg viewBox="0 0 24 24" aria-hidden="true">${SECURITY_GLYPHS[c.state]}</svg></span><div class="check__what"><span class="check__title"></span><span class="check__detail"></span></div><span class="check__value"></span>`;
+      item.querySelector('.jewel').setAttribute('aria-label', tr({ ok: 'Fine', warn: 'Be careful', bad: 'Risky', neutral: 'Not reported' }[c.state]));
       item.querySelector('.check__title').textContent = tr(c.title);
       item.querySelector('.check__detail').textContent = tr(c.detail);
       item.querySelector('.check__value').textContent = c.value;
@@ -431,10 +432,10 @@
     const todo = checks.find(c => c.state === 'bad' && c.advice) || checks.find(c => c.state === 'warn' && c.advice);
     const next = document.createElement('div');
     next.className = 'security__next';
-    next.innerHTML = '<span class="security__tip"></span><button class="button" hidden></button>';
+    next.innerHTML = '<span class="security__tip"></span><button class="security__key" hidden></button>';
     next.querySelector('.security__tip').textContent = todo ? tr(todo.advice) : tr('Nothing to fix on this network');
     if (todo) {
-      const open = next.querySelector('button');
+      const open = next.querySelector('.security__key');
       open.hidden = false;
       open.textContent = tr('Network settings');
       open.addEventListener('click', () => send('network.settings'));
