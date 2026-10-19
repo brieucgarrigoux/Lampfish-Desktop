@@ -178,7 +178,11 @@ $('log-errors').addEventListener('click', () => send('log'));
 
 for (const p of document.querySelectorAll('.caption small')) if (p.textContent) p.title = p.textContent;
 
-for (const b of $('language').children) b.addEventListener('click', () => { check('language', b.dataset.value); send('language', { value: b.dataset.value }); });
+for (const b of $('language').children) b.addEventListener('click', () => {
+  if (b.getAttribute('aria-checked') === 'true') return;
+  check('language', b.dataset.value);
+  send('language', { value: b.dataset.value });
+});
 $('quit').addEventListener('click', () => send('quit'));
 
 const TYPES = { video: 'Video', gif: 'GIF', image: 'Image', html: 'HTML' };

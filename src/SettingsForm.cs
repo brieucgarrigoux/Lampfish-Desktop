@@ -57,13 +57,27 @@ namespace Bramble
             core.Navigate("https://" + WallpaperForm.AppHost + "/app/ui/index.html");
         }
 
+        bool changing, changeAgain;
+
         public async void ChangeLanguage()
         {
             var core = view.CoreWebView2;
             if (core == null) return;
-            if (scriptLanguage != null) core.RemoveScriptToExecuteOnDocumentCreated(scriptLanguage);
-            scriptLanguage = await core.AddScriptToExecuteOnDocumentCreatedAsync(Language.Script());
-            core.Reload();
+            if (changing) { changeAgain = true; return; }
+            changing = true;
+            try
+            {
+                do
+                {
+                    changeAgain = false;
+                    if (scriptLanguage != null) core.RemoveScriptToExecuteOnDocumentCreated(scriptLanguage);
+                    scriptLanguage = await core.AddScriptToExecuteOnDocumentCreatedAsync(Language.Script());
+                    core.Reload();
+                    await System.Threading.Tasks.Task.Delay(600);
+                } while (changeAgain);
+            }
+            catch (Exception ex) { Program.Log(ex); }
+            finally { changing = false; }
         }
 
         public void Shutdown()

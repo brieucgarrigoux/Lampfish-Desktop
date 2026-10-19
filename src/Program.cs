@@ -619,7 +619,9 @@ namespace Bramble
                 case "language":
                 {
                     string l = (string)m["value"];
-                    R.Language = l == "en" || l == "fr" ? l : "auto";
+                    string chosen = l == "en" || l == "fr" ? l : "auto";
+                    if (chosen == R.Language) return;
+                    R.Language = chosen;
                     Language.Choose(R.Language);
                     Save();
                     TranslateMenu();
