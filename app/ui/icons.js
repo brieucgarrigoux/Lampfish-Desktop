@@ -60,7 +60,9 @@
     document.body.dataset.iconSize = d.size || 'medium';
     const n = d.customized.length;
     $('icons-reset-all').disabled = n === 0;
-    $('reset-all-help').textContent = n ? tr(n > 1 ? 'The {0} folders get their icon back' : 'The folder gets its icon back', n) : tr('No customized folder');
+    const names = d.customized.map(f => f.name);
+    const listed = names.length > 2 ? tr('{0}, {1} and {2} more', names[0], names[1], names.length - 2) : names.join(' ' + tr('and') + ' ');
+    $('reset-all-help').textContent = n ? tr('Default icon back for {0}', listed) : tr('No customized folder');
   }
 
   function renderTabs() {
