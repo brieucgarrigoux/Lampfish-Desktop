@@ -76,11 +76,14 @@
 @keyframes charge { to { opacity: .35; } }
 .cell-relief__tip { width: 5px; height: 12px; margin-left: -1px; border-radius: 0 3px 3px 0; background: linear-gradient(180deg, #4a4c57, #2a2b33); box-shadow: 0 0 0 1px #08090c; }
 
-.thermo { width: 120px; height: 72px; overflow: visible; }
-.thermo__ticks path { stroke: #6e6c7d; stroke-width: 1.6; stroke-linecap: round; }
-.thermo__red { fill: none; stroke: var(--danger); stroke-width: 3; stroke-linecap: round; opacity: .75; }
-.thermo__needle { transform-origin: 60px 62px; transform: rotate(-90deg); transition: transform .8s cubic-bezier(.25, .8, .3, 1); }
-.thermo__needle path { fill: #f1edf7; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .7)); }
-.thermo__pivot { fill: #c5c7cf; stroke: #0a0a0e; stroke-width: 1.2; }
+.thermo { width: 150px; height: 46px; overflow: visible; }
+.thermo__ticks path { stroke: #6e6c7d; stroke-width: 1.2; stroke-linecap: round; }
+.thermo__red { fill: none; stroke: var(--danger); stroke-width: 2; stroke-linecap: round; opacity: .75; }
 .cell-relief { margin-top: auto; padding-top: 10px; align-self: flex-start; }
 .thermo { margin-top: auto; align-self: center; }
+.thermo__tube { fill: #2a2b36; }
+.thermo__inner { fill: #0b0c10; }
+.thermo__fluid { fill: var(--accent); transition: fill .5s; }
+rect.thermo__fluid { transform-origin: 23px 20px; transform: scaleX(.01); transition: transform 1.2s cubic-bezier(.25, .8, .3, 1), fill .5s; }
+.m-card[data-level="medium"] .thermo__fluid { fill: #e3b15c; }
+.m-card[data-level="up"] .thermo__fluid { fill: var(--danger); }

@@ -159,15 +159,17 @@
     }
 
     const tc = card('temperature', 'temperature', 'Temperature', tr('Processor thermal zone'),
-      '<svg class="thermo" viewBox="0 0 120 72" aria-hidden="true"><g class="thermo__ticks"></g><path class="thermo__red" d="M101.8 49.6A46 46 0 0 0 98.6 35.4"/><g class="thermo__needle"><path d="M58.8 62 60 22l1.2 40z"/></g><circle class="thermo__pivot" cx="60" cy="62" r="5"/></svg>');
+      '<svg class="thermo" viewBox="0 0 150 46" aria-hidden="true"><rect class="thermo__tube" x="24" y="12" width="122" height="16" rx="8"/><circle class="thermo__tube" cx="16" cy="20" r="12"/>'
+      + '<rect class="thermo__inner" x="24" y="14.5" width="119" height="11" rx="5.5"/><circle class="thermo__inner" cx="16" cy="20" r="9.5"/>'
+      + '<rect class="thermo__fluid" x="23" y="15.5" width="119" height="9" rx="4.5"/><circle class="thermo__fluid" cx="16" cy="20" r="8"/>'
+      + '<g class="thermo__ticks"></g><path class="thermo__red" d=""/></svg>');
     tc.querySelector('.mini-curve').remove();
+    const at = t => 24 + (t - 20) / 80 * 118;
     let grad = '';
-    for (let t = 20; t <= 100; t += 10) {
-      const a = Math.PI + (t - 20) / 80 * Math.PI, r1 = 46, r2 = t % 20 === 0 ? 39 : 42;
-      grad += `<path d="M${(60 + r1 * Math.cos(a)).toFixed(1)} ${(62 + r1 * Math.sin(a)).toFixed(1)}L${(60 + r2 * Math.cos(a)).toFixed(1)} ${(62 + r2 * Math.sin(a)).toFixed(1)}"/>`;
-    }
+    for (let t = 20; t <= 100; t += 10) grad += `<path d="M${at(t).toFixed(1)} ${t % 20 === 0 ? 31 : 31}V${t % 20 === 0 ? 37 : 35}"/>`;
     tc.querySelector('.thermo__ticks').innerHTML = grad;
-    cards.temperature.needle = tc.querySelector('.thermo__needle');
+    tc.querySelector('.thermo__red').setAttribute('d', `M${at(85).toFixed(1)} 40H${at(100).toFixed(1)}`);
+    cards.temperature.fluid = [...tc.querySelectorAll('.thermo__fluid')];
     power.push(tc);
 
     const e = inv.screens;
@@ -270,7 +272,7 @@
       k.value.textContent = t != null ? Math.round(t) + ' °C' : '–';
       k.word.textContent = t == null ? '' : tr(t < 60 ? 'Cool' : t < 85 ? 'Warm' : 'Hot');
       k.el.dataset.level = t >= 85 ? 'up' : t >= 70 ? 'medium' : '';
-      if (t != null) k.needle.style.transform = `rotate(${(-90 + Math.max(0, Math.min(1, (t - 20) / 80)) * 180).toFixed(1)}deg)`;
+      if (t != null) k.fluid[0].style.transform = `scaleX(${Math.max(0.01, Math.min(1, (t - 20) / 80)).toFixed(3)})`;
     }
 
     const health = $('m-health');
