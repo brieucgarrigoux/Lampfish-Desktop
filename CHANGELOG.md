@@ -5,6 +5,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-19
+
 ### Added
 - Interface zoom: an Interface size choice in Settings and Ctrl plus, Ctrl minus, Ctrl 0 or Ctrl wheel.
 - Library: wallpapers made in Create can be edited again, and thumbnails play when hovered.
