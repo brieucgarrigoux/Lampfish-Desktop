@@ -45,7 +45,6 @@ namespace Bramble
             new[] { "usb_on", "USB device connected", "Flash drive, disk, controller…", "Retro 8-bit" },
             new[] { "usb_off", "USB device removed", "Flash drive, disk, controller…", "Retro 8-bit" },
             new[] { "speedtest_start", "Speed test started", "When you launch it in Network", "Sonar" },
-            new[] { "speedtest_end", "Speed test finished", "When its results are ready", "Sonar" },
         };
         static System.Windows.Forms.PowerLineStatus mains;
 

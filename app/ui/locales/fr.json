@@ -806,8 +806,6 @@
  "A command-line program: ending it by force can leave its terminal stuck. Close that terminal window instead.": "Programme en ligne de commande : le fermer de force peut bloquer son terminal. Ferme plutôt la fenêtre de ce terminal.",
  "Speed test started": "Test de débit lancé",
  "When you launch it in Network": "Au lancement depuis Réseau",
- "Speed test finished": "Test de débit terminé",
- "When its results are ready": "Quand les résultats sont prêts",
  "Background": "Arrière-plan",
  "App": "Application",
  "Everything running now": "Tout ce qui tourne en ce moment",

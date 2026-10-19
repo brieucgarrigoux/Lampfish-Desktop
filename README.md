@@ -22,7 +22,7 @@ Bramble sits in the system tray and brings together what usually takes five diff
 | **Create** | Builds a wallpaper from your logo and background: themes, particles, glow, a sound reaction and a live preview with snap guides where the logo and the text are placed, typed and resized. Made wallpapers can be edited again. |
 | **Icons** | Gives any folder an icon from the Windows library (sorted retro pixel / modern) or your own, from the app or the right-click menu. |
 | **Mouse** | Cursor themes (including original pixel-art themes and a smooth, lightly animated one), per-role cursors, pointer size, speed, double-click, wheel and extras. |
-| **Sounds** | A sound for fourteen system events (startup, lock, sleep, charger, USB devices, docking station, speed test), with a sound library, loudness matching and import. |
+| **Sounds** | A sound for thirteen system events (startup, lock, sleep, charger, USB devices, docking station, speed test), with a sound library, loudness matching and import. |
 | **Arrange** | A live map of your screens (one, two, three or more) to sort and lay out desktop icons, with undo, a way back to the original layout, and layouts saved per screen setup. |
 | **Folders** | What takes up space on a drive, as rings (in the spirit of DaisyDisk), without administrator rights. |
 | **Network** | Connection details, live traffic, a security check of the connection, and a speed test with jitter, loaded latency (graded A to F) and history. |

@@ -17,7 +17,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Hardware: a card for the devices plugged in now (USB devices and controllers, mouse, keyboard, camera, audio, Bluetooth, storage).
 - Network: a Security card under the speed test gauge, with a verdict, three checks (encryption, Windows profile, VPN), the next step to take and a shortcut to the Windows network settings.
 - Charts in Hardware and Network show a guide, the value and the time on hover, with a short explanation of what the line is.
-- Sounds: two events for the speed test, when it starts and when its results are ready.
+- Sounds: an event for the start of the speed test.
 - Network: a soft note plays each time a step of the test completes (router, Internet, DNS, download, upload), following the Sounds switches and volume. The notes are synthesized by `src\sounds.py` into `app\sounds`.
 - Wallpapers: Bramble logo is rebuilt on the Create engine (deep violet gradient, embers, glow, wave ring, ripples) and a second one, Bramble dusk, joins it. Both come from `src\wallpapers.py`.
 - Tasks: its own service listing what is running, grouped by program, with icon, description, publisher, memory and processor use. Filters by kind (apps, developer, background, system) and sortable columns. Programs with a window are asked to close like the X button would; others need a second confirming click. System programs and Bramble itself cannot be ended.
