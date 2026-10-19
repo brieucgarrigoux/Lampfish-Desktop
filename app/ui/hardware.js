@@ -202,10 +202,9 @@
     cards.devices.facts.textContent = '';
 
     zone.replaceChildren(header,
-      family('Power and screens', power),
+      family('Power and screens', [...power.filter(c => !c.classList.contains('m-card--large')), dv, ...power.filter(c => c.classList.contains('m-card--large'))]),
       family('Performance', performance),
-      family('Storage and network', storage),
-      family('Connected', [dv]));
+      family('Storage and network', storage));
     mark();
     updateDevices();
     if (stats) update();

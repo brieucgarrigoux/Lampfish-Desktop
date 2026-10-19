@@ -19,7 +19,7 @@
 .m-card .reticle { position: absolute; inset: -5px; --l: 12px; display: none; }
 .m-card.chosen { background: var(--group-up); }
 .m-card.chosen .reticle { display: block; }
-.m-card--large { grid-column: span 2; }
+.m-card--large { grid-column: 1 / -1; }
 @container hardware (max-width: 560px) { .m-card--large { grid-column: auto; } }
 .m-card header { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .m-card header > div { min-width: 0; }
