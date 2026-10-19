@@ -187,6 +187,9 @@ namespace Bramble
                 case "traffic": Program.Send(Traffic()); break;
                 case "publicip": PublicIp(); break;
                 case "test": Test(); break;
+                case "settings":
+                    try { System.Diagnostics.Process.Start("ms-settings:network-status"); } catch (Exception ex) { Program.Log(ex); }
+                    break;
                 case "forget": History.Clear(); Program.Save(); Program.Send(Infos()); break;
             }
         }

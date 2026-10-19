@@ -355,13 +355,96 @@
     return { level, enc, enterprise, why };
   }
 
+  const SECURITY_GLYPHS = {
+    ok: '<circle cx="12" cy="12" r="8.5"/><path d="m8.5 12.3 2.4 2.4 4.6-5"/>',
+    warn: '<path d="M12 4 21 19.5H3z"/><path d="M12 10v4.5M12 17v.01"/>',
+    bad: '<circle cx="12" cy="12" r="8.5"/><path d="m9 9 6 6M15 9l-6 6"/>',
+    neutral: '<circle cx="12" cy="12" r="8.5"/><path d="M8.5 12h7"/>',
+  };
+  const ENC_TEXT = { none: 'Traffic sent in the clear', weak: 'Outdated protection', good: 'Shared Wi-Fi password', unknown: 'Not reported by Windows',
+    wired: 'Cable, no radio to listen to', strong: 'Latest Wi-Fi protection' };
+  const CIPHERS = { ccmp: 'AES', gcmp: 'AES-GCMP', 'gcmp-256': 'AES-GCMP-256', tkip: 'TKIP', wep: 'WEP' };
+  const PROFILES = { public: ['Public', 'Your PC is hidden from other devices'], private: ['Private', 'Your PC is visible on this network'], domain: ['Work', 'Managed by your organization'] };
+
+  function securityChecks(t) {
+    const cipher = cx.cipher ? CIPHERS[cx.cipher.toLowerCase()] || cx.cipher : '';
+    const risky = t.level !== 'high';
+    const enc = {
+      icon: 'lock', title: 'Encryption',
+      state: t.enc === 'none' || t.enc === 'weak' ? 'bad' : t.enc === 'unknown' ? 'warn' : 'ok',
+      value: cx.wifi ? [authName(cx.security), cipher].filter(Boolean).join(' · ') : tr('Wired'),
+      detail: t.enterprise ? 'Personal sign-in for each user' : ENC_TEXT[t.enc],
+      advice: t.enc === 'none' ? 'Avoid entering passwords here, or turn on a VPN'
+        : t.enc === 'weak' ? 'Ask for WPA2 or WPA3 on the router, or use a VPN' : t.enc === 'unknown' ? 'Check the network protection in Windows settings' : '',
+    };
+    const profile = PROFILES[cx.profile];
+    const exposed = cx.profile === 'private' && (t.enc === 'none' || t.enc === 'weak' || t.enc === 'unknown');
+    const prof = {
+      icon: 'profile', title: 'Windows profile',
+      state: exposed ? 'warn' : profile ? 'ok' : 'neutral',
+      value: profile ? tr(profile[0]) : '',
+      detail: profile ? profile[1] : 'Not reported by Windows',
+      advice: exposed ? 'Set this network to Public in Windows settings' : '',
+    };
+    const vpn = {
+      icon: 'vpn', title: 'VPN',
+      state: cx.vpn ? 'ok' : risky ? 'warn' : 'neutral',
+      value: cx.vpn || tr('Off'),
+      detail: cx.vpn ? 'Your traffic goes through a tunnel' : risky ? 'Your traffic is not hidden on this network' : 'Optional on a trusted network',
+      advice: !cx.vpn && risky ? 'Turn on a VPN while you use this network' : '',
+    };
+    return [enc, prof, vpn];
+  }
+
+  function renderSecurity(t) {
+    const zone = $('r-security');
+    $('r-security-title').hidden = zone.hidden = !t;
+    if (!t) { zone.replaceChildren(); return; }
+    const checks = securityChecks(t);
+    const level = { high: 3, medium: 2, low: 1 }[t.level];
+    zone.className = 'security security--' + t.level;
+    $('r-security-note').textContent = tr(cx.wifi ? 'Read from the Wi-Fi connection' : 'Read from the cable connection');
+
+    const head = document.createElement('div');
+    head.className = 'security__head';
+    head.innerHTML = glyph('shield') + '<div class="security__verdict"><span class="security__title"></span><span class="security__why"></span></div><div class="security__meter" aria-hidden="true"><i></i><i></i><i></i></div>';
+    head.querySelector('.security__title').textContent = tr(TRUST[t.level][0]);
+    head.querySelector('.security__why').textContent = tr(t.why);
+    [...head.querySelector('.security__meter').children].forEach((b, i) => b.classList.toggle('on', i < level));
+
+    const list = document.createElement('div');
+    list.className = 'security__checks';
+    for (const c of checks) {
+      const item = document.createElement('div');
+      item.className = 'check check--' + c.state;
+      item.innerHTML = `<svg class="check__state" viewBox="0 0 24 24" aria-hidden="true">${SECURITY_GLYPHS[c.state]}</svg><div class="check__what"><span class="check__title"></span><span class="check__detail"></span></div><span class="check__value"></span>`;
+      item.querySelector('.check__title').textContent = tr(c.title);
+      item.querySelector('.check__detail').textContent = tr(c.detail);
+      item.querySelector('.check__value').textContent = c.value;
+      list.append(item);
+    }
+
+    const todo = checks.find(c => c.state === 'bad' && c.advice) || checks.find(c => c.state === 'warn' && c.advice);
+    const next = document.createElement('div');
+    next.className = 'security__next';
+    next.innerHTML = '<span class="security__tip"></span><button class="button" hidden></button>';
+    next.querySelector('.security__tip').textContent = todo ? tr(todo.advice) : tr('Nothing to fix on this network');
+    if (todo) {
+      const open = next.querySelector('button');
+      open.hidden = false;
+      open.textContent = tr('Network settings');
+      open.addEventListener('click', () => send('network.settings'));
+    }
+    zone.replaceChildren(head, list, next);
+  }
+
   function renderPanel() {
-    const a = $('r-addresses'), w = $('r-wifi'), c = $('r-card'), sec = $('r-security');
+    const a = $('r-addresses'), w = $('r-wifi'), c = $('r-card');
     const t = trust();
-    $('r-security-title').hidden = sec.hidden = !t;
+    renderSecurity(t);
     if (!cx || !cx.connected) {
       a.innerHTML = '<div class="row empty">' + (cx ? 'No connection' : 'Reading the connection') + '</div>';
-      w.replaceChildren(); c.replaceChildren(); sec.replaceChildren();
+      w.replaceChildren(); c.replaceChildren();
       $('r-wifi-title').hidden = w.hidden = true;
       return;
     }
@@ -381,22 +464,6 @@
       row('mask', 'Subnet mask', 'Size of the local network', cx.mask),
       row('ip', 'IPv6', 'Next generation', cx.ipv6),
     );
-    const pill = document.createElement('span');
-    pill.className = 'pill ' + TRUST[t.level][1];
-    pill.textContent = tr(TRUST[t.level][0]);
-    const ENC = { none: 'Traffic sent in the clear', weak: 'Outdated protection', good: 'Shared Wi-Fi password', unknown: 'Not reported by Windows',
-      wired: 'Cable, no radio to listen to', strong: t.enterprise ? 'Personal sign-in for each user' : 'Latest Wi-Fi protection' };
-    const CIPHERS = { ccmp: 'AES', gcmp: 'AES-GCMP', 'gcmp-256': 'AES-GCMP-256', tkip: 'TKIP', wep: 'WEP' };
-    const cipher = cx.cipher ? CIPHERS[cx.cipher.toLowerCase()] || cx.cipher : '';
-    const PROFILES = { public: ['Public', 'Your PC is hidden from other devices'], private: ['Private', 'Your PC is visible on this network'], domain: ['Work', 'Managed by your organization'] };
-    const profile = PROFILES[cx.profile];
-    sec.replaceChildren(
-      row('shield', 'Trust level', t.why, pill),
-      row('lock', 'Encryption', [tr(ENC[t.enc]), cipher].filter(Boolean).join(' · '), text(cx.wifi ? authName(cx.security) : tr('Wired'))),
-      row('profile', 'Windows profile', profile ? profile[1] : '', text(profile ? tr(profile[0]) : '')),
-      row('vpn', 'VPN', cx.vpn ? 'Your traffic goes through a tunnel' : 'No tunnel in use', text(cx.vpn || tr('Off'))),
-    );
-
     $('r-wifi-title').hidden = w.hidden = !cx.wifi;
     if (cx.wifi) w.replaceChildren(
       row('wifi', 'Network', 'Wi-Fi name', text(cx.network)),
