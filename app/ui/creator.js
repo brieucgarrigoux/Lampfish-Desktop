@@ -65,6 +65,7 @@
     what.append(el('span', '', tr(label)));
     if (help) what.append(el('small', '', tr(help)));
     r.append(what, control);
+    if (control.classList.contains('cr-slider')) r.classList.add('cr-row--slider');
     return r;
   }
 
@@ -91,13 +92,16 @@
       out.textContent = input.value + (suffix || '');
       reset.classList.toggle('shown', fallback !== undefined && Number(input.value) !== fallback);
     };
-    const back = () => { if (fallback === undefined) return; set(fallback); input.value = fallback; paint(); push(); };
-    input.addEventListener('input', () => { set(Number(input.value)); paint(); push(); });
+    const others = () => { for (const k in ctl) if (ctl[k] !== self) ctl[k].sync(); };
+    const back = () => { if (fallback === undefined) return; set(fallback); input.value = fallback; paint(); others(); push(); };
+    input.addEventListener('input', () => { set(Number(input.value)); paint(); if (name === 'bgAngle') others(); push(); });
     input.addEventListener('dblclick', back);
     reset.addEventListener('click', back);
-    ctl[name] = { sync() { input.value = get(); paint(); } };
+    const self = ctl[name] = { sync() { input.value = get(); paint(); } };
     paint();
-    wrap.append(input, out, reset);
+    const value = el('span', 'cr-val');
+    value.append(out, reset);
+    wrap.append(value, input);
     return wrap;
   }
 
