@@ -24,6 +24,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Powered by Bramble badge in Settings, About, and in the README.
 
 ### Fixed
+- Narrow windows: below 900 px the rail stays pinned and the side panel moves below the content, and below 620 px the rail shows icons only. A window snapped to half the screen keeps every menu reachable.
+- Create: the edge shade darkens all four edges.
 - Arrange: layouts reach the bottom and right edges of the screen. The grid lost a whole row (about 127 px) and now spreads the leftover space between the icons.
 - Settings: clicking a language several times in a row no longer breaks the window.
 - French: Start time, Number of screens, Kind of program, Enable and Favorite were still in English, and the Wi-Fi security names (WPA2-Personal) are kept as Windows reports them.
@@ -31,6 +33,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Arrange: the screen map is centered and no longer slides in from the corner, and the icon size slider shows its real position and refreshes the map after a change.
 
 ### Changed
+- Selection no longer uses corner brackets: a backlit plate with an accent bar in the rail, an accent ring elsewhere.
+- Hardware is a dashboard (large processor tile, memory and graphics, temperature, battery and devices on one row) and the status LEDs are gone.
+- Sounds: the console is a 28 band LED equalizer driven by the real spectrum of the sound, and Listen is a chrome push button.
+- Create: every slider resets, ten gradient presets and eight directions, shadow and drift are sliders, a color for rings and ripples, a vibration strength, Particles can stop reacting, wave ring and pulse are on by default.
 - Create: controls on the right, snap guides and a thirds grid, click to type the text, outlines only on hover, small renders as theme thumbnails, particles that no longer reshuffle, effects that can be combined (pulse, ripples, wave ring, vibration), three text styles, a slowly turning gradient.
 - Cards in Hardware, Network, Sounds and Create share one casing, and Hardware values sit in a recessed display with a status LED.
 - Network: the security seal holds a lit, bevelled shield behind a glass dome.
