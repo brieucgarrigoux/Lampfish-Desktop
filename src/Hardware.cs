@@ -9,11 +9,11 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.VisualBasic.Devices;
+
 namespace Bramble
 {
     static class Hardware
     {
-
         class Category
         {
             readonly PerformanceCounterCategory category;
@@ -46,9 +46,9 @@ namespace Bramble
         static readonly Dictionary<string, long[]> networkBefore = new Dictionary<string, long[]>();
         static readonly ComputerInfo computer = new ComputerInfo();
         static long maxFrequency;
+
         public static void Start()
         {
-
             Task.Run(() =>
             {
                 try
@@ -301,9 +301,9 @@ namespace Bramble
         }
 
         class Monitor { public string Name, Manufacturer, Code; public int Year; public double Inches; public string Port; }
+
         static object Screens()
         {
-
             var monitors = new Dictionary<string, Monitor>(StringComparer.OrdinalIgnoreCase);
             Func<ManagementObject, Monitor> monitor = m =>
             {

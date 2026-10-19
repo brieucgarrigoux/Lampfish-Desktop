@@ -312,7 +312,6 @@ namespace Bramble
 
         static void UpdateVisibility()
         {
-
             if (building && (DateTime.Now - lastBuild).TotalSeconds > 25)
             {
                 Log(new Exception("Wallpaper build stuck, restarting"));
@@ -324,6 +323,7 @@ namespace Bramble
                 return;
             }
             if (building || restart) return;
+
             if (screens.Count > 0)
             {
                 var dead = screens.FirstOrDefault(f => !f.Alive);
@@ -483,7 +483,6 @@ namespace Bramble
             }
             catch (Exception ex)
             {
-
                 Log(ex);
                 if (Directory.Exists(path)) FileSystem.DeleteDirectory(path, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
                 else if (File.Exists(path)) FileSystem.DeleteFile(path, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
@@ -498,6 +497,7 @@ namespace Bramble
             removalUndo = undo;
             removalDelay.Start();
         }
+
         static void UndoRemoval()
         {
             if (removed == null) return;

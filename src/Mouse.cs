@@ -120,9 +120,9 @@ namespace Bramble
             }
             Reload();
         }
+
         static void Reload()
         {
-
             if (!SystemParametersInfo(SPI_SETCURSORS, 0, IntPtr.Zero, SPIF_UPDATEINIFILE | SPIF_SENDCHANGE))
                 SystemParametersInfo(SPI_SETCURSORS, 0, IntPtr.Zero, 0);
         }
