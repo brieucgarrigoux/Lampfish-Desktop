@@ -348,5 +348,14 @@ def sonar():
     write('Sonar', 'Disconnect', soften(squash(d), 4200), .26, .78)
 
 
+def steps():
+    """One short note per speed test step, rising: app/sounds/step-1..5.wav, played by Sounds.Step."""
+    for i, f in enumerate((587.33, 739.99, 880.0, 1174.66, 1479.98), 1):
+        b = silence(1.0)
+        mix(b, tone(f, .8, .008, .16), 0, .8)
+        mix(b, tone(f * 2, .6, .008, .1), 0, .18)
+        write('../app/sounds', 'step-%d' % i, soften(b, 5000), .16, .5)
+
+
 if __name__ == '__main__':
-    glass(); chime(); analog(); drops(); mechanical(); retro(); crystal(); scifi(); sonar()
+    glass(); chime(); analog(); drops(); mechanical(); retro(); crystal(); scifi(); sonar(); steps()

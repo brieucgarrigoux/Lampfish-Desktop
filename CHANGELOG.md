@@ -18,7 +18,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Network: a Security card under the speed test gauge, with a verdict, three checks (encryption, Windows profile, VPN), the next step to take and a shortcut to the Windows network settings.
 - Charts in Hardware and Network show a guide, the value and the time on hover, with a short explanation of what the line is.
 - Sounds: two events for the speed test, when it starts and when its results are ready.
-- Network: a soft note plays each time a step of the test completes (router, Internet, DNS, download, upload), following the Sounds switches and volume.
+- Network: a soft note plays each time a step of the test completes (router, Internet, DNS, download, upload), following the Sounds switches and volume. The notes are synthesized by `src\sounds.py` into `app\sounds`.
 - Wallpapers: Bramble logo is rebuilt on the Create engine (deep violet gradient, embers, glow, wave ring, ripples) and a second one, Bramble dusk, joins it. Both come from `src\wallpapers.py`.
 - Tasks: its own service listing what is running, grouped by program, with icon, description, publisher, memory and processor use. Filters by kind (apps, developer, background, system) and sortable columns. Programs with a window are asked to close like the X button would; others need a second confirming click. System programs and Bramble itself cannot be ended.
 - Arrange: an icon size slider for the desktop icons.
@@ -34,7 +34,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Settings: clicking a language several times in a row no longer breaks the window.
 - French: Start time, Number of screens, Kind of program, Enable and Favorite were still in English, and the Wi-Fi security names (WPA2-Personal) are kept as Windows reports them.
 - Icons: the preview size (small, medium, large) now changes the tiles.
-- Arrange: the screen map draws the taskbar instead of dimming a band under the icons.
 - Create: the active gradient direction was highlighted on the opposite arrow.
 - Network: the test card no longer shifts when the test ends, the lines under the gauge keep their height.
 - Narrow windows: the Home header wraps and the Tasks tabs scroll instead of overflowing.

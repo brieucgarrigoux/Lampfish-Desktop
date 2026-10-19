@@ -163,6 +163,19 @@ namespace Bramble
 
         public static void Fire(string id) { Trigger(id); }
 
+        public static void Step(int n)
+        {
+            if (!R.Active || R.Silence) return;
+            string file = Path.Combine(Program.Root, "app", "sounds", "step-" + n + ".wav");
+            if (!File.Exists(file)) return;
+            try
+            {
+                Wav wav = Wav.Read(file);
+                Player.Play(wav.Render(Gain() * wav.Normalisation(), 0));
+            }
+            catch (Exception ex) { Program.Log(ex); }
+        }
+
         public static void Stop() { Player.Stop(); }
 
         static void Change(bool present)

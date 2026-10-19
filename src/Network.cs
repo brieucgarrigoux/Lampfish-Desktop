@@ -247,7 +247,9 @@ namespace Bramble
                 Program.OnInterface(() =>
                 {
                     testRunning = false;
-                    Sounds.Fire("speedtest_end");
+                    var finish = new System.Windows.Forms.Timer { Interval = 700 };
+                    finish.Tick += (s, e) => { finish.Dispose(); Sounds.Fire("speedtest_end"); };
+                    finish.Start();
                     if (Convert.ToDouble(summary.ContainsKey("down") ? summary["down"] : 0) > 0)
                     {
                         History.Insert(0, summary);
@@ -270,7 +272,12 @@ namespace Bramble
 
         static void Step(string step, object result)
         {
-            Program.OnInterface(() => Program.Send(new { type = "network.test", step = step, result = result }));
+            Program.OnInterface(() =>
+            {
+                Program.Send(new { type = "network.test", step = step, result = result });
+                int n = Array.IndexOf(new[] { "gateway", "internet", "dns", "download", "upload" }, step) + 1;
+                if (n > 0 && Value(result, "ok") != 0) Sounds.Step(n);
+            });
         }
 
         static readonly Dictionary<int, string> Providers = new Dictionary<int, string>

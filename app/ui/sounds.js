@@ -450,6 +450,6 @@
     }
   }
 
-  Bramble.station = { state, event, ingest, audible: () => s && s.active && !s.silence ? s.volume / 100 : 0, visible(yes) { standby = yes; if (yes && !loop) loop = requestAnimationFrame(animate); } };
+  Bramble.station = { state, event, ingest, visible(yes) { standby = yes; if (yes && !loop) loop = requestAnimationFrame(animate); } };
   animate();
 })();
