@@ -333,7 +333,11 @@
   const text = t => { const s = document.createElement('span'); s.textContent = t || '–'; if (t) s.title = t; return s; };
 
 
-  const authName = a => (a || '').replace(/\s*-\s*/g, '-').replace(/Entreprise/i, 'Enterprise').replace(/Personnel/i, 'Personal').replace(/^Ouvert$/i, 'Open');
+  const authName = a => {
+    const clean = (a || '').replace(/\s*-\s*/g, '-');
+    return LANGUAGE === 'fr' ? clean.replace(/Enterprise/i, 'Entreprise').replace(/Personal/i, 'Personnel').replace(/^Open$/i, 'Ouvert')
+      : clean.replace(/Entreprise/i, 'Enterprise').replace(/Personnel/i, 'Personal').replace(/^Ouvert$/i, 'Open');
+  };
   const TRUST = { high: ['Trusted', 'excellent'], medium: ['Be careful', 'good'], low: ['Risky', 'slow'] };
   function trust() {
     if (!cx || !cx.connected) return null;
