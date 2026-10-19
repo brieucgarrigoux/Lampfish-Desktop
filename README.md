@@ -1,4 +1,4 @@
-<p align="center"><img src="brand/app-icon/app-icon-violet.png" alt="Bramble" width="128"></p>
+<p align="center"><img src="brand/logo/logo-bramble.png" alt="Bramble" width="128"></p>
 
 <h1 align="center">Bramble Desktop</h1>
 
@@ -39,8 +39,10 @@ The interface is in English, with a French translation (automatic, following the
 
 ## Install
 
-Download `Bramble-<version>.zip` from the [latest release](../../releases/latest), unzip it anywhere and run `Bramble.exe`.
+<img src="brand/app-icon/app-icon-violet.png" alt="Bramble icon" width="56" align="left" hspace="12">Download `Bramble-<version>.zip` from the [latest release](../../releases/latest), unzip it anywhere and run `Bramble.exe`.
 The executable is not signed yet: Windows SmartScreen may ask for confirmation the first time ("More info", then "Run anyway").
+
+<br clear="left">
 
 ## Build from source
 
@@ -73,8 +75,4 @@ Bramble follows [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`.
 
 [MIT](LICENSE)
 
-<p align="center">
-  <img src="brand/logo/logo-bramble.png" alt="The Bramble berry" width="56">
-  &nbsp;&nbsp;
-  <img src="brand/badge/powered-by-bramble-pill.png" alt="Powered by Bramble" width="200">
-</p>
+<p align="center"><img src="brand/badge/powered-by-bramble-pill.png" alt="Powered by Bramble" width="200"></p>

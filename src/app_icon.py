@@ -76,7 +76,6 @@ if __name__ == '__main__':
         'app-icon-dark': place(plate((26, 27, 36), (10, 11, 15)), line),
         'app-icon-light': place(plate((255, 255, 255), (238, 236, 246), False), official),
         'app-icon-violet': place(plate(*violet), white_berry),
-        'app-icon-violet-whiteline': place(plate(*violet), line),
         'app-icon-violet-blackline': place(plate(*violet), official),
     }
     for name, img in icons.items():
