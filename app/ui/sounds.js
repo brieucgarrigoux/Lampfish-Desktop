@@ -47,7 +47,7 @@
     for (let i = 0; i < BARS; i++) {
       let v = 0;
       if (playback) {
-        const k = Math.floor((t - (BARS - 1 - i) * 0.04) * playback.frames);
+        const k = Math.floor((t - i * 0.04) * playback.frames);
         if (k >= 0 && k < playback.rms.length) v = playback.rms[k];
       }
       const db = v > 0 ? 20 * Math.log10(v) : -60;
