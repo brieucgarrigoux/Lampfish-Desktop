@@ -32,7 +32,7 @@
 .arrangement[aria-checked="true"] .name-ag { color: var(--text); }
 .arrangement[aria-checked="true"] rect.t0, .arrangement[aria-checked="true"] rect.t2 { fill: var(--accent); }
 .arrangement[aria-checked="true"] rect.t1, .arrangement[aria-checked="true"] rect.t3 { fill: #5a20ab; }
-.screen-map .number { position: absolute; right: 7px; bottom: 0; line-height: 11px; font: 10px/11px var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); pointer-events: none; }
+.screen-map .number { position: absolute; left: 7px; bottom: 0; line-height: 11px; font: 10px/11px var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); pointer-events: none; }
 .screen-map.primary .number { color: var(--accent); }
 .point { position: absolute; z-index: 2; cursor: grab; touch-action: none; transition: opacity .2s; }
 .scene.settled .point { transition: left .25s ease-out, top .25s ease-out, opacity .2s; }

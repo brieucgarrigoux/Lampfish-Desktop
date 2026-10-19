@@ -97,7 +97,7 @@
         const name = document.createElement('span');
         name.className = 'number';
         name.textContent = e.n + (e.primary ? tr(' · main') : '');
-        screen.append(name);
+        screen.append(...taskbars(e), name);
         wallpaperBehind(screen);
         scene.append(screen);
       }

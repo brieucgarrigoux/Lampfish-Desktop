@@ -394,6 +394,20 @@ $('grid').addEventListener('keydown', e => {
   if (cases[j]) { e.preventDefault(); cases[j].focus(); }
 });
 
+function taskbars(e) {
+  const margins = [[e.ty - e.y, e.h, 'top'], [e.y + e.h - e.ty - e.th, e.h, 'bottom'], [e.tx - e.x, e.w, 'left'], [e.x + e.w - e.tx - e.tw, e.w, 'right']];
+  const bars = [];
+  for (const [size, total, side] of margins) {
+    if (size < 4) continue;
+    const bar = document.createElement('div');
+    bar.className = 'taskbar taskbar--' + side;
+    bar.style[side === 'top' || side === 'bottom' ? 'height' : 'width'] = (size / total * 100).toFixed(3) + '%';
+    if (side === 'bottom' || side === 'top') bar.innerHTML = '<span class="taskbar__apps"><i></i><i></i><i></i><i></i><i></i></span><span class="taskbar__tray"><i></i><i></i><i></i><b></b></span>';
+    bars.push(bar);
+  }
+  return bars;
+}
+
 function throttle(f, ms) {
   let last = 0, waiting = 0;
   return v => {

@@ -214,7 +214,13 @@
       b.style.height = height;
       img.style.width = image;
     }
-    for (const b of [...zone.children]) if (!seen.has(b.dataset.id)) b.remove();
+    const bars = JSON.stringify([e.x, e.y, e.w, e.h, e.tx, e.ty, e.tw, e.th]);
+    if (zone.dataset.bars !== bars) {
+      zone.dataset.bars = bars;
+      zone.querySelectorAll('.taskbar').forEach(b => b.remove());
+      zone.prepend(...taskbars(e));
+    }
+    for (const b of [...zone.children]) if (!b.classList.contains('taskbar') && !seen.has(b.dataset.id)) b.remove();
     zone.classList.toggle('hidden', !!map.hidden);
   }
 
