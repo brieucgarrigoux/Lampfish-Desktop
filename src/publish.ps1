@@ -14,7 +14,7 @@ New-Item -ItemType Directory -Force (Join-Path $tmp 'Bramble'), $dist | Out-Null
 $target = Join-Path $tmp 'Bramble'
 
 Copy-Item (Join-Path $root 'Bramble.exe'), (Join-Path $root 'Bramble.exe.config'), (Join-Path $root 'README.md'), (Join-Path $root 'CHANGELOG.md'), (Join-Path $root 'LICENSE') $target
-foreach ($d in 'app\ui', 'app\player', 'app\templates', 'app\lib', 'app\cursor-themes', 'brand\logo', 'brand\badge', 'wallpapers') {
+foreach ($d in 'app\ui', 'app\player', 'app\sounds', 'app\templates', 'app\lib', 'app\cursor-themes', 'brand\logo', 'brand\badge', 'wallpapers') {
     Copy-Item (Join-Path $root $d) (Join-Path $target $d) -Recurse -Force
 }
 Get-ChildItem (Join-Path $target 'wallpapers') -Filter *.lnk | Remove-Item -Force
