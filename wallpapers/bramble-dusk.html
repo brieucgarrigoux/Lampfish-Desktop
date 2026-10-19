@@ -46,7 +46,7 @@
     if (m.bramble === 'config') { config = m.config; apply(); }
     if (m.bramble === 'audio') window.__audio(m.level);
   });
-  Promise.resolve().then(() => { config = {"v":2,"background":{"type":"gradient","color":"#12062b","color2":"#6b2a7a","angle":200,"fit":"cover","dim":0,"vignette":100,"drift":0,"image":null},"logo":{"size":25,"x":50,"y":50,"shadow":60,"float":true,"image":"https://app.example/brand/logo/berry-color.png"},"title":{"text":"","size":6,"weight":600,"color":"#f4e7f0","x":50,"y":72,"font":"sans"},"particles":{"type":"fireflies","color":"#ffb3e0","amount":55,"size":120,"speed":100},"glow":{"on":true,"color":"#ff6ec4","strength":70},"sound":{"on":true,"pulse":true,"ripples":true,"ring":true,"vibe":true,"vibeAmount":15,"particles":true,"color":""}}; apply(); });
+  Promise.resolve().then(() => { config = {"v":2,"background":{"type":"gradient","color":"#12062b","color2":"#6b2a7a","angle":200,"fit":"cover","dim":0,"vignette":100,"drift":0,"image":null},"logo":{"size":25,"x":50,"y":48,"shadow":60,"float":true,"image":"https://app.example/brand/logo/berry-color.png"},"title":{"text":"","size":6,"weight":600,"color":"#f4e7f0","x":50,"y":72,"font":"sans"},"particles":{"type":"fireflies","color":"#ffb3e0","amount":55,"size":120,"speed":100},"glow":{"on":true,"color":"#ff6ec4","strength":70},"sound":{"on":true,"pulse":true,"ripples":true,"ring":true,"vibe":true,"vibeAmount":15,"particles":true,"color":""}}; apply(); });
   if (parent !== window) parent.postMessage({ bramble: 'ready' }, '*');
 
   const $ = id => document.getElementById(id);
