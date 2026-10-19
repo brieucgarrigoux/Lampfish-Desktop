@@ -59,6 +59,7 @@
   const points = new Map();
   let scale = 1, origin = { x: 0, y: 0 };
 
+  const GAP = 2;
   const zone = $('map');
   const label = document.createElement('div');
   label.className = 'label';
@@ -86,20 +87,26 @@
       for (const e of map.screens) {
         const screen = document.createElement('div');
         screen.className = 'screen-map' + (e.primary ? ' primary' : '');
-        Object.assign(screen.style, { left: (e.x - left) * k + 'px', top: (e.y - up) * k + 'px', width: e.w * k + 'px', height: e.h * k + 'px' });
+        Object.assign(screen.style, { left: (e.x - left) * k + GAP + 'px', top: (e.y - up) * k + GAP + 'px', width: e.w * k - 2 * GAP + 'px', height: e.h * k - 2 * GAP + 'px' });
         const s = e.scale || 1;
         screen.style.setProperty('--vw', (e.w / s).toFixed(1));
         screen.style.setProperty('--vh', (e.h / s).toFixed(1));
         screen.style.setProperty('--k', (k * s).toFixed(5));
         screen.classList.toggle('fit', !!Bramble.state && Bramble.state.fit === 'fit');
 
-        const work = document.createElement('div');
-        work.className = 'work';
-        Object.assign(work.style, { left: (e.tx - e.x) * k + 'px', top: (e.ty - e.y) * k + 'px', width: e.tw * k + 'px', height: e.th * k + 'px' });
+        const margins = [[e.ty - e.y, 'top'], [e.y + e.h - e.ty - e.th, 'bottom'], [e.tx - e.x, 'left'], [e.x + e.w - e.tx - e.tw, 'right']];
+        const bars = [];
+        for (const [size, side] of margins) {
+          if (size < 4) continue;
+          const bar = document.createElement('div');
+          bar.className = 'taskbar taskbar--' + side;
+          bar.style[side === 'top' || side === 'bottom' ? 'height' : 'width'] = size * k + 'px';
+          bars.push(bar);
+        }
         const name = document.createElement('span');
         name.className = 'number';
         name.textContent = e.n + (e.primary ? tr(' · main') : '');
-        screen.append(work, name);
+        screen.append(...bars, name);
         wallpaperBehind(screen);
         scene.append(screen);
       }

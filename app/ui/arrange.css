@@ -11,14 +11,18 @@
 .screen-map { position: absolute; border-radius: 6px; background: #0b0c10; box-shadow: 0 0 0 1px var(--hairline-strong); overflow: hidden; }
 .screen-map.primary { box-shadow: 0 0 0 1px rgba(149, 97, 243, .45); }
 
-.screen-map .work { position: absolute; background: #12131a; }
+.taskbar { position: absolute; z-index: 1; background: rgba(12, 13, 18, .82); backdrop-filter: blur(6px); box-shadow: 0 0 0 1px rgba(255, 255, 255, .05); }
+.taskbar--top { left: 0; right: 0; top: 0; }
+.taskbar--bottom { left: 0; right: 0; bottom: 0; }
+.taskbar--left { top: 0; bottom: 0; left: 0; }
+.taskbar--right { top: 0; bottom: 0; right: 0; }
+.taskbar--bottom::after, .taskbar--top::after { content: ""; position: absolute; left: 50%; top: 50%; width: 34%; height: 40%; max-height: 5px; transform: translate(-50%, -50%); border-radius: 3px; background: repeating-linear-gradient(90deg, rgba(255, 255, 255, .22) 0 12%, transparent 12% 20%); }
 
 .screen-map .wallpaper-map { position: absolute; inset: 0; border-radius: 0; }
 .screen-map .wallpaper-map iframe { width: calc(var(--vw, 1920) * 1px); height: calc(var(--vh, 1080) * 1px); transform: scale(var(--k, .25)); }
 .screen-map.fit .wallpaper-map img, .screen-map.fit .wallpaper-map video { object-fit: contain; }
 .dim-map { position: absolute; inset: 0; }
-.screen-map:has(.wallpaper-map) .work { background: none; box-shadow: 0 0 0 9999px rgba(8, 9, 12, .82); }
-.screen-map .number { z-index: 1; text-shadow: 0 1px 2px rgba(0, 0, 0, .8); }
+.screen-map .number { z-index: 2; text-shadow: 0 1px 2px rgba(0, 0, 0, .8); }
 .point { filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, .7)); }
 
 .arrangements { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 12px; }
@@ -36,7 +40,7 @@
 .arrangement[aria-checked="true"] .name-ag { color: var(--text); }
 .arrangement[aria-checked="true"] rect.t0, .arrangement[aria-checked="true"] rect.t2 { fill: var(--accent); }
 .arrangement[aria-checked="true"] rect.t1, .arrangement[aria-checked="true"] rect.t3 { fill: #5a20ab; }
-.screen-map .number { position: absolute; right: 8px; bottom: 6px; font: 12px var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); pointer-events: none; }
+.screen-map .number { position: absolute; right: 7px; bottom: 0; line-height: 11px; font: 10px/11px var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); pointer-events: none; }
 .screen-map.primary .number { color: var(--accent); }
 .point { position: absolute; z-index: 2; cursor: grab; touch-action: none; transition: opacity .2s; }
 .scene.settled .point { transition: left .25s ease-out, top .25s ease-out, opacity .2s; }
