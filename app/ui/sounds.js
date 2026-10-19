@@ -46,46 +46,83 @@
     pen.lineTo(pts[pts.length - 1][0], pts[pts.length - 1][1]);
   }
 
-  function drawWave(progress, amp) {
+  function curve(points, closePath) {
+    pen.moveTo(points[0][0], points[0][1]);
+    for (let i = 1; i < points.length - 1; i++) pen.quadraticCurveTo(points[i][0], points[i][1], (points[i][0] + points[i + 1][0]) / 2, (points[i][1] + points[i + 1][1]) / 2);
+    pen.lineTo(points[points.length - 1][0], points[points.length - 1][1]);
+    if (closePath) pen.closePath();
+  }
+
+  function drawWave(progress, amp, now) {
     const r = devicePixelRatio || 1, box = canvas.getBoundingClientRect();
     const W = Math.round(box.width * r), H = Math.round(box.height * r);
     if (canvas.width !== W || canvas.height !== H) { canvas.width = W; canvas.height = H; }
     pen.setTransform(r, 0, 0, r, 0, 0);
     pen.clearRect(0, 0, box.width, box.height);
-    const w = box.width, mid = box.height / 2;
-    const shape = () => {
-      pen.beginPath();
-      ribbon(w, mid, amp, true);
-      const back = amp.map((v, i) => [i / (amp.length - 1) * w, mid + Math.max(1, v * mid * .92)]).reverse();
-      pen.lineTo(back[0][0], back[0][1]);
-      for (let i = 1; i < back.length - 1; i++) pen.quadraticCurveTo(back[i][0], back[i][1], (back[i][0] + back[i + 1][0]) / 2, (back[i][1] + back[i + 1][1]) / 2);
-      pen.closePath();
-    };
-    pen.fillStyle = 'rgba(149, 97, 243, .16)';
-    shape();
+    const w = box.width, mid = box.height / 2, n = amp.length;
+    pen.fillStyle = 'rgba(255, 255, 255, .045)';
+    for (let i = 1; i < 16; i++) pen.fillRect(Math.round(w * i / 16), 4, 1, box.height - 8);
+    const upper = k => amp.map((v, i) => [i / (n - 1) * w, mid - Math.max(.8, v * k * mid * .92)]);
+    const lower = k => amp.map((v, i) => [i / (n - 1) * w, mid + Math.max(.8, v * k * mid * .92)]).reverse();
+    const ribbon = k => { pen.beginPath(); curve(upper(k)); const l = lower(k); pen.lineTo(l[0][0], l[0][1]); curve(l, true); };
+
+    pen.fillStyle = 'rgba(149, 97, 243, .13)';
+    ribbon(1);
     pen.fill();
+    pen.fillStyle = 'rgba(149, 97, 243, .12)';
+    ribbon(.6);
+    pen.fill();
+
     if (progress > 0) {
       pen.save();
       pen.beginPath();
       pen.rect(0, 0, w * Math.min(1, progress), box.height);
       pen.clip();
       const grad = pen.createLinearGradient(0, 0, 0, box.height);
-      grad.addColorStop(0, '#c9a8ff');
-      grad.addColorStop(.5, '#8e55ee');
-      grad.addColorStop(1, '#c9a8ff');
+      grad.addColorStop(0, '#d9c2ff');
+      grad.addColorStop(.5, '#8a52ee');
+      grad.addColorStop(1, '#d9c2ff');
       pen.fillStyle = grad;
-      pen.shadowColor = 'rgba(149, 97, 243, .85)';
-      pen.shadowBlur = 12;
-      shape();
+      pen.shadowColor = 'rgba(149, 97, 243, .9)';
+      pen.shadowBlur = 14;
+      ribbon(1);
       pen.fill();
+      pen.shadowBlur = 0;
+      pen.fillStyle = 'rgba(255, 255, 255, .55)';
+      ribbon(.32);
+      pen.fill();
+      pen.strokeStyle = 'rgba(236, 224, 255, .95)';
+      pen.lineWidth = 1.2;
+      pen.beginPath(); curve(upper(1)); pen.stroke();
+      pen.beginPath(); curve(lower(1).reverse()); pen.stroke();
       pen.restore();
-      pen.fillStyle = 'rgba(255, 255, 255, .85)';
+      const x = w * Math.min(1, progress);
+      const bloom = pen.createRadialGradient(x, mid, 0, x, mid, 26);
+      bloom.addColorStop(0, 'rgba(201, 168, 255, .55)');
+      bloom.addColorStop(1, 'rgba(201, 168, 255, 0)');
+      pen.fillStyle = bloom;
+      pen.fillRect(x - 26, 0, 52, box.height);
+      pen.fillStyle = 'rgba(255, 255, 255, .95)';
       pen.shadowColor = 'rgba(201, 168, 255, 1)';
+      pen.shadowBlur = 10;
+      pen.fillRect(x - .75, 2, 1.5, box.height - 4);
+      pen.shadowBlur = 0;
+    } else {
+      pen.strokeStyle = 'rgba(176, 130, 255, .55)';
+      pen.lineWidth = 1.4;
+      pen.shadowColor = 'rgba(149, 97, 243, .8)';
       pen.shadowBlur = 8;
-      pen.fillRect(w * Math.min(1, progress) - .75, 2, 1.5, box.height - 4);
+      pen.beginPath();
+      const t = (now || 0) / 1000;
+      for (let i = 0; i <= 120; i++) {
+        const x = i / 120 * w, e = Math.sin(i / 120 * Math.PI);
+        const y = mid + Math.sin(i * .22 + t * 1.6) * 3.2 * e + Math.sin(i * .09 - t * .9) * 2.2 * e;
+        if (i) pen.lineTo(x, y); else pen.moveTo(x, y);
+      }
+      pen.stroke();
       pen.shadowBlur = 0;
     }
-    pen.fillStyle = 'rgba(255, 255, 255, .08)';
+    pen.fillStyle = 'rgba(255, 255, 255, .07)';
     pen.fillRect(0, mid - .5, w, 1);
   }
 
@@ -103,14 +140,14 @@
   }
 
   const idle = new Array(COLUMNS).fill(.02);
-  let loop = 0;
+  let loop = 0, standby = false;
   function animate() {
     loop = 0;
     const t = playback ? (performance.now() - playback.start) / 1000 : 0;
     if (playback && t > playback.duration + 0.08) { finishPlayback(); return; }
-    if (playback) drawWave(t / playback.duration, playback.env);
-    else drawWave(0, idle);
-    if (playback) loop = requestAnimationFrame(animate);
+    if (playback) drawWave(t / playback.duration, playback.env, performance.now());
+    else drawWave(0, idle, performance.now());
+    if (playback || standby) loop = requestAnimationFrame(animate);
   }
 
   function startPlayback(m) {
@@ -310,6 +347,8 @@
       block.classList.toggle('current', block.dataset.pack === current);
       block.querySelector('.pack-open').setAttribute('aria-expanded', String(open));
     }
+    const all = [...document.querySelectorAll('.pack')].map(b => b.dataset.pack);
+    $('sounds-toggle').textContent = tr(all.length && all.every(p => openPacks.has(p)) ? 'Collapse all' : 'Expand all');
   }
 
   function updateList() {
@@ -327,6 +366,12 @@
   }
 
   $('sounds-folder').addEventListener('click', () => send('station.folder'));
+  $('sounds-toggle').addEventListener('click', () => {
+    const all = [...document.querySelectorAll('.pack')].map(b => b.dataset.pack);
+    if (all.every(p => openPacks.has(p))) openPacks.clear(); else all.forEach(p => openPacks.add(p));
+    try { localStorage.setItem('sounds.openPacks', JSON.stringify([...openPacks])); } catch (e) { }
+    updatePacks();
+  });
   $('sounds-files').addEventListener('change', e => { const f = [...e.target.files]; e.target.value = ''; ingest(f); });
 
   const EXTENSIONS = /\.(wav|mp3|m4a|aac|ogg|oga|opus|flac|webm)$/i;
@@ -456,6 +501,6 @@
     }
   }
 
-  Bramble.station = { state, event, ingest, visible() { } };
+  Bramble.station = { state, event, ingest, visible(yes) { standby = yes; if (yes && !loop) loop = requestAnimationFrame(animate); } };
   animate();
 })();

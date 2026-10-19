@@ -185,15 +185,16 @@
     <div class="sounds-zones">
       <section class="zone-sounds zone-sounds--events" aria-labelledby="title-events">
         <header class="zone-sounds__header">
-          <span class="step">1</span>
+          <svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="11" rx="1.5"/><path d="M9 19.5h6M12 15.5v4"/></svg>
           <div><h2 id="title-events">On this PC</h2><p>Pick an event, turn it on or off</p></div>
         </header>
         <div class="events" id="events"></div>
       </section>
       <section class="zone-sounds zone-sounds--library" aria-labelledby="title-library">
         <header class="zone-sounds__header">
-          <span class="step">2</span>
+          <svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17.5V6.5l10-2v11"/><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="15.5" r="2.5"/></svg>
           <div><h2 id="title-library">Library<span class="count" id="sounds-count"></span></h2><p>Sound for <strong id="sounds-for"></strong></p></div>
+          <button class="link" id="sounds-toggle">Expand all</button>
           <button class="link" id="sounds-folder">Open folder</button>
         </header>
         <div class="packs" id="packs"></div>

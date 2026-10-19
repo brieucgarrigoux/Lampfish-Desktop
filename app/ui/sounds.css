@@ -18,7 +18,15 @@
 
 .level { display: block; width: 100%; height: 52px; margin-top: 6px; }
 
-.keycap-listen svg { width: 13px; height: 13px; fill: currentColor; }
+.keycap-listen { position: relative; min-width: 138px; height: 54px; border-radius: 15px; gap: 10px; font-size: 14.5px; overflow: hidden;
+  background: linear-gradient(180deg, #b563dc, #8236ab 48%, #5b2078 52%, #6a2a8c);
+  box-shadow: 0 0 0 1px #1a0a25, 0 0 0 4px #2b2c36, 0 0 0 5px #07080b, 0 10px 18px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .45), inset 0 -3px 0 rgba(0, 0, 0, .28);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, .45); }
+.keycap-listen::before { content: ""; position: absolute; left: 6px; right: 6px; top: 3px; height: 45%; border-radius: 11px 11px 40% 40%; background: linear-gradient(180deg, rgba(255, 255, 255, .34), rgba(255, 255, 255, .04)); pointer-events: none; }
+.keycap-listen:active:not(:disabled), .keycap-listen.pressed { transform: translateY(2px); box-shadow: 0 0 0 1px #1a0a25, 0 0 0 4px #2b2c36, 0 0 0 5px #07080b, 0 4px 8px rgba(0, 0, 0, .5), inset 0 2px 5px rgba(0, 0, 0, .4); }
+.keycap-listen.playing::after { content: ""; position: absolute; right: 10px; top: 9px; width: 6px; height: 6px; border-radius: 50%; background: #fff; box-shadow: 0 0 8px #fff; animation: blink-listen 1s ease-in-out infinite alternate; }
+@keyframes blink-listen { from { opacity: .35; } to { opacity: 1; } }
+.keycap-listen svg { width: 15px; height: 15px; fill: currentColor; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .5)); }
 .keycap-listen .icon-stop, .keycap-listen.playing .icon-playback { display: none; }
 .keycap-listen.playing .icon-stop { display: block; }
 
@@ -48,11 +56,11 @@
 
 .knob__legend { width: 84px; text-align: center; font-size: 11.5px; color: var(--text-pale); white-space: nowrap; }
 .knob__legend output { display: inline-block; min-width: 3.4em; text-align: left; font: 11.5px var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-soft); }
-@container sounds (max-width: 560px) { .level { display: none; } }
 
 .view--station { container: sounds / inline-size; }
 .sounds-zones { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 18px; margin-top: 18px; align-items: start; }
 @container sounds (max-width: 820px) { .sounds-zones { grid-template-columns: minmax(0, 1fr); } }
+@container sounds (max-width: 640px) { .banner-sound { flex-wrap: wrap; } .screen-sound { order: 3; flex: 1 1 100%; } .keycap-listen { margin-left: auto; } }
 .zone-sounds { border-radius: 14px; padding: 16px; box-shadow: inset 0 0 0 1px var(--hairline); }
 .zone-sounds--library { background: #0e0f14; }
 .zone-sounds__header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
@@ -60,7 +68,6 @@
 .zone-sounds__header h2 { font-size: 15px; color: var(--text); }
 .zone-sounds__header p { margin: 2px 0 0; font-size: 12.5px; color: var(--text-pale); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .zone-sounds__header strong { color: var(--accent); font-weight: 600; }
-.step { flex: none; width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; background: var(--accent-dim); color: var(--accent); font: 600 13px var(--numbers); }
 
 .packs { display: flex; flex-direction: column; gap: 6px; }
 .pack { border-radius: 10px; background: var(--group); }
