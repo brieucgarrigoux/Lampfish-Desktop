@@ -34,6 +34,7 @@ namespace Bramble
             core.Settings.IsStatusBarEnabled = false;
             core.Settings.IsZoomControlEnabled = false;
             core.IsMuted = true;
+            view.ZoomFactor = Program.R.Zoom / 100.0;
             core.SetVirtualHostNameToFolderMapping(WallpaperForm.AppHost, Program.Root, CoreWebView2HostResourceAccessKind.DenyCors);
             core.SetVirtualHostNameToFolderMapping(WallpaperForm.MediaHost, Program.WallpapersFolder, CoreWebView2HostResourceAccessKind.Allow);
             core.WebMessageReceived += (s, e) =>
@@ -56,6 +57,8 @@ namespace Bramble
             scriptLanguage = await core.AddScriptToExecuteOnDocumentCreatedAsync(Language.Script());
             core.Navigate("https://" + WallpaperForm.AppHost + "/app/ui/index.html");
         }
+
+        public void SetZoom(int percent) { view.ZoomFactor = percent / 100.0; }
 
         bool changing, changeAgain;
 

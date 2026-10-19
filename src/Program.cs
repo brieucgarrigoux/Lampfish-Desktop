@@ -35,6 +35,7 @@ namespace Bramble
         public string Fit = "fill";
         public int Slideshow = 0;
         public bool Reactive = false;
+        public int Zoom = 100;
         public List<MoodSetting> Moods = new List<MoodSetting>();
         public string CurrentMood;
         public DockSettings Dock = new DockSettings();
@@ -615,6 +616,7 @@ namespace Bramble
                 case "pause": paused = !paused; UpdateVisibility(); break;
                 case "startup": ToggleStartup(); break;
                 case "weather": R.Weather = !R.Weather; break;
+                case "zoom": R.Zoom = Math.Max(70, Math.Min(200, Convert.ToInt32(m["value"]))); if (settingsWindow != null) settingsWindow.SetZoom(R.Zoom); break;
                 case "reactive": R.Reactive = (bool)m["value"]; AudioMeter.Set(R.Reactive); break;
                 case "audioPreview": AudioMeter.Preview((bool)m["value"]); return;
                 case "language":
@@ -687,6 +689,7 @@ namespace Bramble
                 startup = StartupEnabled(),
                 weather = R.Weather,
                 reactive = R.Reactive,
+                zoom = R.Zoom,
                 moods = Moods.State(),
                 language = R.Language,
                 about = new

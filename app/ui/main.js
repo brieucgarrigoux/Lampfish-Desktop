@@ -113,6 +113,7 @@ function render(state) {
   $('startup').checked = state.startup;
   $('weather').checked = state.weather;
   check('language', state.language || 'auto');
+  check('zoom', String([90, 100, 115, 130].reduce((a, b) => Math.abs(b - (state.zoom || 100)) < Math.abs(a - (state.zoom || 100)) ? b : a)));
   if (state.about) {
     $('about-version').textContent = tr('Version {0} · built on {1}', state.about.version, new Date(state.about.compile).toLocaleDateString(LOCALE, { day: 'numeric', month: 'long', year: 'numeric' }));
     $('about-folder').textContent = state.about.folder;
@@ -434,3 +435,26 @@ addEventListener('DOMContentLoaded', () => {
   showView(view);
   send('state');
 });
+
+const ZOOMS = [80, 90, 100, 110, 125, 150];
+function zoomBy(step) {
+  const now = (Bramble.state && Bramble.state.zoom) || 100;
+  let i = ZOOMS.reduce((best, z, k) => Math.abs(z - now) < Math.abs(ZOOMS[best] - now) ? k : best, 0);
+  i = Math.max(0, Math.min(ZOOMS.length - 1, i + step));
+  send('zoom', { value: ZOOMS[i] });
+}
+for (const b of $('zoom').children) b.addEventListener('click', () => send('zoom', { value: Number(b.dataset.value) }));
+addEventListener('keydown', e => {
+  if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+  if (e.key === '+' || e.key === '=') { e.preventDefault(); zoomBy(1); }
+  else if (e.key === '-' || e.key === '_') { e.preventDefault(); zoomBy(-1); }
+  else if (e.key === '0') { e.preventDefault(); send('zoom', { value: 100 }); }
+});
+let zoomWheel = 0;
+addEventListener('wheel', e => {
+  if (!e.ctrlKey) return;
+  e.preventDefault();
+  if (Date.now() - zoomWheel < 160) return;
+  zoomWheel = Date.now();
+  zoomBy(e.deltaY < 0 ? 1 : -1);
+}, { passive: false });
