@@ -69,13 +69,12 @@
     return r;
   }
 
-  function card(title, icon, ...rows) {
-    const c = el('section', 'cr-card');
-    const h = el('h3');
-    h.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${icon}</svg>`;
-    h.append(el('span', '', tr(title)));
-    c.append(h, ...rows);
-    return c;
+  function card(title, ...rows) {
+    const block = el('div', 'cr-block');
+    const group = el('section', 'cr-card group');
+    group.append(...rows);
+    block.append(el('h2', '', tr(title)), group);
+    return block;
   }
 
   const RESET = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4v4h4"/></svg>';
@@ -279,7 +278,7 @@
   titleInput.className = 'cr-text';
   titleInput.addEventListener('input', () => { st.title.text = titleInput.value; push(); });
 
-  const logoCard = card('Logo', '<rect x="4" y="4" width="16" height="16" rx="4"/><path d="m12 7.8 1.2 2.6 2.8.3-2.1 1.9.6 2.8-2.5-1.4-2.5 1.4.6-2.8-2.1-1.9 2.8-.3z"/>',
+  const logoCard = card('Logo',
     row('Logo', picker('logo', 'Choose a logo'), 'A PNG with a transparent background works best'),
     row('Size', slider('logoSize', 5, 70, () => st.logo.size, v => { st.logo.size = v; }, ' %', 28)),
     row('Horizontal position', slider('logoX', 0, 100, () => st.logo.x, v => { st.logo.x = v; }, ' %', 50)),
@@ -288,7 +287,7 @@
     row('Gentle float', toggle('logoFloat', () => st.logo.float, v => { st.logo.float = v; })),
     row('Position and size', (() => { const b = el('button', 'button', tr('Reset')); b.type = 'button'; b.addEventListener('click', () => { st.logo.x = 50; st.logo.y = 44; st.logo.size = 28; sync(); }); return b; })()));
 
-  const textCard = card('Text', '<path d="M5 6.5h14M12 6.5v11M9 17.5h6"/>',
+  const textCard = card('Text',
     row('Text', titleInput),
     row('Style', segments('titleFont', [['sans', 'Modern'], ['serif', 'Serif'], ['spaced', 'Spaced']], () => st.title.font, v => { st.title.font = v; })),
     row('Size', slider('titleSize', 2, 14, () => st.title.size, v => { st.title.size = v; }, '', 6)),
@@ -325,7 +324,7 @@
     return grid;
   }
 
-  const backgroundCard = card('Background', '<rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="m3.5 16 5-5 4 4 2.5-2.5 5.5 5.5"/>',
+  const backgroundCard = card('Background',
     row('Type', segments('bgType', [['color', 'Color'], ['gradient', 'Gradient'], ['image', 'Picture']], () => st.bg.type, v => { st.bg.type = v; syncRows(); })),
     tagged('gradient', presets()),
     row('Color', color('bgColor', () => st.bg.color, v => { st.bg.color = v; })),
@@ -352,14 +351,14 @@
     paint();
     return grid;
   })();
-  const particlesCard = card('Particles', '<circle cx="7" cy="8" r="1.6"/><circle cx="16.5" cy="6.5" r="1.1"/><circle cx="13" cy="13.5" r="2"/><circle cx="6.5" cy="17" r="1.1"/><circle cx="18" cy="17.5" r="1.5"/>',
+  const particlesCard = card('Particles',
     typeGrid,
     tagged('particles', row('Color', color('pColor', () => st.particles.color, v => { st.particles.color = v; }))),
     tagged('particles', row('Amount', slider('pAmount', 5, 100, () => st.particles.amount, v => { st.particles.amount = v; }, ' %', 45))),
     tagged('particles', row('Size', slider('pSize', 40, 220, () => st.particles.size, v => { st.particles.size = v; }, ' %', 100))),
     tagged('particles', row('Speed', slider('pSpeed', 20, 250, () => st.particles.speed, v => { st.particles.speed = v; }, ' %', 100))));
 
-  const glowCard = card('Glow', '<circle cx="12" cy="12" r="4"/><path d="M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6 6l1.4 1.4M16.6 16.6 18 18M18 6l-1.4 1.4M7.4 16.6 6 18"/>',
+  const glowCard = card('Glow',
     row('Glow', toggle('glowOn', () => st.glow.on, v => { st.glow.on = v; syncRows(); }), 'A soft halo around the logo'),
     tagged('glow', row('Glow color', color('glowColor', () => st.glow.color, v => { st.glow.color = v; }))),
     tagged('glow', row('Glow strength', slider('glowStrength', 10, 100, () => st.glow.strength, v => { st.glow.strength = v; }, ' %', 55))));
@@ -379,7 +378,7 @@
     return wrap;
   })();
 
-  const soundCard = card('React to sound', '<path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/>',
+  const soundCard = card('React to sound',
     row('React to sound', toggle('soundOn', () => st.sound.on, v => { st.sound.on = v; syncRows(); }), 'Choose one effect or several'),
     tagged('sound', row('Pulse', toggle('soundPulse', () => st.sound.pulse, v => { st.sound.pulse = v; }), 'The logo and the glow breathe')),
     tagged('sound', row('Particles', toggle('soundParticles', () => st.sound.particles, v => { st.sound.particles = v; }), 'The particles speed up and shine')),
