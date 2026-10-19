@@ -22,6 +22,7 @@ namespace Bramble
     class Settings
     {
         public string Language = "auto";
+        public bool Weather = true;
         public List<Dictionary<string, object>> NetworkTests = new List<Dictionary<string, object>>();
         public string Wallpaper = "bramble.html";
         public int Light = 50;
@@ -594,6 +595,7 @@ namespace Bramble
                 case "pauseAuto": R.PauseAuto = (bool)m["value"]; UpdateVisibility(); break;
                 case "pause": paused = !paused; UpdateVisibility(); break;
                 case "startup": ToggleStartup(); break;
+                case "weather": R.Weather = !R.Weather; break;
                 case "language":
                 {
                     string l = (string)m["value"];
@@ -644,6 +646,7 @@ namespace Bramble
                 slideshow = R.Slideshow,
                 paused = paused,
                 startup = StartupEnabled(),
+                weather = R.Weather,
                 language = R.Language,
                 about = new
                 {

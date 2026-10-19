@@ -20,6 +20,7 @@ namespace Bramble
         public static void Receive(string action)
         {
             if (action != "weather") return;
+            if (!Program.R.Weather) { Program.Send(new { type = "home.weather", ok = false }); return; }
             if (last != null && (DateTime.Now - when).TotalMinutes < 15) { Program.Send(last); return; }
             if (running) return;
             running = true;

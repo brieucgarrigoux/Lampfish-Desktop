@@ -86,6 +86,7 @@ function render(state) {
   const before = Bramble.state;
   Bramble.state = state;
   $('startup').checked = state.startup;
+  $('weather').checked = state.weather;
   check('language', state.language || 'auto');
   if (state.about) {
     $('about-version').textContent = tr('Version {0} · built on {1}', state.about.version, new Date(state.about.compile).toLocaleDateString(LOCALE, { day: 'numeric', month: 'long', year: 'numeric' }));
@@ -147,6 +148,7 @@ addEventListener('drop', e => {
 });
 
 $('startup').addEventListener('change', () => send('startup'));
+$('weather').addEventListener('change', () => { send('weather'); send('home.weather'); });
 $('folder-bramble').addEventListener('click', () => send('folderBramble'));
 $('log-errors').addEventListener('click', () => send('log'));
 
