@@ -52,7 +52,7 @@
   const $ = id => document.getElementById(id);
   const bg = $('bg'), dim = $('dim'), vignette = $('vignette'), logo = $('logo'), title = $('title');
   const canvas = $('fx'), ctx = canvas.getContext('2d');
-  let w = 0, h = 0, particles = [], sprites = new Map();
+  let w = 0, h = 0, particles = [], sprites = new Map(), particleKey = '', angle = 160;
 
   const num = (v, d) => (v === undefined || v === null || v === '' || isNaN(Number(v))) ? d : Number(v);
   function rgb(c) {
@@ -60,6 +60,13 @@
     const n = m ? parseInt(m[1], 16) : 0x8e42b6;
     return [n >> 16, (n >> 8) & 255, n & 255];
   }
+
+  function gradient(a) {
+    const b = (config && config.background) || {};
+    return `linear-gradient(${a}deg, ${b.color || '#0b0a12'}, ${b.color2 || '#2a1450'})`;
+  }
+
+  const FONTS = { sans: '"Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif', serif: 'Georgia, "Times New Roman", serif', spaced: '"Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif' };
 
   function apply() {
     if (!config) return;
@@ -71,9 +78,10 @@
       bg.style.backgroundImage = `url("${b.image}")`;
       bg.style.backgroundSize = b.fit === 'contain' ? 'contain' : 'cover';
     } else if (b.type === 'gradient') {
-      bg.style.backgroundImage = `linear-gradient(${num(b.angle, 160)}deg, ${b.color || '#0b0a12'}, ${b.color2 || '#2a1450'})`;
+      bg.style.backgroundImage = gradient(num(b.angle, 160));
       bg.style.backgroundSize = 'auto';
     } else bg.style.backgroundColor = b.color || '#0b0a12';
+    angle = num(b.angle, 160);
     dim.style.opacity = String(Math.max(0, Math.min(.9, num(b.dim, 0) / 100)));
     const v = Math.max(0, Math.min(100, num(b.vignette, 0))) / 100;
     vignette.style.background = v > 0 ? `radial-gradient(ellipse at 50% 48%, rgba(0,0,0,0) 45%, rgba(0,0,0,${(v * .85).toFixed(2)}) 100%)` : 'none';
@@ -88,11 +96,17 @@
     const t = config.title || {};
     title.textContent = t.text || '';
     title.style.fontSize = num(t.size, 6) + 'vmin';
-    title.style.fontWeight = String(num(t.weight, 600));
+    const font = FONTS[t.font] ? t.font : 'sans';
+    title.style.fontFamily = FONTS[font];
+    title.style.fontWeight = String(font === 'spaced' ? Math.min(num(t.weight, 600), 500) : num(t.weight, 600));
+    title.style.letterSpacing = font === 'spaced' ? '.34em' : font === 'serif' ? '0' : '-.02em';
+    title.style.textTransform = font === 'spaced' ? 'uppercase' : 'none';
     title.style.color = t.color || '#ece7f4';
     title.style.left = num(t.x, 50) + '%';
     title.style.top = num(t.y, 66) + '%';
-    resize();
+    layoutCanvas();
+    const pc = config.particles || {}, key = [pc.type, pc.amount, pc.size].join('|');
+    if (key !== particleKey) { particleKey = key; buildParticles(); }
   }
 
   function sprite(color, hard) {
@@ -155,11 +169,16 @@
   function wrap(p, m) { if (p.x < -m) p.x = w + m; if (p.x > w + m) p.x = -m; if (p.y < -m) p.y = h + m; if (p.y > h + m) p.y = -m; }
   function put(img, x, y, r, a) { ctx.globalAlpha = a; ctx.drawImage(img, x - r, y - r, r * 2, r * 2); }
 
-  function resize() {
+  function layoutCanvas() {
     const r = devicePixelRatio || 1;
     w = innerWidth; h = innerHeight;
     canvas.width = Math.round(w * r); canvas.height = Math.round(h * r);
     ctx.setTransform(r, 0, 0, r, 0, 0);
+  }
+
+  function resize() { layoutCanvas(); buildParticles(); }
+
+  function buildParticles() {
     const pc = (config && config.particles) || {}, kind = KINDS[pc.type];
     particles = [];
     if (kind) {
@@ -176,8 +195,11 @@
     audio += (audioTarget - audio) * Math.min(1, dt * 14);
     if (!frozen) t += dt * speed;
 
-    const c = config || {}, pc = c.particles || {}, gl = c.glow || {}, so = c.sound || {}, l = c.logo || {};
-    const reactive = so.on !== false, pulse = reactive ? audio : 0;
+    const c = config || {}, pc = c.particles || {}, gl = c.glow || {}, l = c.logo || {}, b = c.background || {};
+    const so = c.sound || {}, on = so.on !== false;
+    const fx = { pulse: on && so.pulse !== false, ripples: on && (so.ripples ?? so.style === 'ripples'), ring: on && (so.ring ?? so.style === 'ring'), vibe: on && !!so.vibe };
+    const pulse = fx.pulse ? audio : 0;
+    if (b.drift && b.type === 'gradient' && !frozen) bg.style.backgroundImage = gradient((angle + t * 6) % 360);
     const cx = w * num(l.x, 50) / 100, cy = h * num(l.y, 45) / 100;
     const logoRadius = Math.min(w, h) * num(l.size, 28) / 200;
     ctx.clearRect(0, 0, w, h);
@@ -204,13 +226,20 @@
     }
     ctx.globalCompositeOperation = 'source-over';
 
-    if (reactive && so.style !== 'none') {
-      const [r, g, b] = rgb(gl.color || '#c9a2e6'), rgbText = `${Math.min(255, r + 70)},${Math.min(255, g + 70)},${Math.min(255, b + 70)}`;
-      if (so.style === 'ring') ring(dt, cx, cy, logoRadius * 1.35, rgbText);
-      else ripple(dt, cx, cy, logoRadius * 1.05, rgbText);
+    if (fx.ring || fx.ripples) {
+      const [r, g, bl] = rgb(gl.color || '#c9a2e6'), rgbText = `${Math.min(255, r + 70)},${Math.min(255, g + 70)},${Math.min(255, bl + 70)}`;
+      if (fx.ring) ring(dt, cx, cy, logoRadius * 1.35, rgbText);
+      if (fx.ripples) ripple(dt, cx, cy, logoRadius * 1.05, rgbText);
     }
 
-    if (logo.src && !logo.hidden) logo.style.transform = `translate(-50%, -50%) scale(${(1 + pulse * .05).toFixed(3)})`;
+    if (logo.src && !logo.hidden) {
+      const bob = l.float === false ? 0 : Math.sin(t * .7) * .6;
+      const shake = fx.vibe ? audio : 0;
+      const jx = (Math.random() - .5) * shake * 9, jy = (Math.random() - .5) * shake * 9;
+      logo.style.transform = `translate(calc(-50% + ${jx.toFixed(1)}px), calc(-50% + ${(jy + bob * h / 100).toFixed(1)}px)) scale(${(1 + pulse * .05).toFixed(3)})`;
+    }
+    if (fx.vibe && title.textContent) title.style.transform = `translate(calc(-50% + ${((Math.random() - .5) * audio * 5).toFixed(1)}px), calc(-50% + ${((Math.random() - .5) * audio * 5).toFixed(1)}px))`;
+    else title.style.transform = '';
 
     if (thumbnail && ++frames > 2) return;
     requestAnimationFrame(draw);
@@ -235,25 +264,27 @@
   function ring(dt, cx, cy, base, rgbText) {
     historyClock += dt;
     if (historyClock > .033) { historyClock = 0; history.push(audio); history.shift(); }
-    const n = 120, pts = [];
+    const n = 96, amps = [], pts = [];
     for (let i = 0; i < n; i++) {
       const fold = i < n / 2 ? i : n - 1 - i;
-      const j = Math.floor(fold / (n / 2) * (history.length - 1));
-      const amp = history[history.length - 1 - j] || 0;
-      const a = i / n * 6.2832 - 1.5708;
-      const rr = base * (1 + .04 * Math.sin(t * 1.3 + i * .35) * (.4 + audio) + amp * .5);
-      pts.push([cx + Math.cos(a) * rr, cy + Math.sin(a) * rr]);
+      amps.push(history[history.length - 1 - Math.floor(fold / (n / 2) * (history.length - 1))] || 0);
+    }
+    for (let i = 0; i < n; i++) {
+      let s = 0;
+      for (let k = -4; k <= 4; k++) s += amps[(i + k + n) % n];
+      const a = i / n * 6.2832 - 1.5708, r = base * (1 + s / 9 * .24 + .008 * Math.sin(t * 1.1 + i * .3));
+      pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]);
     }
     ctx.beginPath();
     for (let i = 0; i < n; i++) {
-      const p = pts[i], q = pts[(i + 1) % n], mx = (p[0] + q[0]) / 2, my = (p[1] + q[1]) / 2;
+      const p = pts[i], q = pts[(i + 1) % n];
       if (i === 0) ctx.moveTo((pts[n - 1][0] + p[0]) / 2, (pts[n - 1][1] + p[1]) / 2);
-      ctx.quadraticCurveTo(p[0], p[1], mx, my);
+      ctx.quadraticCurveTo(p[0], p[1], (p[0] + q[0]) / 2, (p[1] + q[1]) / 2);
     }
     ctx.closePath();
-    ctx.fillStyle = `rgba(${rgbText},${(.03 + audio * .07).toFixed(3)})`; ctx.fill();
-    ctx.shadowColor = `rgba(${rgbText},.8)`; ctx.shadowBlur = 14 + audio * 14;
-    ctx.strokeStyle = `rgba(${rgbText},${(.35 + audio * .55).toFixed(3)})`; ctx.lineWidth = 1.6 + audio * 1.6; ctx.stroke();
+    ctx.fillStyle = `rgba(${rgbText},${(.025 + audio * .05).toFixed(3)})`; ctx.fill();
+    ctx.shadowColor = `rgba(${rgbText},.7)`; ctx.shadowBlur = 10 + audio * 12;
+    ctx.strokeStyle = `rgba(${rgbText},${(.3 + audio * .5).toFixed(3)})`; ctx.lineWidth = 1.4 + audio * 1.2; ctx.stroke();
     ctx.shadowBlur = 0;
   }
 

@@ -673,7 +673,7 @@ namespace Bramble
             var state = new
             {
                 type = "state",
-                wallpapers = ListWallpapers().Select(n => new { name = n, type = WallpaperType(n), url = UrlMedia(n) }).ToArray(),
+                wallpapers = ListWallpapers().Select(n => new { name = n, type = WallpaperType(n), url = UrlMedia(n), custom = File.Exists(Path.Combine(WallpapersFolder, n, "config.json")) }).ToArray(),
                 current = R.Wallpaper,
                 light = R.Light,
                 speed = R.Speed,

@@ -73,8 +73,8 @@ body:not([data-view="icons"]) .only-icons, body:not([data-view="mouse"]) .only-m
 body:not([data-view="files"]) .only-files, body:not([data-view="hardware"]) .only-hardware,
 body:not([data-view="tasks"]) .only-tasks, body:not([data-view="create"]) .only-create, body:not([data-view="settings"]) .only-settings, body:not([data-view="home"]) .only-home { display: none !important; }
 
-body[data-view="settings"], body[data-view="home"], body[data-view="tasks"], body[data-view="create"] { grid-template-columns: var(--width-rail, 92px) 1fr; }
-body[data-view="settings"] .panel, body[data-view="home"] .panel, body[data-view="tasks"] .panel, body[data-view="create"] .panel { display: none; }
+body[data-view="settings"], body[data-view="home"], body[data-view="tasks"] { grid-template-columns: var(--width-rail, 92px) 1fr; }
+body[data-view="settings"] .panel, body[data-view="home"] .panel, body[data-view="tasks"] .panel { display: none; }
 
 .view--settings { max-width: 720px; margin-inline: auto; }
 .settings-title { margin: 26px 0 10px; }
@@ -153,6 +153,9 @@ body[data-view="settings"] .panel, body[data-view="home"] .panel, body[data-view
 .card .remove { position: absolute; top: 6px; right: 6px; background: rgba(10, 11, 15, .7); backdrop-filter: blur(10px); }
 .card:hover .remove, .card:focus-within .remove { opacity: 1; }
 .remove:hover { color: var(--danger); }
+.card .edit { position: absolute; top: 6px; right: 62px; border: 0; border-radius: 5px; padding: 2px 8px; font-size: 11px; color: var(--text-soft); background: rgba(10, 11, 15, .7); backdrop-filter: blur(10px); opacity: 0; transition: opacity .12s, color .12s; }
+.card:hover .edit, .card:focus-within .edit { opacity: 1; }
+.card .edit:hover { color: var(--accent); }
 .card .remove.armed { opacity: 1; color: #fff; background: var(--danger); }
 .add {
   aspect-ratio: 16 / 10; display: flex; align-items: center; justify-content: center; gap: 8px;

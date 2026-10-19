@@ -99,6 +99,7 @@ webview.addEventListener('message', e => {
   if (m.type && m.type.startsWith('network.')) { if (Bramble.network) Bramble.network.event(m); return; }
   if (m.type && m.type.startsWith('arrange.')) { if (Bramble.arrange) Bramble.arrange.event(m); return; }
   if (m.type && m.type.startsWith('files.')) { if (Bramble.files) Bramble.files.event(m); return; }
+  if (m.type && m.type.startsWith('creator.')) { if (Bramble.creator) Bramble.creator.event(m); return; }
   if (m.type && m.type.startsWith('tasks.')) { if (Bramble.tasks) Bramble.tasks.event(m); return; }
   if (m.type && m.type.startsWith('hardware.')) { if (Bramble.hardware) Bramble.hardware.event(m); return; }
   render(m);
@@ -316,7 +317,7 @@ function buildGrid() {
     card.dataset.name = wallpaper.name;
     card.innerHTML = `<div class="preview"></div><span class="reticle"></span>
       <div class="footer"><span class="name"></span><span class="badge">${TYPES[wallpaper.type]}</span></div>
-      <button class="remove" tabindex="-1">Remove</button>`;
+      ${wallpaper.custom ? '<button class="edit" tabindex="-1">Edit</button>' : ''}<button class="remove" tabindex="-1">Remove</button>`;
     card.querySelector('.name').textContent = withoutExtension(wallpaper.name);
     card.querySelector('.name').title = wallpaper.name;
     card.querySelector('.preview').append(preview(wallpaper, card));
@@ -332,6 +333,8 @@ function buildGrid() {
       armed = setTimeout(disarm, 3000);
     };
     card.addEventListener('mouseleave', disarm);
+    const edit = card.querySelector('.edit');
+    if (edit) edit.addEventListener('click', e => { e.stopPropagation(); send('creator.open', { name: wallpaper.name }); });
     card.addEventListener('click', choose);
     card.addEventListener('keydown', e => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(); }

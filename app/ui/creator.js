@@ -1,31 +1,33 @@
 'use strict';
 
 (function () {
-  const zone = $('create-zone');
+  const zone = $('create-zone'), panel = $('create-panel');
 
+  const SOUND = (pulse, ripples, ring, vibe) => ({ on: true, pulse, ripples, ring, vibe });
   const THEMES = [
-    { id: 'midnight', name: 'Midnight', bg: { type: 'gradient', color: '#070815', color2: '#271c6b', angle: 165 }, particles: { type: 'fireflies', color: '#b9a2ff', amount: 45, size: 100, speed: 100 }, glow: { on: true, color: '#6c4ccf', strength: 55 } },
-    { id: 'ember', name: 'Ember', bg: { type: 'gradient', color: '#0c0403', color2: '#46110a', angle: 180 }, particles: { type: 'embers', color: '#ff7a2e', amount: 55, size: 100, speed: 100 }, glow: { on: true, color: '#ff5a1f', strength: 50 } },
-    { id: 'aurora', name: 'Aurora', bg: { type: 'gradient', color: '#02070d', color2: '#0a3d48', angle: 170 }, particles: { type: 'stars', color: '#c6f6ff', amount: 60, size: 100, speed: 100 }, glow: { on: true, color: '#2fd6b0', strength: 45 } },
-    { id: 'sunset', name: 'Sunset', bg: { type: 'gradient', color: '#1b0a2f', color2: '#c2410c', angle: 180 }, particles: { type: 'orbs', color: '#ffb36b', amount: 50, size: 100, speed: 100 }, glow: { on: true, color: '#ff8a4c', strength: 55 } },
-    { id: 'neon', name: 'Neon', bg: { type: 'gradient', color: '#04010a', color2: '#1d0046', angle: 160 }, particles: { type: 'fireflies', color: '#ff3fd2', amount: 40, size: 90, speed: 120 }, glow: { on: true, color: '#d11fff', strength: 65 } },
-    { id: 'graphite', name: 'Graphite', bg: { type: 'gradient', color: '#0d0e11', color2: '#2a2d35', angle: 170 }, particles: { type: 'snow', color: '#d3dae8', amount: 40, size: 100, speed: 90 }, glow: { on: true, color: '#8b93a7', strength: 30 } },
+    { id: 'midnight', name: 'Midnight', bg: { type: 'gradient', color: '#070815', color2: '#271c6b', angle: 165 }, particles: { type: 'fireflies', color: '#b9a2ff', amount: 45, size: 100, speed: 100 }, glow: { on: true, color: '#6c4ccf', strength: 55 }, sound: SOUND(true, true, false, false) },
+    { id: 'ember', name: 'Ember', bg: { type: 'gradient', color: '#0c0403', color2: '#46110a', angle: 180 }, particles: { type: 'embers', color: '#ff7a2e', amount: 55, size: 100, speed: 100 }, glow: { on: true, color: '#ff5a1f', strength: 50 }, sound: SOUND(true, true, false, false) },
+    { id: 'aurora', name: 'Aurora', bg: { type: 'gradient', color: '#02070d', color2: '#0a3d48', angle: 170 }, particles: { type: 'stars', color: '#c6f6ff', amount: 60, size: 100, speed: 100 }, glow: { on: true, color: '#2fd6b0', strength: 45 }, sound: SOUND(true, false, true, false) },
+    { id: 'sunset', name: 'Sunset', bg: { type: 'gradient', color: '#1b0a2f', color2: '#c2410c', angle: 180 }, particles: { type: 'orbs', color: '#ffb36b', amount: 50, size: 100, speed: 100 }, glow: { on: true, color: '#ff8a4c', strength: 55 }, sound: SOUND(true, true, false, false) },
+    { id: 'neon', name: 'Neon', bg: { type: 'gradient', color: '#04010a', color2: '#1d0046', angle: 160 }, particles: { type: 'fireflies', color: '#ff3fd2', amount: 40, size: 90, speed: 120 }, glow: { on: true, color: '#d11fff', strength: 65 }, sound: SOUND(true, true, true, true) },
+    { id: 'graphite', name: 'Graphite', bg: { type: 'gradient', color: '#0d0e11', color2: '#2a2d35', angle: 170 }, particles: { type: 'snow', color: '#d3dae8', amount: 40, size: 100, speed: 90 }, glow: { on: true, color: '#8b93a7', strength: 30 }, sound: SOUND(true, true, false, false) },
   ];
   const PARTICLES = [['none', 'None'], ['fireflies', 'Fireflies'], ['stars', 'Stars'], ['embers', 'Embers'], ['snow', 'Snow'], ['orbs', 'Bokeh']];
 
-  const st = {
-    bg: { type: 'gradient', color: '#070815', color2: '#271c6b', angle: 165, fit: 'cover', dim: 0, vignette: 35 },
-    logo: { size: 28, x: 50, y: 44, shadow: true },
-    title: { text: '', size: 6, weight: 600, color: '#ece7f4', x: 50, y: 68 },
+  const fresh = () => ({
+    bg: { type: 'gradient', color: '#070815', color2: '#271c6b', angle: 165, fit: 'cover', dim: 0, vignette: 35, drift: false },
+    logo: { size: 28, x: 50, y: 44, shadow: true, float: true },
+    title: { text: '', size: 6, weight: 600, color: '#ece7f4', x: 50, y: 68, font: 'sans' },
     particles: { type: 'fireflies', color: '#b9a2ff', amount: 45, size: 100, speed: 100 },
     glow: { on: true, color: '#6c4ccf', strength: 55 },
-    sound: { on: true, style: 'ripples' },
+    sound: SOUND(true, true, false, false),
     files: { logo: null, background: null },
     aspect: 1,
-  };
+  });
+  const st = fresh();
   const ctl = {};
-  let theme = 'midnight', selected = 'logo';
-  let frame = null, ready = false, queued = 0;
+  let theme = 'midnight', hovered = null, guides = true;
+  let editing = null, frame = null, ready = false, queued = 0;
 
   function config(forPreview) {
     const b = Object.assign({}, st.bg), l = Object.assign({}, st.logo);
@@ -134,7 +136,8 @@
 
   const input = Object.assign(document.createElement('input'), { type: 'file', accept: 'image/png,image/jpeg,image/webp,image/gif' });
   input.hidden = true;
-  let pickKind = null, pickNote = {};
+  let pickKind = null;
+  const notes = {};
   input.addEventListener('change', async () => {
     const file = input.files && input.files[0];
     input.value = '';
@@ -143,205 +146,316 @@
     try {
       const r = await readImage(file, big ? 1024 : 2560, big ? 'image/png' : 'image/jpeg', big ? 1 : .88);
       st.files[kind] = r.data;
-      if (big) st.aspect = r.aspect;
-      else st.bg.type = 'image';
-      pickNote[kind].textContent = file.name;
-      pickNote[kind].parentElement.querySelector('.link').hidden = false;
+      if (big) st.aspect = r.aspect; else st.bg.type = 'image';
+      showFile(kind, file.name);
       for (const k of ['bgType']) ctl[k] && ctl[k].sync();
-      syncBackground();
+      syncRows();
       push();
-    } catch (e) { pickNote[kind].textContent = tr('This picture could not be read'); }
+    } catch (e) { notes[kind].name.textContent = tr('This picture could not be read'); }
   });
+
+  function showFile(kind, label) {
+    notes[kind].name.textContent = label || tr('No picture');
+    notes[kind].clear.hidden = !st.files[kind];
+  }
 
   function picker(kind, label) {
     const wrap = el('div', 'cr-pick');
     const name = el('span', 'cr-file', tr('No picture'));
-    pickNote[kind] = name;
     const choose = el('button', 'button', tr(label));
     choose.type = 'button';
     choose.addEventListener('click', () => { pickKind = kind; input.click(); });
     const clear = el('button', 'link', tr('Remove'));
     clear.type = 'button';
     clear.hidden = true;
-    clear.addEventListener('click', () => {
-      st.files[kind] = null;
-      if (kind === 'logo') st.aspect = 1;
-      name.textContent = tr('No picture');
-      clear.hidden = true;
-      push();
-    });
+    clear.addEventListener('click', () => { st.files[kind] = null; if (kind === 'logo') st.aspect = 1; showFile(kind); push(); });
+    notes[kind] = { name, clear };
     wrap.append(choose, name, clear);
     return wrap;
   }
 
-  const rows = { gradient: [], image: [], particles: [] };
-  function syncBackground() {
+  const rows = { gradient: [], image: [], particles: [], glow: [], sound: [] };
+  const tagged = (kind, r) => { rows[kind].push(r); return r; };
+  function syncRows() {
     for (const r of rows.gradient) r.hidden = st.bg.type !== 'gradient';
     for (const r of rows.image) r.hidden = st.bg.type !== 'image';
     for (const r of rows.particles) r.hidden = st.particles.type === 'none';
+    for (const r of rows.glow) r.hidden = !st.glow.on;
+    for (const r of rows.sound) r.hidden = !st.sound.on;
   }
 
-  function applyTheme(t) {
-    theme = t.id;
-    Object.assign(st.bg, t.bg);
-    Object.assign(st.particles, t.particles);
-    Object.assign(st.glow, t.glow);
+  function syncAll() {
     for (const k of Object.keys(ctl)) ctl[k].sync();
-    syncBackground();
+    titleInput.value = st.title.text;
+    showFile('logo', st.files.logo ? tr('Current logo') : '');
+    showFile('background', st.files.background ? tr('Current picture') : '');
+    syncRows();
     paintThemes();
     push();
   }
 
-  // ---- themes
+  // ---- themes, drawn as small renders of the real thing
+  function seeded(seed) { let s = seed; return () => (s = (s * 1664525 + 1013904223) % 4294967296) / 4294967296; }
+  function hexA(c, a) {
+    const n = parseInt(c.slice(1), 16);
+    return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`;
+  }
+  function drawTheme(canvas, t) {
+    const W = canvas.width = 288, H = canvas.height = 180, g = canvas.getContext('2d'), rnd = seeded(t.id.length * 977 + 13);
+    const rad = t.bg.angle * Math.PI / 180, dx = Math.sin(rad), dy = -Math.cos(rad);
+    const grad = g.createLinearGradient(W / 2 - dx * W / 2, H / 2 - dy * H / 2, W / 2 + dx * W / 2, H / 2 + dy * H / 2);
+    grad.addColorStop(0, t.bg.color); grad.addColorStop(1, t.bg.color2);
+    g.fillStyle = grad; g.fillRect(0, 0, W, H);
+    g.globalCompositeOperation = 'lighter';
+    const halo = g.createRadialGradient(W / 2, H * .46, 0, W / 2, H * .46, H * .62);
+    halo.addColorStop(0, hexA(t.glow.color, .55)); halo.addColorStop(.55, hexA(t.glow.color, .16)); halo.addColorStop(1, hexA(t.glow.color, 0));
+    g.fillStyle = halo; g.fillRect(0, 0, W, H);
+    const dot = (x, y, r, a) => { const d = g.createRadialGradient(x, y, 0, x, y, r); d.addColorStop(0, hexA(t.particles.color, a)); d.addColorStop(1, hexA(t.particles.color, 0)); g.fillStyle = d; g.fillRect(x - r, y - r, r * 2, r * 2); };
+    const type = t.particles.type, count = type === 'orbs' ? 7 : type === 'snow' ? 34 : 26;
+    for (let i = 0; i < count; i++) {
+      const x = rnd() * W, y = rnd() * H;
+      if (type === 'orbs') dot(x, y, 16 + rnd() * 30, .16);
+      else if (type === 'snow') dot(x, y, 2.4 + rnd() * 3, .5 + rnd() * .3);
+      else if (type === 'stars') dot(x, y, 2 + rnd() * 3, .9);
+      else if (type === 'embers') dot(x, H - rnd() * rnd() * H * 1.1, 3 + rnd() * 4, .85);
+      else dot(x, y, 4 + rnd() * 6, .85);
+    }
+    g.globalCompositeOperation = 'source-over';
+    const cx = W / 2, cy = H * .46;
+    g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = 3; g.beginPath(); g.arc(cx, cy, 20, 0, 6.283); g.stroke();
+    g.fillStyle = 'rgba(255,255,255,.9)'; g.beginPath(); g.arc(cx, cy, 8, 0, 6.283); g.fill();
+    g.fillStyle = 'rgba(255,255,255,.5)'; g.fillRect(cx - 24, cy + 33, 48, 4);
+    const v = g.createRadialGradient(W / 2, H * .48, H * .35, W / 2, H * .48, H * .95);
+    v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.55)');
+    g.fillStyle = v; g.fillRect(0, 0, W, H);
+  }
+
   const themes = el('div', 'cr-themes');
   const themeButtons = THEMES.map(t => {
     const b = el('button', 'cr-theme');
     b.type = 'button';
-    b.style.setProperty('--a', t.bg.color);
-    b.style.setProperty('--b', t.bg.color2);
-    b.style.setProperty('--g', t.glow.color);
-    b.style.setProperty('--p', t.particles.color);
-    b.innerHTML = '<span class="cr-theme__art"><i></i><i></i><i></i></span><span class="cr-theme__name"></span>';
-    b.querySelector('.cr-theme__name').textContent = tr(t.name);
-    b.addEventListener('click', () => applyTheme(t));
+    const c = document.createElement('canvas');
+    c.className = 'cr-theme__art';
+    drawTheme(c, t);
+    b.append(c, el('span', 'cr-theme__name', tr(t.name)));
+    b.addEventListener('click', () => {
+      theme = t.id;
+      Object.assign(st.bg, t.bg);
+      Object.assign(st.particles, t.particles);
+      Object.assign(st.glow, t.glow);
+      Object.assign(st.sound, t.sound);
+      syncAll();
+    });
     themes.append(b);
     return [t.id, b];
   });
-  const paintThemes = () => { for (const [id, b] of themeButtons) b.setAttribute('aria-pressed', String(id === theme)); };
+  function paintThemes() { for (const [id, b] of themeButtons) b.setAttribute('aria-pressed', String(id === theme)); }
 
-  // ---- cards
-  const backgroundCard = card('Background', '<rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="m3.5 16 5-5 4 4 2.5-2.5 5.5 5.5"/>',
-    row('Type', segments('bgType', [['color', 'Color'], ['gradient', 'Gradient'], ['image', 'Picture']], () => st.bg.type, v => { st.bg.type = v; syncBackground(); })),
-    row('Color', color('bgColor', () => st.bg.color, v => { st.bg.color = v; })),
-    (() => { const r = row('Second color', color('bgColor2', () => st.bg.color2, v => { st.bg.color2 = v; })); rows.gradient.push(r); return r; })(),
-    (() => { const r = row('Angle', slider('bgAngle', 0, 360, () => st.bg.angle, v => { st.bg.angle = v; }, '°')); rows.gradient.push(r); return r; })(),
-    (() => { const r = row('Picture', picker('background', 'Choose a picture')); rows.image.push(r); return r; })(),
-    (() => { const r = row('Framing', segments('bgFit', [['cover', 'Fill'], ['contain', 'Fit']], () => st.bg.fit, v => { st.bg.fit = v; })); rows.image.push(r); return r; })(),
-    row('Darken', slider('bgDim', 0, 80, () => st.bg.dim, v => { st.bg.dim = v; }, ' %')),
-    row('Edge shade', slider('bgVignette', 0, 100, () => st.bg.vignette, v => { st.bg.vignette = v; }, ' %'), 'Darkens the corners'));
+  // ---- cards (right panel)
+  const titleInput = Object.assign(document.createElement('input'), { type: 'text', maxLength: 40, placeholder: tr('Optional text') });
+  titleInput.className = 'cr-text';
+  titleInput.addEventListener('input', () => { st.title.text = titleInput.value; push(); });
 
   const logoCard = card('Logo', '<rect x="4" y="4" width="16" height="16" rx="4"/><path d="m12 7.8 1.2 2.6 2.8.3-2.1 1.9.6 2.8-2.5-1.4-2.5 1.4.6-2.8-2.1-1.9 2.8-.3z"/>',
     row('Logo', picker('logo', 'Choose a logo'), 'A PNG with a transparent background works best'),
     row('Size', slider('logoSize', 5, 70, () => st.logo.size, v => { st.logo.size = v; }, ' %')),
     row('Horizontal position', slider('logoX', 0, 100, () => st.logo.x, v => { st.logo.x = v; }, ' %')),
     row('Vertical position', slider('logoY', 0, 100, () => st.logo.y, v => { st.logo.y = v; }, ' %')),
-    row('Soft shadow', toggle('logoShadow', () => st.logo.shadow, v => { st.logo.shadow = v; })));
+    row('Soft shadow', toggle('logoShadow', () => st.logo.shadow, v => { st.logo.shadow = v; })),
+    row('Gentle float', toggle('logoFloat', () => st.logo.float, v => { st.logo.float = v; })));
 
-  const titleInput = Object.assign(document.createElement('input'), { type: 'text', maxLength: 40, placeholder: tr('Optional text') });
-  titleInput.className = 'cr-text';
-  titleInput.addEventListener('input', () => { st.title.text = titleInput.value; push(); });
   const textCard = card('Text', '<path d="M5 6.5h14M12 6.5v11M9 17.5h6"/>',
     row('Text', titleInput),
+    row('Style', segments('titleFont', [['sans', 'Modern'], ['serif', 'Serif'], ['spaced', 'Spaced']], () => st.title.font, v => { st.title.font = v; })),
     row('Size', slider('titleSize', 2, 14, () => st.title.size, v => { st.title.size = v; })),
     row('Weight', segments('titleWeight', [['400', 'Regular'], ['600', 'Medium'], ['800', 'Bold']], () => String(st.title.weight), v => { st.title.weight = Number(v); })),
     row('Color', color('titleColor', () => st.title.color, v => { st.title.color = v; })));
 
+  const backgroundCard = card('Background', '<rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="m3.5 16 5-5 4 4 2.5-2.5 5.5 5.5"/>',
+    row('Type', segments('bgType', [['color', 'Color'], ['gradient', 'Gradient'], ['image', 'Picture']], () => st.bg.type, v => { st.bg.type = v; syncRows(); })),
+    row('Color', color('bgColor', () => st.bg.color, v => { st.bg.color = v; })),
+    tagged('gradient', row('Second color', color('bgColor2', () => st.bg.color2, v => { st.bg.color2 = v; }))),
+    tagged('gradient', row('Angle', slider('bgAngle', 0, 360, () => st.bg.angle, v => { st.bg.angle = v; }, '°'))),
+    tagged('gradient', row('Slow drift', toggle('bgDrift', () => st.bg.drift, v => { st.bg.drift = v; }), 'The gradient slowly turns')),
+    tagged('image', row('Picture', picker('background', 'Choose a picture'))),
+    tagged('image', row('Framing', segments('bgFit', [['cover', 'Fill'], ['contain', 'Fit']], () => st.bg.fit, v => { st.bg.fit = v; }))),
+    row('Darken', slider('bgDim', 0, 80, () => st.bg.dim, v => { st.bg.dim = v; }, ' %')),
+    row('Edge shade', slider('bgVignette', 0, 100, () => st.bg.vignette, v => { st.bg.vignette = v; }, ' %'), 'Darkens the corners'));
+
+  const typeGrid = (() => {
+    const grid = el('div', 'cr-types');
+    const buttons = PARTICLES.map(([key, label]) => {
+      const b = el('button', 'cr-type', tr(label));
+      b.type = 'button';
+      b.addEventListener('click', () => { st.particles.type = key; paint(); syncRows(); push(); });
+      grid.append(b);
+      return [key, b];
+    });
+    const paint = () => { for (const [key, b] of buttons) b.setAttribute('aria-pressed', String(key === st.particles.type)); };
+    ctl.particleType = { sync: paint };
+    paint();
+    return grid;
+  })();
   const particlesCard = card('Particles', '<circle cx="7" cy="8" r="1.6"/><circle cx="16.5" cy="6.5" r="1.1"/><circle cx="13" cy="13.5" r="2"/><circle cx="6.5" cy="17" r="1.1"/><circle cx="18" cy="17.5" r="1.5"/>',
-    (() => {
-      const grid = el('div', 'cr-types');
-      const buttons = PARTICLES.map(([key, label]) => {
-        const b = el('button', 'cr-type', tr(label));
-        b.type = 'button';
-        b.addEventListener('click', () => { st.particles.type = key; paint(); syncBackground(); push(); });
-        grid.append(b);
-        return [key, b];
-      });
-      const paint = () => { for (const [key, b] of buttons) b.setAttribute('aria-pressed', String(key === st.particles.type)); };
-      ctl.particleType = { sync: paint };
-      paint();
-      return grid;
-    })(),
-    (() => { const r = row('Color', color('pColor', () => st.particles.color, v => { st.particles.color = v; })); rows.particles.push(r); return r; })(),
-    (() => { const r = row('Amount', slider('pAmount', 5, 100, () => st.particles.amount, v => { st.particles.amount = v; }, ' %')); rows.particles.push(r); return r; })(),
-    (() => { const r = row('Size', slider('pSize', 40, 220, () => st.particles.size, v => { st.particles.size = v; }, ' %')); rows.particles.push(r); return r; })(),
-    (() => { const r = row('Speed', slider('pSpeed', 20, 250, () => st.particles.speed, v => { st.particles.speed = v; }, ' %')); rows.particles.push(r); return r; })());
+    typeGrid,
+    tagged('particles', row('Color', color('pColor', () => st.particles.color, v => { st.particles.color = v; }))),
+    tagged('particles', row('Amount', slider('pAmount', 5, 100, () => st.particles.amount, v => { st.particles.amount = v; }, ' %'))),
+    tagged('particles', row('Size', slider('pSize', 40, 220, () => st.particles.size, v => { st.particles.size = v; }, ' %'))),
+    tagged('particles', row('Speed', slider('pSpeed', 20, 250, () => st.particles.speed, v => { st.particles.speed = v; }, ' %'))));
 
-  const glowCard = card('Glow and sound', '<circle cx="12" cy="12" r="4"/><path d="M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6 6l1.4 1.4M16.6 16.6 18 18M18 6l-1.4 1.4M7.4 16.6 6 18"/>',
-    row('Glow', toggle('glowOn', () => st.glow.on, v => { st.glow.on = v; }), 'A soft halo around the logo'),
-    row('Glow color', color('glowColor', () => st.glow.color, v => { st.glow.color = v; })),
-    row('Glow strength', slider('glowStrength', 10, 100, () => st.glow.strength, v => { st.glow.strength = v; }, ' %')),
-    row('React to sound', toggle('soundOn', () => st.sound.on, v => { st.sound.on = v; }), 'Pulses with the sound playing'),
-    row('Sound effect', segments('soundStyle', [['ripples', 'Ripples'], ['ring', 'Wave ring'], ['none', 'Pulse only']], () => st.sound.style, v => { st.sound.style = v; })));
+  const glowCard = card('Glow', '<circle cx="12" cy="12" r="4"/><path d="M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6 6l1.4 1.4M16.6 16.6 18 18M18 6l-1.4 1.4M7.4 16.6 6 18"/>',
+    row('Glow', toggle('glowOn', () => st.glow.on, v => { st.glow.on = v; syncRows(); }), 'A soft halo around the logo'),
+    tagged('glow', row('Glow color', color('glowColor', () => st.glow.color, v => { st.glow.color = v; }))),
+    tagged('glow', row('Glow strength', slider('glowStrength', 10, 100, () => st.glow.strength, v => { st.glow.strength = v; }, ' %'))));
 
-  // ---- stage with draggable handles
+  const soundCard = card('React to sound', '<path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/>',
+    row('React to sound', toggle('soundOn', () => st.sound.on, v => { st.sound.on = v; syncRows(); }), 'Choose one effect or several'),
+    tagged('sound', row('Pulse', toggle('soundPulse', () => st.sound.pulse, v => { st.sound.pulse = v; }), 'The logo and the glow breathe')),
+    tagged('sound', row('Ripples', toggle('soundRipples', () => st.sound.ripples, v => { st.sound.ripples = v; }), 'Rings spread out on each beat')),
+    tagged('sound', row('Wave ring', toggle('soundRing', () => st.sound.ring, v => { st.sound.ring = v; }), 'A smooth ring that follows the sound')),
+    tagged('sound', row('Vibration', toggle('soundVibe', () => st.sound.vibe, v => { st.sound.vibe = v; }), 'The logo trembles with the bass')));
+
+  // ---- stage with draggable handles and guides
   const stage = el('div', 'cr-stage');
   frame = document.createElement('iframe');
   frame.src = '/app/templates/custom.html?preview=1&light=50&speed=50';
   frame.tabIndex = -1;
   frame.title = tr('Preview');
   const layer = el('div', 'cr-layer');
-  const boxes = {
-    logo: el('div', 'cr-box'),
-    title: el('div', 'cr-box'),
-  };
+  const guideV = el('i', 'cr-guide cr-guide--v'), guideH = el('i', 'cr-guide cr-guide--h'), thirds = el('div', 'cr-thirds');
+  thirds.innerHTML = '<i></i><i></i><b></b><b></b>';
+  const tag = el('span', 'cr-tag');
+  const boxes = { logo: el('div', 'cr-box'), title: el('div', 'cr-box') };
   boxes.logo.dataset.target = 'logo';
   boxes.title.dataset.target = 'title';
-  for (const key of Object.keys(boxes)) {
-    boxes[key].append(el('span', 'cr-box__tag', tr(key === 'logo' ? 'Logo' : 'Text')), el('i', 'cr-grip'));
-    layer.append(boxes[key]);
-  }
+  boxes.logo.append(el('span', 'cr-box__tag', tr('Logo')), el('span', 'cr-box__plus', tr('Add your logo')), el('i', 'cr-grip'));
+  boxes.title.append(el('span', 'cr-box__tag', tr('Text')), el('span', 'cr-box__plus', tr('Click to type')), el('i', 'cr-grip'));
+  const inline = Object.assign(document.createElement('input'), { type: 'text', maxLength: 40 });
+  inline.className = 'cr-inline';
+  inline.hidden = true;
+  layer.append(thirds, guideV, guideH, boxes.logo, boxes.title, inline, tag);
   stage.append(frame, layer);
+
+  const tools = el('div', 'cr-tools');
+  const tool = (icon, label, run) => {
+    const b = el('button', 'cr-tool');
+    b.type = 'button';
+    b.title = tr(label);
+    b.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${icon}</svg><span></span>`;
+    b.querySelector('span').textContent = tr(label);
+    b.addEventListener('click', () => run(b));
+    tools.append(b);
+    return b;
+  };
+  function sync() { for (const k of ['logoSize', 'logoX', 'logoY', 'titleSize']) ctl[k] && ctl[k].sync(); push(); }
+  tool('<path d="M12 3.5v17M8.5 7.5h7M8.5 16.5h7"/>', 'Center horizontally', () => { st.logo.x = 50; if (st.title.text) st.title.x = 50; sync(); });
+  tool('<path d="M3.5 12h17M7.5 8.5v7M16.5 8.5v7"/>', 'Center vertically', () => { st.logo.y = st.title.text ? 40 : 50; if (st.title.text) st.title.y = 68; sync(); });
+  const gridButton = tool('<path d="M9 4v16M15 4v16M4 9h16M4 15h16"/>', 'Grid', b => { guides = !guides; b.setAttribute('aria-pressed', String(guides)); layout(); });
+  gridButton.setAttribute('aria-pressed', 'true');
+  tool('<path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4v4h4"/>', 'Reset position', () => { st.logo.x = 50; st.logo.y = 44; st.logo.size = 28; st.title.x = 50; st.title.y = 68; sync(); });
 
   function box(key) {
     const r = stage.getBoundingClientRect();
     const vmin = Math.min(r.width, r.height) / 100;
     if (key === 'logo') {
       const w = st.logo.size * vmin;
-      return { cx: st.logo.x / 100 * r.width, cy: st.logo.y / 100 * r.height, w, h: Math.max(w * st.aspect, 14), r, vmin };
+      return { cx: st.logo.x / 100 * r.width, cy: st.logo.y / 100 * r.height, w, h: Math.max(w * st.aspect, 30), r, vmin };
     }
-    const chars = Math.max(6, (st.title.text || 'Your text').length);
-    const h = st.title.size * vmin * 1.15;
-    return { cx: st.title.x / 100 * r.width, cy: st.title.y / 100 * r.height, w: chars * st.title.size * vmin * .56, h, r, vmin };
+    const chars = Math.max(8, (st.title.text || 'Your text').length);
+    return { cx: st.title.x / 100 * r.width, cy: st.title.y / 100 * r.height, w: chars * st.title.size * vmin * (st.title.font === 'spaced' ? 1.05 : .56), h: st.title.size * vmin * 1.2, r, vmin };
   }
 
+  let drag = null, editingText = false;
   function layout() {
     for (const key of Object.keys(boxes)) {
       const b = box(key), e = boxes[key];
       e.style.cssText = `left:${(b.cx - b.w / 2).toFixed(1)}px;top:${(b.cy - b.h / 2).toFixed(1)}px;width:${b.w.toFixed(1)}px;height:${b.h.toFixed(1)}px`;
-      e.classList.toggle('selected', selected === key);
       e.classList.toggle('empty', key === 'logo' ? !st.files.logo : !st.title.text);
+      e.classList.toggle('hover', hovered === key);
+      e.hidden = key === 'title' && editingText;
     }
+    thirds.hidden = !guides;
   }
   new ResizeObserver(layout).observe(stage);
 
-  let drag = null;
+  const SNAP = 8, RELEASE = 12;
+  function snap(key, x, y, r, free) {
+    const other = key === 'logo' ? st.title : st.logo, otherActive = key === 'logo' ? !!st.title.text : true;
+    const xs = [50], ys = [50];
+    if (otherActive) { xs.push(other.x); ys.push(other.y); }
+    const out = { x, y, gx: null, gy: null };
+    if (free) return out;
+    const near = (v, list, size, held) => {
+      for (const c of list) if (Math.abs(v - c) / 100 * size <= (held === c ? RELEASE : SNAP)) return c;
+      return null;
+    };
+    const cx = near(x, xs, r.width, drag && drag.gx), cy = near(y, ys, r.height, drag && drag.gy);
+    if (cx !== null) { out.x = cx; out.gx = cx; }
+    if (cy !== null) { out.y = cy; out.gy = cy; }
+    return out;
+  }
+
+  function showGuides(gx, gy) {
+    guideV.hidden = gx === null; guideH.hidden = gy === null;
+    if (gx !== null) guideV.style.left = gx + '%';
+    if (gy !== null) guideH.style.top = gy + '%';
+  }
+  guideV.hidden = guideH.hidden = tag.hidden = true;
+
   layer.addEventListener('pointerdown', e => {
+    if (e.target === inline) return;
     const target = e.target.closest('.cr-box');
+    if (editingText) endEdit();
     if (!target) return;
     e.preventDefault();
     const key = target.dataset.target, resize = !!e.target.closest('.cr-grip');
-    selected = key;
     const b = box(key);
-    drag = { key, resize, startX: e.clientX, startY: e.clientY, moved: false, cx: b.cx, cy: b.cy, w: b.w, vmin: b.vmin, r: b.r, size: key === 'logo' ? st.logo.size : st.title.size };
+    drag = { key, resize, startX: e.clientX, startY: e.clientY, moved: false, cx: b.cx, cy: b.cy, w: b.w, vmin: b.vmin, r: b.r, size: key === 'logo' ? st.logo.size : st.title.size, gx: null, gy: null };
     layer.setPointerCapture(e.pointerId);
-    layout();
+    target.classList.add('active');
   });
   layer.addEventListener('pointermove', e => {
-    if (!drag) return;
-    if (e.buttons === 0) { drag = null; return; }
+    if (!drag) {
+      const t = e.target.closest('.cr-box'), key = t ? t.dataset.target : null;
+      if (key !== hovered) { hovered = key; layout(); }
+      return;
+    }
+    if (e.buttons === 0) { finish(false); return; }
     const dx = e.clientX - drag.startX, dy = e.clientY - drag.startY;
     if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
     if (!drag.moved) return;
+    const item = drag.key === 'logo' ? st.logo : st.title;
     if (drag.resize) {
       if (drag.key === 'logo') st.logo.size = Math.max(5, Math.min(70, Math.round((drag.w + dx * 2) / drag.vmin)));
-      else st.title.size = Math.max(2, Math.min(14, Math.round((drag.size * drag.vmin * 1.15 + dy * 2) / (drag.vmin * 1.15))));
+      else st.title.size = Math.max(2, Math.min(14, Math.round((drag.size * drag.vmin * 1.2 + dy * 2) / (drag.vmin * 1.2) * 2) / 2));
     } else {
-      const x = Math.max(0, Math.min(100, (drag.cx + dx) / drag.r.width * 100)), y = Math.max(0, Math.min(100, (drag.cy + dy) / drag.r.height * 100));
-      const t = drag.key === 'logo' ? st.logo : st.title;
-      t.x = Math.round(x * 2) / 2; t.y = Math.round(y * 2) / 2;
+      const raw = { x: Math.max(0, Math.min(100, (drag.cx + dx) / drag.r.width * 100)), y: Math.max(0, Math.min(100, (drag.cy + dy) / drag.r.height * 100)) };
+      const s = snap(drag.key, raw.x, raw.y, drag.r, e.altKey);
+      drag.gx = s.gx; drag.gy = s.gy;
+      item.x = Math.round(s.x * 10) / 10; item.y = Math.round(s.y * 10) / 10;
+      showGuides(s.gx, s.gy);
     }
-    for (const k of ['logoSize', 'logoX', 'logoY', 'titleSize']) ctl[k] && ctl[k].sync();
-    push();
+    tag.hidden = false;
+    tag.textContent = drag.resize ? `${item.size}` : `X ${Math.round(item.x)} %   Y ${Math.round(item.y)} %`;
+    const b = box(drag.key);
+    tag.style.left = (b.cx - b.w / 2) + 'px';
+    tag.style.top = (b.cy + b.h / 2 + 8) + 'px';
+    sync();
   });
-  const endDrag = () => {
-    if (drag && !drag.moved) {
-      if (drag.key === 'logo' && !st.files.logo) { pickKind = 'logo'; input.click(); }
-      if (drag.key === 'title' && !st.title.text) titleInput.focus();
-    }
+  layer.addEventListener('pointerleave', () => { if (!drag && hovered) { hovered = null; layout(); } });
+  function finish(click) {
+    if (!drag) return;
+    const was = drag;
     drag = null;
-  };
-  layer.addEventListener('pointerup', endDrag);
-  layer.addEventListener('pointercancel', endDrag);
+    boxes.logo.classList.remove('active'); boxes.title.classList.remove('active');
+    guideV.hidden = guideH.hidden = tag.hidden = true;
+    if (click && !was.moved) {
+      if (was.key === 'logo' && !st.files.logo) { pickKind = 'logo'; input.click(); }
+      if (was.key === 'title') beginEdit();
+    }
+  }
+  layer.addEventListener('pointerup', () => finish(true));
+  layer.addEventListener('pointercancel', () => finish(false));
   layer.addEventListener('wheel', e => {
     const target = e.target.closest('.cr-box');
     if (!target) return;
@@ -349,47 +463,128 @@
     const key = target.dataset.target, step = e.deltaY < 0 ? 1 : -1;
     if (key === 'logo') st.logo.size = Math.max(5, Math.min(70, st.logo.size + step * 2));
     else st.title.size = Math.max(2, Math.min(14, st.title.size + step * .5));
-    selected = key;
-    for (const k of ['logoSize', 'titleSize']) ctl[k] && ctl[k].sync();
-    push();
+    sync();
   }, { passive: false });
+  addEventListener('keydown', e => {
+    if (!hovered || e.target.matches('input, textarea') || !/^Arrow/.test(e.key)) return;
+    const t = hovered === 'logo' ? st.logo : st.title, d = e.shiftKey ? 2 : .5;
+    if (e.key === 'ArrowLeft') t.x = Math.max(0, t.x - d);
+    if (e.key === 'ArrowRight') t.x = Math.min(100, t.x + d);
+    if (e.key === 'ArrowUp') t.y = Math.max(0, t.y - d);
+    if (e.key === 'ArrowDown') t.y = Math.min(100, t.y + d);
+    e.preventDefault();
+    sync();
+  });
 
-  // ---- layout of the page
-  const hint = el('p', 'cr-hint', tr('Drag the logo or the text to place it. Scroll over it or pull its corner to resize.'));
+  function beginEdit() {
+    const b = box('title');
+    editingText = true;
+    inline.hidden = false;
+    inline.value = st.title.text;
+    const width = Math.max(240, b.w + 60);
+    inline.style.cssText = `left:${(b.cx - width / 2).toFixed(1)}px;top:${(b.cy - b.h / 2 - 4).toFixed(1)}px;width:${width}px;height:${(b.h + 8).toFixed(1)}px;font-size:${Math.max(14, st.title.size * b.vmin).toFixed(1)}px;color:${st.title.color};font-weight:${st.title.weight}`;
+    layout();
+    inline.focus();
+    inline.select();
+  }
+  function endEdit() {
+    if (!editingText) return;
+    editingText = false;
+    inline.hidden = true;
+    titleInput.value = st.title.text;
+    layout();
+  }
+  inline.addEventListener('input', () => { st.title.text = inline.value; titleInput.value = inline.value; push(); });
+  inline.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === 'Escape') { e.preventDefault(); endEdit(); } });
+  inline.addEventListener('blur', endEdit);
+
+  // ---- page
+  const hint = el('p', 'cr-hint', tr('Drag the logo or the text to place it. Click the text to type. Scroll over it or pull its corner to resize. Hold Alt to move without snapping.'));
   const themeTitle = el('div', 'title-section');
-  themeTitle.append(el('h2', '', tr('Start from a theme')), el('span', 'config', tr('Pick a look, then make it yours')));
-  const cardsTitle = el('div', 'title-section');
-  cardsTitle.append(el('h2', '', tr('Make it yours')));
-
-  const grid = el('div', 'cr-grid');
-  grid.append(logoCard, textCard, backgroundCard, particlesCard, glowCard);
+  themeTitle.append(el('h2', '', tr('Start from a theme')), el('span', 'config', tr('Pick a look, then make it yours on the right')));
 
   const nameInput = Object.assign(document.createElement('input'), { type: 'text', maxLength: 40, placeholder: tr('Name this wallpaper') });
   nameInput.className = 'cr-text';
   const create = el('button', 'button button--accent', tr('Create the wallpaper'));
   create.type = 'button';
-  create.addEventListener('click', () => {
+  const copy = el('button', 'link', tr('Save as a new wallpaper'));
+  copy.type = 'button';
+  copy.hidden = true;
+  const startNew = el('button', 'link', tr('Start a new one'));
+  startNew.type = 'button';
+  const banner = el('div', 'cr-editing');
+  banner.hidden = true;
+
+  function leaveEdit() {
+    editing = null;
+    banner.hidden = true; copy.hidden = true;
+    create.textContent = tr('Create the wallpaper');
+    nameInput.value = '';
+    nameInput.disabled = false;
+  }
+
+  function save(replace) {
     const files = [];
     if (st.files.logo) files.push({ name: 'logo.png', data: st.files.logo });
     if (st.bg.type === 'image' && st.files.background) files.push({ name: 'background.jpg', data: st.files.background });
-    send('creator.create', { name: nameInput.value, config: config(false), files });
-    nameInput.value = '';
+    send('creator.create', { name: nameInput.value, config: config(false), files, replace: replace ? editing : '' });
     try { localStorage.setItem('wallpaper.tab', 'library'); } catch (e) { }
     const tab = document.querySelector('#wp-tabs [data-tab="library"]');
     if (tab) tab.click();
     showView('wallpaper');
-  });
-  const save = el('div', 'cr-save');
-  save.append(nameInput, create);
+    leaveEdit();
+  }
+  create.addEventListener('click', () => save(!!editing));
+  copy.addEventListener('click', () => { editing = null; nameInput.disabled = false; save(false); });
+  startNew.addEventListener('click', () => { leaveEdit(); Object.assign(st, fresh()); theme = 'midnight'; syncAll(); });
 
-  zone.append(stage, hint, themeTitle, themes, cardsTitle, grid, save, input);
-  syncBackground();
-  paintThemes();
-  layout();
+  const save$ = el('div', 'cr-save');
+  save$.append(nameInput, copy, create);
+
+  zone.append(banner, stage, tools, hint, themeTitle, themes, save$, input);
+  panel.append(logoCard, textCard, backgroundCard, particlesCard, glowCard, soundCard);
+  syncAll();
+
+  function fromConfig(c, files) {
+    const f = fresh();
+    const merge = (a, b) => Object.assign(a, b || {});
+    merge(f.bg, c.background); merge(f.logo, c.logo); merge(f.title, c.title);
+    if (c.v === 2) {
+      merge(f.particles, c.particles); merge(f.glow, c.glow); merge(f.sound, c.sound);
+      if (c.sound && c.sound.style) { f.sound.ripples = c.sound.style === 'ripples'; f.sound.ring = c.sound.style === 'ring'; }
+    } else {
+      const e = c.effects || {};
+      f.glow.on = !!e.halo; f.glow.color = e.haloColor || f.glow.color;
+      f.particles.type = e.grains ? 'snow' : 'none'; f.particles.color = e.grainColor || '#ffffff';
+      f.sound.on = e.reactive !== false;
+    }
+    delete f.bg.image; delete f.logo.image;
+    f.files.logo = files.logo || null;
+    f.files.background = files.background || null;
+    return f;
+  }
 
   addEventListener('message', e => {
     if (e.data && e.data.bramble === 'ready' && frame && e.source === frame.contentWindow) { ready = true; push(); }
   });
 
-  Bramble.creator = { visible(yes) { if (yes) layout(); } };
+  Bramble.creator = {
+    visible(yes) { send('audioPreview', { value: !!yes }); if (yes) layout(); },
+    event(m) {
+      if (m.type !== 'creator.opened') return;
+      Object.assign(st, fromConfig(m.config || {}, { logo: m.logo, background: m.background }));
+      editing = m.name;
+      theme = '';
+      nameInput.value = m.name;
+      nameInput.disabled = true;
+      banner.hidden = false;
+      banner.replaceChildren(el('span', '', tr('Editing {0}', m.name)), startNew);
+      create.textContent = tr('Save changes');
+      copy.hidden = false;
+      st.aspect = 1;
+      if (st.files.logo) { const probe = new Image(); probe.onload = () => { st.aspect = probe.naturalHeight / probe.naturalWidth; layout(); }; probe.src = st.files.logo; }
+      syncAll();
+      showView('create');
+    },
+  };
 })();
