@@ -201,10 +201,13 @@
     dv.querySelector('.mini-curve').remove();
     cards.devices.facts.textContent = '';
 
-    zone.replaceChildren(header,
-      family('Power and screens', [...power.filter(c => !c.classList.contains('m-card--large')), dv, ...power.filter(c => c.classList.contains('m-card--large'))]),
-      family('Performance', performance),
-      family('Storage and network', storage));
+    const dash = document.createElement('div');
+    dash.className = 'm-dash';
+    const byKey = key => [...performance, ...power, dv].find(c => c.dataset.key === key);
+    const ordered = [byKey('processor'), byKey('memory'), ...performance.filter(c => c.dataset.key.startsWith('graphics')),
+      byKey('temperature'), byKey('battery'), dv, ...power.filter(c => c.classList.contains('m-card--large')), ...storage];
+    dash.append(...ordered.filter(Boolean));
+    zone.replaceChildren(header, dash);
     mark();
     updateDevices();
     if (stats) update();
