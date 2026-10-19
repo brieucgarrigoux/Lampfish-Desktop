@@ -84,14 +84,15 @@
     angle = num(b.angle, 160);
     dim.style.opacity = String(Math.max(0, Math.min(.9, num(b.dim, 0) / 100)));
     const v = Math.max(0, Math.min(100, num(b.vignette, 0))) / 100;
-    vignette.style.background = v > 0 ? `radial-gradient(ellipse at 50% 48%, rgba(0,0,0,0) 45%, rgba(0,0,0,${(v * .85).toFixed(2)}) 100%)` : 'none';
+    vignette.style.background = v > 0 ? `radial-gradient(ellipse closest-side at 50% 50%, rgba(0,0,0,0) 38%, rgba(0,0,0,${(v * .9).toFixed(2)}) 100%)` : 'none';
 
     const l = config.logo || {};
     if (l.image) { logo.src = l.image; logo.hidden = false; } else { logo.removeAttribute('src'); logo.hidden = true; }
     logo.style.width = num(l.size, 28) + 'vmin';
     logo.style.left = num(l.x, 50) + '%';
     logo.style.top = num(l.y, 45) + '%';
-    logo.style.filter = l.shadow === false ? 'none' : 'drop-shadow(0 .6vmin 2.2vmin rgba(0,0,0,.45))';
+    const sh = typeof l.shadow === 'number' ? l.shadow : l.shadow === false ? 0 : 60, sk = sh / 60;
+    logo.style.filter = sh > 0 ? `drop-shadow(0 ${(.6 * sk).toFixed(2)}vmin ${(2.2 * sk).toFixed(2)}vmin rgba(0,0,0,${Math.min(.9, .45 * sk).toFixed(2)}))` : 'none';
 
     const t = config.title || {};
     title.textContent = t.text || '';
@@ -197,9 +198,11 @@
 
     const c = config || {}, pc = c.particles || {}, gl = c.glow || {}, l = c.logo || {}, b = c.background || {};
     const so = c.sound || {}, on = so.on !== false;
-    const fx = { pulse: on && so.pulse !== false, ripples: on && (so.ripples ?? so.style === 'ripples'), ring: on && (so.ring ?? so.style === 'ring'), vibe: on && !!so.vibe };
-    const pulse = fx.pulse ? audio : 0;
-    if (b.drift && b.type === 'gradient' && !frozen) bg.style.backgroundImage = gradient((angle + t * 6) % 360);
+    const flags = ['pulse', 'ripples', 'ring', 'vibe'].some(k => k in so);
+    const fx = { pulse: on && (flags ? so.pulse !== false : true), ripples: on && (flags ? !!so.ripples : so.style === 'ripples'), ring: on && (flags ? !!so.ring : so.style === 'ring'), vibe: on && !!so.vibe, particles: on && so.particles !== false };
+    const pulse = fx.pulse ? audio : 0, pulseP = fx.particles ? audio : 0;
+    const drift = typeof b.drift === 'number' ? b.drift : b.drift ? 40 : 0;
+    if (drift > 0 && b.type === 'gradient' && !frozen) bg.style.backgroundImage = gradient((angle + t * drift / 100 * 14) % 360);
     const cx = w * num(l.x, 50) / 100, cy = h * num(l.y, 45) / 100;
     const logoRadius = Math.min(w, h) * num(l.size, 28) / 200;
     ctx.clearRect(0, 0, w, h);
@@ -220,25 +223,25 @@
 
     const kind = KINDS[pc.type];
     if (kind) {
-      const k = (frozen ? 0 : speed * num(pc.speed, 100) / 100) * (1 + pulse * 3), color = pc.color || '#c9a2e6';
-      for (const p of particles) { kind.step(p, dt, t, k); kind.draw(p, t, color, pulse); }
+      const k = (frozen ? 0 : speed * num(pc.speed, 100) / 100) * (1 + pulseP * 3), color = pc.color || '#c9a2e6';
+      for (const p of particles) { kind.step(p, dt, t, k); kind.draw(p, t, color, pulseP); }
       ctx.globalAlpha = 1;
     }
     ctx.globalCompositeOperation = 'source-over';
 
     if (fx.ring || fx.ripples) {
-      const [r, g, bl] = rgb(gl.color || '#c9a2e6'), rgbText = `${Math.min(255, r + 70)},${Math.min(255, g + 70)},${Math.min(255, bl + 70)}`;
+      const [r, g, bl] = rgb(so.color || gl.color || '#c9a2e6'), rgbText = so.color ? `${r},${g},${bl}` : `${Math.min(255, r + 70)},${Math.min(255, g + 70)},${Math.min(255, bl + 70)}`;
       if (fx.ring) ring(dt, cx, cy, logoRadius * 1.35, rgbText);
       if (fx.ripples) ripple(dt, cx, cy, logoRadius * 1.05, rgbText);
     }
 
     if (logo.src && !logo.hidden) {
       const bob = l.float === false ? 0 : Math.sin(t * .7) * .6;
-      const shake = fx.vibe ? audio : 0;
+      const shake = fx.vibe ? audio * (num(so.vibeAmount, 50) / 50) : 0;
       const jx = (Math.random() - .5) * shake * 9, jy = (Math.random() - .5) * shake * 9;
       logo.style.transform = `translate(calc(-50% + ${jx.toFixed(1)}px), calc(-50% + ${(jy + bob * h / 100).toFixed(1)}px)) scale(${(1 + pulse * .05).toFixed(3)})`;
     }
-    if (fx.vibe && title.textContent) title.style.transform = `translate(calc(-50% + ${((Math.random() - .5) * audio * 5).toFixed(1)}px), calc(-50% + ${((Math.random() - .5) * audio * 5).toFixed(1)}px))`;
+    if (fx.vibe && title.textContent) title.style.transform = `translate(calc(-50% + ${((Math.random() - .5) * audio * 5 * num(so.vibeAmount, 50) / 50).toFixed(1)}px), calc(-50% + ${((Math.random() - .5) * audio * 5 * num(so.vibeAmount, 50) / 50).toFixed(1)}px))`;
     else title.style.transform = '';
 
     if (thumbnail && ++frames > 2) return;
