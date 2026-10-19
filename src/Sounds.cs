@@ -196,7 +196,7 @@ namespace Bramble
                 playbackStart = DateTime.Now; playbackPause = false;
                 double[] rms, peak;
                 wav.Envelope(60, gain, out rms, out peak);
-                Program.Send(new { type = "station.playback", id = id, deck = deck, duration = Math.Round(wav.Duration, 3), from = Math.Round(from, 3), frames = 60, rms = rms, peak = peak });
+                Program.Send(new { type = "station.playback", id = id, deck = deck, duration = Math.Round(wav.Duration, 3), from = Math.Round(from, 3), frames = 60, rms = rms, peak = peak, bands = 28, bandFrames = 30, spectrum = wav.Spectrum(30, 28) });
             }
             catch (Exception ex)
             {

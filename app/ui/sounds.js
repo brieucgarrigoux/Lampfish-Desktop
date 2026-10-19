@@ -24,106 +24,55 @@
   ];
 
   const canvas = $('level'), pen = canvas.getContext('2d');
-  const COLUMNS = 140;
+  const BANDS = 28, SEGMENTS = 11;
+  const levels = new Array(BANDS).fill(0), holds = new Array(BANDS).fill(0), fall = new Array(BANDS).fill(0);
 
-  function envelope(rms) {
-    const out = new Array(COLUMNS).fill(0);
-    if (!rms || !rms.length) return out;
-    for (let i = 0; i < COLUMNS; i++) {
-      const from = Math.floor(i / COLUMNS * rms.length), to = Math.max(from + 1, Math.floor((i + 1) / COLUMNS * rms.length));
-      let peak = 0;
-      for (let k = from; k < to && k < rms.length; k++) peak = Math.max(peak, rms[k]);
-      const db = peak > 0 ? 20 * Math.log10(peak) : -60;
-      out[i] = Math.max(0, Math.min(1, (db + 46) / 46));
+  function target(now, band) {
+    if (playback && playback.spectrum) {
+      const t = (now - playback.start) / 1000 * (playback.bandFrames || 30);
+      const k = Math.max(0, Math.min(playback.spectrum.length - 1, Math.floor(t)));
+      return playback.spectrum[k][band];
     }
-    return out.map((v, i) => (v + (out[i - 1] ?? v) * .5 + (out[i + 1] ?? v) * .5) / 2);
+    const s = now / 1000;
+    return playback ? 0 : .06 + .05 * Math.sin(s * 1.7 + band * .55) * Math.sin(s * .6 + band * .21);
   }
 
-  function ribbon(w, mid, amp, top) {
-    const pts = amp.map((v, i) => [i / (amp.length - 1) * w, mid + (top ? -1 : 1) * Math.max(1, v * mid * .92)]);
-    pen.moveTo(pts[0][0], pts[0][1]);
-    for (let i = 1; i < pts.length - 1; i++) pen.quadraticCurveTo(pts[i][0], pts[i][1], (pts[i][0] + pts[i + 1][0]) / 2, (pts[i][1] + pts[i + 1][1]) / 2);
-    pen.lineTo(pts[pts.length - 1][0], pts[pts.length - 1][1]);
-  }
-
-  function curve(points, closePath) {
-    pen.moveTo(points[0][0], points[0][1]);
-    for (let i = 1; i < points.length - 1; i++) pen.quadraticCurveTo(points[i][0], points[i][1], (points[i][0] + points[i + 1][0]) / 2, (points[i][1] + points[i + 1][1]) / 2);
-    pen.lineTo(points[points.length - 1][0], points[points.length - 1][1]);
-    if (closePath) pen.closePath();
-  }
-
-  function drawWave(progress, amp, now) {
+  function drawEq(now) {
     const r = devicePixelRatio || 1, box = canvas.getBoundingClientRect();
     const W = Math.round(box.width * r), H = Math.round(box.height * r);
     if (canvas.width !== W || canvas.height !== H) { canvas.width = W; canvas.height = H; }
     pen.setTransform(r, 0, 0, r, 0, 0);
     pen.clearRect(0, 0, box.width, box.height);
-    const w = box.width, mid = box.height / 2, n = amp.length;
-    pen.fillStyle = 'rgba(255, 255, 255, .045)';
-    for (let i = 1; i < 16; i++) pen.fillRect(Math.round(w * i / 16), 4, 1, box.height - 8);
-    const upper = k => amp.map((v, i) => [i / (n - 1) * w, mid - Math.max(.8, v * k * mid * .92)]);
-    const lower = k => amp.map((v, i) => [i / (n - 1) * w, mid + Math.max(.8, v * k * mid * .92)]).reverse();
-    const ribbon = k => { pen.beginPath(); curve(upper(k)); const l = lower(k); pen.lineTo(l[0][0], l[0][1]); curve(l, true); };
-
-    pen.fillStyle = 'rgba(149, 97, 243, .13)';
-    ribbon(1);
-    pen.fill();
-    pen.fillStyle = 'rgba(149, 97, 243, .12)';
-    ribbon(.6);
-    pen.fill();
-
-    if (progress > 0) {
-      pen.save();
-      pen.beginPath();
-      pen.rect(0, 0, w * Math.min(1, progress), box.height);
-      pen.clip();
-      const grad = pen.createLinearGradient(0, 0, 0, box.height);
-      grad.addColorStop(0, '#d9c2ff');
-      grad.addColorStop(.5, '#8a52ee');
-      grad.addColorStop(1, '#d9c2ff');
-      pen.fillStyle = grad;
-      pen.shadowColor = 'rgba(149, 97, 243, .9)';
-      pen.shadowBlur = 14;
-      ribbon(1);
-      pen.fill();
-      pen.shadowBlur = 0;
-      pen.fillStyle = 'rgba(255, 255, 255, .55)';
-      ribbon(.32);
-      pen.fill();
-      pen.strokeStyle = 'rgba(236, 224, 255, .95)';
-      pen.lineWidth = 1.2;
-      pen.beginPath(); curve(upper(1)); pen.stroke();
-      pen.beginPath(); curve(lower(1).reverse()); pen.stroke();
-      pen.restore();
-      const x = w * Math.min(1, progress);
-      const bloom = pen.createRadialGradient(x, mid, 0, x, mid, 26);
-      bloom.addColorStop(0, 'rgba(201, 168, 255, .55)');
-      bloom.addColorStop(1, 'rgba(201, 168, 255, 0)');
-      pen.fillStyle = bloom;
-      pen.fillRect(x - 26, 0, 52, box.height);
-      pen.fillStyle = 'rgba(255, 255, 255, .95)';
-      pen.shadowColor = 'rgba(201, 168, 255, 1)';
-      pen.shadowBlur = 10;
-      pen.fillRect(x - .75, 2, 1.5, box.height - 4);
-      pen.shadowBlur = 0;
-    } else {
-      pen.strokeStyle = 'rgba(176, 130, 255, .55)';
-      pen.lineWidth = 1.4;
-      pen.shadowColor = 'rgba(149, 97, 243, .8)';
-      pen.shadowBlur = 8;
-      pen.beginPath();
-      const t = (now || 0) / 1000;
-      for (let i = 0; i <= 120; i++) {
-        const x = i / 120 * w, e = Math.sin(i / 120 * Math.PI);
-        const y = mid + Math.sin(i * .22 + t * 1.6) * 3.2 * e + Math.sin(i * .09 - t * .9) * 2.2 * e;
-        if (i) pen.lineTo(x, y); else pen.moveTo(x, y);
+    const gap = 3, w = (box.width - gap * (BANDS - 1)) / BANDS, h = (box.height - 6 - (SEGMENTS - 1) * 2) / SEGMENTS;
+    for (let b = 0; b < BANDS; b++) {
+      const v = target(now, b);
+      levels[b] += (v - levels[b]) * (v > levels[b] ? .55 : .16);
+      if (levels[b] >= holds[b]) { holds[b] = levels[b]; fall[b] = 0; } else { fall[b] += .0016; holds[b] = Math.max(0, holds[b] - fall[b]); }
+      const lit = Math.round(levels[b] * SEGMENTS), cap = Math.min(SEGMENTS - 1, Math.round(holds[b] * SEGMENTS));
+      const x = b * (w + gap);
+      for (let k = 0; k < SEGMENTS; k++) {
+        const y = box.height - 3 - (k + 1) * h - k * 2;
+        const on = k < lit, hold = k === cap && holds[b] > .08;
+        if (on || hold) {
+          const mix = k / (SEGMENTS - 1);
+          pen.fillStyle = on ? (mix > .82 ? '#f1e8ff' : mix > .55 ? '#c3a1ff' : mix > .28 ? '#9561f3' : '#6f35d8') : '#e9dcff';
+          pen.shadowColor = 'rgba(149, 97, 243, .85)';
+          pen.shadowBlur = on ? 7 : 4;
+        } else {
+          pen.fillStyle = 'rgba(255, 255, 255, .055)';
+          pen.shadowBlur = 0;
+        }
+        pen.beginPath();
+        pen.roundRect(x, y, w, h, 1.6);
+        pen.fill();
       }
-      pen.stroke();
-      pen.shadowBlur = 0;
     }
-    pen.fillStyle = 'rgba(255, 255, 255, .07)';
-    pen.fillRect(0, mid - .5, w, 1);
+    pen.shadowBlur = 0;
+    if (playback && playback.duration) {
+      const p = Math.min(1, (now - playback.start) / 1000 / playback.duration);
+      pen.fillStyle = 'rgba(149, 97, 243, .9)';
+      pen.fillRect(0, box.height - 2, box.width * p, 2);
+    }
   }
 
   function renderBanner() {
@@ -136,22 +85,20 @@
     $('banner-state').textContent = state ? tr(state) : '';
     $('banner-sound').classList.toggle('muted', !s.active || s.silence || !e.active);
     $('banner-listen').classList.toggle('playing', !!playback);
-    $('banner-listen').querySelector('span').textContent = playback ? 'Stop' : 'Listen';
+    $('banner-listen').querySelector('.listen-label').textContent = tr(playback ? 'Stop' : 'Listen');
   }
 
-  const idle = new Array(COLUMNS).fill(.02);
   let loop = 0, standby = false;
   function animate() {
     loop = 0;
     const t = playback ? (performance.now() - playback.start) / 1000 : 0;
     if (playback && t > playback.duration + 0.08) { finishPlayback(); return; }
-    if (playback) drawWave(t / playback.duration, playback.env, performance.now());
-    else drawWave(0, idle, performance.now());
+    drawEq(performance.now());
     if (playback || standby) loop = requestAnimationFrame(animate);
   }
 
   function startPlayback(m) {
-    playback = { ...m, start: performance.now() - (m.from || 0) * 1000, env: envelope(m.rms) };
+    playback = { ...m, start: performance.now() - (m.from || 0) * 1000 };
     document.querySelectorAll('.sound.listening').forEach(l => l.classList.remove('listening'));
     const row = document.querySelector(`.sound[data-id="${CSS.escape(m.id)}"]`);
     if (row) row.classList.add('listening');

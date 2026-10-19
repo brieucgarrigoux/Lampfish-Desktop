@@ -16,17 +16,23 @@
 .screen-sound__state { flex: none; font-size: 11.5px; font-weight: 600; color: var(--accent); }
 .screen-sound .path { font-size: 12.5px; color: var(--text-pale); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.level { display: block; width: 100%; height: 52px; margin-top: 6px; }
+.level { display: block; width: 100%; height: 76px; margin-top: 8px; }
 
-.keycap-listen { position: relative; min-width: 138px; height: 54px; border-radius: 15px; gap: 10px; font-size: 14.5px; overflow: hidden;
-  background: linear-gradient(180deg, #b563dc, #8236ab 48%, #5b2078 52%, #6a2a8c);
-  box-shadow: 0 0 0 1px #1a0a25, 0 0 0 4px #2b2c36, 0 0 0 5px #07080b, 0 10px 18px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .45), inset 0 -3px 0 rgba(0, 0, 0, .28);
-  text-shadow: 0 1px 1px rgba(0, 0, 0, .45); }
-.keycap-listen::before { content: ""; position: absolute; left: 6px; right: 6px; top: 3px; height: 45%; border-radius: 11px 11px 40% 40%; background: linear-gradient(180deg, rgba(255, 255, 255, .34), rgba(255, 255, 255, .04)); pointer-events: none; }
-.keycap-listen:active:not(:disabled), .keycap-listen.pressed { transform: translateY(2px); box-shadow: 0 0 0 1px #1a0a25, 0 0 0 4px #2b2c36, 0 0 0 5px #07080b, 0 4px 8px rgba(0, 0, 0, .5), inset 0 2px 5px rgba(0, 0, 0, .4); }
-.keycap-listen.playing::after { content: ""; position: absolute; right: 10px; top: 9px; width: 6px; height: 6px; border-radius: 50%; background: #fff; box-shadow: 0 0 8px #fff; animation: blink-listen 1s ease-in-out infinite alternate; }
-@keyframes blink-listen { from { opacity: .35; } to { opacity: 1; } }
-.keycap-listen svg { width: 15px; height: 15px; fill: currentColor; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .5)); }
+.keycap-listen { position: relative; flex: none; width: auto; min-width: 0; height: auto; padding: 0; gap: 8px; flex-direction: column; border: 0; background: none; box-shadow: none; color: var(--text-soft); font-size: 12px; font-weight: 600; text-shadow: 0 1px 0 rgba(0, 0, 0, .6); overflow: visible; }
+.keycap-listen::before, .keycap-listen::after { display: none !important; }
+.keycap-listen .dome { position: relative; width: 66px; height: 66px; border-radius: 50%; display: grid; place-items: center;
+  background: conic-gradient(from 210deg, #8d8f99, #d7d9e0 12%, #6c6e78 28%, #b9bbc4 45%, #5d5f69 60%, #c9cbd3 78%, #7c7e88 90%, #8d8f99);
+  box-shadow: 0 0 0 1px #07080b, 0 10px 18px rgba(0, 0, 0, .6), inset 0 1px 1px rgba(255, 255, 255, .55), inset 0 -2px 3px rgba(0, 0, 0, .5); transition: transform .08s, box-shadow .08s; }
+.keycap-listen .dome::before { content: ""; position: absolute; inset: 7px; border-radius: 50%; background: radial-gradient(circle at 50% 35%, #1a1620, #07060a 78%); box-shadow: inset 0 3px 7px rgba(0, 0, 0, .95), 0 1px 0 rgba(255, 255, 255, .28); }
+.keycap-listen .dome i { position: absolute; inset: 11px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 30%, #d9a8f5, #9b45c8 38%, #5a1f80 74%, #35104f);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, .7), inset 0 -3px 5px rgba(0, 0, 0, .45), inset 0 1px 2px rgba(255, 255, 255, .5); transition: transform .08s, box-shadow .08s; }
+.keycap-listen .dome i::after { content: ""; position: absolute; left: 20%; right: 20%; top: 8%; height: 34%; border-radius: 50%; background: linear-gradient(180deg, rgba(255, 255, 255, .6), rgba(255, 255, 255, 0)); }
+.keycap-listen svg { position: relative; z-index: 2; width: 18px; height: 18px; fill: #fff; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .6)); }
+.keycap-listen:hover .dome i { filter: brightness(1.12); }
+.keycap-listen:active .dome i, .keycap-listen.pressed .dome i { transform: translateY(2px) scale(.97); box-shadow: 0 1px 2px rgba(0, 0, 0, .7), inset 0 2px 5px rgba(0, 0, 0, .55); }
+.keycap-listen.playing .dome i { background: radial-gradient(circle at 38% 30%, #f0d2ff, #c068f0 40%, #7b2eb5 76%, #4a1a70); box-shadow: 0 0 18px rgba(192, 104, 240, .85), inset 0 -3px 5px rgba(0, 0, 0, .4), inset 0 1px 2px rgba(255, 255, 255, .6); }
+.keycap-listen .listen-label { letter-spacing: .01em; }
 .keycap-listen .icon-stop, .keycap-listen.playing .icon-playback { display: none; }
 .keycap-listen.playing .icon-stop { display: block; }
 

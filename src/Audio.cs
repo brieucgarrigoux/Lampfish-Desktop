@@ -165,6 +165,47 @@ namespace Bramble
             }
         }
 
+        public double[][] Spectrum(int framesPerSecond, int bands)
+        {
+            const int window = 2048;
+            int images = Data.Length / Channels;
+            int frames = Math.Min(framesPerSecond * 40, (int)Math.Ceiling(images / (double)Frequency * framesPerSecond));
+            var centers = new double[bands];
+            for (int b = 0; b < bands; b++) centers[b] = 60 * Math.Pow(Math.Min(15000, Frequency / 2.2) / 60, b / (double)(bands - 1));
+            var hann = new double[window];
+            for (int i = 0; i < window; i++) hann[i] = 0.5 - 0.5 * Math.Cos(2 * Math.PI * i / (window - 1));
+            var result = new double[frames][];
+            var mono = new double[window];
+            double top = 1e-9;
+            for (int f = 0; f < frames; f++)
+            {
+                int centre = (int)((f + 0.5) / framesPerSecond * Frequency), first = centre - window / 2;
+                for (int i = 0; i < window; i++)
+                {
+                    int k = first + i;
+                    double v = 0;
+                    if (k >= 0 && k < images) { for (int c = 0; c < Channels; c++) v += Data[k * Channels + c]; v /= Channels; }
+                    mono[i] = v * hann[i];
+                }
+                var row = new double[bands];
+                for (int b = 0; b < bands; b++)
+                {
+                    double w = 2 * Math.PI * centers[b] / Frequency, coeff = 2 * Math.Cos(w), s1 = 0, s2 = 0;
+                    for (int i = 0; i < window; i++) { double s0 = mono[i] + coeff * s1 - s2; s2 = s1; s1 = s0; }
+                    row[b] = Math.Sqrt(Math.Max(0, s1 * s1 + s2 * s2 - coeff * s1 * s2));
+                    if (row[b] > top) top = row[b];
+                }
+                result[f] = row;
+            }
+            foreach (var row in result)
+                for (int b = 0; b < bands; b++)
+                {
+                    double db = 20 * Math.Log10(Math.Max(row[b], 1e-9) / top);
+                    row[b] = Math.Round(Math.Max(0, Math.Min(1, (db + 48) / 48)), 2);
+                }
+            return result;
+        }
+
         static void Write(byte[] o, int p, string s) { for (int i = 0; i < 4; i++) o[p + i] = (byte)s[i]; }
         static void Write16(byte[] o, int p, int v) { o[p] = (byte)v; o[p + 1] = (byte)(v >> 8); }
         static void Write32(byte[] o, int p, int v) { o[p] = (byte)v; o[p + 1] = (byte)(v >> 8); o[p + 2] = (byte)(v >> 16); o[p + 3] = (byte)(v >> 24); }
