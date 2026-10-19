@@ -53,11 +53,41 @@
     return { x: Math.random() * w, y: everywhere ? Math.random() * h : h + 10, z, r: .6 + z * 1.8, v: 5 + z * 16, phase: Math.random() * 6.3 };
   }
 
-  const ripples = [];
+  const ripples = [], history = new Array(96).fill(0);
+  let historyClock = 0;
   window.__beat = l => { if (ripples.length < 8) ripples.push({ age: 0, power: l }); };
+
+  function wave(dt, cx, cy, base) {
+    historyClock += dt;
+    if (historyClock > .033) { historyClock = 0; history.push(audio); history.shift(); }
+    if (audio < .015 && history[history.length - 1] < .015) return;
+    const n = 120, pts = [];
+    for (let i = 0; i < n; i++) {
+      const fold = i < n / 2 ? i : n - 1 - i;
+      const amp = history[history.length - 1 - Math.floor(fold / (n / 2) * (history.length - 1))] || 0;
+      const a = i / n * 6.2832 - 1.5708, r = base * (1 + .035 * Math.sin(t * 1.3 + i * .35) * (.4 + audio) + amp * .5);
+      pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]);
+    }
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+      const p = pts[i], q = pts[(i + 1) % n];
+      if (i === 0) ctx.moveTo((pts[n - 1][0] + p[0]) / 2, (pts[n - 1][1] + p[1]) / 2);
+      ctx.quadraticCurveTo(p[0], p[1], (p[0] + q[0]) / 2, (p[1] + q[1]) / 2);
+    }
+    ctx.closePath();
+    ctx.fillStyle = `rgba(201, 162, 230, ${(.025 + audio * .06).toFixed(3)})`;
+    ctx.fill();
+    ctx.shadowColor = 'rgba(201, 162, 230, .8)';
+    ctx.shadowBlur = 12 + audio * 14;
+    ctx.strokeStyle = `rgba(201, 162, 230, ${(.3 + audio * .55).toFixed(3)})`;
+    ctx.lineWidth = 1.5 + audio * 1.5;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
 
   function ring(dt) {
     const cx = w / 2, cy = h * .45, base = Math.min(w, h) * .165;
+    wave(dt, cx, cy, base * 1.3);
     if (audio > .02) {
       ctx.beginPath();
       ctx.arc(cx, cy, base * (1.08 + audio * .12), 0, 6.283);
