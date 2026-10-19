@@ -315,7 +315,16 @@ function buildGrid() {
     card.querySelector('.preview').append(preview(wallpaper, card));
 
     const choose = () => send('choose', { name: wallpaper.name });
-    const remove = () => send('remove', { name: wallpaper.name });
+    const button = card.querySelector('.remove');
+    let armed = 0;
+    const disarm = () => { clearTimeout(armed); armed = 0; button.textContent = tr('Remove'); button.classList.remove('armed'); };
+    const remove = () => {
+      if (armed) { disarm(); send('remove', { name: wallpaper.name }); return; }
+      button.textContent = tr('Click again to remove');
+      button.classList.add('armed');
+      armed = setTimeout(disarm, 3000);
+    };
+    card.addEventListener('mouseleave', disarm);
     card.addEventListener('click', choose);
     card.addEventListener('keydown', e => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(); }

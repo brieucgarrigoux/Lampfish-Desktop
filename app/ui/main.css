@@ -153,6 +153,7 @@ body[data-view="settings"] .panel, body[data-view="home"] .panel, body[data-view
 .card .remove { position: absolute; top: 6px; right: 6px; background: rgba(10, 11, 15, .7); backdrop-filter: blur(10px); }
 .card:hover .remove, .card:focus-within .remove { opacity: 1; }
 .remove:hover { color: var(--danger); }
+.card .remove.armed { opacity: 1; color: #fff; background: var(--danger); }
 .add {
   aspect-ratio: 16 / 10; display: flex; align-items: center; justify-content: center; gap: 8px;
   background: transparent; border: 1px solid var(--hairline-strong); border-radius: 8px;
