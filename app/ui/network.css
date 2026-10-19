@@ -26,8 +26,8 @@
   background: radial-gradient(circle at 50% 38%, #17151e, #09080d 72%);
   box-shadow: inset 0 3px 10px rgba(0, 0, 0, .95), inset 0 0 0 1px rgba(0, 0, 0, .8), 0 1px 0 rgba(255, 255, 255, .25); }
 .gauge__dial { position: absolute; inset: 14px; width: calc(100% - 28px); height: calc(100% - 28px); overflow: visible; }
-.led { fill: #1c1b24; stroke: rgba(255, 255, 255, .05); stroke-width: .6; transition: fill .08s; }
-.led.lit { stroke: none; filter: drop-shadow(0 0 2.5px rgba(149, 97, 243, .9)); }
+.led { fill: #1c1b24; stroke: rgba(255, 255, 255, .05); stroke-width: .6; }
+.led.lit { stroke-width: 2.6; stroke-opacity: .32; stroke-linejoin: round; }
 .needle { transform-origin: 130px 130px; transform: rotate(-135deg); will-change: transform; }
 .needle path { fill: #f1edf7; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .8)); }
 .needle .needle__queue { fill: #9561f3; }
@@ -57,17 +57,22 @@
 @keyframes turning-keycap { to { transform: rotate(1turn); } }
 
 .steps { display: flex; margin: 0; padding: 0; list-style: none; }
-.steps li { flex: 1; position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 12px; color: var(--text-pale); }
-.steps li::before { content: ""; position: absolute; top: 6px; left: -50%; width: 100%; height: 2px; background: #2a2b36; }
+.steps li { flex: 1; position: relative; display: flex; flex-direction: column; align-items: center; gap: 9px; font-size: 12px; color: var(--text-pale); transition: color .2s; }
+.steps li::before { content: ""; position: absolute; top: 18px; left: calc(-50% + 22px); width: calc(100% - 44px); height: 3px; border-radius: 2px; background: #23242d; transition: background .3s; }
 .steps li:first-child::before { display: none; }
-.steps li i { position: relative; z-index: 1; width: 14px; height: 14px; border-radius: 50%; background: #2a2b36; box-shadow: 0 0 0 4px var(--group); }
+.steps li i { position: relative; z-index: 1; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: #1b1c24; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .07), 0 0 0 4px var(--group); transition: background .25s, box-shadow .25s; }
+.steps li i .glyph { width: 22px; height: 22px; padding: 0; background: none; stroke: #5d5f6e; transition: stroke .25s; }
 .steps li.done { color: var(--text-soft); }
-.steps li.done i { background: var(--accent); }
+.steps li.done i { background: linear-gradient(180deg, #7a3fe0, #5a20ab); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 0 0 4px var(--group), 0 4px 12px rgba(90, 32, 171, .5); }
+.steps li.done i .glyph { stroke: #fff; }
+.steps li.done i::after { content: ""; position: absolute; right: -3px; bottom: -3px; width: 14px; height: 14px; border-radius: 50%; background: #0e0f14 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='m4 7.2 2 2 4-4.4' fill='none' stroke='%23b794ff' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 14px no-repeat; box-shadow: 0 0 0 1.5px var(--group); }
 .steps li.done::before, .steps li.active::before { background: var(--accent); }
 .steps li.active { color: var(--text); }
-.steps li.active i { background: var(--group); box-shadow: 0 0 0 4px var(--group), inset 0 0 0 2px var(--accent); animation: pulse 1s ease-in-out infinite alternate; }
-.steps li.failed i { background: var(--danger); }
-@keyframes pulse { to { box-shadow: 0 0 0 4px var(--group), inset 0 0 0 2px var(--accent), 0 0 0 8px rgba(142, 66, 182, .25); } }
+.steps li.active i { background: #1b1c24; box-shadow: inset 0 0 0 1.5px var(--accent), 0 0 0 4px var(--group); animation: step-pulse 1.1s ease-in-out infinite alternate; }
+.steps li.active i .glyph { stroke: var(--accent); }
+.steps li.failed i { background: #2a1519; box-shadow: inset 0 0 0 1.5px var(--danger), 0 0 0 4px var(--group); }
+.steps li.failed i .glyph { stroke: var(--danger); }
+@keyframes step-pulse { to { box-shadow: inset 0 0 0 1.5px var(--accent), 0 0 0 4px var(--group), 0 0 16px rgba(149, 97, 243, .55); } }
 
 .keys { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .key { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border-radius: 12px; background: #0e0f14; box-shadow: inset 0 0 0 1px var(--hairline); }

@@ -30,7 +30,7 @@
     cloud: '<path d="M7 18.5a4.5 4.5 0 0 1-.5-9 6 6 0 0 1 11.5 1.5 3.8 3.8 0 0 1-.5 7.5z"/><path d="M12 16v-5M9.8 13.2 12 11l2.2 2.2"/>',
   };
 
-  const STEPS = [['gateway', 'Router'], ['internet', 'Internet'], ['dns', 'DNS'], ['download', 'Download'], ['upload', 'Upload']];
+  const STEPS = [['gateway', 'Router', 'box'], ['internet', 'Internet', 'world'], ['dns', 'DNS', 'dns'], ['download', 'Download', 'download'], ['upload', 'Upload', 'upload']];
 
   const TICKS = [0, 5, 10, 25, 50, 100, 250, 500, 1000];
   const part = v => Math.min(1, Math.log10(1 + Math.max(0, v)) / Math.log10(1001));
@@ -128,7 +128,7 @@
   })();
 
   const ledColor = t => t > .85 ? '#efe4ff' : t > .6 ? '#c3a1ff' : t > .3 ? '#9561f3' : '#7a3fe0';
-  let target = 0, displayed = 0, loop = 0;
+  let target = 0, displayed = 0, loop = 0, litBefore = -2;
   function gauge(v) {
     target = part(v);
     if (!loop) loop = requestAnimationFrame(animate);
@@ -139,11 +139,16 @@
     if (Math.abs(target - displayed) < 0.0005) displayed = target;
     $('r-needle').style.transform = `rotate(${(-135 + displayed * 270).toFixed(2)}deg)`;
     const lit = displayed > 0.002 ? Math.round(displayed * (LEDS - 1)) : -1;
-    leds.forEach((d, i) => {
-      const on = i <= lit;
-      d.classList.toggle('lit', on);
-      d.style.fill = on ? ledColor(Number(d.dataset.mix)) : '';
-    });
+    if (lit !== litBefore) {
+      litBefore = lit;
+      leds.forEach((d, i) => {
+        const on = i <= lit;
+        d.classList.toggle('lit', on);
+        const color = on ? ledColor(Number(d.dataset.mix)) : '';
+        d.style.fill = color;
+        d.style.stroke = color;
+      });
+    }
     if (displayed !== target) loop = requestAnimationFrame(animate);
   }
 
@@ -191,11 +196,11 @@
 
     $('r-value').classList.toggle('idle', !test && !running);
 
-    $('r-steps').replaceChildren(...STEPS.map(([key, name]) => {
+    $('r-steps').replaceChildren(...STEPS.map(([key, name, icon]) => {
       const li = document.createElement('li');
       const r = res(key);
       li.className = r ? (r.ok ? 'done' : 'failed') : running && next && next[0] === key ? 'active' : '';
-      li.innerHTML = '<i></i><span></span>';
+      li.innerHTML = '<i>' + glyph(icon) + '</i><span></span>';
       li.querySelector('span').textContent = name;
       return li;
     }));
