@@ -616,6 +616,7 @@ namespace Bramble
                 case "startup": ToggleStartup(); break;
                 case "weather": R.Weather = !R.Weather; break;
                 case "reactive": R.Reactive = (bool)m["value"]; AudioMeter.Set(R.Reactive); break;
+                case "audioPreview": AudioMeter.Preview((bool)m["value"]); return;
                 case "language":
                 {
                     string l = (string)m["value"];
@@ -660,7 +661,7 @@ namespace Bramble
         public static void SendAudio(double level)
         {
             string text = level.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
-            foreach (var s in screens) s.Audio(text);
+            if (R.Reactive) foreach (var s in screens) s.Audio(text);
             Send(new { type = "audio.level", level = level });
         }
 

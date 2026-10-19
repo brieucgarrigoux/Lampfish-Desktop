@@ -29,6 +29,7 @@
     const m = e.data || {};
     if (m.bramble === 'adjust') window.__adjust(m.light, m.speed);
     if (m.bramble === 'freeze') frozen = m.value;
+    if (m.bramble === 'audio') window.__audio(m.level);
   });
   if (parent !== window) parent.postMessage({ bramble: 'ready' }, '*');
 

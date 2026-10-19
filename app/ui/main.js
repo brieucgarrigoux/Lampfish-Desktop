@@ -86,6 +86,7 @@ webview.addEventListener('message', e => {
   const m = e.data;
   if (m.type === 'audio.level') {
     levelTarget.push(m.level); levelTarget.shift();
+    for (const f of document.querySelectorAll('#hero-preview iframe, .cr-stage iframe')) { try { f.contentWindow.postMessage({ bramble: 'audio', level: m.level }, '*'); } catch (e) { } }
     if (!levelLoop && document.body.dataset.view === 'wallpaper') levelLoop = requestAnimationFrame(levelFrame);
     return;
   }
@@ -359,9 +360,12 @@ function livePreview(wallpaper, card) {
 function preview(wallpaper, card) {
   if (wallpaper.type === 'html') {
     const frame = document.createElement('iframe');
-    frame.src = wallpaper.url + '?light=50&speed=50&thumbnail=1';
+    const still = wallpaper.url + '?light=50&speed=50&thumbnail=1', live = wallpaper.url + '?light=50&speed=50';
+    frame.src = still;
     frame.loading = 'lazy';
     frame.tabIndex = -1;
+    card.addEventListener('mouseenter', () => { frame.src = live; });
+    card.addEventListener('mouseleave', () => { frame.src = still; });
     return frame;
   }
   if (wallpaper.type === 'video') {

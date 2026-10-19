@@ -12,8 +12,15 @@ namespace Bramble
         static DateTime lookedFor = DateTime.MinValue;
         static double ceiling = 0.05, last;
 
-        public static void Set(bool on)
+        static bool wanted, previewing;
+
+        public static void Set(bool on) { wanted = on; Refresh(); }
+
+        public static void Preview(bool on) { previewing = on; Refresh(); }
+
+        static void Refresh()
         {
+            bool on = wanted || previewing;
             if (on && timer == null)
             {
                 timer = new Timer { Interval = 50 };
