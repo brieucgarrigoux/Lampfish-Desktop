@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Interface zoom: an Interface size choice in Settings and Ctrl plus, Ctrl minus, Ctrl 0 or Ctrl wheel.
+- Library: wallpapers made in Create can be edited again, and thumbnails play when hovered.
+- Sounds: Expand all and Collapse all for the library.
 - Create: its own service to build a wallpaper from your logo and background. Six themes (Midnight, Ember, Aurora, Sunset, Neon, Graphite), five kinds of particles (fireflies, stars, embers, snow, bokeh), an edge shade, a glow, a wave ring or ripples that follow the sound, and a live preview where the logo and the text are dragged, resized with the wheel or a corner handle. The result is a plain folder in `wallpapers\`.
 - Moods, in a tab of the Wallpaper service: saves the wallpaper, its effects, the cursor theme and the sounds as one mood, applies it in one click, and can start it every day at a set time or when a chosen number of screens is connected. Night, Focus and Cinema models are built from the current setup.
 - Wallpaper: an option to make the wallpaper pulse with the sound playing on the PC. It reads the level Windows reports for every active audio output, without administrator rights and without recording anything.
@@ -28,6 +31,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Arrange: the screen map is centered and no longer slides in from the corner, and the icon size slider shows its real position and refreshes the map after a change.
 
 ### Changed
+- Create: controls on the right, snap guides and a thirds grid, click to type the text, outlines only on hover, small renders as theme thumbnails, particles that no longer reshuffle, effects that can be combined (pulse, ripples, wave ring, vibration), three text styles, a slowly turning gradient.
+- Cards in Hardware, Network, Sounds and Create share one casing, and Hardware values sit in a recessed display with a status LED.
+- Network: the security seal holds a lit, bevelled shield behind a glass dome.
+- Previews in the app react to sound.
 - A wallpaper needs a second click (or a second press of Delete) to be removed.
 - The violet plate with the white line berry is the official app icon.
 - Network: the security card has a control panel look (chrome seal, LED meter, jewel lamps, physical key).
