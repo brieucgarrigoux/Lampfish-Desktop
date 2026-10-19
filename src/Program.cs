@@ -559,6 +559,8 @@ namespace Bramble
 
             if (action.StartsWith("network.")) { Network.Receive(action.Substring(action.IndexOf('.') + 1)); return; }
 
+            if (action.StartsWith("tasks.")) { Tasks.Receive(action.Substring(action.IndexOf('.') + 1), m); return; }
+
             if (action.StartsWith("home.")) { Weather.Receive(action.Substring(action.IndexOf('.') + 1)); return; }
 
             if (action.StartsWith("mouse."))

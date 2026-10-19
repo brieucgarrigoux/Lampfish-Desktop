@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="disk.css">
 <link rel="stylesheet" href="hardware.css">
 <link rel="stylesheet" href="network.css">
+<link rel="stylesheet" href="tasks.css">
 <link rel="stylesheet" href="home.css">
 <link rel="stylesheet" href="panels.css">
 </head>
@@ -56,6 +57,11 @@
     <span class="reticle"></span>
     <svg viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/><rect x="9.5" y="9.5" width="5" height="5" rx=".8"/><path d="M9.5 3.5v3M14.5 3.5v3M9.5 17.5v3M14.5 17.5v3M3.5 9.5h3M3.5 14.5h3M17.5 9.5h3M17.5 14.5h3"/></svg>
     Hardware
+  </button>
+  <button class="service" data-view="tasks">
+    <span class="reticle"></span>
+    <svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M6.5 13h2.5l1.5-4 3 7 1.5-3h2.5"/></svg>
+    Tasks
   </button>
   <button class="service" data-view="network">
     <span class="reticle"></span>
@@ -299,6 +305,16 @@
   <section class="view view--hardware only-hardware" aria-label="Hardware">
     <h1>Hardware</h1>
     <div class="board" id="m-schema"><div class="empty">Reading the hardware</div></div>
+  </section>
+
+  <section class="view view--tasks only-tasks" aria-label="Tasks">
+    <h1>Tasks</h1>
+    <div class="title-section title-section--tabs">
+      <div class="segments tabs" id="t-tabs" role="tablist" aria-label="Kind of program"></div>
+      <span class="config" id="t-help"></span>
+    </div>
+    <div class="group tasks" id="t-list"></div>
+    <div class="empty" id="t-empty" hidden>Nothing here</div>
   </section>
 
   <section class="view view--settings only-settings" aria-label="Settings">
@@ -603,6 +619,7 @@
 <script src="disk.js"></script>
 <script src="hardware.js"></script>
 <script src="network.js"></script>
+<script src="tasks.js"></script>
 <script src="home.js"></script>
 <script src="panels.js"></script>
 <script src="scrollbars.js"></script>

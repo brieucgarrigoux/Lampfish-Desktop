@@ -445,7 +445,8 @@
     send('hardware.inventory');
     send('hardware.stats');
     timer = setInterval(() => {
-      if (shown && document.visibilityState === 'visible') send('hardware.stats');
+      if (!shown || document.visibilityState !== 'visible') return;
+      send('hardware.stats');
     }, 1000);
   }
 
