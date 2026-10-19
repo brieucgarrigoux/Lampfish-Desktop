@@ -47,7 +47,7 @@
 .tester__side { min-width: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 22px; padding: 6px 0; }
 .tester__header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .tester__title h2 { font-size: 15px; color: var(--text); }
-.server { margin: 3px 0 0; font-size: 12.5px; line-height: 1.4; color: var(--text-pale); }
+.server { margin: 3px 0 0; min-height: 2.8em; font-size: 12.5px; line-height: 1.4; color: var(--text-pale); }
 
 .keycap-test svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .keycap-test circle { fill: currentColor; stroke: none; }
@@ -82,7 +82,7 @@
 .key__value small { margin-left: 5px; font: 400 12px var(--numbers); color: var(--text-pale); }
 .key--empty .key__value { display: flex; align-items: center; min-height: 31px; white-space: normal; }
 .key--empty .key__value b { line-height: 1.25; font: 400 13px "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif; color: var(--text-pale); }
-.key__detail { font-size: 12px; color: var(--text-pale); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.key__detail { min-height: 1.35em; font-size: 12px; color: var(--text-pale); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .key__detail.error { white-space: normal; color: var(--danger); line-height: 1.35; }
 
 .list-stats .measure { gap: 14px; }

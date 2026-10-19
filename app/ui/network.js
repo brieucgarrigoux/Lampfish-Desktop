@@ -160,8 +160,37 @@
   GLYPHS.jitter = '<path d="M3 12h3l2-4 3 8 3-10 3 12 2-6h2"/>';
   GLYPHS.loss = '<path d="M4 7h16M4 12h10M4 17h6"/><path d="m16 15 4 4m0-4-4 4"/>';
 
+  const NOTES_STEP = [587.33, 739.99, 880, 1174.66, 1479.98];
+  let audioContext = null;
+  const announced = new Set();
+  let wasRunning = false;
+
+  function blip(step) {
+    const volume = Bramble.station ? Bramble.station.audible() : 0;
+    if (!volume) return;
+    try {
+      audioContext = audioContext || new AudioContext();
+      const now = audioContext.currentTime, gain = audioContext.createGain(), tone = audioContext.createOscillator();
+      tone.type = 'sine';
+      tone.frequency.value = NOTES_STEP[step];
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(.07 * volume, now + .012);
+      gain.gain.exponentialRampToValueAtTime(.0001, now + .38);
+      tone.connect(gain).connect(audioContext.destination);
+      tone.start(now);
+      tone.stop(now + .4);
+    } catch (e) { }
+  }
+
   function renderTest() {
     const running = !!(test && test.running);
+    if (!test || (running && !STEPS.some(([c]) => res(c)))) announced.clear();
+    STEPS.forEach(([key], i) => {
+      if (!ok(key) || announced.has(key)) return;
+      announced.add(key);
+      if (running || wasRunning) blip(i);
+    });
+    wasRunning = running;
     $('r-tester').classList.toggle('testing', running);
 
     const keycap = $('r-test');
