@@ -205,7 +205,8 @@
     dash.className = 'm-dash';
     const byKey = key => [...performance, ...power, dv].find(c => c.dataset.key === key);
     const ordered = [byKey('processor'), byKey('memory'), ...performance.filter(c => c.dataset.key.startsWith('graphics')),
-      byKey('temperature'), byKey('battery'), dv, ...power.filter(c => c.classList.contains('m-card--large')), ...storage];
+      byKey('temperature'), byKey('battery'), dv, ...power.filter(c => c.classList.contains('m-card--large')),
+      ...storage.filter(c => c.dataset.key.startsWith('disk')), ...storage.filter(c => !c.dataset.key.startsWith('disk'))];
     dash.append(...ordered.filter(Boolean));
     zone.replaceChildren(header, dash);
     mark();
