@@ -1,4 +1,4 @@
-.banner-sound, .tester, .security, .m-card, .m-header, .zone-sounds, .cr-card {
+.banner-sound, .tester, .security, .m-card, .m-header, .zone-sounds {
   border-radius: 16px;
   background: linear-gradient(180deg, #1d1e27, #15161d 60%, #121319);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), inset 0 -1px 0 rgba(0, 0, 0, .5), 0 0 0 1px rgba(0, 0, 0, .55), 0 10px 26px rgba(0, 0, 0, .35);
@@ -23,8 +23,8 @@ body > .drop .reticle { display: block !important; }
 .service { transition: background .18s, color .18s; }
 .service::before { display: none; }
 .service:not([aria-current="page"]):hover { background: rgba(255, 255, 255, .05); }
-.service[aria-current="page"] { color: var(--accent); background: rgba(149, 97, 243, .15); box-shadow: inset 0 0 0 1px rgba(149, 97, 243, .28); }
-.service[aria-current="page"] svg { stroke: var(--accent); }
+.service[aria-current="page"] { color: #fff; font-weight: 600; background: linear-gradient(135deg, rgba(149, 97, 243, .34), rgba(90, 32, 171, .16)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), inset 0 0 0 1px rgba(149, 97, 243, .38), 0 6px 16px rgba(90, 32, 171, .28); }
+.service[aria-current="page"] svg { stroke: #d8c6ff; filter: drop-shadow(0 0 6px rgba(149, 97, 243, .8)); }
 
 .tile.current .tile__case, .role.chosen .role__case, .theme.current { box-shadow: 0 0 0 1.5px var(--accent), 0 0 18px rgba(149, 97, 243, .28); }
 .card.current .preview { box-shadow: 0 0 0 2px var(--accent), 0 0 22px rgba(149, 97, 243, .3); }
@@ -46,3 +46,14 @@ body > .drop .reticle { display: block !important; }
   .contents { padding-inline: 16px; }
   .panel { padding-inline: 16px; }
 }
+
+.keycap-pill { position: relative; flex: none; width: auto; min-width: 118px; height: 44px; padding: 0 20px 0 14px; gap: 9px; flex-direction: row; justify-content: center; border: 0; border-radius: 22px; color: #fff; font-size: 13.5px; font-weight: 600; letter-spacing: .01em; white-space: nowrap;
+  background: linear-gradient(180deg, #7a3fe0, #5a20ab); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25), 0 6px 16px rgba(90, 32, 171, .45); transition: transform .12s, box-shadow .15s, filter .15s; }
+.keycap-pill::before, .keycap-pill::after { display: none !important; }
+.keycap-pill .dome { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: rgba(255, 255, 255, .18); }
+.keycap-pill .dome i { display: none; }
+.keycap-pill:hover:not(:disabled) { filter: brightness(1.1); }
+.keycap-pill:active:not(:disabled), .keycap-pill.pressed { transform: scale(.97); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .15), 0 2px 8px rgba(90, 32, 171, .4); }
+.keycap-pill.playing, .keycap-pill[data-state="progress"] { background: rgba(149, 97, 243, .16); color: var(--accent); box-shadow: inset 0 0 0 1.5px var(--accent); filter: none; }
+.keycap-pill.playing .dome, .keycap-pill[data-state="progress"] .dome { background: rgba(149, 97, 243, .25); }
+.keycap-pill:disabled { cursor: default; }

@@ -295,7 +295,9 @@
       block.querySelector('.pack-open').setAttribute('aria-expanded', String(open));
     }
     const all = [...document.querySelectorAll('.pack')].map(b => b.dataset.pack);
-    $('sounds-toggle').textContent = tr(all.length && all.every(p => openPacks.has(p)) ? 'Collapse all' : 'Expand all');
+    const every = all.length && all.every(p => openPacks.has(p));
+    $('sounds-toggle').classList.toggle('collapsing', !!every);
+    $('sounds-toggle').querySelector('span').textContent = tr(every ? 'Collapse all' : 'Expand all');
   }
 
   function updateList() {

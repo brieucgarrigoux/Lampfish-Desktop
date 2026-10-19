@@ -103,14 +103,15 @@
     };
   });
 
-  const LEDS = 41;
+  const LEDS = 48;
   const leds = [];
   (function ticks() {
     const g = $('r-leds');
     for (let i = 0; i < LEDS; i++) {
       const a = 135 + i * 270 / (LEDS - 1);
       const d = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-      d.setAttribute('x', 126.5); d.setAttribute('y', 14); d.setAttribute('width', 7); d.setAttribute('height', 13); d.setAttribute('rx', 2);
+      d.setAttribute('x', 127.6); d.setAttribute('y', 14); d.setAttribute('width', 4.8); d.setAttribute('height', 12); d.setAttribute('rx', 1.4);
+      d.dataset.mix = (i / (LEDS - 1)).toFixed(3);
       d.setAttribute('transform', `rotate(${a + 90} 130 130)`);
       d.setAttribute('class', 'led');
       g.append(d);
@@ -126,6 +127,7 @@
     $('r-ticks').innerHTML = html;
   })();
 
+  const ledColor = t => t > .85 ? '#efe4ff' : t > .6 ? '#c3a1ff' : t > .3 ? '#9561f3' : '#7a3fe0';
   let target = 0, displayed = 0, loop = 0;
   function gauge(v) {
     target = part(v);
@@ -137,7 +139,11 @@
     if (Math.abs(target - displayed) < 0.0005) displayed = target;
     $('r-needle').style.transform = `rotate(${(-135 + displayed * 270).toFixed(2)}deg)`;
     const lit = displayed > 0.002 ? Math.round(displayed * (LEDS - 1)) : -1;
-    leds.forEach((d, i) => d.classList.toggle('lit', i <= lit));
+    leds.forEach((d, i) => {
+      const on = i <= lit;
+      d.classList.toggle('lit', on);
+      d.style.fill = on ? ledColor(Number(d.dataset.mix)) : '';
+    });
     if (displayed !== target) loop = requestAnimationFrame(animate);
   }
 
@@ -155,7 +161,7 @@
 
     const keycap = $('r-test');
     keycap.disabled = running;
-    keycap.querySelector('span').textContent = tr(running ? 'Testing…' : test ? 'Test again' : 'Run the test');
+    keycap.querySelector(':scope > span:last-child').textContent = tr(running ? 'Testing…' : test ? 'Test again' : 'Run the test');
     keycap.dataset.state = running ? 'progress' : test ? 'done' : 'ready';
 
     const direct = test && test.direct;
