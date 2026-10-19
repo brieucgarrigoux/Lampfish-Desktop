@@ -322,32 +322,6 @@ def tone(f, duration, attack, decay, harmonics=(1.0, 0.16, 0.04)):
     return out
 
 
-def squash(x, drive=1.8):
-    top = math.tanh(drive)
-    return [math.tanh(v * drive) / top for v in x]
-
-
-def chord(b, start, notes, gain):
-    for f, g in notes:
-        mix(b, tone(f, 1.7, .035, .75), start, gain * g)
-
-
-def sonar():
-    """Speed test pair: a rising run of soft sine notes over a breath that lands on a warm D major chord, then the same run falling to rest."""
-    b = silence(3.2)
-    for i, f in enumerate((293.66, 369.99, 440.0, 587.33, 739.99)):
-        mix(b, tone(f, 1.0, .012, .3), i * .2, .3 + i * .05)
-    mix(b, sweep(220, 1300, 1.2), 0, .16)
-    mix(b, air(1.2, True), 0, .14)
-    chord(b, 1.1, ((587.33, 1.0), (739.99, .7), (880.0, .55), (146.83, 1.1), (293.66, .6)), .42)
-    write('Sonar', 'Connect', soften(squash(b), 4200), .26, .78)
-    d = silence(3.2)
-    for i, f in enumerate((880.0, 739.99, 587.33)):
-        mix(d, tone(f, 1.0, .012, .32), i * .18, .4 - i * .04)
-    chord(d, .55, ((440.0, 1.0), (587.33, .75), (739.99, .5), (146.83, 1.0), (293.66, .55)), .4)
-    write('Sonar', 'Disconnect', soften(squash(d), 4200), .26, .78)
-
-
 def pluck(f, duration=.7):
     """A wooden mallet note: marimba-like partials (1, 4, 10) with a soft tap, no sustained tone."""
     body = partials(f, (1, 4.0, 10.0), (1.0, .2, .04), (.22, .06, .02), duration, .003)
@@ -355,6 +329,18 @@ def pluck(f, duration=.7):
     for i, v in enumerate(tap):
         body[i] += v * .12
     return body
+
+
+def sonar():
+    """Speed test start pair: two soft wooden notes, a fifth apart. Connect rises, Disconnect falls."""
+    b = silence(1.6)
+    mix(b, pluck(293.66, 1.0), 0, .8)
+    mix(b, pluck(440.0, .9), .16, .55)
+    write('Sonar', 'Connect', soften(b, 3200), .12, .45)
+    d = silence(1.6)
+    mix(d, pluck(440.0, .9), 0, .8)
+    mix(d, pluck(293.66, 1.0), .16, .55)
+    write('Sonar', 'Disconnect', soften(d, 3200), .12, .45)
 
 
 def steps():
