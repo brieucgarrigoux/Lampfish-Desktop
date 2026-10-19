@@ -5,7 +5,7 @@
 .roles { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 4px; }
 .role { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0 0 6px; border: 0; border-radius: 8px; background: none; transition: background .12s; }
 .role:hover { background: var(--group-up); }
-.role__case { position: relative; width: 80px; height: 72px; display: grid; place-items: center; }
+.role__case { position: relative; width: 80px; height: 72px; display: grid; place-items: center; border-radius: 12px; }
 .role__case img, .tile-cursor img { width: 48px; height: 48px; }
 .role__case img.retro, .tile-cursor img.retro { width: 64px; height: 64px; }
 .role__case .reticle { position: absolute; inset: 4px; --l: 9px; display: none; }
