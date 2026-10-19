@@ -24,7 +24,7 @@ namespace Bramble
         public string Language = "auto";
         public bool Weather = true;
         public List<Dictionary<string, object>> NetworkTests = new List<Dictionary<string, object>>();
-        public string Wallpaper = "bramble.html";
+        public string Wallpaper = "bramble-logo.html";
         public int Light = 50;
         public int Speed = 50;
         public bool PauseAuto = true;
@@ -412,13 +412,16 @@ namespace Bramble
             SendState();
         }
 
+        static readonly string[] Featured = { "bramble-logo.html", "bramble-dusk.html", "bramble.html", "aurora.html" };
+
         static IEnumerable<string> ListWallpapers()
         {
             Directory.CreateDirectory(WallpapersFolder);
             return Directory.GetFiles(WallpapersFolder).Where(f => TypeOf(f) != null)
                 .Concat(Directory.GetDirectories(WallpapersFolder).Where(d => File.Exists(Path.Combine(d, "index.html"))))
                 .Select(Path.GetFileName)
-                .OrderBy(n => n, StringComparer.CurrentCultureIgnoreCase);
+                .OrderBy(n => { int i = Array.IndexOf(Featured, n); return i < 0 ? Featured.Length : i; })
+                .ThenBy(n => n, StringComparer.CurrentCultureIgnoreCase);
         }
 
         public static string UrlMedia(string name)
