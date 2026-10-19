@@ -18,47 +18,33 @@
 
 .level { display: block; width: 100%; height: 76px; margin-top: 8px; }
 
-.keycap-listen { position: relative; flex: none; width: auto; min-width: 0; height: auto; padding: 0; gap: 8px; flex-direction: column; border: 0; background: none; box-shadow: none; color: var(--text-soft); font-size: 12px; font-weight: 600; text-shadow: 0 1px 0 rgba(0, 0, 0, .6); overflow: visible; }
+.keycap-listen { position: relative; flex: none; width: auto; min-width: 118px; height: 44px; padding: 0 20px 0 14px; gap: 9px; flex-direction: row; justify-content: center; border: 0; border-radius: 22px; color: #fff; font-size: 13.5px; font-weight: 600; letter-spacing: .01em;
+  background: linear-gradient(180deg, #7a3fe0, #5a20ab); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25), 0 6px 16px rgba(90, 32, 171, .45); transition: transform .12s, box-shadow .15s, filter .15s; }
 .keycap-listen::before, .keycap-listen::after { display: none !important; }
-.keycap-listen .dome { position: relative; width: 66px; height: 66px; border-radius: 50%; display: grid; place-items: center;
-  background: conic-gradient(from 210deg, #8d8f99, #d7d9e0 12%, #6c6e78 28%, #b9bbc4 45%, #5d5f69 60%, #c9cbd3 78%, #7c7e88 90%, #8d8f99);
-  box-shadow: 0 0 0 1px #07080b, 0 10px 18px rgba(0, 0, 0, .6), inset 0 1px 1px rgba(255, 255, 255, .55), inset 0 -2px 3px rgba(0, 0, 0, .5); transition: transform .08s, box-shadow .08s; }
-.keycap-listen .dome::before { content: ""; position: absolute; inset: 7px; border-radius: 50%; background: radial-gradient(circle at 50% 35%, #1a1620, #07060a 78%); box-shadow: inset 0 3px 7px rgba(0, 0, 0, .95), 0 1px 0 rgba(255, 255, 255, .28); }
-.keycap-listen .dome i { position: absolute; inset: 11px; border-radius: 50%;
-  background: radial-gradient(circle at 38% 30%, #d9a8f5, #9b45c8 38%, #5a1f80 74%, #35104f);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, .7), inset 0 -3px 5px rgba(0, 0, 0, .45), inset 0 1px 2px rgba(255, 255, 255, .5); transition: transform .08s, box-shadow .08s; }
-.keycap-listen .dome i::after { content: ""; position: absolute; left: 20%; right: 20%; top: 8%; height: 34%; border-radius: 50%; background: linear-gradient(180deg, rgba(255, 255, 255, .6), rgba(255, 255, 255, 0)); }
-.keycap-listen svg { position: relative; z-index: 2; width: 18px; height: 18px; fill: #fff; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .6)); }
-.keycap-listen:hover .dome i { filter: brightness(1.12); }
-.keycap-listen:active .dome i, .keycap-listen.pressed .dome i { transform: translateY(2px) scale(.97); box-shadow: 0 1px 2px rgba(0, 0, 0, .7), inset 0 2px 5px rgba(0, 0, 0, .55); }
-.keycap-listen.playing .dome i { background: radial-gradient(circle at 38% 30%, #f0d2ff, #c068f0 40%, #7b2eb5 76%, #4a1a70); box-shadow: 0 0 18px rgba(192, 104, 240, .85), inset 0 -3px 5px rgba(0, 0, 0, .4), inset 0 1px 2px rgba(255, 255, 255, .6); }
-.keycap-listen .listen-label { letter-spacing: .01em; }
+.keycap-listen .dome { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: rgba(255, 255, 255, .18); }
+.keycap-listen .dome i { display: none; }
+.keycap-listen svg { width: 14px; height: 14px; fill: #fff; }
+.keycap-listen:hover { filter: brightness(1.1); }
+.keycap-listen:active, .keycap-listen.pressed { transform: scale(.97); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .15), 0 2px 8px rgba(90, 32, 171, .4); }
+.keycap-listen.playing { background: rgba(149, 97, 243, .16); color: var(--accent); box-shadow: inset 0 0 0 1.5px var(--accent); }
+.keycap-listen.playing .dome { background: rgba(149, 97, 243, .25); }
+.keycap-listen.playing svg { fill: var(--accent); }
+.keycap-listen .listen-label { white-space: nowrap; }
 .keycap-listen .icon-stop, .keycap-listen.playing .icon-playback { display: none; }
 .keycap-listen.playing .icon-stop { display: block; }
 
 .knob-block { flex: none; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .knob { --v: 0; position: relative; width: 64px; height: 64px; border-radius: 50%; cursor: ew-resize; touch-action: none; outline: none; }
 .knob:focus-visible { box-shadow: 0 0 0 1px var(--accent); }
-.knob::before { content: ""; position: absolute; inset: 9px; border-radius: 50%; background: #0b0c10; box-shadow: inset 0 2px 4px rgba(0, 0, 0, .9), 0 1px 0 rgba(255, 255, 255, .05); }
-.knob__ring { position: absolute; inset: 0; }
-.knob__ring i { position: absolute; left: 50%; top: 50%; width: 3px; height: 3px; margin: -1.5px; border-radius: 50%; background: #262733;
-  transform: rotate(var(--angle)) translateY(-29px); transition: background .12s, box-shadow .12s; }
-.knob__ring i.lit { background: var(--accent); box-shadow: 0 0 5px rgba(149, 97, 243, .95); }
-.banner-sound.muted .knob__ring i.lit { background: var(--text-pale); box-shadow: none; }
-.knob__button {
-  position: absolute; inset: 12px; border-radius: 50%;
-  background:
-    radial-gradient(circle at 50% 28%, rgba(255, 255, 255, .18), transparent 58%),
-    repeating-conic-gradient(from 8deg, #3b3d48 0deg 5deg, #2f313b 5deg 10deg),
-    #34363f;
-  box-shadow: 0 0 0 1px #08090c, 0 3px 6px rgba(0, 0, 0, .75), inset 0 1px 0 rgba(255, 255, 255, .16), inset 0 -2px 3px rgba(0, 0, 0, .45);
-  transform: rotate(calc(-135deg + var(--v) * 270deg));
-}
-.knob__button::after { content: ""; position: absolute; inset: 6px; border-radius: 50%;
-  background: radial-gradient(circle at 50% 30%, #42444f, #2a2c35 72%); box-shadow: inset 0 1px 1px rgba(0, 0, 0, .5), 0 1px 0 rgba(255, 255, 255, .07); }
-.knob__marker { position: absolute; left: 50%; top: 4px; z-index: 1; width: 2px; height: 8px; margin-left: -1px; border-radius: 1px; background: var(--accent); box-shadow: 0 0 4px rgba(149, 97, 243, .9); }
-.banner-sound.muted .knob__marker { background: var(--text-pale); box-shadow: none; }
-.knob.turned .knob__button { box-shadow: 0 0 0 1px #08090c, 0 2px 4px rgba(0, 0, 0, .75), inset 0 1px 0 rgba(255, 255, 255, .12), inset 0 -2px 3px rgba(0, 0, 0, .45); }
+.knob::before { content: ""; position: absolute; inset: 0; border-radius: 50%;
+  background: conic-gradient(from -135deg, var(--accent) calc(var(--v) * 270deg), rgba(255, 255, 255, .09) 0 270deg, transparent 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px)); mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px)); }
+.banner-sound.muted .knob::before { background: conic-gradient(from -135deg, var(--text-pale) calc(var(--v) * 270deg), rgba(255, 255, 255, .09) 0 270deg, transparent 0); }
+.knob__ring { display: none; }
+.knob__button { position: absolute; inset: 9px; border-radius: 50%; background: linear-gradient(160deg, #2a2c36, #16171d); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 4px 10px rgba(0, 0, 0, .5); transform: rotate(calc(-135deg + var(--v) * 270deg)); }
+.knob__marker { position: absolute; left: 50%; top: 5px; width: 3px; height: 9px; margin-left: -1.5px; border-radius: 2px; background: var(--accent); }
+.banner-sound.muted .knob__marker { background: var(--text-pale); }
+.knob:hover .knob__button, .knob.turned .knob__button { background: linear-gradient(160deg, #30323d, #1a1b22); }
 
 .knob__legend { width: 84px; text-align: center; font-size: 11.5px; color: var(--text-pale); white-space: nowrap; }
 .knob__legend output { display: inline-block; min-width: 3.4em; text-align: left; font: 11.5px var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-soft); }
