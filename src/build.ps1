@@ -5,11 +5,13 @@ $src = $PSScriptRoot
 $root = Split-Path $src -Parent
 $lib = Join-Path $root 'app\lib'
 $version = '1.0.4258.31'
+$sha256 = '56f7f4b8bf9aee4b8efefbbdd4f67d5f74ebd1b100ed0806da71bf76af481aa9'
 
 if (-not (Test-Path "$lib\WebView2Loader.dll")) {
     $tmp = Join-Path $env:TEMP "webview2-$version"
     New-Item -ItemType Directory -Force $tmp, $lib | Out-Null
     Invoke-WebRequest "https://www.nuget.org/api/v2/package/Microsoft.Web.WebView2/$version" -OutFile "$tmp\pkg.zip"
+    if ((Get-FileHash "$tmp\pkg.zip" -Algorithm SHA256).Hash -ne $sha256) { throw "WebView2 SDK checksum mismatch" }
     Expand-Archive "$tmp\pkg.zip" "$tmp\x" -Force
     Copy-Item "$tmp\x\lib\net462\Microsoft.Web.WebView2.Core.dll", "$tmp\x\lib\net462\Microsoft.Web.WebView2.WinForms.dll", "$tmp\x\runtimes\win-x64\native\WebView2Loader.dll" $lib
     Remove-Item $tmp -Recurse -Force

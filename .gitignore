@@ -16,6 +16,7 @@ app/request.txt
 # Personal data: settings, logs, the user's own icons, cursors and sounds
 /settings.json
 /errors.log
+/errors.old.log
 /icons/
 /cursors/
 sounds/log.txt

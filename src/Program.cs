@@ -201,6 +201,13 @@ namespace Bramble
             try
             {
                 CoreWebView2Environment.SetLoaderDllFolderPath(Path.Combine(Root, "app", "lib"));
+                if (!RuntimeInstalled())
+                {
+                    if (MessageBox.Show(Language.T("Bramble needs the Microsoft Edge WebView2 Runtime, which is not installed on this PC.") + "\n\n" + Language.T("Open the download page?"), "Bramble", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                        Process.Start("https://developer.microsoft.com/microsoft-edge/webview2/");
+                    Application.Exit();
+                    return;
+                }
                 environment = await CreateEnvironment();
                 if (openSettings) OpenSettings();
                 Build();
@@ -210,6 +217,12 @@ namespace Bramble
                 Log(ex);
                 MessageBox.Show(Language.T("The display engine could not start.") + "\n\n" + ex.Message, "Bramble", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        static bool RuntimeInstalled()
+        {
+            try { return !string.IsNullOrEmpty(CoreWebView2Environment.GetAvailableBrowserVersionString()); }
+            catch { return false; }
         }
 
         static Task<CoreWebView2Environment> CreateEnvironment()
@@ -668,7 +681,13 @@ namespace Bramble
 
         public static void Save()
         {
-            try { File.WriteAllText(SettingsFile, json.Serialize(R)); }
+            try
+            {
+                string temporary = SettingsFile + ".tmp";
+                File.WriteAllText(temporary, json.Serialize(R));
+                if (File.Exists(SettingsFile)) File.Replace(temporary, SettingsFile, null);
+                else File.Move(temporary, SettingsFile);
+            }
             catch (Exception ex) { Log(ex); }
         }
 
@@ -766,9 +785,21 @@ namespace Bramble
             Application.Exit();
         }
 
+        const long LogMax = 256 * 1024;
+
         public static void Log(Exception ex)
         {
-            try { File.AppendAllText(Path.Combine(Root, "errors.log"), DateTime.Now.ToString("s") + "  " + ex + Environment.NewLine + Environment.NewLine); }
+            try
+            {
+                string path = Path.Combine(Root, "errors.log");
+                if (File.Exists(path) && new FileInfo(path).Length > LogMax)
+                {
+                    string old = Path.Combine(Root, "errors.old.log");
+                    if (File.Exists(old)) File.Delete(old);
+                    File.Move(path, old);
+                }
+                File.AppendAllText(path, DateTime.Now.ToString("s") + "  " + ex + Environment.NewLine + Environment.NewLine);
+            }
             catch { }
         }
     }

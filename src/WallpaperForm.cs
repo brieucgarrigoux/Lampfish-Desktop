@@ -58,7 +58,7 @@ namespace Bramble
             settings.IsZoomControlEnabled = false;
             settings.AreBrowserAcceleratorKeysEnabled = false;
             view.CoreWebView2.IsMuted = true;
-            view.CoreWebView2.SetVirtualHostNameToFolderMapping(AppHost, Program.Root, CoreWebView2HostResourceAccessKind.Allow);
+            view.CoreWebView2.SetVirtualHostNameToFolderMapping(AppHost, Program.Root, CoreWebView2HostResourceAccessKind.DenyCors);
             view.CoreWebView2.SetVirtualHostNameToFolderMapping(MediaHost, Program.WallpapersFolder, CoreWebView2HostResourceAccessKind.Allow);
             await view.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(ScriptPause);
             view.CoreWebView2.NavigationCompleted += (s, e) =>
