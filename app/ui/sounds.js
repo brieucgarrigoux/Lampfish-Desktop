@@ -23,8 +23,71 @@
     '<path d="M4.5 16.5a7.5 7.5 0 1 1 15 0"/><path d="m12 16.5 3.5-4.5"/><circle cx="12" cy="16.5" r="1.1"/>',
   ];
 
-  const BARS = 32;
-  const bars = Array.from({ length: BARS }, () => { const i = document.createElement('i'); $('level').append(i); return i; });
+  const canvas = $('level'), pen = canvas.getContext('2d');
+  const COLUMNS = 140;
+
+  function envelope(rms) {
+    const out = new Array(COLUMNS).fill(0);
+    if (!rms || !rms.length) return out;
+    for (let i = 0; i < COLUMNS; i++) {
+      const from = Math.floor(i / COLUMNS * rms.length), to = Math.max(from + 1, Math.floor((i + 1) / COLUMNS * rms.length));
+      let peak = 0;
+      for (let k = from; k < to && k < rms.length; k++) peak = Math.max(peak, rms[k]);
+      const db = peak > 0 ? 20 * Math.log10(peak) : -60;
+      out[i] = Math.max(0, Math.min(1, (db + 46) / 46));
+    }
+    return out.map((v, i) => (v + (out[i - 1] ?? v) * .5 + (out[i + 1] ?? v) * .5) / 2);
+  }
+
+  function ribbon(w, mid, amp, top) {
+    const pts = amp.map((v, i) => [i / (amp.length - 1) * w, mid + (top ? -1 : 1) * Math.max(1, v * mid * .92)]);
+    pen.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 1; i < pts.length - 1; i++) pen.quadraticCurveTo(pts[i][0], pts[i][1], (pts[i][0] + pts[i + 1][0]) / 2, (pts[i][1] + pts[i + 1][1]) / 2);
+    pen.lineTo(pts[pts.length - 1][0], pts[pts.length - 1][1]);
+  }
+
+  function drawWave(progress, amp) {
+    const r = devicePixelRatio || 1, box = canvas.getBoundingClientRect();
+    const W = Math.round(box.width * r), H = Math.round(box.height * r);
+    if (canvas.width !== W || canvas.height !== H) { canvas.width = W; canvas.height = H; }
+    pen.setTransform(r, 0, 0, r, 0, 0);
+    pen.clearRect(0, 0, box.width, box.height);
+    const w = box.width, mid = box.height / 2;
+    const shape = () => {
+      pen.beginPath();
+      ribbon(w, mid, amp, true);
+      const back = amp.map((v, i) => [i / (amp.length - 1) * w, mid + Math.max(1, v * mid * .92)]).reverse();
+      pen.lineTo(back[0][0], back[0][1]);
+      for (let i = 1; i < back.length - 1; i++) pen.quadraticCurveTo(back[i][0], back[i][1], (back[i][0] + back[i + 1][0]) / 2, (back[i][1] + back[i + 1][1]) / 2);
+      pen.closePath();
+    };
+    pen.fillStyle = 'rgba(149, 97, 243, .16)';
+    shape();
+    pen.fill();
+    if (progress > 0) {
+      pen.save();
+      pen.beginPath();
+      pen.rect(0, 0, w * Math.min(1, progress), box.height);
+      pen.clip();
+      const grad = pen.createLinearGradient(0, 0, 0, box.height);
+      grad.addColorStop(0, '#c9a8ff');
+      grad.addColorStop(.5, '#8e55ee');
+      grad.addColorStop(1, '#c9a8ff');
+      pen.fillStyle = grad;
+      pen.shadowColor = 'rgba(149, 97, 243, .85)';
+      pen.shadowBlur = 12;
+      shape();
+      pen.fill();
+      pen.restore();
+      pen.fillStyle = 'rgba(255, 255, 255, .85)';
+      pen.shadowColor = 'rgba(201, 168, 255, 1)';
+      pen.shadowBlur = 8;
+      pen.fillRect(w * Math.min(1, progress) - .75, 2, 1.5, box.height - 4);
+      pen.shadowBlur = 0;
+    }
+    pen.fillStyle = 'rgba(255, 255, 255, .08)';
+    pen.fillRect(0, mid - .5, w, 1);
+  }
 
   function renderBanner() {
     const e = eventOf(chosen);
@@ -39,27 +102,19 @@
     $('banner-listen').querySelector('span').textContent = playback ? 'Stop' : 'Listen';
   }
 
+  const idle = new Array(COLUMNS).fill(.02);
   let loop = 0;
   function animate() {
     loop = 0;
     const t = playback ? (performance.now() - playback.start) / 1000 : 0;
     if (playback && t > playback.duration + 0.08) { finishPlayback(); return; }
-    for (let i = 0; i < BARS; i++) {
-      let v = 0;
-      if (playback) {
-        const k = Math.floor((t - i * 0.04) * playback.frames);
-        if (k >= 0 && k < playback.rms.length) v = playback.rms[k];
-      }
-      const db = v > 0 ? 20 * Math.log10(v) : -60;
-      const h = Math.max(3, Math.min(22, 3 + (db + 40) / 40 * 19));
-      bars[i].style.height = h + 'px';
-      bars[i].classList.toggle('bright', h > 4);
-    }
+    if (playback) drawWave(t / playback.duration, playback.env);
+    else drawWave(0, idle);
     if (playback) loop = requestAnimationFrame(animate);
   }
 
   function startPlayback(m) {
-    playback = { ...m, start: performance.now() - (m.from || 0) * 1000 };
+    playback = { ...m, start: performance.now() - (m.from || 0) * 1000, env: envelope(m.rms) };
     document.querySelectorAll('.sound.listening').forEach(l => l.classList.remove('listening'));
     const row = document.querySelector(`.sound[data-id="${CSS.escape(m.id)}"]`);
     if (row) row.classList.add('listening');
