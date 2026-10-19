@@ -97,6 +97,21 @@ namespace Bramble
             return new Size(p.X, p.Y);
         }
 
+        public static int IconSize()
+        {
+            int mode, size;
+            View().GetViewModeAndIconSize(out mode, out size);
+            return size;
+        }
+
+        public static void SetIconSize(int size)
+        {
+            var view = View();
+            int mode, current;
+            view.GetViewModeAndIconSize(out mode, out current);
+            view.SetViewModeAndIconSize(mode, Math.Max(16, Math.Min(256, size)));
+        }
+
         public static int Place(Dictionary<string, Point> positions)
         {
             var view = View();
@@ -220,6 +235,17 @@ namespace Bramble
             void SetText();
             void SetCurrentFolderFlags(uint mask, uint flags);
             void GetCurrentFolderFlags(out uint flags);
+            void GetSortColumnCount();
+            void SetSortColumns();
+            void GetSortColumns();
+            void GetItem();
+            void GetVisibleItem();
+            void GetSelectedItem();
+            void GetSelection();
+            void GetSelectionState();
+            void InvokeVerbOnSelection();
+            void SetViewModeAndIconSize(int mode, int iconSize);
+            void GetViewModeAndIconSize(out int mode, out int iconSize);
         }
     }
 }

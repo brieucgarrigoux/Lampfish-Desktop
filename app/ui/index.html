@@ -195,6 +195,10 @@
   <section class="view view--arrange only-arrange" aria-label="Arrange">
     <h1>Arrange</h1>
     <div class="map" id="map" role="group" aria-label="Screen map"><div class="empty">Reading the desktop</div></div>
+    <div class="map-actions">
+      <button class="button-sort" id="arrange-undo"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4.5 9.5 9 5M5 9.5h9a5.5 5.5 0 0 1 0 11h-3"/></svg><span>Undo</span></button>
+      <button class="button-sort" id="arrange-original"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4v4h4"/></svg><span>Back to original</span></button>
+    </div>
 
     <div class="title-section">
       <h2>Arrangement</h2>
@@ -467,6 +471,11 @@
     </div>
     <h2>Display</h2>
     <div class="group">
+      <div class="setting">
+        <label for="r-size"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="12.5" width="8" height="8" rx="1.5"/><rect x="13" y="3.5" width="7.5" height="7.5" rx="1.5"/><path d="M6.5 9.5V6.5h3"/></svg><span>Icon size<small>Size of the icons on the desktop</small></span></span><output id="r-size-value"></output></label>
+        <input type="range" id="r-size" min="16" max="256" step="8" disabled>
+        <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
       <label class="toggle">
         <input type="checkbox" id="r-auto">
         <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 10-10M14 6.5V4M17.5 10H20M16.6 7.4l1.8-1.8M10.5 4.5l.8 1.2M19.5 13.5l-1.2-.8"/></svg><span>Auto arrange<small>Tight columns, no gaps</small></span></span>

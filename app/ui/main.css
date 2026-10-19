@@ -195,7 +195,7 @@ input[type=range]::-webkit-slider-thumb {
 }
 input[type=range]:active::-webkit-slider-thumb { transform: scale(1.2); }
 
-.ticks { display: flex; justify-content: space-between; margin-top: 6px; padding: 0 6px; }
+.ticks { display: flex; justify-content: space-between; margin-top: 6px; padding: 0 7px; }
 .ticks i { width: 1px; height: 4px; background: var(--text-pale); }
 .ticks i:nth-child(3) { height: 7px; background: var(--text-soft); }
 

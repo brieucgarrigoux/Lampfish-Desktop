@@ -67,7 +67,8 @@
     if (!map || !map.screens.length) return;
     const left = Math.min(...map.screens.map(e => e.x)), up = Math.min(...map.screens.map(e => e.y));
     const right = Math.max(...map.screens.map(e => e.x + e.w)), down = Math.max(...map.screens.map(e => e.y + e.h));
-    const width = zone.clientWidth || 800;
+    const style = getComputedStyle(zone);
+    const width = (zone.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)) || 800;
     scale = Math.min(width / (right - left), HEIGHT_MAX / (down - up));
     origin = { x: left, y: up };
     const k = scale, frame = { w: (right - left) * k, h: (down - up) * k };
@@ -103,6 +104,7 @@
         scene.append(screen);
       }
       zone.append(scene);
+      requestAnimationFrame(() => requestAnimationFrame(() => scene.classList.add('settled')));
     }
     const scene = zone.querySelector('.scene');
     const size = Math.max(9, Math.round(map.caseW * 0.4 * k));
@@ -133,6 +135,8 @@
     for (const [id, p] of points) if (!seen.has(id)) { p.remove(); points.delete(id); }
     zone.classList.toggle('hidden', map.hidden);
 
+    if (!sizing) showSize(map.iconSize);
+    $('r-size').disabled = false;
     for (const [id, key] of [['r-auto', 'auto'], ['r-grid', 'grid'], ['r-hide', 'hidden']]) {
       $(id).checked = map[key];
       $(id).disabled = false;
@@ -212,6 +216,8 @@
       return l;
     }));
     $('r-restore').checked = r.restoreAuto;
+    $('arrange-undo').disabled = !r.canUndo;
+    $('arrange-original').disabled = !r.hasOriginal;
   }
 
   let dragCat = null;
@@ -294,6 +300,21 @@
     $(id).disabled = true;
     $(id).addEventListener('change', e => send('arrange.' + action, { value: e.target.checked }));
   }
+  const slider = $('r-size');
+  let sizing = false;
+  function showSize(value) {
+    slider.value = value;
+    $('r-size-value').textContent = slider.value + ' px';
+    slider.style.setProperty('--pct', (slider.value - slider.min) / (slider.max - slider.min) * 100 + '%');
+  }
+  slider.addEventListener('pointerdown', () => { sizing = true; });
+  slider.addEventListener('input', () => showSize(slider.value));
+  slider.addEventListener('change', () => {
+    send('arrange.iconSize', { value: Number(slider.value) });
+    for (const delay of [350, 900]) setTimeout(() => { sizing = false; if (shown) send('arrange.map'); }, delay);
+  });
+  $('arrange-undo').addEventListener('click', () => send('arrange.undo'));
+  $('arrange-original').addEventListener('click', () => send('arrange.original'));
   $('r-restore').addEventListener('change', e => send('arrange.restoreAuto', { value: e.target.checked }));
   $('save').addEventListener('submit', e => {
     e.preventDefault();

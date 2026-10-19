@@ -28,6 +28,8 @@ namespace Bramble
         public string Arrangement = "left";
         public string LastSort = "name";
         public List<IconPosition> BeforeAuto;
+        public List<IconPosition> Original;
+        public List<List<IconPosition>> History = new List<List<IconPosition>>();
     }
 
     static class Arrange
@@ -35,6 +37,8 @@ namespace Bramble
         static readonly Dictionary<string, string> icons = new Dictionary<string, string>();
         static readonly HashSet<string> sent = new HashSet<string>();
         static Timer restoreTimer;
+        const int HistoryMax = 10;
+        const int IconCacheMax = 1000;
 
         static ArrangeSettings R { get { return Program.R.Arrange; } }
 
@@ -292,8 +296,38 @@ namespace Bramble
             return rest != null ? rest.Key : new Point(Math.Max(0, (c.Width - 48) / 2), 2);
         }
 
-        static void Place(Dictionary<string, Point> positions)
+        static List<IconPosition> Capture()
         {
+            return DesktopIcons.List(false).Select(e => new IconPosition { Id = e.Id, X = e.Position.X, Y = e.Position.Y }).ToList();
+        }
+
+        static void Remember()
+        {
+            var now = Capture();
+            if (now.Count == 0) return;
+            if (R.Original == null) R.Original = now;
+            R.History.Add(now);
+            if (R.History.Count > HistoryMax) R.History.RemoveAt(0);
+        }
+
+        static void Apply(List<IconPosition> list)
+        {
+            var positions = new Dictionary<string, Point>();
+            foreach (var p in list) positions[p.Id] = new Point(p.X, p.Y);
+            Place(positions, false);
+        }
+
+        static void Undo()
+        {
+            if (R.History.Count == 0) return;
+            var last = R.History[R.History.Count - 1];
+            R.History.RemoveAt(R.History.Count - 1);
+            Apply(last);
+        }
+
+        static void Place(Dictionary<string, Point> positions, bool remember = true)
+        {
+            if (remember) Remember();
             if ((DesktopIcons.Flags() & DesktopIcons.FWF_AUTOARRANGE) != 0) DesktopIcons.Flag(DesktopIcons.FWF_AUTOARRANGE, false);
             DesktopIcons.Place(positions);
         }
@@ -306,16 +340,15 @@ namespace Bramble
                     if (!R.Layouts.Any(x => x.Name == Language.T("Layout {0}", i))) { name = Language.T("Layout {0}", i); break; }
             if (name.Length > 40) name = name.Substring(0, 40).Trim();
             var d = new Layout { Name = name, Screens = Signature(), Date = DateTime.Now.ToString("s", CultureInfo.InvariantCulture) };
-            d.Positions = DesktopIcons.List(false).Select(e => new IconPosition { Id = e.Id, X = e.Position.X, Y = e.Position.Y }).ToList();
+            d.Positions = Capture();
             R.Layouts.RemoveAll(x => x.Name == name);
             R.Layouts.Add(d);
         }
 
         static void Restore(Layout d)
         {
-            var positions = new Dictionary<string, Point>();
-            foreach (var p in d.Positions) positions[p.Id] = new Point(p.X, p.Y);
-            Place(positions);
+            Remember();
+            Apply(d.Positions);
         }
 
         static void Erase(int index)
@@ -347,9 +380,10 @@ namespace Bramble
 
         static object Map(bool full)
         {
-            if (full) sent.Clear();
+            if (full || icons.Count > IconCacheMax) { sent.Clear(); if (icons.Count > IconCacheMax) icons.Clear(); }
             var screens = Screens();
-            var elements = DesktopIcons.List(true);
+            var elements = DesktopIcons.List(false);
+            if (elements.Any(e => !icons.ContainsKey(e.Id))) elements = DesktopIcons.List(true);
             uint flags = DesktopIcons.Flags();
             Size c = DesktopIcons.Case();
             return new
@@ -375,6 +409,7 @@ namespace Bramble
                     return new { id = e.Id, name = e.Name, cat = Category(e), x = e.Position.X, y = e.Position.Y, icon = image };
                 }).ToArray(),
                 caseW = c.Width, caseH = c.Height,
+                iconSize = DesktopIcons.IconSize(),
                 auto = (flags & DesktopIcons.FWF_AUTOARRANGE) != 0,
                 grid = (flags & DesktopIcons.FWF_SNAPTOGRID) != 0,
                 hidden = (flags & DesktopIcons.FWF_NOICONS) != 0,
@@ -401,7 +436,7 @@ namespace Bramble
                     case "move":
                         Place(new Dictionary<string, Point> { { Text(m, "id"), new Point(Convert.ToInt32(m["x"]), Convert.ToInt32(m["y"])) } });
                         Program.Send(Map(false));
-                        return false;
+                        return true;
                     case "sort":
                         R.LastSort = Text(m, "mode") ?? "name";
                         Sort(R.LastSort);
@@ -409,7 +444,6 @@ namespace Bramble
                         return true;
                     case "arrangement":
                     {
-
                         string a = Text(m, "value");
                         if (!Arrangements.Contains(a)) return false;
                         R.Arrangement = a;
@@ -421,7 +455,7 @@ namespace Bramble
                     case "auto":
                     {
                         bool active = Convert.ToBoolean(m["value"]);
-                        if (active) R.BeforeAuto = DesktopIcons.List(false).Select(e => new IconPosition { Id = e.Id, X = e.Position.X, Y = e.Position.Y }).ToList();
+                        if (active) R.BeforeAuto = Capture();
                         DesktopIcons.Flag(DesktopIcons.FWF_AUTOARRANGE, active);
                         if (!active && R.BeforeAuto != null && R.BeforeAuto.Count > 0)
                         {
@@ -433,6 +467,10 @@ namespace Bramble
                         Program.Send(Map(false));
                         return true;
                     }
+                    case "iconSize":
+                        DesktopIcons.SetIconSize(Convert.ToInt32(m["value"]));
+                        Program.Send(Map(false));
+                        return false;
                     case "grid": DesktopIcons.Flag(DesktopIcons.FWF_SNAPTOGRID, Convert.ToBoolean(m["value"])); Program.Send(Map(false)); return false;
                     case "hide": DesktopIcons.Flag(DesktopIcons.FWF_NOICONS, Convert.ToBoolean(m["value"])); Program.Send(Map(false)); return false;
                     case "category":
@@ -460,19 +498,26 @@ namespace Bramble
                         Program.Send(Map(false));
                         return false;
                     }
+                    case "undo": Undo(); Program.Send(Map(false)); return true;
+                    case "original":
+                        if (R.Original == null) return false;
+                        Remember();
+                        Apply(R.Original);
+                        Program.Send(Map(false));
+                        return true;
                     case "erase": Erase(Convert.ToInt32(m["index"])); return true;
                     case "restoreAuto": R.RestoreAuto = Convert.ToBoolean(m["value"]); return true;
                 }
             }
             catch (Exception ex)
             {
-
                 Program.Log(ex);
                 Program.Announce("Desktop unavailable for now");
                 return true;
             }
             return false;
         }
+
         public static object State()
         {
             string signature = Signature();
@@ -482,6 +527,8 @@ namespace Bramble
             {
                 layouts = R.Layouts.Select(d => new { name = d.Name, screens = Label(d.Screens), date = d.Date, current = d.Screens == signature }).ToArray(),
                 restoreAuto = R.RestoreAuto,
+                canUndo = R.History.Count > 0,
+                hasOriginal = R.Original != null,
                 categories = R.Categories.ToArray(),
                 screen = R.Screen,
                 arrangement = R.Arrangement,
@@ -490,6 +537,7 @@ namespace Bramble
                 configuration = Label(signature),
             };
         }
+
         static string Text(Dictionary<string, object> m, string key)
         {
             object v;
