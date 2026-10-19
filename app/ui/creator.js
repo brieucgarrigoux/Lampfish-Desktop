@@ -306,7 +306,7 @@
       grid.append(b);
       return [a, b];
     });
-    const paint = () => { for (const [a, b] of buttons) b.setAttribute('aria-pressed', String(Math.abs(((st.bg.angle - a + 540) % 360) - 180) > 175)); };
+    const paint = () => { for (const [a, b] of buttons) b.setAttribute('aria-pressed', String(Math.abs(((st.bg.angle - a + 540) % 360) - 180) < 5)); };
     ctl.bgDirections = { sync: paint };
     paint();
     return grid;
