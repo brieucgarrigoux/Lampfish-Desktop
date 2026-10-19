@@ -130,13 +130,21 @@ namespace Bramble
 
         class Grid
         {
-            public Rectangle Zone; public int Columns, Rows;
+            public Rectangle Zone; public int Columns, Rows, StepX, StepY;
             public readonly HashSet<Point> Taken = new HashSet<Point>();
-            public Grid(Rectangle zone, Size c, Point d)
+            public Grid(Rectangle zone, Size c, bool snap)
             {
                 Zone = zone;
                 Columns = Math.Max(1, zone.Width / c.Width);
-                Rows = Math.Max(1, (zone.Height - d.Y) / c.Height);
+                Rows = Math.Max(1, zone.Height / c.Height);
+                StepX = Spread(zone.Width, Columns, c.Width, snap);
+                StepY = Spread(zone.Height, Rows, c.Height, snap);
+            }
+            static int Spread(int room, int count, int cell, bool snap)
+            {
+                if (snap || count < 2) return cell;
+                int extra = (room - count * cell) / (count - 1);
+                return cell + Math.Max(0, Math.Min(extra, cell * 35 / 100));
             }
             public IEnumerable<Point> InColumns()
             {
@@ -189,14 +197,15 @@ namespace Bramble
             Size c = DesktopIcons.Case();
             if (c.Width <= 0 || c.Height <= 0) return;
             Point d = Offset(all, c);
-            var grids = TargetScreens().Select(s => new Grid(s.WorkingArea, c, d)).ToList();
+            bool snap = (DesktopIcons.Flags() & DesktopIcons.FWF_SNAPTOGRID) != 0;
+            var grids = TargetScreens().Select(s => new Grid(s.WorkingArea, c, snap)).ToList();
             var positions = new Dictionary<string, Point>();
             var rest = new List<DesktopIcons.Element>();
             groups = groups.Where(g => g.Count > 0).ToList();
             Action<Grid, Point, DesktopIcons.Element> set = (g, p, el) =>
             {
                 g.Taken.Add(p);
-                positions[el.Id] = new Point(g.Zone.X + p.X * c.Width + d.X, g.Zone.Y + p.Y * c.Height + d.Y);
+                positions[el.Id] = new Point(g.Zone.X + p.X * g.StepX + d.X, g.Zone.Y + p.Y * g.StepY + d.Y);
             };
 
             if (arrangement == "corners" || arrangement == "blocks")
