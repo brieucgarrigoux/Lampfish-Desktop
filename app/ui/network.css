@@ -12,7 +12,7 @@
 .network-ip .ip { border: 0; padding: 0; background: none; font: 600 20px/1.1 "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif; font-variant-numeric: tabular-nums; }
 
 .tester { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 32px; align-items: stretch; margin-top: 16px; padding: 24px 28px; border-radius: 14px;
-  background: radial-gradient(120% 140% at 0% 50%, rgba(142, 66, 182, .07), transparent 55%), var(--group); }
+  background: radial-gradient(120% 140% at 0% 50%, rgba(149, 97, 243, .07), transparent 55%), var(--group); }
 @container network (max-width: 760px) { .tester { grid-template-columns: minmax(0, 1fr); justify-items: center; } .tester__side { width: 100%; } }
 .dial-block { display: flex; flex-direction: column; align-items: center; gap: 14px; }
 
@@ -91,7 +91,7 @@
 .measure__value { flex: none; min-width: 64px; text-align: right; font: 600 15px var(--numbers); font-variant-numeric: tabular-nums; }
 .measure__value:empty { display: none; }
 .pill { flex: none; min-width: 84px; padding: 4px 10px; border-radius: 99px; text-align: center; font-size: 12px; font-weight: 600; background: #20212b; color: var(--text-soft); }
-.pill.excellent { background: var(--accent-dim); color: var(--accent); box-shadow: inset 0 0 0 1px rgba(142, 66, 182, .35); }
+.pill.excellent { background: var(--accent-dim); color: var(--accent); box-shadow: inset 0 0 0 1px rgba(149, 97, 243, .35); }
 .pill.good { background: #24252f; color: var(--text); }
 .pill.slow { background: rgba(255, 92, 108, .14); color: var(--danger); }
 .pill.waiting { background: transparent; color: var(--text-pale); font-weight: 400; box-shadow: inset 0 0 0 1px var(--hairline-strong); }

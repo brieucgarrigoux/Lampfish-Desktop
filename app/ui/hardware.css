@@ -80,7 +80,7 @@
 .cell-relief__segments { display: flex; gap: 3px; padding: 5px; border-radius: 7px;
   background: linear-gradient(180deg, #3a3c47, #24252e); box-shadow: 0 0 0 1px #08090c, inset 0 1px 0 rgba(255, 255, 255, .15), 0 3px 6px rgba(0, 0, 0, .45); }
 .cell-relief__segments i { width: 9px; height: 22px; border-radius: 2px; background: #121219; box-shadow: inset 0 1px 2px rgba(0, 0, 0, .8); }
-.cell-relief__segments i.full { background: var(--accent); box-shadow: 0 0 5px rgba(142, 66, 182, .9); }
+.cell-relief__segments i.full { background: var(--accent); box-shadow: 0 0 5px rgba(149, 97, 243, .9); }
 .cell-relief__segments i.low { background: var(--danger); box-shadow: 0 0 5px rgba(255, 92, 108, .7); }
 .m-card.charging .cell-relief__segments i.full:last-of-type { animation: charge 1.2s ease-in-out infinite alternate; }
 @keyframes charge { to { opacity: .35; } }

@@ -57,7 +57,7 @@
   const num = (v, d) => (v === undefined || v === null || v === '' || isNaN(Number(v))) ? d : Number(v);
   function rgb(c) {
     const m = /^#?([0-9a-f]{6})$/i.exec(c || '');
-    const n = m ? parseInt(m[1], 16) : 0x8e42b6;
+    const n = m ? parseInt(m[1], 16) : 0x9561f3;
     return [n >> 16, (n >> 8) & 255, n & 255];
   }
 
@@ -209,7 +209,7 @@
     ctx.globalCompositeOperation = 'lighter';
 
     if (gl.on !== false && gl.on !== undefined) {
-      const strength = num(gl.strength, 60) / 60, [r, g, b] = rgb(gl.color || '#8e42b6');
+      const strength = num(gl.strength, 60) / 60, [r, g, b] = rgb(gl.color || '#9561f3');
       const breathe = .85 + Math.sin(t * .9) * .15;
       const radius = Math.min(w, h) * .46 * breathe * (1 + pulse * .6);
       const halo = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
