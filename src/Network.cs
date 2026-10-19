@@ -247,7 +247,7 @@ namespace Bramble
                 Program.OnInterface(() =>
                 {
                     testRunning = false;
-                    var finish = new System.Windows.Forms.Timer { Interval = 700 };
+                    var finish = new System.Windows.Forms.Timer { Interval = 950 };
                     finish.Tick += (s, e) => { finish.Dispose(); Sounds.Fire("speedtest_end"); };
                     finish.Start();
                     if (Convert.ToDouble(summary.ContainsKey("down") ? summary["down"] : 0) > 0)

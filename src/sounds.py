@@ -348,13 +348,24 @@ def sonar():
     write('Sonar', 'Disconnect', soften(squash(d), 4200), .26, .78)
 
 
+def pluck(f, duration=.7):
+    """A wooden mallet note: marimba-like partials (1, 4, 10) with a soft tap, no sustained tone."""
+    body = partials(f, (1, 4.0, 10.0), (1.0, .2, .04), (.22, .06, .02), duration, .003)
+    tap = low_pass([random.uniform(-1, 1) * math.exp(-i / (RATE * .004)) for i in range(int(.03 * RATE))], 2200)
+    for i, v in enumerate(tap):
+        body[i] += v * .12
+    return body
+
+
 def steps():
-    """One short note per speed test step, rising: app/sounds/step-1..5.wav, played by Sounds.Step."""
-    for i, f in enumerate((587.33, 739.99, 880.0, 1174.66, 1479.98), 1):
-        b = silence(1.0)
-        mix(b, tone(f, .8, .008, .16), 0, .8)
-        mix(b, tone(f * 2, .6, .008, .1), 0, .18)
-        write('../app/sounds', 'step-%d' % i, soften(b, 5000), .16, .5)
+    """One soft wooden note per speed test step, rising: app/sounds/step-1..5.wav, played by Sounds.Step."""
+    for i, f in enumerate((329.63, 392.0, 440.0, 523.25, 659.25), 1):
+        b = silence(1.1)
+        mix(b, pluck(f), 0, .9)
+        if i == 5:
+            mix(b, pluck(f / 2, .9), .02, .5)
+            mix(b, pluck(f * 1.5, .8), .05, .3)
+        write('../app/sounds', 'step-%d' % i, soften(b, 3400), .1, .4)
 
 
 if __name__ == '__main__':
