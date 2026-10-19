@@ -94,19 +94,10 @@
         screen.style.setProperty('--k', (k * s).toFixed(5));
         screen.classList.toggle('fit', !!Bramble.state && Bramble.state.fit === 'fit');
 
-        const margins = [[e.ty - e.y, 'top'], [e.y + e.h - e.ty - e.th, 'bottom'], [e.tx - e.x, 'left'], [e.x + e.w - e.tx - e.tw, 'right']];
-        const bars = [];
-        for (const [size, side] of margins) {
-          if (size < 4) continue;
-          const bar = document.createElement('div');
-          bar.className = 'taskbar taskbar--' + side;
-          bar.style[side === 'top' || side === 'bottom' ? 'height' : 'width'] = size * k + 'px';
-          bars.push(bar);
-        }
         const name = document.createElement('span');
         name.className = 'number';
         name.textContent = e.n + (e.primary ? tr(' · main') : '');
-        screen.append(...bars, name);
+        screen.append(name);
         wallpaperBehind(screen);
         scene.append(screen);
       }

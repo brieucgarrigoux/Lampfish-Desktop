@@ -11,12 +11,6 @@
 .screen-map { position: absolute; border-radius: 6px; background: #0b0c10; box-shadow: 0 0 0 1px var(--hairline-strong); overflow: hidden; }
 .screen-map.primary { box-shadow: 0 0 0 1px rgba(149, 97, 243, .45); }
 
-.taskbar { position: absolute; z-index: 1; background: rgba(12, 13, 18, .82); backdrop-filter: blur(6px); box-shadow: 0 0 0 1px rgba(255, 255, 255, .05); }
-.taskbar--top { left: 0; right: 0; top: 0; }
-.taskbar--bottom { left: 0; right: 0; bottom: 0; }
-.taskbar--left { top: 0; bottom: 0; left: 0; }
-.taskbar--right { top: 0; bottom: 0; right: 0; }
-.taskbar--bottom::after, .taskbar--top::after { content: ""; position: absolute; left: 50%; top: 50%; width: 34%; height: 40%; max-height: 5px; transform: translate(-50%, -50%); border-radius: 3px; background: repeating-linear-gradient(90deg, rgba(255, 255, 255, .22) 0 12%, transparent 12% 20%); }
 
 .screen-map .wallpaper-map { position: absolute; inset: 0; border-radius: 0; }
 .screen-map .wallpaper-map iframe { width: calc(var(--vw, 1920) * 1px); height: calc(var(--vh, 1080) * 1px); transform: scale(var(--k, .25)); }
