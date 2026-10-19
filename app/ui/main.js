@@ -394,6 +394,15 @@ $('grid').addEventListener('keydown', e => {
   if (cases[j]) { e.preventDefault(); cases[j].focus(); }
 });
 
+const TASKBAR_APPS = [
+  '<svg viewBox="0 0 24 24"><path fill="#47a0ff" d="M3 3.5h8.2v8.2H3zM12.8 3.5H21v8.2h-8.2zM3 13.3h8.2v8.2H3zM12.8 13.3H21v8.2h-8.2z"/></svg>',
+  '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2.4" fill="#f4c542"/><path d="M3 9.5h18v7.6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#ffd966"/><path d="M3 8.6a2.4 2.4 0 0 1 2.4-2.4h4l1.6 2z" fill="#e0a82e"/></svg>',
+  '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#1d7fe6"/><path d="M12 3a9 9 0 0 0-9 9h10a3 3 0 0 0 0-6h-1z" fill="#34d399"/><path d="M5.5 13c2-3.6 6.4-4.4 10-2.6 1.6.8 2.6 2.2 3 3.6-1.8-1.4-3.8-1.8-6-1.4-2.4.4-4.4 2-7 .4z" fill="#0a3a8a" opacity=".55"/></svg>',
+  '<svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="15" rx="3" fill="#1b1c24" stroke="#4a4c5c" stroke-width="1"/><path d="m7.5 9.5 3 2.5-3 2.5M12.5 15h4" fill="none" stroke="#c9b8e6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  '<svg viewBox="0 0 24 24"><image href="/brand/logo/logo-bramble-192.png" x="2" y="2" width="20" height="20"/></svg>',
+].map((svg, i) => `<i${i === 4 ? ' class="on"' : ''}>${svg}</i>`).join('');
+const TASKBAR_TRAY = '<svg viewBox="0 0 24 24"><path d="m6 14 6-6 6 6" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><svg viewBox="0 0 24 24"><path d="M3 9a13 13 0 0 1 18 0M6 12.5a8.5 8.5 0 0 1 12 0M9 16a4 4 0 0 1 6 0" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg><svg viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z" fill="#fff"/><path d="M15 9a4 4 0 0 1 0 6" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg><svg viewBox="0 0 24 24"><rect x="3" y="8" width="16" height="8" rx="2" fill="none" stroke="#fff" stroke-width="1.8"/><rect x="5" y="10" width="9" height="4" rx=".8" fill="#fff"/><path d="M21 10.5v3" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>';
+
 function taskbars(e) {
   const margins = [[e.ty - e.y, e.h, 'top'], [e.y + e.h - e.ty - e.th, e.h, 'bottom'], [e.tx - e.x, e.w, 'left'], [e.x + e.w - e.tx - e.tw, e.w, 'right']];
   const bars = [];
@@ -402,7 +411,10 @@ function taskbars(e) {
     const bar = document.createElement('div');
     bar.className = 'taskbar taskbar--' + side;
     bar.style[side === 'top' || side === 'bottom' ? 'height' : 'width'] = (size / total * 100).toFixed(3) + '%';
-    if (side === 'bottom' || side === 'top') bar.innerHTML = '<span class="taskbar__apps"><i></i><i></i><i></i><i></i><i></i></span><span class="taskbar__tray"><i></i><i></i><i></i><b></b></span>';
+    if (side === 'bottom' || side === 'top') {
+      const now = new Date();
+      bar.innerHTML = `<span class="taskbar__apps">${TASKBAR_APPS}</span><span class="taskbar__tray">${TASKBAR_TRAY}<span class="taskbar__clock"><b>${now.toLocaleTimeString(LOCALE, { hour: '2-digit', minute: '2-digit' })}</b><b>${now.toLocaleDateString(LOCALE)}</b></span></span>`;
+    }
     bars.push(bar);
   }
   return bars;

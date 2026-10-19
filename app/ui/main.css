@@ -301,13 +301,11 @@ body.resizing .rail-scrollable { pointer-events: none; }
 .taskbar--bottom { left: 0; right: 0; bottom: 0; }
 .taskbar--left { top: 0; bottom: 0; left: 0; }
 .taskbar--right { top: 0; bottom: 0; right: 0; }
-.taskbar__apps { display: flex; gap: 38cqh; }
-.taskbar__apps i { width: 62cqh; height: 62cqh; border-radius: 18cqh; background: #7aa7ff; }
-.taskbar__apps i:nth-child(1) { background: linear-gradient(#6cb4ff, #6cb4ff) 8% 8% / 40% 40% no-repeat, linear-gradient(#6cb4ff, #6cb4ff) 92% 8% / 40% 40% no-repeat, linear-gradient(#6cb4ff, #6cb4ff) 8% 92% / 40% 40% no-repeat, linear-gradient(#6cb4ff, #6cb4ff) 92% 92% / 40% 40% no-repeat; border-radius: 0; }
-.taskbar__apps i:nth-child(2) { background: #f0b955; }
-.taskbar__apps i:nth-child(3) { background: #6fcf97; }
-.taskbar__apps i:nth-child(4) { background: #c9b8e6; }
-.taskbar__apps i:nth-child(5) { background: #ff8f8f; }
-.taskbar__tray { position: absolute; right: 3%; top: 0; bottom: 0; display: flex; align-items: center; gap: 22cqh; }
-.taskbar__tray i { width: 34cqh; height: 34cqh; border-radius: 50%; background: rgba(255, 255, 255, .5); }
-.taskbar__tray b { width: 120cqh; height: 34cqh; border-radius: 6cqh; background: linear-gradient(180deg, rgba(255, 255, 255, .6) 0 40%, transparent 40% 60%, rgba(255, 255, 255, .4) 60%); }
+.taskbar__apps { display: flex; gap: 26cqh; align-items: center; }
+.taskbar__apps i { position: relative; display: block; width: 62cqh; height: 62cqh; }
+.taskbar__apps svg { display: block; width: 100%; height: 100%; }
+.taskbar__apps i.on::after { content: ""; position: absolute; left: 50%; bottom: -17cqh; width: 40%; height: 7cqh; min-height: 1px; transform: translateX(-50%); border-radius: 4cqh; background: #8fb8ff; }
+.taskbar__tray { position: absolute; right: 2%; top: 0; bottom: 0; display: flex; align-items: center; gap: 22cqh; }
+.taskbar__tray > svg { width: 36cqh; height: 36cqh; opacity: .85; }
+.taskbar__clock { display: flex; flex-direction: column; align-items: flex-end; margin-left: 10cqh; font: 600 27cqh/1.25 "Segoe UI", system-ui, sans-serif; color: rgba(255, 255, 255, .92); white-space: nowrap; }
+.taskbar__clock b { font-weight: 500; }
