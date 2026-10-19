@@ -1,6 +1,10 @@
+<p align="center"><img src="brand/app-icon/app-icon-violet-whiteline.png" alt="Bramble" width="128"></p>
+
 # Bramble Desktop
 
 A Windows app to customize and monitor your PC, in one dark, quiet window.
+
+<p align="center"><img src="brand/badge/powered-by-bramble-pill.png" alt="Powered by Bramble" width="260"></p>
 
 Bramble sits in the system tray and brings together what usually takes five different tools:
 
@@ -37,7 +41,7 @@ powershell -ExecutionPolicy Bypass -File src\build.ps1
 
 The script uses the C# compiler that ships with Windows (no Visual Studio needed). On first run it downloads the official WebView2 SDK from NuGet into `app\lib\`.
 
-`src\publish.ps1` builds and zips a release into `dist\`. Other generators, in Python 3: `src\icon.py` (app icon), `src\cursors.py` (cursor themes), `src\sounds.py` (sound packs).
+`src\publish.ps1` builds and zips a release into `dist\`. Other generators, in Python 3: `src\icon.py` (app icon), `srcpp_icon.py` (icon variants), `src\cursors.py` (cursor themes), `src\sounds.py` (sound packs).
 
 ## Project layout
 

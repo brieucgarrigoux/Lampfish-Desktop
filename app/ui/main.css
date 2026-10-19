@@ -88,6 +88,8 @@ body[data-view="settings"] .panel, body[data-view="home"] .panel { display: none
 .about strong { font: 600 16px "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif; }
 .about span { font: 12.5px var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-soft); }
 .about small { font-size: 12px; color: var(--text-pale); }
+.about div { min-width: 0; }
+.about .about-badge { width: auto; height: 64px; flex: none; margin-left: auto; }
 .group--danger { margin-top: 26px; }
 .stop { color: var(--danger); }
 .stop .glyph { stroke: var(--danger); }

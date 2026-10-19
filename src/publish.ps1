@@ -19,7 +19,7 @@ foreach ($d in 'app\ui', 'app\player', 'app\lib', 'app\cursor-themes', 'brand\lo
 }
 Get-ChildItem (Join-Path $target 'wallpapers') -Filter *.lnk | Remove-Item -Force
 foreach ($f in 'berry-white.png', 'berry-black.png') { Remove-Item (Join-Path $target "brand\logo\$f") -ErrorAction SilentlyContinue }
-Get-ChildItem (Join-Path $target 'brand\badge') | Where-Object { $_.Name -ne 'powered-by-bramble-color-dark.png' } | Remove-Item -Force
+Get-ChildItem (Join-Path $target 'brand\badge') | Where-Object { $_.Name -notin 'powered-by-bramble-color-dark.png', 'powered-by-bramble-pill.png' } | Remove-Item -Force
 New-Item -ItemType Directory -Force (Join-Path $target 'sounds') | Out-Null
 Get-ChildItem (Join-Path $root 'sounds') -Directory | Where-Object { $_.Name -ne 'My sounds' } | ForEach-Object {
     Copy-Item $_.FullName (Join-Path $target "sounds\$($_.Name)") -Recurse

@@ -1,4 +1,5 @@
-"""Builds src/icon.ico and the header PNGs from the official logo (brand/logo/berry-color.png).
+"""Builds src/icon.ico from the app icon (brand/app-icon/app-icon-violet-whiteline.png)
+and the in-app PNGs (header, About) from the official berry (brand/logo/berry-color.png).
 
 Usage: python src/icon.py
 Sizes up to 128 px are 32-bit BMPs (read by csc and every Windows version), 256 px is a PNG.
@@ -7,6 +8,7 @@ import io, os, struct, time
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ICON = os.path.join(ROOT, 'brand', 'app-icon', 'app-icon-violet-whiteline.png')
 SOURCE = os.path.join(ROOT, 'brand', 'logo', 'berry-color.png')
 LOGO = os.path.join(ROOT, 'brand', 'logo')
 SIZES = (16, 20, 24, 32, 40, 48, 64, 128, 256)
@@ -56,5 +58,5 @@ if __name__ == '__main__':
     logo = Image.open(SOURCE).convert('RGBA')
     save(square(logo, 512), os.path.join(LOGO, 'logo-bramble.png'))
     save(square(logo, 192), os.path.join(LOGO, 'logo-bramble-192.png'))
-    ico(logo, os.path.join(ROOT, 'src', 'icon.ico'))
+    ico(Image.open(ICON).convert('RGBA'), os.path.join(ROOT, 'src', 'icon.ico'))
     print('OK')

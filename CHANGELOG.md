@@ -5,6 +5,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+- White-line berry and app icon variants (dark, light, violet), in `brand/`.
+- Powered by Bramble badge in Settings, About, and in the README.
+
+### Changed
+- New app icon: the white-line berry on a violet plate (executable, taskbar, tray). The header and About keep the plain berry.
+
 ## [0.1.0] - 2026-10-19
 
 First public version.

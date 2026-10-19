@@ -30,6 +30,7 @@ brand/logo/berry-white.png
 brand/logo/berry-black.png
 brand/badge/*
 !brand/badge/powered-by-bramble-color-dark.png
+!brand/badge/powered-by-bramble-pill.png
 src/badge.py
 src/logo_berry.py
 src/resources/
