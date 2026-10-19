@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -6,7 +7,7 @@ namespace Bramble
 {
     static class AudioMeter
     {
-        static IAudioMeterInformation meter;
+        static readonly List<IAudioMeterInformation> meters = new List<IAudioMeterInformation>();
         static Timer timer;
         static DateTime lookedFor = DateTime.MinValue;
         static double ceiling = 0.05, last;
@@ -35,8 +36,13 @@ namespace Bramble
             float peak = 0;
             try
             {
-                if (meter == null && (DateTime.Now - lookedFor).TotalSeconds > 2) { lookedFor = DateTime.Now; meter = Open(); }
-                if (meter != null && meter.GetPeakValue(out peak) != 0) { Release(); peak = 0; }
+                if (meters.Count == 0 && (DateTime.Now - lookedFor).TotalSeconds > 2) { lookedFor = DateTime.Now; Open(); }
+                foreach (var meter in meters)
+                {
+                    float one;
+                    if (meter.GetPeakValue(out one) != 0) { Release(); peak = 0; break; }
+                    peak = Math.Max(peak, one);
+                }
             }
             catch { Release(); }
             ceiling = Math.Max(0.05, Math.Max(ceiling * 0.995, peak));
@@ -47,21 +53,27 @@ namespace Bramble
             Program.SendAudio(level);
         }
 
-        static IAudioMeterInformation Open()
+        static void Open()
         {
             var enumerator = (IMMDeviceEnumerator)new MMDeviceEnumerator();
-            IMMDevice device;
-            if (enumerator.GetDefaultAudioEndpoint(0, 1, out device) != 0) return null;
+            IMMDeviceCollection devices;
+            if (enumerator.EnumAudioEndpoints(0, 1, out devices) != 0) return;
+            uint count;
+            devices.GetCount(out count);
             Guid id = typeof(IAudioMeterInformation).GUID;
-            object meterObject;
-            if (device.Activate(ref id, 23, IntPtr.Zero, out meterObject) != 0) return null;
-            return (IAudioMeterInformation)meterObject;
+            for (uint i = 0; i < count; i++)
+            {
+                IMMDevice device;
+                object meterObject;
+                if (devices.Item(i, out device) != 0 || device.Activate(ref id, 23, IntPtr.Zero, out meterObject) != 0) continue;
+                meters.Add((IAudioMeterInformation)meterObject);
+            }
         }
 
         static void Release()
         {
-            if (meter != null) try { Marshal.ReleaseComObject(meter); } catch { }
-            meter = null;
+            foreach (var meter in meters) try { Marshal.ReleaseComObject(meter); } catch { }
+            meters.Clear();
         }
 
         [ComImport, Guid("BCDE0395-E52F-467C-8E3D-C4579291692E")] class MMDeviceEnumerator { }
@@ -69,8 +81,15 @@ namespace Bramble
         [ComImport, Guid("A95664D2-9614-4F35-A746-DE8DB63617E6"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
         interface IMMDeviceEnumerator
         {
-            [PreserveSig] int EnumAudioEndpoints(int flow, int state, out IntPtr devices);
+            [PreserveSig] int EnumAudioEndpoints(int flow, int state, out IMMDeviceCollection devices);
             [PreserveSig] int GetDefaultAudioEndpoint(int flow, int role, out IMMDevice device);
+        }
+
+        [ComImport, Guid("0BD7A1BE-7A1A-44DB-8397-CC5392387B5E"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        interface IMMDeviceCollection
+        {
+            [PreserveSig] int GetCount(out uint count);
+            [PreserveSig] int Item(uint index, out IMMDevice device);
         }
 
         [ComImport, Guid("D666063F-1587-4E43-81F1-B948E807363F"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]

@@ -86,17 +86,17 @@
   }
 
   function render(dt) {
-    t += dt * speed * (1 + audio * .6);
+    t += dt * speed * (1 + audio * 1.2);
     ctx.clearRect(0, 0, w, h);
     for (const g of grains) {
-      g.y -= g.speed * dt * speed * (1 + audio * 1.8);
+      g.y -= g.speed * dt * speed * (1 + audio * 5);
       const x = g.x + Math.sin(t * .3 + g.phase) * (10 + g.z * 30);
       if (g.y < -150) Object.assign(g, fresh(false));
 
       const level = Math.min(LEVELS - 1, Math.round(Math.abs(g.z - .35) * 9));
       const s = sprites[g.tint][level], k = g.size / s.r;
-      ctx.globalAlpha = Math.min(1, (.25 + g.z * .55) * light * (1 + audio * .7)) * (1 - level * .08);
-      const d = (s.r + s.margin) * k;
+      ctx.globalAlpha = Math.min(1, (.25 + g.z * .55) * light * (1 + audio * 1.5)) * (1 - level * .08);
+      const d = (s.r + s.margin) * k * (1 + audio * .35);
       ctx.drawImage(s.c, x - d, g.y - d, d * 2, d * 2);
     }
     ctx.globalAlpha = 1;
