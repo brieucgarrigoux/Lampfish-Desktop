@@ -312,5 +312,29 @@ def mechanical():
     write('Mechanical', 'Disconnect', d, .12, .6)
 
 
+def tone(f, duration, attack, decay, harmonics=(1.0, 0.16, 0.04)):
+    n = int(duration * RATE)
+    out = []
+    for i in range(n):
+        t = i / RATE
+        env = min(1.0, t / attack) * math.exp(-t / decay)
+        out.append(sum(a * math.sin(2 * math.pi * f * (k + 1) * t) for k, a in enumerate(harmonics)) * env)
+    return out
+
+
+def sonar():
+    """Speed test pair, kept quiet and plain: a soft rising breath with one low note, then a soft fifth that settles."""
+    b = silence(2.0)
+    mix(b, air(1.3, True), 0, .55)
+    mix(b, tone(293.66, 1.3, .06, .5), .5, .6)
+    mix(b, tone(440.0, 1.3, .06, .5), .78, .4)
+    write('Sonar', 'Connect', soften(b, 2600), .22, .7)
+    d = silence(2.0)
+    mix(d, tone(440.0, 1.4, .05, .55), 0, .5)
+    mix(d, tone(659.25, 1.4, .05, .6), .16, .42)
+    mix(d, tone(220.0, 1.6, .08, .8), .16, .3)
+    write('Sonar', 'Disconnect', soften(d, 2600), .22, .7)
+
+
 if __name__ == '__main__':
-    glass(); chime(); analog(); drops(); mechanical(); retro(); crystal(); scifi()
+    glass(); chime(); analog(); drops(); mechanical(); retro(); crystal(); scifi(); sonar()

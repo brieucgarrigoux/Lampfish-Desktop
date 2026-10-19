@@ -44,6 +44,8 @@ namespace Bramble
             new[] { "mains_off", "Charger unplugged", "The laptop switches to battery", "Drops" },
             new[] { "usb_on", "USB device connected", "Flash drive, disk, controller…", "Retro 8-bit" },
             new[] { "usb_off", "USB device removed", "Flash drive, disk, controller…", "Retro 8-bit" },
+            new[] { "speedtest_start", "Speed test started", "When you launch it in Network", "Sonar" },
+            new[] { "speedtest_end", "Speed test finished", "When its results are ready", "Sonar" },
         };
         static System.Windows.Forms.PowerLineStatus mains;
 
@@ -59,6 +61,7 @@ namespace Bramble
             new[] { "Crystal", "Crystal/Connect.wav", "Crystal/Disconnect.wav" },
             new[] { "Retro 8-bit", "Retro 8-bit/Connect.wav", "Retro 8-bit/Disconnect.wav" },
             new[] { "Sci-fi", "Sci-fi/Connect.wav", "Sci-fi/Disconnect.wav" },
+            new[] { "Sonar", "Sonar/Connect.wav", "Sonar/Disconnect.wav" },
             new[] { "Glass", "Glass/Connect.wav", "Glass/Disconnect.wav" },
             new[] { "Chime", "Chime/Connect.wav", "Chime/Disconnect.wav" },
             new[] { "Analog", "Analog/Connect.wav", "Analog/Disconnect.wav" },
@@ -125,7 +128,7 @@ namespace Bramble
                 bool arrival = i % 2 == 0;
                 string sound = pair != null ? (arrival ? pair[1] : pair[2]) : (arrival ? R.SoundA : R.SoundB);
                 if (SoundPath(sound) == null) sound = arrival ? DefaultPair()[1] : DefaultPair()[2];
-                R.Events.Add(new EventSetting { Id = id, Sound = sound, Active = id.StartsWith("station_") });
+                R.Events.Add(new EventSetting { Id = id, Sound = sound, Active = id.StartsWith("station_") || id.StartsWith("speedtest_") });
             }
         }
 
@@ -157,6 +160,8 @@ namespace Bramble
             Program.UpdateMenu();
             Program.SendState();
         }
+
+        public static void Fire(string id) { Trigger(id); }
 
         public static void Stop() { Player.Stop(); }
 

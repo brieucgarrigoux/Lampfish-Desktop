@@ -208,6 +208,7 @@ namespace Bramble
         {
             if (testRunning) return;
             testRunning = true;
+            Sounds.Fire("speedtest_start");
             ServicePointManager.DefaultConnectionLimit = Math.Max(ServicePointManager.DefaultConnectionLimit, 16);
             var summary = new Dictionary<string, object> { { "when", DateTime.Now.ToString("s") } };
             Task.Run(() =>
@@ -243,6 +244,7 @@ namespace Bramble
                 Program.OnInterface(() =>
                 {
                     testRunning = false;
+                    Sounds.Fire("speedtest_end");
                     if (Convert.ToDouble(summary.ContainsKey("down") ? summary["down"] : 0) > 0)
                     {
                         History.Insert(0, summary);
