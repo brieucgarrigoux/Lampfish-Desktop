@@ -1,12 +1,19 @@
 <p align="center"><img src="brand/app-icon/app-icon-violet-whiteline.png" alt="Bramble" width="128"></p>
 
-# Bramble Desktop
+<h1 align="center">Bramble Desktop</h1>
 
-A Windows app to customize and monitor your PC, in one dark, quiet window.
+<p align="center">A Windows app to customize and monitor your PC, in one dark, quiet window.</p>
 
-<p align="center"><img src="brand/badge/powered-by-bramble-pill.png" alt="Powered by Bramble" width="260"></p>
+<p align="center">
+  <a href="#services">Services</a> ·
+  <a href="#install">Install</a> ·
+  <a href="#build-from-source">Build</a> ·
+  <a href="CHANGELOG.md">Changelog</a>
+</p>
 
-Bramble sits in the system tray and brings together what usually takes five different tools:
+Bramble sits in the system tray and brings together what usually takes five different tools. It needs no administrator rights, no account and no server, and it collects no data: everything stays on your PC.
+
+## Services
 
 | Service | What it does |
 | --- | --- |
@@ -64,3 +71,13 @@ Bramble follows [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`.
 ## License
 
 [MIT](LICENSE)
+
+## Badge
+
+If you share a setup, a wallpaper or a screenshot made with Bramble, you can credit it with this badge.
+
+<p align="center"><img src="brand/badge/powered-by-bramble-pill.png" alt="Powered by Bramble" width="220"></p>
+
+```markdown
+![Powered by Bramble](brand/badge/powered-by-bramble-pill.png)
+```
