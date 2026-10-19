@@ -172,6 +172,42 @@ namespace Bramble
             catch (Exception ex) { Program.Log(ex); return null; }
         }
 
+        static void Frames(string file)
+        {
+            if (string.IsNullOrEmpty(file) || !File.Exists(file) || !file.EndsWith(".ani", StringComparison.OrdinalIgnoreCase)) return;
+            try
+            {
+                byte[] data = File.ReadAllBytes(file);
+                int steps = 0, jiffies = 6;
+                uint[] rates = null;
+                for (int p = 12; p + 8 <= data.Length;)
+                {
+                    string id = Encoding.ASCII.GetString(data, p, 4);
+                    int length = BitConverter.ToInt32(data, p + 4);
+                    if (id == "anih") { steps = BitConverter.ToInt32(data, p + 16); jiffies = BitConverter.ToInt32(data, p + 36); }
+                    else if (id == "rate" && steps > 0 && length >= steps * 4)
+                    {
+                        rates = new uint[steps];
+                        for (int i = 0; i < steps; i++) rates[i] = BitConverter.ToUInt32(data, p + 8 + i * 4);
+                    }
+                    if (id == "LIST") p += 12; else p += 8 + length + (length & 1);
+                }
+                steps = Math.Min(steps, 40);
+                if (steps < 2) return;
+                string key = KeyOf(file);
+                var delays = new int[steps];
+                for (int i = 0; i < steps; i++)
+                {
+                    string png = Path.Combine(Cache, key + "-s" + i + ".png");
+                    if (!File.Exists(png))
+                        using (var b = Render(file, 64, (uint)i)) { if (b == null) return; b.Save(png, ImageFormat.Png); }
+                    delays[i] = (int)((rates != null ? rates[i] : (uint)jiffies) * 1000 / 60);
+                }
+                Program.Send(new { type = "mouse.frames", path = file, key = key, delays = delays });
+            }
+            catch (Exception ex) { Program.Log(ex); }
+        }
+
         static string KeyOf(string file)
         {
             using (var sha = SHA1.Create())
@@ -181,14 +217,14 @@ namespace Bramble
             }
         }
 
-        static Bitmap Render(string file, int size)
+        static Bitmap Render(string file, int size, uint step = 0)
         {
             IntPtr cursor = LoadImage(IntPtr.Zero, file, IMAGE_CURSOR, size, size, LR_LOADFROMFILE);
             if (cursor == IntPtr.Zero) return null;
             try
             {
                 {
-                    int[] n = Paint(cursor, size, 0), w = Paint(cursor, size, 0xFFFFFF), output = new int[n.Length];
+                    int[] n = Paint(cursor, size, 0, step), w = Paint(cursor, size, 0xFFFFFF, step), output = new int[n.Length];
                     for (int i = 0; i < n.Length; i++)
                     {
                         int vert = ((w[i] >> 8) & 255) - ((n[i] >> 8) & 255);
@@ -217,7 +253,7 @@ namespace Bramble
             return pixels;
         }
 
-        static int[] Paint(IntPtr cursor, int size, int wallpaper)
+        static int[] Paint(IntPtr cursor, int size, int wallpaper, uint step = 0)
         {
             var info = new BITMAPINFOHEADER { biSize = 40, biWidth = size, biHeight = -size, biPlanes = 1, biBitCount = 32 };
             IntPtr dc = CreateCompatibleDC(IntPtr.Zero), bits;
@@ -227,7 +263,7 @@ namespace Bramble
             {
                 var pixels = Enumerable.Repeat(wallpaper, size * size).ToArray();
                 Marshal.Copy(pixels, 0, bits, pixels.Length);
-                DrawIconEx(dc, 0, 0, cursor, size, size, 0, IntPtr.Zero, DI_NORMAL);
+                DrawIconEx(dc, 0, 0, cursor, size, size, step, IntPtr.Zero, DI_NORMAL);
                 GdiFlush();
                 Marshal.Copy(bits, pixels, 0, pixels.Length);
                 return pixels;
@@ -386,6 +422,7 @@ namespace Bramble
             switch (action)
             {
                 case "library": Program.Send(Library()); return false;
+                case "frames": Frames(Text(m, "path")); return false;
                 case "theme": ApplyTheme(Text(m, "name")); return true;
                 case "assign": Assign(Text(m, "role"), Text(m, "path")); return true;
                 case "initial": ApplyTheme(Themes().Select(t => t.Name).FirstOrDefault(n => n == "Windows Aero") ?? "Windows Aero"); return true;

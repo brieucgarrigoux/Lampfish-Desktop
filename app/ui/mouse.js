@@ -34,9 +34,32 @@
       name.className = 'role__name';
       name.textContent = r.name;
       b.append(frame, name);
-      b.addEventListener('click', () => { role = r.id; renderRoles(); mark(); });
+      b.addEventListener('click', () => { role = r.id; renderRoles(); mark(); play(r); });
+      b.addEventListener('pointerenter', () => play(r));
       return b;
     }));
+  }
+
+  const motion = new Map();
+  let timer = 0;
+  function play(r) {
+    clearTimeout(timer);
+    if (!r.path || !/\.ani$/i.test(r.path)) return;
+    const info = motion.get(r.path);
+    if (!info) { send('mouse.frames', { path: r.path }); return; }
+    const img = [...$('s-roles').children].find(b => b.title === r.path)?.querySelector('img');
+    if (!img) return;
+    const home = img.src;
+    let i = 0, spent = 0;
+    const next = () => {
+      const delay = Math.max(40, info.delays[i % info.delays.length]);
+      img.src = `/app/cursor-cache/${info.key}-s${i % info.delays.length}.png`;
+      img.classList.remove('retro');
+      spent += delay; i++;
+      if (spent < 3000 || i % info.delays.length) timer = setTimeout(next, delay);
+      else img.src = home;
+    };
+    next();
   }
 
   function renderTabs() {
@@ -193,6 +216,12 @@
   }
 
   function event(m) {
+    if (m.type === 'mouse.frames') {
+      motion.set(m.path, m);
+      const r = chosenRole();
+      if (r && r.path === m.path) play(r);
+      return;
+    }
     if (m.type !== 'mouse.library') return;
     library = m;
     keyLibrary = '';
