@@ -217,22 +217,27 @@ def ani(frames, hotspot, tint, jiffies=5, rates=None, scales=None):
     return b'RIFF' + struct.pack('<I', len(riff)) + riff
 
 LIVE = 'Bramble Live'
-SWEEP = 8
+SWEEP = 10
 
 def sweep(g, step):
     """Moves a light band across the cursor along its diagonal."""
     centre = -2 + step * 34 / SWEEP
-    return [['L' if c == 'P' and abs(x + y - centre) <= 1.6 else c for x, c in enumerate(row)] for y, row in enumerate(g)]
+    def lit(x, y, c):
+        d = abs(x + y - centre)
+        if c in 'PL' and d <= 1.4: return 'W'
+        if c == 'P' and d <= 3.6: return 'L'
+        return c
+    return [[lit(x, y, c) for x, c in enumerate(row)] for y, row in enumerate(g)]
 
 def live(drawings, folder):
-    tint = TINTS['Bramble Berry']
+    tint = dict(TINTS['Bramble Berry'], W=(246, 238, 255))
     os.makedirs(folder, exist_ok=True)
     for role, (g, hotspot) in drawings.items():
         if isinstance(g, list) and isinstance(g[0][0], list):
             data = ani(g, hotspot, tint)
         else:
             frames = [g] + [sweep(g, k) for k in range(SWEEP)]
-            data = ani(frames, hotspot, tint, rates=[150] + [3] * SWEEP, scales=[2, 4, 8])
+            data = ani(frames, hotspot, tint, rates=[120] + [2] * SWEEP, scales=[2, 4, 8])
         open(os.path.join(folder, role + '.ani'), 'wb').write(data)
     print(LIVE, len(drawings), 'cursors')
 

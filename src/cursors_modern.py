@@ -12,7 +12,7 @@ THEME = 'Bramble Glass'
 SIZES = [32, 48, 64, 128]
 UNITS = 32
 K = 16
-TOP, BOTTOM = (149, 97, 243), (90, 32, 171)
+TOP, BOTTOM = (160, 112, 250), (84, 28, 160)
 
 def layer():
     return Image.new('L', (UNITS * K, UNITS * K), 0)
@@ -25,7 +25,7 @@ def grow(mask, radius):
     return blurred.point(lambda v: 255 if v > 6 else 0).filter(ImageFilter.GaussianBlur(.6))
 
 def compose(mask, accent=None):
-    outline = grow(mask, 1.5)
+    outline = grow(mask, 1.25)
     shadow = ImageChops.offset(outline, int(.6 * K), int(1.1 * K)).filter(ImageFilter.GaussianBlur(1.1 * K))
     canvas = Image.new('RGBA', mask.size, (0, 0, 0, 0))
     canvas.paste(Image.new('RGBA', mask.size, (20, 8, 40, 255)), mask=shadow.point(lambda v: int(v * .55)))
@@ -39,6 +39,13 @@ def compose(mask, accent=None):
         for x in range(mask.size[0]):
             px[x, y] = row
     canvas.paste(gradient, mask=mask)
+    inner = ImageChops.subtract(mask, ImageChops.offset(mask, int(1.2 * K), int(1.4 * K)))
+    canvas.paste(Image.new('RGBA', mask.size, (225, 208, 255, 255)), mask=inner.point(lambda v: int(v * .85)))
+    rim = ImageChops.subtract(mask, ImageChops.offset(mask, -int(1.0 * K), -int(1.2 * K)))
+    canvas.paste(Image.new('RGBA', mask.size, (52, 14, 110, 255)), mask=rim.point(lambda v: int(v * .7)))
+    sheen = Image.new('L', mask.size, 0)
+    ImageDraw.Draw(sheen).ellipse([-8 * K, -14 * K, 30 * K, 12 * K], fill=70)
+    canvas.paste(Image.new('RGBA', mask.size, (255, 255, 255, 255)), mask=ImageChops.multiply(mask, sheen))
     if accent is not None:
         canvas.paste(Image.new('RGBA', mask.size, (255, 255, 255, 255)), mask=accent)
     return canvas
