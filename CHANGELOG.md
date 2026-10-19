@@ -6,6 +6,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Wallpaper creator, in a tab of the Wallpaper service: builds a wallpaper from your own logo and background (color, gradient or picture), with an optional text, a glow, floating grains, a reaction to sound and a live preview. The result is a plain folder in `wallpapers\`.
 - Moods, in a tab of the Wallpaper service: saves the wallpaper, its effects, the cursor theme and the sounds as one mood, applies it in one click, and can start it every day at a set time or when a chosen number of screens is connected. Night, Focus and Cinema models are built from the current setup.
 - Wallpaper: an option to make the wallpaper pulse with the sound playing on the PC. It reads the level Windows reports for every active audio output, without administrator rights and without recording anything.
 - Hardware: a card for the devices plugged in now (USB devices and controllers, mouse, keyboard, camera, audio, Bluetooth, storage).
@@ -20,10 +21,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Powered by Bramble badge in Settings, About, and in the README.
 
 ### Fixed
+- French: Start time, Number of screens, Kind of program, Enable and Favorite were still in English, and the Wi-Fi security names (WPA2-Personal) are kept as Windows reports them.
 - Icons: the preview size (small, medium, large) now changes the tiles.
 - Arrange: the screen map is centered and no longer slides in from the corner, and the icon size slider shows its real position and refreshes the map after a change.
 
 ### Changed
+- Hardware: Power and screens comes first, the middle group is named Performance, and the page is lighter (the details panel is patched in place, the bars animate with transforms).
+- The sound reaction eases toward the level, the logo wallpaper draws expanding ripples on each beat, and the level meter in Wallpaper is a symmetrical waveform.
+- README: new header, a Badge section, and the services under their own heading.
 - Icons: Reset everything names the folders it will reset.
 - Hardware: the red zone of the temperature dial now covers 85 to 100 degrees.
 - Sounds: the level meter runs from left to right.
