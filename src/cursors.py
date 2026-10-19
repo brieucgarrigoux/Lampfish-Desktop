@@ -216,7 +216,7 @@ def ani(frames, hotspot, tint, jiffies=5, rates=None, scales=None):
     riff = b'ACON' + chunk(b'anih', anih) + rate + chunk(b'LIST', body)
     return b'RIFF' + struct.pack('<I', len(riff)) + riff
 
-LIVE = 'Bramble Live'
+LIVE = 'Bramble Spark'
 SWEEP = 10
 
 def sweep(g, step):
