@@ -4,28 +4,22 @@
 <meta charset="utf-8">
 <title>Aurora</title>
 <style>
-  html, body { margin: 0; height: 100%; overflow: hidden; background: #03040a; }
-  canvas { display: block; width: 100%; height: 100%; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #02030a; }
+  canvas { position: fixed; inset: 0; display: block; width: 100%; height: 100%; }
 </style>
 </head>
 <body>
-<canvas></canvas>
+<canvas id="sky"></canvas>
+<canvas id="land"></canvas>
 <script>
 
   const params = new URLSearchParams(location.search);
   const thumbnail = params.has('thumbnail');
-  let images = 0;
   let light, speed, frozen = false;
   window.__adjust = (l, v) => { light = Number(l) / 50; speed = Math.pow(2, (Number(v) - 50) / 25); };
   window.__adjust(params.get('light') ?? 50, params.get('speed') ?? 50);
-  let audio = 0, audioTarget = 0, lastRaw = 0, lastBeat = 0;
-  window.__audio = l => {
-    l = Number(l);
-    const now = performance.now();
-    if (window.__beat && l - lastRaw > .12 && l > .25 && now - lastBeat > 170) { lastBeat = now; window.__beat(l); }
-    lastRaw = l;
-    audioTarget = l;
-  };
+  let audio = 0, audioTarget = 0;
+  window.__audio = l => { audioTarget = Number(l); };
 
   addEventListener('message', e => {
     const m = e.data || {};
@@ -34,56 +28,106 @@
     if (m.bramble === 'audio') window.__audio(m.level);
   });
   if (parent !== window) parent.postMessage({ bramble: 'ready' }, '*');
-  const canvas = document.querySelector('canvas');
-  const ctx = canvas.getContext('2d');
-  const scale = 0.25;
-  const curtains = [
-    { tint: 155, y: 0.42, amplitude: 0.10, speed: 0.00011, phase: 0 },
-    { tint: 190, y: 0.50, amplitude: 0.13, speed: 0.00008, phase: 2 },
-    { tint: 265, y: 0.58, amplitude: 0.09, speed: 0.00013, phase: 4 },
+
+  const sky = document.getElementById('sky'), land = document.getElementById('land');
+  const ctx = sky.getContext('2d'), ground = land.getContext('2d');
+  const SCALE = 0.4;
+  const CURTAINS = [
+    { hue: 140, y: 0.50, amplitude: 0.09, speed: 0.00010, phase: 0, strength: 1 },
+    { hue: 168, y: 0.58, amplitude: 0.12, speed: 0.00007, phase: 2.1, strength: .8 },
+    { hue: 262, y: 0.44, amplitude: 0.10, speed: 0.00012, phase: 4.2, strength: .55 },
   ];
+  const strips = CURTAINS.map(c => {
+    const s = document.createElement('canvas');
+    s.width = 1; s.height = 256;
+    const g = s.getContext('2d'), grad = g.createLinearGradient(0, 0, 0, 256);
+    grad.addColorStop(0, `hsla(${c.hue + 40}, 90%, 60%, 0)`);
+    grad.addColorStop(.55, `hsla(${c.hue + 12}, 90%, 58%, .35)`);
+    grad.addColorStop(.88, `hsla(${c.hue}, 95%, 62%, 1)`);
+    grad.addColorStop(1, `hsla(${c.hue - 10}, 95%, 72%, 0)`);
+    g.fillStyle = grad;
+    g.fillRect(0, 0, 1, 256);
+    return s;
+  });
+  let w, h, stars = [], backdrop;
+
+  function rnd(seed) { const x = Math.sin(seed * 127.1) * 43758.5453; return x - Math.floor(x); }
+
+  function ridge(base, roughness, seed) {
+    const points = [];
+    for (let x = 0; x <= w; x += 6) {
+      const u = x / w;
+      points.push([x, h * base - h * roughness * (Math.sin(u * 6 + seed) * .5 + Math.sin(u * 15 + seed * 2.3) * .3 + Math.sin(u * 37 + seed * 4.1) * .2 + 1)]);
+    }
+    return points;
+  }
+
+  function paintLand() {
+    land.width = w; land.height = h;
+    ground.clearRect(0, 0, w, h);
+    ground.fillStyle = '#fff';
+    for (const s of stars) {
+      ground.globalAlpha = s.a * .8;
+      ground.beginPath(); ground.arc(s.x * w, s.y * h, s.r, 0, 6.283); ground.fill();
+    }
+    ground.globalAlpha = 1;
+    for (const [base, rough, seed, top, bottom] of [[.9, .07, 1, '#0b1226', '#070a16'], [.97, .05, 7, '#05070f', '#02030a']]) {
+      const pts = ridge(base, rough, seed);
+      const g = ground.createLinearGradient(0, h * (base - rough * 2.2), 0, h);
+      g.addColorStop(0, top); g.addColorStop(1, bottom);
+      ground.fillStyle = g;
+      ground.beginPath(); ground.moveTo(0, h);
+      for (const [x, y] of pts) ground.lineTo(x, y);
+      ground.lineTo(w, h); ground.closePath(); ground.fill();
+    }
+  }
 
   function resize() {
-    canvas.width = Math.round(innerWidth * scale);
-    canvas.height = Math.round(innerHeight * scale);
+    w = innerWidth; h = innerHeight;
+    sky.width = Math.round(w * SCALE); sky.height = Math.round(h * SCALE);
+    stars = Array.from({ length: 170 }, (_, i) => ({ x: rnd(i + 1), y: Math.pow(rnd(i + 300), 1.7) * .75, r: .4 + rnd(i + 600) * 1.1, a: .25 + rnd(i + 900) * .75, tw: rnd(i + 1200) * 6 }));
+    paintLand();
   }
 
   addEventListener('resize', () => { resize(); paint(); });
   resize();
 
-  let previous = 0, t = 0;
+  let previous = 0, t = 0, images = 0;
   function draw(time) {
     if (thumbnail && ++images > 8) return;
-    if (canvas.width !== Math.round(innerWidth * scale) || canvas.height !== Math.round(innerHeight * scale)) resize();
+    if (innerWidth !== w || innerHeight !== h) resize();
     requestAnimationFrame(draw);
     if (time - previous < 33) return;
-    audio += (audioTarget - audio) * Math.min(1, (time - previous) / 70);
-    if (!frozen) t += Math.min(time - previous, 100) * speed * (1 + audio * 4);
+    const dt = Math.min(time - previous, 100);
+    audio += (audioTarget - audio) * Math.min(1, dt / 70);
+    if (!frozen) t += dt * speed * (1 + audio * 3);
     previous = time;
     paint();
   }
 
   function paint() {
-    const { width: w, height: h } = canvas;
+    const { width: cw, height: ch } = sky;
     ctx.globalCompositeOperation = 'source-over';
-    ctx.fillStyle = '#03040a';
-    ctx.fillRect(0, 0, w, h);
+    const bg = ctx.createLinearGradient(0, 0, 0, ch);
+    bg.addColorStop(0, '#02030a'); bg.addColorStop(.7, '#050a18'); bg.addColorStop(1, '#0a1428');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, cw, ch);
     ctx.globalCompositeOperation = 'lighter';
-    for (const r of curtains) {
-      for (let x = 0; x <= w; x += 2) {
-        const u = x / w;
-        const wave = Math.sin(u * 5 + t * r.speed * 10 + r.phase) * 0.6 + Math.sin(u * 11 - t * r.speed * 17) * 0.4;
-        const center = (r.y + wave * r.amplitude) * h;
-        const height = h * (0.18 + 0.1 * Math.sin(u * 7 + t * r.speed * 6 + r.phase));
-        const intensity = (0.10 + 0.08 * Math.sin(u * 9 + t * r.speed * 12)) * light * (1 + audio * 3);
-        const g = ctx.createLinearGradient(0, center - height, 0, center + height * 0.4);
-        g.addColorStop(0, `hsla(${r.tint}, 90%, 55%, 0)`);
-        g.addColorStop(0.75, `hsla(${r.tint}, 90%, 60%, ${intensity})`);
-        g.addColorStop(1, `hsla(${r.tint + 20}, 90%, 70%, 0)`);
-        ctx.fillStyle = g;
-        ctx.fillRect(x, center - height, 2, height * 1.4);
+    CURTAINS.forEach((r, k) => {
+      for (let x = 0; x < cw; x += 2) {
+        const u = x / cw;
+        const wave = Math.sin(u * 5 + t * r.speed * 10 + r.phase) * .6 + Math.sin(u * 11 - t * r.speed * 17) * .4;
+        const bottom = (r.y + wave * r.amplitude) * ch;
+        const height = ch * (.2 + .1 * Math.sin(u * 7 + t * r.speed * 6 + r.phase));
+        const rays = .72 + .28 * Math.sin(u * 230 + Math.sin(u * 9 + t * r.speed * 14) * 3 + r.phase * 3);
+        const swell = .5 + .5 * Math.sin(u * 4 + t * r.speed * 8 + r.phase);
+        const alpha = Math.min(1, .5 * r.strength * rays * (.35 + swell) * light * (1 + audio * 2.5));
+        ctx.globalAlpha = alpha;
+        ctx.drawImage(strips[k], 0, 0, 1, 256, x, bottom - height, 2, height);
       }
-    }
+    });
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = 'source-over';
   }
   requestAnimationFrame(draw);
 </script>
