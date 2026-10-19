@@ -165,20 +165,30 @@
   const announced = new Set();
   let wasRunning = false;
 
+  function context() {
+    audioContext = audioContext || new AudioContext();
+    if (audioContext.state === 'suspended') audioContext.resume();
+    return audioContext;
+  }
+
   function blip(step) {
     const volume = Bramble.station ? Bramble.station.audible() : 0;
     if (!volume) return;
     try {
-      audioContext = audioContext || new AudioContext();
-      const now = audioContext.currentTime, gain = audioContext.createGain(), tone = audioContext.createOscillator();
-      tone.type = 'sine';
-      tone.frequency.value = NOTES_STEP[step];
+      const ctx = context(), now = ctx.currentTime, gain = ctx.createGain();
       gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(.07 * volume, now + .012);
-      gain.gain.exponentialRampToValueAtTime(.0001, now + .38);
-      tone.connect(gain).connect(audioContext.destination);
-      tone.start(now);
-      tone.stop(now + .4);
+      gain.gain.linearRampToValueAtTime(.3 * volume, now + .01);
+      gain.gain.exponentialRampToValueAtTime(.0001, now + .55);
+      gain.connect(ctx.destination);
+      for (const [ratio, level] of [[1, 1], [2, .3], [3, .1]]) {
+        const tone = ctx.createOscillator(), part = ctx.createGain();
+        tone.type = 'sine';
+        tone.frequency.value = NOTES_STEP[step] * ratio;
+        part.gain.value = level;
+        tone.connect(part).connect(gain);
+        tone.start(now);
+        tone.stop(now + .6);
+      }
     } catch (e) { }
   }
 
@@ -568,7 +578,7 @@
     trafficTimer = setInterval(() => { if (shown && document.visibilityState === 'visible') send('network.traffic'); }, 1000);
   }
 
-  $('r-test').addEventListener('click', () => { test = { running: true, r: {} }; renderTest(); send('network.test'); });
+  $('r-test').addEventListener('click', () => { try { context(); } catch (e) { } test = { running: true, r: {} }; renderTest(); send('network.test'); });
   $('r-ip').addEventListener('click', () => { if (cx && cx.ipv4) copy(cx.ipv4); });
   $('r-forget').addEventListener('click', () => send('network.forget'));
   renderHeader();
