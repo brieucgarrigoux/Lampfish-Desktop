@@ -21,7 +21,7 @@ Bramble sits in the system tray and brings together what usually takes five diff
 | **Wallpaper** | Animated wallpapers behind the desktop icons: videos, GIFs, animated images, HTML pages, optionally pulsing with the sound playing, and moods that apply a wallpaper, cursors and sounds in one click, at a set time or with a set number of screens. Pauses on battery or when a window covers the screen. |
 | **Create** | Builds a wallpaper from your logo and background: themes, particles, glow, a sound reaction and a live preview with snap guides where the logo and the text are placed, typed and resized. Made wallpapers can be edited again. |
 | **Icons** | Gives any folder an icon from the Windows library (sorted retro pixel / modern) or your own, from the app or the right-click menu. |
-| **Mouse** | Cursor themes (including three original pixel-art themes), per-role cursors, pointer size, speed, double-click, wheel and extras. |
+| **Mouse** | Cursor themes (including original pixel-art, animated and smooth themes), per-role cursors, pointer size, speed, double-click, wheel and extras. |
 | **Sounds** | A sound for fourteen system events (startup, lock, sleep, charger, USB devices, docking station, speed test), with a sound library, loudness matching and import. |
 | **Arrange** | A live map of your screens (one, two, three or more) to sort and lay out desktop icons, with undo, a way back to the original layout, and layouts saved per screen setup. |
 | **Folders** | What takes up space on a drive, as rings (in the spirit of DaisyDisk), without administrator rights. |
@@ -52,7 +52,7 @@ powershell -ExecutionPolicy Bypass -File src\build.ps1
 
 The script uses the C# compiler that ships with Windows (no Visual Studio needed). On first run it downloads the official WebView2 SDK from NuGet into `app\lib\`.
 
-`src\publish.ps1` builds and zips a release into `dist\`. Other generators, in Python 3: `src\icon.py` (app icon), `src\app_icon.py` (icon variants), `src\cursors.py` (cursor themes), `src\sounds.py` (sound packs).
+`src\publish.ps1` builds and zips a release into `dist\`. Other generators, in Python 3: `src\icon.py` (app icon), `src\app_icon.py` (icon variants), `src\cursors.py` and `src\cursors_modern.py` (cursor themes), `src\sounds.py` (sound packs).
 
 ## Project layout
 
