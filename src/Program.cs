@@ -35,6 +35,8 @@ namespace Bramble
         public string Fit = "fill";
         public int Slideshow = 0;
         public bool Reactive = false;
+        public List<MoodSetting> Moods = new List<MoodSetting>();
+        public string CurrentMood;
         public DockSettings Dock = new DockSettings();
         public IconsSettings Icons = new IconsSettings();
         public IconsSettings Folders;
@@ -120,6 +122,7 @@ namespace Bramble
                 DiskUsage.Start();
                 Hardware.Start();
                 AudioMeter.Set(R.Reactive);
+                Moods.Start();
                 if (requestedFolder != null) { Icons.Ask(requestedFolder); requestedView = "icons"; }
 
                 int iView = Array.IndexOf(args, "--view");
@@ -563,6 +566,12 @@ namespace Bramble
 
             if (action.StartsWith("tasks.")) { Tasks.Receive(action.Substring(action.IndexOf('.') + 1), m); return; }
 
+            if (action.StartsWith("moods."))
+            {
+                if (Moods.Receive(action.Substring(action.IndexOf('.') + 1), m)) { Save(); SendState(); }
+                return;
+            }
+
             if (action.StartsWith("home.")) { Weather.Receive(action.Substring(action.IndexOf('.') + 1)); return; }
 
             if (action.StartsWith("mouse."))
@@ -669,6 +678,7 @@ namespace Bramble
                 startup = StartupEnabled(),
                 weather = R.Weather,
                 reactive = R.Reactive,
+                moods = Moods.State(),
                 language = R.Language,
                 about = new
                 {

@@ -43,8 +43,8 @@ if (LANGUAGE !== 'en') {
     }
   }).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRIBUTES_TRANSLATED });
 }
-const Bramble = { state: null, station: null, icons: null, arrange: null, mouse: null, network: null, files: null, hardware: null, tasks: null };
-const VIEWS = ['home', 'wallpaper', 'icons', 'arrange', 'mouse', 'station', 'files', 'hardware', 'tasks', 'network', 'settings'];
+const Bramble = { state: null, station: null, icons: null, arrange: null, mouse: null, network: null, files: null, hardware: null, tasks: null, moods: null };
+const VIEWS = ['home', 'moods', 'wallpaper', 'icons', 'arrange', 'mouse', 'station', 'files', 'hardware', 'tasks', 'network', 'settings'];
 
 function showView(view) {
   document.body.dataset.view = view;
@@ -109,6 +109,7 @@ function render(state) {
   if (Bramble.mouse && state.mouse) Bramble.mouse.state(state.mouse);
   if (Bramble.arrange && state.arrange) Bramble.arrange.state(state.arrange);
   if (Bramble.files && state.files) Bramble.files.state(state.files);
+  if (Bramble.moods && state.moods) Bramble.moods.state(state.moods);
   if (Bramble.home) Bramble.home.state();
 
   if (state.view && VIEWS.includes(state.view)) showView(state.view);
@@ -136,7 +137,7 @@ $('undo').addEventListener('click', () => { $('toast').classList.remove('visible
 let depth = 0;
 const carriesFiles = e => [...e.dataTransfer.types].includes('Files');
 addEventListener('dragenter', e => {
-  if (!carriesFiles(e) || ['arrange', 'files', 'hardware', 'tasks', 'network'].includes(document.body.dataset.view)) return;
+  if (!carriesFiles(e) || ['arrange', 'files', 'hardware', 'tasks', 'moods', 'network'].includes(document.body.dataset.view)) return;
   e.preventDefault();
   if (++depth === 1) document.body.classList.add('drag');
 });

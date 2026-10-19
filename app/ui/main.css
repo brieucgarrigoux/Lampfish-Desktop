@@ -71,10 +71,10 @@ h2 .count { margin-left: 8px; font: 400 12.5px var(--numbers); font-variant-nume
 body:not([data-view="wallpaper"]) .only-wallpaper, body:not([data-view="station"]) .only-station,
 body:not([data-view="icons"]) .only-icons, body:not([data-view="mouse"]) .only-mouse, body:not([data-view="network"]) .only-network, body:not([data-view="arrange"]) .only-arrange,
 body:not([data-view="files"]) .only-files, body:not([data-view="hardware"]) .only-hardware,
-body:not([data-view="tasks"]) .only-tasks, body:not([data-view="settings"]) .only-settings, body:not([data-view="home"]) .only-home { display: none !important; }
+body:not([data-view="tasks"]) .only-tasks, body:not([data-view="moods"]) .only-moods, body:not([data-view="settings"]) .only-settings, body:not([data-view="home"]) .only-home { display: none !important; }
 
-body[data-view="settings"], body[data-view="home"], body[data-view="tasks"] { grid-template-columns: var(--width-rail, 92px) 1fr; }
-body[data-view="settings"] .panel, body[data-view="home"] .panel, body[data-view="tasks"] .panel { display: none; }
+body[data-view="settings"], body[data-view="home"], body[data-view="tasks"], body[data-view="moods"] { grid-template-columns: var(--width-rail, 92px) 1fr; }
+body[data-view="settings"] .panel, body[data-view="home"] .panel, body[data-view="tasks"] .panel, body[data-view="moods"] .panel { display: none; }
 
 .view--settings { max-width: 720px; margin-inline: auto; }
 .settings-title { margin: 26px 0 10px; }

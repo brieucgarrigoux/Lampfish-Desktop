@@ -137,6 +137,10 @@ namespace Bramble
                 }).ToArray();
         }
 
+        public static string ThemeName { get { return CurrentTheme(); } }
+
+        public static void SetTheme(string name) { ApplyTheme(name); }
+
         static string CurrentTheme()
         {
             using (var key = Registry.CurrentUser.OpenSubKey(Key)) return key == null ? null : key.GetValue("") as string;
