@@ -34,7 +34,10 @@
     el.innerHTML = `<span class="reticle"></span>
       <div class="mood__head"><h3 class="mood__name" title="Double-click to rename"></h3><span class="mood__badge"></span></div>
       <ul class="mood__facts"></ul>
-      <label class="mood__time"><span></span><input type="time" aria-label="Start time"></label>
+      <div class="mood__auto">
+        <label class="mood__time"><span data-what="time"></span><input type="time" aria-label="Start time"></label>
+        <label class="mood__time"><span data-what="screens"></span><select aria-label="Number of screens"></select></label>
+      </div>
       <div class="mood__actions"><button class="button button--accent" data-do="apply"></button><button class="button" data-do="update"></button><button class="link" data-do="remove"></button></div>`;
     const name = el.querySelector('.mood__name');
     name.textContent = m.name;
@@ -46,10 +49,20 @@
       fact(m.theme ? tr('Cursors: {0}', m.theme) : tr('Cursors unchanged')),
       fact(tr(SOUNDS[m.sounds]) + (m.sounds === 'on' ? ` · ${m.volume} %` : '')),
     );
-    el.querySelector('.mood__time span').textContent = tr('Starts every day at');
+    el.querySelector('[data-what="time"]').textContent = tr('Starts every day at');
     const time = el.querySelector('input');
     time.value = m.time || '';
     time.addEventListener('change', () => send('moods.time', { id: m.id, value: time.value }));
+    el.querySelector('[data-what="screens"]').textContent = tr('Starts when screens plugged');
+    const screens = el.querySelector('select');
+    for (const n of [0, 1, 2, 3, 4]) {
+      const o = document.createElement('option');
+      o.value = n;
+      o.textContent = n === 0 ? tr('Never') : n === 1 ? tr('1 screen') : tr('{0} screens', n);
+      screens.append(o);
+    }
+    screens.value = m.screens || 0;
+    screens.addEventListener('change', () => send('moods.screens', { id: m.id, value: Number(screens.value) }));
     const [apply, update, remove] = el.querySelectorAll('[data-do]');
     apply.textContent = m.current ? tr('Applied') : tr('Apply');
     apply.disabled = m.current;
@@ -86,7 +99,7 @@
 
   function render() {
     $('mood-count').textContent = moods.length || '';
-    $('mood-help').textContent = moods.length ? tr('One click applies the wallpaper, cursors and sounds') : tr('Nothing saved yet');
+    $('mood-help').textContent = moods.length ? tr('One click applies the wallpaper, cursors and sounds') : tr('Nothing saved yet. Set things up the way you like, then save them here.');
     zone.replaceChildren(...moods.map(card));
     zone.hidden = moods.length === 0;
   }
@@ -101,6 +114,25 @@
     send('moods.save', { name: $('mood-name').value });
     $('mood-name').value = '';
   });
+
+  const grid = $('grid'), panel = $('wp-moods'), folder = $('folder');
+  let tab = 'library';
+  try { tab = localStorage.getItem('wallpaper.tab') === 'moods' ? 'moods' : 'library'; } catch (e) { }
+  function showTab() {
+    for (const b of $('wp-tabs').children) {
+      b.setAttribute('aria-selected', String(b.dataset.tab === tab));
+      b.setAttribute('aria-checked', String(b.dataset.tab === tab));
+    }
+    grid.hidden = tab !== 'library';
+    folder.hidden = tab !== 'library';
+    panel.hidden = tab !== 'moods';
+  }
+  for (const b of $('wp-tabs').children) b.addEventListener('click', () => {
+    tab = b.dataset.tab;
+    try { localStorage.setItem('wallpaper.tab', tab); } catch (e) { }
+    showTab();
+  });
+  showTab();
 
   Bramble.moods = { state, visible() { } };
 })();

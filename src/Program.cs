@@ -136,7 +136,7 @@ namespace Bramble
 
                 rebuild = new System.Windows.Forms.Timer { Interval = 1500 };
                 rebuild.Tick += (s, e) => { rebuild.Stop(); Build(); };
-                SystemEvents.DisplaySettingsChanged += (s, e) => { RebuildSoon(); Arrange.ScreensChanged(); };
+                SystemEvents.DisplaySettingsChanged += (s, e) => { RebuildSoon(); Arrange.ScreensChanged(); Moods.ScreensChanged(); };
                 var watcher = new Watcher(RebuildSoon);
 
                 var slideshow = new System.Windows.Forms.Timer { Interval = 20000 };

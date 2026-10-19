@@ -8,18 +8,20 @@ namespace Bramble
     class MoodSetting
     {
         public string Id, Name, Wallpaper, Fit, Theme, Time, LastRun;
-        public int Light, Speed, Blur, Saturation, Dim, Volume;
+        public int Light, Speed, Blur, Saturation, Dim, Volume, Screens;
         public bool SoundsActive, Silence;
     }
 
     static class Moods
     {
         static Timer timer;
+        static int screenCount;
 
         static List<MoodSetting> All { get { return Program.R.Moods; } }
 
         public static void Start()
         {
+            screenCount = Screen.AllScreens.Length;
             timer = new Timer { Interval = 20000 };
             timer.Tick += (s, e) => CheckSchedule();
             timer.Start();
@@ -45,8 +47,9 @@ namespace Bramble
         static void Overwrite(MoodSetting target, MoodSetting source)
         {
             string id = target.Id, name = target.Name, time = target.Time, last = target.LastRun;
+            int screens = target.Screens;
             foreach (var f in typeof(MoodSetting).GetFields()) f.SetValue(target, f.GetValue(source));
-            target.Id = id; target.Name = name; target.Time = time; target.LastRun = last;
+            target.Id = id; target.Name = name; target.Time = time; target.LastRun = last; target.Screens = screens;
         }
 
         static void Apply(MoodSetting mood)
@@ -68,6 +71,18 @@ namespace Bramble
             var due = All.FirstOrDefault(m => m.Time == now && m.LastRun != today);
             if (due == null) return;
             due.LastRun = today;
+            Apply(due);
+            Program.Save();
+            Program.SendState();
+        }
+
+        public static void ScreensChanged()
+        {
+            int count = Screen.AllScreens.Length;
+            if (count == screenCount) return;
+            screenCount = count;
+            var due = All.FirstOrDefault(m => m.Screens == count && m.Id != Program.R.CurrentMood);
+            if (due == null) return;
             Apply(due);
             Program.Save();
             Program.SendState();
@@ -127,6 +142,13 @@ namespace Bramble
                     mood.Name = name.Length > 40 ? name.Substring(0, 40) : name;
                     return true;
                 }
+                case "screens":
+                {
+                    if (mood == null) return false;
+                    int n;
+                    mood.Screens = int.TryParse(Text(m, "value"), out n) ? Math.Max(0, Math.Min(8, n)) : 0;
+                    return true;
+                }
                 case "time":
                 {
                     if (mood == null) return false;
@@ -145,7 +167,7 @@ namespace Bramble
             return All.Select(m => new
             {
                 id = m.Id, name = m.Name, wallpaper = m.Wallpaper, dim = m.Dim, light = m.Light, theme = m.Theme,
-                sounds = !m.SoundsActive ? "off" : m.Silence ? "silent" : "on", volume = m.Volume, time = m.Time,
+                sounds = !m.SoundsActive ? "off" : m.Silence ? "silent" : "on", volume = m.Volume, time = m.Time, screens = m.Screens,
                 current = m.Id == Program.R.CurrentMood,
             }).ToArray();
         }

@@ -1,7 +1,6 @@
-.view--moods { max-width: 920px; margin-inline: auto; }
-.view--moods .title-section { margin: 4px 0 12px; }
-.view--moods .title-section:not(:first-of-type) { margin-top: 26px; }
-.view--moods .save { margin-bottom: 4px; }
+#wp-moods .title-section { margin: 26px 0 12px; }
+#wp-moods .save { margin-top: 2px; }
+.help-moods { margin: 8px 2px 14px; }
 
 .moods { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; }
 .mood { position: relative; display: flex; flex-direction: column; gap: 12px; padding: 16px 16px 14px; border-radius: 12px; background: var(--group); transition: background .12s; }
@@ -15,9 +14,10 @@
 .mood__badge { flex: none; font-size: 12px; color: var(--accent); }
 .mood__facts { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; color: var(--text-soft); }
 .mood__facts li { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mood__auto { display: flex; flex-direction: column; gap: 6px; }
 .mood__time { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 12.5px; color: var(--text-pale); }
-.mood__time input { border: 0; border-radius: 6px; padding: 4px 8px; background: #0e0f14; color: var(--text); font: inherit; font-variant-numeric: tabular-nums; color-scheme: dark; outline: none; box-shadow: inset 0 0 0 1px transparent; }
-.mood__time input:focus { box-shadow: inset 0 0 0 1px var(--accent); }
+.mood__time input, .mood__time select { border: 0; border-radius: 6px; padding: 4px 8px; background: #0e0f14; color: var(--text); font: inherit; font-variant-numeric: tabular-nums; color-scheme: dark; outline: none; box-shadow: inset 0 0 0 1px transparent; }
+.mood__time input:focus, .mood__time select:focus { box-shadow: inset 0 0 0 1px var(--accent); }
 .mood__actions { display: flex; align-items: center; gap: 8px; margin-top: auto; }
 .mood__actions .link { margin-left: auto; }
 .mood__actions .link.confirm { color: var(--danger); }
