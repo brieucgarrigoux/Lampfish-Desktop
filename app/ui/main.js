@@ -170,10 +170,11 @@ addEventListener('drop', e => {
   const files = e.dataTransfer.files;
   if (!files.length) return;
   const view = document.body.dataset.view;
+  const action = { icons: 'icons.drop', mouse: 'mouse.drop', wallpaper: 'drop' }[view];
   if (view === 'station' && Bramble.station) Bramble.station.ingest([...files]);
-  else if (view === 'icons') webview.postMessageWithAdditionalObjects({ action: 'icons.drop' }, files);
-  else if (view === 'mouse') webview.postMessageWithAdditionalObjects({ action: 'mouse.drop' }, files);
-  else if (view === 'wallpaper') webview.postMessageWithAdditionalObjects({ action: 'drop' }, files);
+  else if (action) {
+    try { webview.postMessageWithAdditionalObjects({ action }, files); } catch (e) { }
+  }
 });
 
 $('startup').addEventListener('change', () => send('startup'));
