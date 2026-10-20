@@ -71,11 +71,47 @@
     return e;
   }
 
+  const DROP = '<path d="M12 3.5s6 6.4 6 10.5a6 6 0 0 1-12 0c0-4.1 6-10.5 6-10.5z"/>', GROW = '<path d="M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7"/>';
+  const ICONS = {
+    'Logo': '<circle cx="9" cy="11" r="2.7"/><circle cx="15" cy="11" r="2.7"/><circle cx="12" cy="16" r="2.7"/><path d="M12 8.3V4.5"/>',
+    'Size': GROW,
+    'Horizontal position': '<path d="M4 12h16M7.5 8.5 4 12l3.5 3.5M16.5 8.5 20 12l-3.5 3.5"/>',
+    'Vertical position': '<path d="M12 4v16M8.5 7.5 12 4l3.5 3.5M8.5 16.5 12 20l3.5-3.5"/>',
+    'Soft shadow': '<rect x="4.5" y="4.5" width="11" height="11" rx="2"/><path d="M19.5 9v8.5a2 2 0 0 1-2 2H9" stroke-dasharray="2 2"/>',
+    'Gentle float': '<circle cx="12" cy="8" r="3"/><path d="M3.5 16.5c1.4-1.6 2.8-1.6 4.2 0s2.8 1.6 4.3 0 2.9-1.6 4.3 0 2.8 1.6 4.2 0"/>',
+    'Text': '<path d="M5 6h14M12 6v13M9 19h6"/>',
+    'Style': '<path d="M3.5 18 8 6l4.5 12M5.2 14h5.6"/><circle cx="17" cy="15" r="3"/><path d="M20 11.5V18"/>',
+    'Weight': '<path d="M7 5h6a3.5 3.5 0 0 1 0 7H7zM7 12h7a3.5 3.5 0 0 1 0 7H7z"/>',
+    'Color': DROP, 'Glow color': DROP, 'Effects color': DROP,
+    'Type': '<path d="m12 4 8 4-8 4-8-4zM4 12l8 4 8-4M4 16l8 4 8-4"/>',
+    'Second color': '<circle cx="9" cy="12" r="5"/><circle cx="15" cy="12" r="5"/>',
+    'Angle': '<path d="M4 19h16M4 19 15 6"/><path d="M10.5 19a6.5 6.5 0 0 0-1.8-4.5"/>',
+    'Direction': '<circle cx="12" cy="12" r="8.5"/><path d="m15.5 8.5-2 5-5 2 2-5z"/>',
+    'Drift speed': '<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4v4h-4"/>',
+    'Picture': '<rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="m3.5 16 5-5 4 4 2.5-2.5 5.5 5.5"/><circle cx="15.5" cy="9.5" r="1.3"/>',
+    'Framing': '<path d="M7 3.5V17h13.5M3.5 7H17v13.5"/>',
+    'Darken': '<path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5z"/>',
+    'Edge shade': '<rect x="3.5" y="5" width="17" height="14" rx="2"/><ellipse cx="12" cy="12" rx="5.5" ry="3.8"/>',
+    'Amount': '<circle cx="7" cy="8" r="1.4"/><circle cx="16.5" cy="6.5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="6.5" cy="16.5" r="1.4"/><circle cx="17" cy="16.5" r="1.4"/>',
+    'Speed': '<path d="M4.5 16.5a7.5 7.5 0 1 1 15 0"/><path d="m12 16.5 3.5-4.5"/>',
+    'Glow': '<circle cx="12" cy="12" r="3.5"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/>',
+    'Glow strength': '<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7.5" stroke-dasharray="2 2.6"/>',
+    'React to sound': '<path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/>',
+    'Pulse': '<path d="M3 12h4l2-5 4 10 2-5h6"/>',
+    'Particles': '<path d="M12 3.5 13.6 10 20 12l-6.4 2L12 20.5 10.4 14 4 12l6.4-2z"/>',
+    'Wave ring': '<circle cx="12" cy="12" r="7.5"/><path d="M8 12c1.3-2 2.7-2 4 0s2.7 2 4 0"/>',
+    'Ripples': '<circle cx="12" cy="12" r="2"/><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="9" stroke-dasharray="2 3"/>',
+    'Vibration': '<path d="M3.5 12h2l1.5-4 3 8 3-8 3 8 1.5-4h3"/>',
+    'Vibration strength': '<path d="M5 9v6M9 6v12M15 6v12M19 9v6"/>',
+  };
   function row(label, control, help) {
     const r = el('div', 'cr-row');
     const what = el('span', 'cr-label');
-    what.append(el('span', '', tr(label)));
-    if (help) what.append(el('small', '', tr(help)));
+    const text = el('span', 'cr-label__text');
+    text.append(el('span', '', tr(label)));
+    if (help) text.append(el('small', '', tr(help)));
+    if (ICONS[label]) what.insertAdjacentHTML('afterbegin', `<svg class="glyph glyph--small" viewBox="0 0 24 24" aria-hidden="true">${ICONS[label]}</svg>`);
+    what.append(text);
     r.append(what, control);
     if (control.classList.contains('cr-slider')) r.classList.add('cr-row--slider');
     return r;
@@ -373,7 +409,7 @@
     tagged('glow', row('Glow strength', slider('glowStrength', 10, 100, () => st.glow.strength, v => { st.glow.strength = v; }, ' %', 55))));
 
   const effectColor = (() => {
-    const wrap = el('div', 'cr-pick');
+    const wrap = el('div', 'cr-pick cr-pick--inline');
     const input = Object.assign(document.createElement('input'), { type: 'color', value: st.glow.color });
     input.className = 'cr-color';
     const auto = el('button', 'link', tr('Auto'));
@@ -447,11 +483,20 @@
   }
 
   let drag = null, editingText = false;
+  const measure = document.createElement('canvas').getContext('2d');
+  function room(e) {
+    if (!e.room) {
+      measure.font = '12px "Segoe UI Variable Text", "Segoe UI", sans-serif';
+      e.room = measure.measureText(e.querySelector('.cr-box__plus').textContent).width + 24;
+    }
+    return e.room;
+  }
   function layout() {
     for (const key of Object.keys(boxes)) {
-      const b = box(key), e = boxes[key];
-      e.style.cssText = `left:${(b.cx - b.w / 2).toFixed(1)}px;top:${(b.cy - b.h / 2).toFixed(1)}px;width:${b.w.toFixed(1)}px;height:${b.h.toFixed(1)}px`;
-      e.classList.toggle('empty', key === 'logo' ? !st.files.logo : !st.title.text);
+      const b = box(key), e = boxes[key], empty = key === 'logo' ? !st.files.logo : !st.title.text;
+      const w = empty ? Math.max(b.w, room(e)) : b.w, h = empty ? Math.max(b.h, 26) : b.h;
+      e.style.cssText = `left:${(b.cx - w / 2).toFixed(1)}px;top:${(b.cy - h / 2).toFixed(1)}px;width:${w.toFixed(1)}px;height:${h.toFixed(1)}px`;
+      e.classList.toggle('empty', empty);
       e.classList.toggle('hover', hovered === key);
       e.hidden = key === 'title' && editingText;
     }
@@ -608,21 +653,27 @@
     if (st.files.logo) files.push({ name: 'logo.png', data: st.files.logo });
     if (st.bg.type === 'image' && st.files.background) files.push({ name: 'background.jpg', data: st.files.background });
     send('creator.create', { name: nameInput.value, config: config(false), files, replace: replace ? editing : '' });
-    try { localStorage.setItem('wallpaper.tab', 'library'); } catch (e) { }
-    const tab = document.querySelector('#wp-tabs [data-tab="library"]');
-    if (tab) tab.click();
     showView('wallpaper');
     leaveEdit();
     forget();
   }
+  function restart() {
+    if (editingText) endEdit();
+    leaveEdit();
+    Object.assign(st, fresh());
+    theme = 'midnight';
+    hovered = null;
+    syncAll();
+    forget();
+  }
   create.addEventListener('click', () => save(!!editing));
   copy.addEventListener('click', () => { editing = null; nameInput.disabled = false; save(false); });
-  startNew.addEventListener('click', () => { leaveEdit(); Object.assign(st, fresh()); theme = 'midnight'; syncAll(); forget(); });
+  startNew.addEventListener('click', restart);
 
-  const save$ = el('div', 'cr-save');
-  save$.append(nameInput, copy, create);
+  nameInput.setAttribute('aria-label', tr('Name this wallpaper'));
+  $('create-save').append(nameInput, copy, create);
 
-  zone.append(banner, stage, tools, hint, themeTitle, themes, save$, input);
+  zone.append(banner, stage, tools, hint, themeTitle, themes, input);
   panel.append(logoCard, textCard, backgroundCard, particlesCard, glowCard, soundCard);
   function editMode(name) {
     editing = name;
@@ -667,6 +718,7 @@
 
   Bramble.creator = {
     visible(yes) { if (yes) layout(); },
+    reset: restart,
     event(m) {
       if (m.type !== 'creator.opened') return;
       Object.assign(st, fromConfig(m.config || {}, { logo: m.logo, background: m.background }));

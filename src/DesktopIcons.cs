@@ -17,7 +17,7 @@ namespace Bramble
             public Icon Icon;
         }
 
-        public const uint FWF_AUTOARRANGE = 0x1, FWF_SNAPTOGRID = 0x80000, FWF_NOICONS = 0x1000;
+        public const uint FWF_AUTOARRANGE = 0x1, FWF_SNAPTOGRID = 0x4, FWF_NOICONS = 0x1000;
         public const uint SFGAO_LINK = 0x10000, SFGAO_STREAM = 0x400000, SFGAO_FOLDER = 0x20000000, SFGAO_FILESYSTEM = 0x40000000;
 
         static IFolderView2 View()

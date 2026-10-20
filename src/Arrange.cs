@@ -29,6 +29,7 @@ namespace Bramble
         public string LastSort = "name";
         public List<IconPosition> BeforeAuto;
         public List<IconPosition> Original;
+        public List<IconPosition> Placed;
         public List<List<IconPosition>> History = new List<List<IconPosition>>();
     }
 
@@ -130,22 +131,67 @@ namespace Bramble
 
         class Grid
         {
-            public Rectangle Zone; public int Columns, Rows, StepX, StepY;
+            public Rectangle Zone; public int Columns, Rows;
             public readonly HashSet<Point> Taken = new HashSet<Point>();
-            public Grid(Rectangle zone, Size c, bool snap)
+            readonly Size cell;
+            readonly int icon, gap, inset, line, margin;
+            readonly Font font;
+            double originX, originY, stepX, stepY;
+            readonly Dictionary<int, double> shift = new Dictionary<int, double>();
+
+            public Grid(Rectangle zone, Size c, double scale, int iconSize)
             {
                 Zone = zone;
+                cell = c;
+                icon = (int)Math.Round(iconSize * scale);
+                gap = (int)Math.Round(4 * scale);
+                inset = (int)Math.Round(2 * scale);
+                margin = inset + (int)Math.Round(2 * scale);
+                var title = SystemFonts.IconTitleFont;
+                font = new Font(title.FontFamily, (float)(title.SizeInPoints * 96 / 72 * scale), title.Style, GraphicsUnit.Pixel);
+                line = font.Height;
                 Columns = Math.Max(1, zone.Width / c.Width);
-                Rows = Math.Max(1, zone.Height / c.Height);
-                StepX = Spread(zone.Width, Columns, c.Width, snap);
-                StepY = Spread(zone.Height, Rows, c.Height, snap);
+                Rows = Math.Max(1, (zone.Height - inset - Visual(2) - margin) / c.Height + 1);
+                originX = zone.X + Math.Max(0, (c.Width - icon) / 2);
+                originY = zone.Y + inset;
+                stepX = c.Width;
+                stepY = c.Height;
             }
-            static int Spread(int room, int count, int cell, bool snap)
+
+            int Visual(int lines) { return icon + gap + lines * line; }
+
+            int Lines(string name)
             {
-                if (snap || count < 2) return cell;
-                int extra = (room - count * cell) / (count - 1);
-                return cell + Math.Max(0, Math.Min(extra, cell * 35 / 100));
+                if (string.IsNullOrEmpty(name)) return 1;
+                var size = TextRenderer.MeasureText(name, font, new Size(int.MaxValue, int.MaxValue), TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
+                return size.Width > cell.Width - gap * 2 ? 2 : 1;
             }
+
+            public void Fit(List<KeyValuePair<Point, DesktopIcons.Element>> used, string arrangement)
+            {
+                if (used.Count == 0) return;
+                int minX = used.Min(u => u.Key.X), maxX = used.Max(u => u.Key.X), minY = used.Min(u => u.Key.Y), maxY = used.Max(u => u.Key.Y);
+                int bottom = used.Where(u => u.Key.Y == maxY).Max(u => Lines(u.Value.Name));
+                if (arrangement == "center")
+                {
+                    int w = maxX - minX + 1, h = maxY - minY + 1;
+                    originX = Zone.X + (Zone.Width - w * cell.Width) / 2.0 + Math.Max(0, (cell.Width - icon) / 2) - minX * cell.Width;
+                    originY = Zone.Y + (Zone.Height - ((h - 1) * cell.Height + Visual(bottom))) / 2.0 - minY * cell.Height;
+                    foreach (var row in used.GroupBy(u => u.Key.Y))
+                        shift[row.Key] = (w - row.Count()) * cell.Width / 2.0;
+                    return;
+                }
+                if (maxX == Columns - 1 && Columns > 1) stepX = (Zone.Width - cell.Width) / (double)(Columns - 1);
+                if (maxY == Rows - 1 && Rows > 1) stepY = (Zone.Height - inset - Visual(bottom) - margin) / (double)(Rows - 1);
+            }
+
+            public Point Pixel(Point p)
+            {
+                double extra;
+                shift.TryGetValue(p.Y, out extra);
+                return new Point((int)Math.Round(originX + extra + p.X * stepX), (int)Math.Round(originY + p.Y * stepY));
+            }
+
             public IEnumerable<Point> InColumns()
             {
                 for (int x = 0; x < Columns; x++) for (int y = 0; y < Rows; y++) yield return new Point(x, y);
@@ -196,16 +242,15 @@ namespace Bramble
         {
             Size c = DesktopIcons.Case();
             if (c.Width <= 0 || c.Height <= 0) return;
-            Point d = Offset(all, c);
-            bool snap = (DesktopIcons.Flags() & DesktopIcons.FWF_SNAPTOGRID) != 0;
-            var grids = TargetScreens().Select(s => new Grid(s.WorkingArea, c, snap)).ToList();
-            var positions = new Dictionary<string, Point>();
+            int iconSize = DesktopIcons.IconSize();
+            var grids = TargetScreens().Select(s => new Grid(s.WorkingArea, c, Scale(s), iconSize)).ToList();
+            var slots = new Dictionary<string, KeyValuePair<Grid, KeyValuePair<Point, DesktopIcons.Element>>>();
             var rest = new List<DesktopIcons.Element>();
             groups = groups.Where(g => g.Count > 0).ToList();
             Action<Grid, Point, DesktopIcons.Element> set = (g, p, el) =>
             {
                 g.Taken.Add(p);
-                positions[el.Id] = new Point(g.Zone.X + p.X * g.StepX + d.X, g.Zone.Y + p.Y * g.StepY + d.Y);
+                slots[el.Id] = new KeyValuePair<Grid, KeyValuePair<Point, DesktopIcons.Element>>(g, new KeyValuePair<Point, DesktopIcons.Element>(p, el));
             };
 
             if (arrangement == "corners" || arrangement == "blocks")
@@ -231,13 +276,17 @@ namespace Bramble
                 }
                 else
                 {
-                    int x = 0;
-                    foreach (var group in groups)
+                    int n = groups.Count, h = Math.Min(L, 2);
+                    while (h < L && groups.Sum(gr => (gr.Count + h - 1) / h) + n - 1 > C) h++;
+                    var widths = groups.Select(gr => (gr.Count + h - 1) / h).ToList();
+                    int spare = Math.Max(0, C - widths.Sum()), x = 0;
+                    for (int k = 0; k < n; k++)
                     {
-                        int w = Math.Max(3, (group.Count + L - 1) / L);
+                        var group = groups[k];
+                        int w = widths[k];
                         if (x + w > C) { rest.AddRange(group); continue; }
                         for (int i = 0; i < group.Count; i++) set(g, new Point(x + i % w, i / w), group[i]);
-                        x += w + 1;
+                        x += w + (n > 1 ? spare / (n - 1) + (k < spare % (n - 1) ? 1 : 0) : 0);
                     }
                 }
             }
@@ -278,7 +327,51 @@ namespace Bramble
                 var free = g.InColumns().Where(q => !g.Taken.Contains(q)).DefaultIfEmpty(new Point(g.Columns - 1, g.Rows - 1)).First();
                 set(g, free, el);
             }
-            Place(positions);
+            foreach (var g in grids) g.Fit(slots.Values.Where(v => v.Key == g).Select(v => v.Value).ToList(), arrangement);
+            Place(slots.ToDictionary(v => v.Key, v => v.Value.Key.Pixel(v.Value.Value.Key)));
+            R.Placed = Capture();
+        }
+
+        static bool Same(List<IconPosition> a, List<IconPosition> b)
+        {
+            if (a == null || b == null || a.Count == 0 || a.Count != b.Count) return false;
+            var map = b.GroupBy(p => p.Id).ToDictionary(g => g.Key, g => g.First());
+            IconPosition q;
+            return a.All(p => map.TryGetValue(p.Id, out q) && Math.Abs(p.X - q.X) <= 2 && Math.Abs(p.Y - q.Y) <= 2);
+        }
+
+        static void Later(int ms, Action run)
+        {
+            var t = new Timer { Interval = ms };
+            t.Tick += (s, e) => { t.Stop(); t.Dispose(); run(); };
+            t.Start();
+        }
+
+        // Windows keeps free-placed icons where they were when their size changes, so bigger icons pile up.
+        static void Reflow(List<IconPosition> before, Size cell, bool arranged)
+        {
+            try
+            {
+                Size now = DesktopIcons.Case();
+                if (now == cell || now.Width <= 0 || cell.Width <= 0 || (DesktopIcons.Flags() & DesktopIcons.FWF_AUTOARRANGE) != 0) return;
+                if (arranged) Sort(R.LastSort);
+                else
+                {
+                    var screens = Screens();
+                    var positions = new Dictionary<string, Point>();
+                    foreach (var p in before)
+                    {
+                        var area = (screens.FirstOrDefault(s => s.Bounds.Contains(p.X, p.Y)) ?? screens[0]).WorkingArea;
+                        int x = area.X + (int)Math.Round((p.X - area.X) * (double)now.Width / cell.Width);
+                        int y = area.Y + (int)Math.Round((p.Y - area.Y) * (double)now.Height / cell.Height);
+                        positions[p.Id] = new Point(Math.Max(area.X, Math.Min(x, area.Right - now.Width)), Math.Max(area.Y, Math.Min(y, area.Bottom - now.Height)));
+                    }
+                    Place(positions);
+                }
+                Program.Send(Map(false));
+                Program.SendState();
+            }
+            catch (Exception ex) { Program.Log(ex); }
         }
 
         [System.Runtime.InteropServices.DllImport("user32.dll")] static extern IntPtr MonitorFromPoint(Point pt, int flags);
@@ -290,19 +383,6 @@ namespace Bramble
             try { if (GetDpiForMonitor(MonitorFromPoint(new Point(s.Bounds.X + 1, s.Bounds.Y + 1), 2), 0, out x, out y) == 0) return x / 96.0; }
             catch { }
             return 1;
-        }
-
-        static Point Offset(List<DesktopIcons.Element> elements, Size c)
-        {
-            var screens = Screens();
-            var rest = elements.Select(el =>
-            {
-                Screen s = screens.FirstOrDefault(x => x.Bounds.Contains(el.Position)) ?? Screen.PrimaryScreen;
-                int dx = ((el.Position.X - s.WorkingArea.X) % c.Width + c.Width) % c.Width;
-                int dy = ((el.Position.Y - s.WorkingArea.Y) % c.Height + c.Height) % c.Height;
-                return new Point(dx, dy);
-            }).GroupBy(p => p).OrderByDescending(g => g.Count()).FirstOrDefault();
-            return rest != null ? rest.Key : new Point(Math.Max(0, (c.Width - 48) / 2), 2);
         }
 
         static List<IconPosition> Capture()
@@ -334,10 +414,13 @@ namespace Bramble
             Apply(last);
         }
 
+        // Auto arrange and the grid would both pull the icons back to Windows' own layout.
         static void Place(Dictionary<string, Point> positions, bool remember = true)
         {
             if (remember) Remember();
-            if ((DesktopIcons.Flags() & DesktopIcons.FWF_AUTOARRANGE) != 0) DesktopIcons.Flag(DesktopIcons.FWF_AUTOARRANGE, false);
+            uint flags = DesktopIcons.Flags();
+            if ((flags & DesktopIcons.FWF_AUTOARRANGE) != 0) DesktopIcons.Flag(DesktopIcons.FWF_AUTOARRANGE, false);
+            if ((flags & DesktopIcons.FWF_SNAPTOGRID) != 0) DesktopIcons.Flag(DesktopIcons.FWF_SNAPTOGRID, false);
             DesktopIcons.Place(positions);
         }
 
@@ -477,9 +560,15 @@ namespace Bramble
                         return true;
                     }
                     case "iconSize":
+                    {
+                        var before = Capture();
+                        Size cell = DesktopIcons.Case();
+                        bool arranged = Same(before, R.Placed);
                         DesktopIcons.SetIconSize(Convert.ToInt32(m["value"]));
                         Program.Send(Map(false));
+                        Later(350, () => Reflow(before, cell, arranged));
                         return false;
+                    }
                     case "grid": DesktopIcons.Flag(DesktopIcons.FWF_SNAPTOGRID, Convert.ToBoolean(m["value"])); Program.Send(Map(false)); return false;
                     case "hide": DesktopIcons.Flag(DesktopIcons.FWF_NOICONS, Convert.ToBoolean(m["value"])); Program.Send(Map(false)); return false;
                     case "category":

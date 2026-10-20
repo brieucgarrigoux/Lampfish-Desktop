@@ -19,7 +19,7 @@ namespace Bramble
         static readonly string FolderWindows = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Cursors");
         const string Key = @"Control Panel\Cursors";
         const string SchemesKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Control Panel\Cursors\Schemes";
-        const string SchemaBramble = "Bramble";
+        const string LegacyScheme = "Bramble";
 
         static readonly string[][] Roles =
         {
@@ -39,8 +39,88 @@ namespace Bramble
             Directory.CreateDirectory(CustomFolder);
             Directory.CreateDirectory(Cache);
             var original = Program.R.CursorsOriginal;
-            if (original != null && (original.Roles == null || original.Roles.Values.Any(Ours))) Program.R.CursorsOriginal = null;
+            if (original != null && original.Roles != null && original.Roles.Values.Any(Ours)) Program.R.CursorsOriginal = null;
+            try { Migrate(); } catch (Exception ex) { Program.Log(ex); }
         }
+
+        // Older versions saved every hand-picked cursor into a scheme named "Bramble", which read like a built-in theme.
+        static void Migrate()
+        {
+            using (var schemes = Registry.CurrentUser.OpenSubKey(Key + @"\Schemes", true))
+            {
+                object value = schemes == null ? null : schemes.GetValue(LegacyScheme, null, RegistryValueOptions.DoNotExpandEnvironmentNames);
+                if (value == null) return;
+                schemes.DeleteValue(LegacyScheme, false);
+                string name = NextName();
+                schemes.SetValue(name, value, RegistryValueKind.ExpandString);
+                using (var key = Registry.CurrentUser.CreateSubKey(Key))
+                    if ((key.GetValue("") as string) == LegacyScheme) key.SetValue("", name);
+            }
+        }
+
+        static HashSet<string> Names(string except = null)
+        {
+            var names = new HashSet<string>(Themes().Select(t => t.Name), StringComparer.OrdinalIgnoreCase) { LegacyScheme };
+            if (except != null) names.Remove(except);
+            return names;
+        }
+
+        static string NextName()
+        {
+            var names = Names();
+            for (int i = 1; ; i++)
+            {
+                string name = Language.T("My theme {0}", i);
+                if (!names.Contains(name)) return name;
+            }
+        }
+
+        static string FreeName(string wanted, string except = null)
+        {
+            wanted = (wanted ?? "").Trim();
+            if (wanted.Length > 40) wanted = wanted.Substring(0, 40).Trim();
+            if (wanted.Length == 0) return NextName();
+            var names = Names(except);
+            string name = wanted;
+            for (int i = 2; names.Contains(name); i++) name = wanted + " (" + i + ")";
+            return name;
+        }
+
+        static Theme Find(string name) { return string.IsNullOrEmpty(name) ? null : Themes().FirstOrDefault(t => t.Name == name); }
+
+        static bool Differs(Theme t, string[] current)
+        {
+            for (int i = 0; i < Roles.Length; i++)
+                if (!string.Equals(i < t.Paths.Length ? t.Paths[i] : "", current[i] ?? "", StringComparison.OrdinalIgnoreCase)) return true;
+            return false;
+        }
+
+        static void WriteScheme(string name, string row)
+        {
+            using (var schemes = Registry.CurrentUser.CreateSubKey(Key + @"\Schemes")) schemes.SetValue(name, row, RegistryValueKind.ExpandString);
+        }
+
+        static string ReadScheme(string name)
+        {
+            using (var schemes = Registry.CurrentUser.OpenSubKey(Key + @"\Schemes"))
+                return schemes == null ? null : schemes.GetValue(name, null, RegistryValueOptions.DoNotExpandEnvironmentNames) as string;
+        }
+
+        static void DeleteScheme(string name)
+        {
+            using (var schemes = Registry.CurrentUser.OpenSubKey(Key + @"\Schemes", true)) if (schemes != null) schemes.DeleteValue(name, false);
+        }
+
+        static void Name(string name)
+        {
+            using (var key = Registry.CurrentUser.CreateSubKey(Key))
+            {
+                key.SetValue("", name);
+                key.SetValue("Scheme Source", 1, RegistryValueKind.DWord);
+            }
+        }
+
+        static string Row() { return string.Join(",", Current().Select(p => p ?? "")); }
 
         class Theme { public string Name, Source; public string[] Paths; }
 
@@ -50,6 +130,7 @@ namespace Bramble
             public string Scheme;
             public int Source;
             public int Size = 32;
+            public Dictionary<string, int> Pointer;
         }
 
         static List<Theme> Themes()
@@ -121,15 +202,7 @@ namespace Bramble
         {
             if (!Roles.Any(r => r[0] == role) || !File.Exists(file)) return;
             Remember();
-            using (var key = Registry.CurrentUser.CreateSubKey(Key))
-            {
-                key.SetValue(role, file, RegistryValueKind.ExpandString);
-                string row = string.Join(",", Roles.Select(r => (key.GetValue(r[0]) as string) ?? ""));
-                using (var schemas = Registry.CurrentUser.CreateSubKey(Key + @"\Schemes"))
-                    schemas.SetValue(SchemaBramble, row, RegistryValueKind.ExpandString);
-                key.SetValue("", SchemaBramble);
-                key.SetValue("Scheme Source", 1, RegistryValueKind.DWord);
-            }
+            using (var key = Registry.CurrentUser.CreateSubKey(Key)) key.SetValue(role, file, RegistryValueKind.ExpandString);
             Reload();
         }
 
@@ -159,32 +232,71 @@ namespace Bramble
             return s;
         }
 
+        static readonly string[] PointerKeys = { "speed", "precision", "doubleClick", "knob", "invert", "shadow", "trails", "sonar", "hide", "buttonInitial" };
+
+        static Dictionary<string, int> PointerNow()
+        {
+            var acceleration = new int[3];
+            SystemParametersInfo(SPI_GETMOUSE, 0, acceleration, 0);
+            int rows = Read(SPI_GETWHEELSCROLLLINES);
+            return new Dictionary<string, int>
+            {
+                { "speed", Read(SPI_GETMOUSESPEED) }, { "precision", acceleration[2] != 0 ? 1 : 0 }, { "doubleClick", (int)GetDoubleClickTime() },
+                { "knob", rows < 0 || rows > 100 ? 0 : rows }, { "invert", GetSystemMetrics(23) != 0 ? 1 : 0 }, { "shadow", Read(SPI_GETCURSORSHADOW) != 0 ? 1 : 0 },
+                { "trails", Read(SPI_GETMOUSETRAILS) > 1 ? 1 : 0 }, { "sonar", Read(SPI_GETMOUSESONAR) != 0 ? 1 : 0 }, { "hide", Read(SPI_GETMOUSEVANISH) != 0 ? 1 : 0 },
+                { "buttonInitial", Read(SPI_GETSNAPTODEFBUTTON) != 0 ? 1 : 0 },
+            };
+        }
+
+        static Snapshot Full()
+        {
+            var s = Capture();
+            s.Pointer = PointerNow();
+            return s;
+        }
+
         static void Restore(Snapshot s)
         {
-            using (var key = Registry.CurrentUser.CreateSubKey(Key))
+            if (s.Roles != null)
             {
-                foreach (var r in Roles)
+                using (var key = Registry.CurrentUser.CreateSubKey(Key))
                 {
-                    string v;
-                    key.SetValue(r[0], s.Roles.TryGetValue(r[0], out v) && v != null ? v : "", RegistryValueKind.ExpandString);
+                    foreach (var r in Roles)
+                    {
+                        string v;
+                        key.SetValue(r[0], s.Roles.TryGetValue(r[0], out v) && v != null ? v : "", RegistryValueKind.ExpandString);
+                    }
+                    if (s.Scheme != null) key.SetValue("", s.Scheme); else key.DeleteValue("", false);
+                    key.SetValue("Scheme Source", s.Source, RegistryValueKind.DWord);
                 }
-                if (s.Scheme != null) key.SetValue("", s.Scheme); else key.DeleteValue("", false);
-                key.SetValue("Scheme Source", s.Source, RegistryValueKind.DWord);
+                SetSize(s.Size < 32 ? 0 : Math.Max(1, Math.Min(15, (s.Size - 32) / 16 + 1)));
             }
-            SetSize(s.Size < 32 ? 0 : Math.Max(1, Math.Min(15, (s.Size - 32) / 16 + 1)));
+            if (s.Pointer != null)
+                foreach (var p in s.Pointer)
+                    if (PointerKeys.Contains(p.Key)) Adjust(p.Key, p.Value);
             Reload();
         }
 
         static bool Same(Snapshot a, Snapshot b)
         {
-            if (a == null || b == null || a.Size != b.Size) return false;
-            foreach (var r in Roles)
+            if (a == null || b == null) return false;
+            if (a.Roles != null && b.Roles != null)
             {
-                string x, y;
-                a.Roles.TryGetValue(r[0], out x);
-                b.Roles.TryGetValue(r[0], out y);
-                if (!string.Equals(Environment.ExpandEnvironmentVariables(x ?? ""), Environment.ExpandEnvironmentVariables(y ?? ""), StringComparison.OrdinalIgnoreCase)) return false;
+                if (a.Size != b.Size) return false;
+                foreach (var r in Roles)
+                {
+                    string x, y;
+                    a.Roles.TryGetValue(r[0], out x);
+                    b.Roles.TryGetValue(r[0], out y);
+                    if (!string.Equals(Environment.ExpandEnvironmentVariables(x ?? ""), Environment.ExpandEnvironmentVariables(y ?? ""), StringComparison.OrdinalIgnoreCase)) return false;
+                }
             }
+            if (a.Pointer != null && b.Pointer != null)
+                foreach (var p in a.Pointer)
+                {
+                    int v;
+                    if (b.Pointer.TryGetValue(p.Key, out v) && v != p.Value) return false;
+                }
             return true;
         }
 
@@ -197,8 +309,8 @@ namespace Bramble
         static void Remember()
         {
             if (Program.R.CursorsOriginal != null) return;
-            var now = Capture();
-            if (now.Roles.Values.Any(Ours)) return;
+            var now = Full();
+            if (now.Roles.Values.Any(Ours)) now.Roles = null;
             Program.R.CursorsOriginal = now;
             Program.Save();
         }
@@ -500,6 +612,7 @@ namespace Bramble
                     title = NameTheme(t.Name),
                     custom = t.Source == "user",
                     bramble = t.Source == "bramble",
+                    kind = t.Source == "bramble" ? "bramble" : t.Source == "user" ? "mine" : "system",
                     showcase = Showcase.Where(i => i < t.Paths.Length).Select(i => Preview(t.Paths[i])).Where(a => a != null).ToArray(),
                 }).OrderBy(t => t.bramble ? 0 : t.custom ? 2 : 1).ToArray(),
                 windows = List(FolderWindows, false),
@@ -525,12 +638,12 @@ namespace Bramble
                 case "original":
                 {
                     if (Program.R.CursorsOriginal == null) return false;
-                    var before = Capture();
+                    var before = Full();
                     Restore(Program.R.CursorsOriginal);
-                    Program.Undoable(Language.T("Cursors back to how they were before Bramble"), () => Restore(before));
+                    Program.Undoable(Language.T("Mouse back to how it was before Bramble"), () => Restore(before));
                     return true;
                 }
-                case "adjust": Adjust(Text(m, "what"), m["value"]); return !(m.ContainsKey("live") && Convert.ToBoolean(m["live"]));
+                case "adjust": Remember(); Adjust(Text(m, "what"), m["value"]); return !(m.ContainsKey("live") && Convert.ToBoolean(m["live"]));
                 case "add":
                 {
                     using (var dialog = new System.Windows.Forms.OpenFileDialog())
@@ -552,6 +665,76 @@ namespace Bramble
                     return true;
                 }
                 case "remove": Remove(Text(m, "path")); Program.Send(Library()); return true;
+                case "save":
+                {
+                    string name = FreeName(Text(m, "name"));
+                    WriteScheme(name, Row());
+                    Name(name);
+                    Program.Announce("“{0}” saved", name);
+                    Program.Send(Library());
+                    return true;
+                }
+                case "update":
+                {
+                    var theme = Find(CurrentTheme());
+                    if (theme == null || theme.Source != "user") return false;
+                    string before = ReadScheme(theme.Name), name = theme.Name;
+                    WriteScheme(name, Row());
+                    Program.Undoable(Language.T("“{0}” updated", name), () => { if (before != null) WriteScheme(name, before); Program.Send(Library()); });
+                    Program.Send(Library());
+                    return true;
+                }
+                case "discard":
+                {
+                    var theme = Find(CurrentTheme());
+                    if (theme == null) return false;
+                    var before = Capture();
+                    ApplyTheme(theme.Name);
+                    Program.Undoable(Language.T("Changes discarded"), () => Restore(before));
+                    return true;
+                }
+                case "rename":
+                {
+                    string from = Text(m, "name");
+                    var theme = Find(from);
+                    string row = theme == null || theme.Source != "user" ? null : ReadScheme(from);
+                    if (row == null || string.IsNullOrWhiteSpace(Text(m, "to"))) return false;
+                    string to = FreeName(Text(m, "to"), from);
+                    if (to == from) return false;
+                    WriteScheme(to, row);
+                    DeleteScheme(from);
+                    if (CurrentTheme() == from) Name(to);
+                    Program.Send(Library());
+                    return true;
+                }
+                case "duplicate":
+                {
+                    var theme = Find(Text(m, "name"));
+                    if (theme == null) return false;
+                    string name = FreeName(Language.T("{0} copy", NameTheme(theme.Name)));
+                    WriteScheme(name, string.Join(",", theme.Paths));
+                    Program.Announce("“{0}” added", name);
+                    Program.Send(Library());
+                    return true;
+                }
+                case "removeTheme":
+                {
+                    string name = Text(m, "name");
+                    var theme = Find(name);
+                    string row = theme == null || theme.Source != "user" ? null : ReadScheme(name);
+                    if (row == null) return false;
+                    bool current = CurrentTheme() == name;
+                    DeleteScheme(name);
+                    if (current) using (var key = Registry.CurrentUser.CreateSubKey(Key)) key.SetValue("", "");
+                    Program.UndoableRemoval(name, () =>
+                    {
+                        WriteScheme(name, row);
+                        if (current) Name(name);
+                        Program.Send(Library());
+                    });
+                    Program.Send(Library());
+                    return true;
+                }
                 case "folder": System.Diagnostics.Process.Start("explorer.exe", "\"" + CustomFolder + "\""); return false;
             }
             return false;
@@ -561,7 +744,7 @@ namespace Bramble
         {
             var current = Current();
             string theme = CurrentTheme();
-            var now = Capture();
+            var now = Full();
             var aero = Aero();
             Func<Snapshot, bool> standard = x => aero != null && x.Size == 32 && Roles.Select((r, i) => i).All(i =>
             {
@@ -570,12 +753,16 @@ namespace Bramble
                 return string.IsNullOrEmpty(v) || string.Equals(Environment.ExpandEnvironmentVariables(v), i < aero.Length ? aero[i] : "", StringComparison.OrdinalIgnoreCase);
             });
             var original = Program.R.CursorsOriginal;
+            var chosen = Find(theme);
             return new
             {
                 theme = theme,
+                based = chosen != null,
+                editable = chosen != null && chosen.Source == "user",
+                unsaved = chosen != null ? Differs(chosen, current) : !standard(now),
                 standard = standard(now),
-                original = original != null && !Same(original, now) && !standard(original),
-                themeTitle = string.IsNullOrEmpty(theme) ? Language.T("Custom") : NameTheme(theme),
+                original = original != null && !Same(original, now),
+                themeTitle = chosen == null ? Language.T("Custom") : NameTheme(theme),
                 roles = Roles.Select((r, i) => new { id = r[0], name = r[1], path = current[i], preview = Preview(current[i]) }).ToArray(),
                 settings = Settings(),
             };

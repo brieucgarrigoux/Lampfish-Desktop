@@ -6,23 +6,36 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
-- Wallpaper per screen: a selector under the large preview picks every screen or one of them, and a badge on each wallpaper shows the screens it covers. Slideshow, moods, removal and Next wallpaper follow it.
+- Modes start when a chosen app opens or when headphones are plugged in, and the previous setup comes back when the app closes or the headphones are removed (unless something was changed meanwhile). A mode can also open apps or files when it is applied.
+- Mouse: your own cursor themes. Cursors changed by hand show Modified with Save as a theme and Discard; your themes can be renamed, updated, duplicated and removed (with undo), and any theme can be duplicated to start from it.
+- Network: the connection test shows a signal travelling to the next step, a turning ring on the step being measured, and each finished step pops and shows its result; a bubble explains each step.
+- `Bramble.exe --quit` closes a running Bramble.
+- Wallpaper per screen: a selector under the large preview picks every screen or one of them, and a badge on each wallpaper shows the screens it covers. Slideshow, modes, removal and Next wallpaper follow it.
 - Wallpapers fade through black when they change.
 - Power saving: a Frame rate choice (30 or 60 images a second) for every HTML wallpaper, and the wallpaper pauses while the session is locked.
 - Shuffle for the slideshow and for Next wallpaper, without repeating the current wallpaper or showing it on two screens when there is a choice.
 - Videos, GIFs and images pulse lightly with the sound when React to sound is on.
-- A dark tray menu: Open Bramble, Next wallpaper, Pause or resume the wallpaper, Moods, Sounds and Quit. The tray tooltip names the wallpaper or says it is paused.
-- Undo after applying a mood, resetting the cursors, applying an icon to subfolders, resetting every folder icon, loading a sound pair and clearing the test history. Removing a mood can be undone instead of confirmed.
-- Back to original for cursors and folder icons: Bramble remembers how they were before it first changed them.
-- Moods: start on mains power or on battery, export a mood to a file and import one, with a preview first (a wallpaper or cursor theme missing on this PC is reported, nothing is ever run).
+- A dark tray menu: Open Bramble, Next wallpaper, Pause or resume the wallpaper, Modes, Sounds and Quit.
+- Undo after applying a mode, resetting the cursors, applying an icon to subfolders, resetting every folder icon, loading a sound pair and clearing the test history. Removing a mode can be undone instead of confirmed.
+- Back to original for the mouse and folder icons: Bramble remembers how they were before it first changed them, pointer speed, precision, double-click, wheel and extras included.
+- Modes: start on mains power or on battery, export a mode to a file and import one, with a preview first (a wallpaper or cursor theme missing on this PC is reported, nothing is ever run).
 - Tasks: search by name, description or publisher (Ctrl F, Escape clears it), and a sheet for each program with its publisher, version, size and location, whether it starts with Windows and its open network connections.
 - Hardware: Copy summary puts the main specs in the clipboard, ready to paste in a message.
-- Home: a Tasks tile (apps open, the busiest one) and a row of moods to apply in one click.
+- Home, rebuilt in two columns that fit the window: the desktop preview with Pause, Next and the modes, This PC (processor, memory, disk, battery, network), and shortcuts to Icons, Arrange, Mouse, Sounds and Tasks.
 - Settings: a Connections group that lists every outside service Bramble talks to and when, and an update check (off by default, once a day, or Check now).
 - Keyboard: Ctrl 1 to 9 open the services in the order of the bar, Ctrl Tab the next one, Ctrl comma the settings.
 - The window remembers its size, position and maximized state.
 
 ### Changed
+- Moods are now called Modes and have their own place at the top of the bar.
+- Create: the name and the Create button sit next to the title instead of covering the themes, every setting of the panel has its icon, Click to type and Add your logo stay on one line however small the box, and the editor starts fresh after the window is closed.
+- Arrange: the icon size is one of five sizes (Very small to Very large) instead of a slider, and icons are laid out again after a size change so they never overlap.
+- Arrange: every arrangement is even, with the same margin left and right, the last row close to the taskbar and an exact centre. Arranging turns off Windows' Align icons to grid, which pulled the icons back to its own grid.
+- Network: the security lights are smaller, set into the card with a soft glow, and each check keeps its explanation on one line.
+- Sounds: the lights above the volume knob turn grey only when the sounds are off or silenced.
+- Mouse: role names sit further from the selection frame, and Bramble Glass is no longer pixelated in the theme list.
+- The Person cursor of the pixel themes has a new badge.
+- The tray tooltip just says Bramble.
 - One design system across the app: the same corner radii, text sizes, switches, buttons, selection and focus ring everywhere, and explanation lines easier to read.
 - The title bar is dark, like the window.
 - Cards keep their relief without the heavy shadow, with a fine light edge instead.
@@ -48,7 +61,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Mouse: the 16 px pointer size read as 1, and cursor themes whose files were deleted showed empty cards.
 - Wallpaper: the armed Remove button covered Edit, and No wallpaper selected was misspelled.
 - Arrange: undoing the removal of a layout did nothing.
-- Moods: Active stayed shown after the settings had changed.
+- Modes: Active stayed shown after the settings had changed, and two modes with the same settings were both shown as Active.
+- Mouse: cursors picked by hand were saved in a hidden theme named Bramble that looked like a built-in one. It is now one of your themes.
+- Arrange: Align to grid read and changed the wrong Windows setting, so it never worked and the arrangements could not be even.
+- The thumbnail of a wallpaper edited in Create showed the old version until Bramble restarted.
+- The window could not be opened again after another program had closed it.
+- Windows Search showed a blank Bramble when the Start menu shortcut kept an old icon path. Bramble now repairs it, like the desktop shortcut.
+- Home: 1 events on read wrong.
 - Desktop: when File Explorer recreates the window behind the icons, the wallpaper reattaches instead of reloading every screen, and wallpaper windows are attached the way Windows expects.
 - Cursors: the click point of the pixel themes was half a cell off (arrow tip, precision cross, hand), the pixel themes get a 16 px size, Bramble Glass gets a 48 px size for its animated cursors, and the busy cursors turn at the same pace.
 - Create: the draft survives a language change, and its duplicate Reset row is gone.

@@ -46,7 +46,7 @@
 .element:only-child { border-radius: var(--radius-group); }
 .element .name-element { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .element .size { flex: none; font: 12.5px var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-soft); }
-.element i { position: absolute; left: 50px; bottom: 7px; height: 2px; border-radius: 1px; background: #34364a; transition: background .12s; }
+.element i { position: absolute; left: 50px; bottom: 7px; height: 2px; border-radius: 1px; background: #34364a; transition: background var(--fast); }
 button.element:hover:not(:disabled), .element.hover { background: var(--group-up); }
 button.element:hover:not(:disabled) i, .element.hover i { background: var(--accent); }
 .element:disabled { color: var(--text-soft); cursor: default; }
@@ -58,7 +58,7 @@ button.element:hover:not(:disabled) i, .element.hover i { background: var(--acce
 
 .f-source { gap: 10px; }
 .f-source .name-source { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.copy-row { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border-radius: var(--radius-small); color: var(--text-pale); opacity: 0; transition: opacity .12s, color .12s, background .12s; }
+.copy-row { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border-radius: var(--radius-small); color: var(--text-pale); opacity: 0; transition: opacity var(--fast), color var(--fast), background var(--fast); }
 .copy-row svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .element:hover .copy-row, .element:focus-visible .copy-row { opacity: 1; }
 .copy-row:hover { color: var(--text); background: rgba(255, 255, 255, .06); }

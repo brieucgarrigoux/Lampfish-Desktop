@@ -1,5 +1,6 @@
-#wp-moods .save { margin-top: 2px; }
-.help-moods { margin: 8px 2px 14px; }
+.view--modes { max-width: 1120px; margin-inline: auto; }
+.modes-intro { margin: -8px 2px 16px; font-size: 13px; line-height: 1.4; color: var(--text-soft); }
+.view--modes .save { margin-top: 0; }
 
 .moods { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; }
 .mood { position: relative; display: flex; flex-direction: column; gap: 12px; padding: 16px 16px 14px; border-radius: var(--radius-card); background: var(--group); }
@@ -12,6 +13,18 @@
 .mood__facts { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; color: var(--text-soft); }
 .mood__facts li { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mood__auto { display: flex; flex-direction: column; gap: 6px; }
+.mood__auto[hidden] { display: none; }
+.mood__summary { display: flex; align-items: center; gap: 8px; width: 100%; margin: 0; padding: 8px 10px; border: 0; border-radius: var(--radius-control); background: var(--sunken); color: var(--text-soft); font-size: 12px; text-align: left; transition: color var(--fast), background var(--fast); }
+.mood__summary span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mood__summary svg { flex: none; width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform var(--fast); }
+.mood__summary[aria-expanded="true"] svg { transform: rotate(90deg); }
+.mood__summary:hover { color: var(--text); background: #12131a; }
+.mood__pick, .mood__chips { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 6px; min-width: 0; }
+.mood__opens { align-items: flex-start; }
+.mood__chip { display: inline-flex; align-items: center; gap: 5px; max-width: 150px; height: 24px; padding: 0 6px 0 9px; color: var(--text); font-weight: 500; }
+.mood__chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mood__chip svg { flex: none; width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.mood__chip:hover { color: var(--danger); }
 .mood__time { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 12px; color: var(--text-pale); }
 .mood__time input, .mood__time select { border: 0; border-radius: var(--radius-small); padding: 4px 8px; background: var(--sunken); color: var(--text); font: inherit; font-variant-numeric: tabular-nums; color-scheme: dark; outline: none; box-shadow: inset 0 0 0 1px transparent; }
 .mood__time input:focus, .mood__time select:focus { box-shadow: inset 0 0 0 1px var(--accent); }
@@ -28,5 +41,5 @@
 .starters { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
 .starter { display: flex; flex-direction: column; gap: 3px; align-items: flex-start; padding: 12px 14px; border: 0; border-radius: var(--radius-card); background: var(--group); text-align: left; }
 .starter:hover { background: var(--group-up); }
-.starter__name { font-size: 14px; font-weight: 600; }
+.starter__name { font-size: 13px; font-weight: 600; }
 .starter__help { font-size: 12px; color: var(--text-pale); }

@@ -135,7 +135,7 @@
     zone.classList.toggle('hidden', map.hidden);
 
     if (!sizing) showSize(map.iconSize);
-    $('r-size').disabled = false;
+    for (const b of $('r-size').children) b.disabled = false;
     for (const [id, key] of [['r-auto', 'auto'], ['r-grid', 'grid'], ['r-hide', 'hidden']]) {
       $(id).checked = map[key];
       $(id).disabled = false;
@@ -300,18 +300,19 @@
     $(id).disabled = true;
     $(id).addEventListener('change', e => send('arrange.' + action, { value: e.target.checked }));
   }
-  const slider = $('r-size');
   let sizing = false;
   function showSize(value) {
-    slider.value = value;
-    $('r-size-value').textContent = slider.value + ' px';
-    slider.style.setProperty('--pct', (slider.value - slider.min) / (slider.max - slider.min) * 100 + '%');
+    const exact = [...$('r-size').children].find(b => Number(b.dataset.value) === Number(value));
+    for (const b of $('r-size').children) b.setAttribute('aria-checked', String(b === exact));
+    $('r-size-value').textContent = exact ? exact.title : value + ' px';
+    $('r-size-value').title = value + ' px';
   }
-  slider.addEventListener('pointerdown', () => { sizing = true; });
-  slider.addEventListener('input', () => showSize(slider.value));
-  slider.addEventListener('change', () => {
-    send('arrange.iconSize', { value: Number(slider.value) });
-    for (const delay of [350, 900]) setTimeout(() => { sizing = false; if (shown) send('arrange.map'); }, delay);
+  for (const b of $('r-size').children) b.addEventListener('click', () => {
+    if (b.getAttribute('aria-checked') === 'true') return;
+    sizing = true;
+    showSize(Number(b.dataset.value));
+    send('arrange.iconSize', { value: Number(b.dataset.value) });
+    for (const delay of [500, 1200]) setTimeout(() => { sizing = false; if (shown) send('arrange.map'); }, delay);
   });
   $('arrange-undo').addEventListener('click', () => send('arrange.undo'));
   $('arrange-original').addEventListener('click', () => send('arrange.original'));

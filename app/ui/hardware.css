@@ -30,7 +30,7 @@
 .m-card header { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .m-card header > div { min-width: 0; }
 .m-card h3 { margin: 0; font-size: 13px; font-weight: 600; color: var(--text-soft); }
-.m-model { margin: 1px 0 0; font-size: 13.5px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.m-model { margin: 1px 0 0; font-size: 13px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .m-measure { display: flex; align-items: baseline; gap: 10px; }
 .m-value { font: 600 30px/1 var(--display); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
 .m-word { font-size: 13px; color: var(--text-soft); }
@@ -44,9 +44,9 @@
 .mini-curve .curve { fill: none; stroke: var(--accent); stroke-width: 1.5; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
 
 .m-threads { display: flex; align-items: flex-end; gap: 3px; height: 30px; }
-.m-threads i { flex: 1; height: 100%; border-radius: 2px; background: linear-gradient(to top, var(--accent) var(--h, 0%), #24252f var(--h, 0%)); transition: background .4s; }
+.m-threads i { flex: 1; height: 100%; border-radius: 2px; background: linear-gradient(to top, var(--accent) var(--h, 0%), var(--meter) var(--h, 0%)); transition: background .4s; }
 
-.m-bar { flex: 1; height: 6px; min-height: 6px; max-height: 6px; border-radius: 3px; background: #24252f; overflow: hidden; }
+.m-bar { flex: 1; height: 6px; min-height: 6px; max-height: 6px; border-radius: 3px; background: var(--meter); overflow: hidden; }
 .m-bar i { display: block; height: 100%; width: 100%; border-radius: 3px; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform .4s ease-out; will-change: transform; }
 .m-volume { display: flex; align-items: center; gap: 10px; font: 12px var(--numbers); font-variant-numeric: tabular-nums; }
 .m-volume__name { color: var(--text-soft); width: 22px; }

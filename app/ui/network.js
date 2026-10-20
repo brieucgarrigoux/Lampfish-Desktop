@@ -31,6 +31,13 @@
   };
 
   const STEPS = [['gateway', 'Router', 'box'], ['internet', 'Internet', 'world'], ['dns', 'DNS', 'dns'], ['download', 'Download', 'download'], ['upload', 'Upload', 'upload']];
+  const STEP_TIPS = {
+    gateway: 'Time for the router to answer',
+    internet: 'Time for a server on the Internet to answer',
+    dns: "Time to find a site's address",
+    download: 'Speed when receiving data',
+    upload: 'Speed when sending data',
+  };
 
   const TICKS = [0, 5, 10, 25, 50, 100, 250, 500, 1000];
   const part = v => Math.min(1, Math.log10(1 + Math.max(0, v)) / Math.log10(1001));
@@ -152,6 +159,17 @@
     if (displayed !== target) loop = requestAnimationFrame(animate);
   }
 
+  const stepItems = STEPS.map(([key, name, icon]) => {
+    const li = document.createElement('li');
+    li.className = 'step';
+    li.dataset.key = key;
+    li.dataset.tip = tr(STEP_TIPS[key]);
+    li.innerHTML = '<span class="step__wire"><span class="step__fill"></span><span class="step__spark"></span></span><i>' + glyph(icon) + '<b class="step__ring"></b></i><span class="step__name"></span><span class="step__result"></span>';
+    li.querySelector('.step__name').textContent = tr(name);
+    return li;
+  });
+  $('r-steps').replaceChildren(...stepItems);
+
   const res = key => test && test.r[key];
   const ok = key => !!(res(key) && res(key).ok);
   const grade = (v, good, excellent) => v <= excellent ? 'excellent' : v <= good ? 'good' : 'slow';
@@ -196,15 +214,15 @@
 
     $('r-value').classList.toggle('idle', !test && !running);
 
-    $('r-steps').replaceChildren(...STEPS.map(([key, name, icon]) => {
-      const li = document.createElement('li');
-      const r = res(key);
-      li.className = r ? (r.ok ? 'done' : 'failed') : running && next && next[0] === key ? 'active' : '';
-      if (li.className === 'active' && test.direct && test.direct.phase === key) { li.classList.add('measuring'); li.style.setProperty('--progress', Math.round(test.direct.progress * 100) + '%'); }
-      li.innerHTML = '<i>' + glyph(icon) + '</i><span></span>';
-      li.querySelector('span').textContent = name;
-      return li;
-    }));
+    for (const li of stepItems) {
+      const key = li.dataset.key, r = res(key);
+      const state = r ? (r.ok ? 'done' : 'failed') : running && next && next[0] === key ? 'active' : '';
+      for (const c of ['done', 'failed', 'active']) li.classList.toggle(c, state === c);
+      const measuring = state === 'active' && !!direct && direct.phase === key;
+      li.classList.toggle('measuring', measuring);
+      if (measuring) li.style.setProperty('--progress', Math.round(direct.progress * 100) + '%');
+      li.querySelector('.step__result').textContent = !r ? '' : !r.ok ? tr('Failed') : key === 'download' || key === 'upload' ? mbits(r.mbits) + ' Mbit/s' : ms(r.ms);
+    }
 
     const down = res('download'), up = res('upload'), net = res('internet');
     const size = o => throughput(o).replace('/s', '');
@@ -437,7 +455,7 @@
       item.innerHTML = `<span class="jewel" role="img"><svg viewBox="0 0 24 24" aria-hidden="true">${SECURITY_GLYPHS[c.state]}</svg></span><div class="check__what"><span class="check__title"></span><span class="check__detail"></span></div><span class="check__value"></span>`;
       item.querySelector('.jewel').setAttribute('aria-label', tr({ ok: 'Fine', warn: 'Be careful', bad: 'Risky', neutral: 'Not reported' }[c.state]));
       item.querySelector('.check__title').textContent = tr(c.title);
-      item.querySelector('.check__detail').textContent = tr(c.detail);
+      item.querySelector('.check__detail').textContent = item.querySelector('.check__detail').title = tr(c.detail);
       item.querySelector('.check__value').textContent = c.value;
       list.append(item);
     }

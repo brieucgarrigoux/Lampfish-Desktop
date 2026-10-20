@@ -77,6 +77,28 @@ namespace Bramble
             }
         }
 
+        public static bool Headphones()
+        {
+            IMMDevice device = null;
+            IPropertyStore store = null;
+            try
+            {
+                var enumerator = (IMMDeviceEnumerator)new MMDeviceEnumerator();
+                if (enumerator.GetDefaultAudioEndpoint(0, 0, out device) != 0 || device == null) return false;
+                if (device.OpenPropertyStore(0, out store) != 0 || store == null) return false;
+                var key = new PropertyKey { Format = new Guid("1da5d803-d492-4edd-8c23-e0c0ffee7f0e"), Id = 0 };
+                PropVariant value;
+                if (store.GetValue(ref key, out value) != 0 || value.Type != 19) return false;
+                return value.Number == 3 || value.Number == 5;
+            }
+            catch { return false; }
+            finally
+            {
+                if (store != null) Marshal.ReleaseComObject(store);
+                if (device != null) Marshal.ReleaseComObject(device);
+            }
+        }
+
         static void Release()
         {
             foreach (var meter in meters) try { Marshal.ReleaseComObject(meter); } catch { }
@@ -103,6 +125,24 @@ namespace Bramble
         interface IMMDevice
         {
             [PreserveSig] int Activate(ref Guid id, int context, IntPtr parameters, [MarshalAs(UnmanagedType.IUnknown)] out object result);
+            [PreserveSig] int OpenPropertyStore(int access, out IPropertyStore store);
+        }
+
+        [ComImport, Guid("886d8eeb-8cf2-4446-8d02-cdba1dbdcf99"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        interface IPropertyStore
+        {
+            [PreserveSig] int GetCount(out uint count);
+            [PreserveSig] int GetAt(uint index, out PropertyKey key);
+            [PreserveSig] int GetValue(ref PropertyKey key, out PropVariant value);
+        }
+
+        [StructLayout(LayoutKind.Sequential)] struct PropertyKey { public Guid Format; public int Id; }
+
+        [StructLayout(LayoutKind.Explicit, Size = 24)]
+        struct PropVariant
+        {
+            [FieldOffset(0)] public ushort Type;
+            [FieldOffset(8)] public uint Number;
         }
 
         [ComImport, Guid("C02216F6-8C67-4B5B-9D00-D008E73E0064"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]

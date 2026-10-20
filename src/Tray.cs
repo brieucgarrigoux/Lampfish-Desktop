@@ -49,25 +49,22 @@ namespace Bramble
             next.Text = Language.T("Next wallpaper");
             next.Enabled = Program.WallpaperCount > 1;
             pause.Text = Language.T(Program.Paused ? "Resume wallpaper" : "Pause wallpaper");
-            moods.Text = Language.T("Moods");
+            moods.Text = Language.T("Modes");
             sounds.Text = Language.T("Sounds");
             sounds.Checked = Sounds.Active;
             quit.Text = Language.T("Quit");
 
             moods.DropDownItems.Clear();
+            var active = Moods.Active();
             foreach (var m in Program.R.Moods)
             {
                 string id = m.Id;
                 var item = Item((s, e) => Moods.ApplyById(id));
                 item.Text = m.Name.Replace("&", "&&");
-                item.Checked = Moods.Matches(m);
+                item.Checked = m == active;
                 moods.DropDownItems.Add(item);
             }
             moods.Enabled = moods.DropDownItems.Count > 0;
-
-            string tip = Program.Paused ? Language.T("Paused") : Program.WallpaperTitle;
-            tip = string.IsNullOrEmpty(tip) ? "Bramble" : "Bramble · " + tip;
-            icon.Text = tip.Length > 63 ? tip.Substring(0, 62) + "…" : tip;
         }
 
         public static void Hide()

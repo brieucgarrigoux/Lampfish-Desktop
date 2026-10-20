@@ -25,6 +25,10 @@
 
 <nav class="rail" aria-label="Services" data-resizable="right" data-variable="--width-rail" data-min="76" data-max="230" data-initial="92">
   <button class="logo-home service" data-view="home" title="Home" aria-label="Home"><img class="logo" src="/brand/logo/logo-bramble-192.png" alt=""></button>
+  <button class="service" data-view="modes">
+    <svg viewBox="0 0 24 24"><path d="M19.5 14.6A7.6 7.6 0 0 1 9.4 4.5a7.6 7.6 0 1 0 10.1 10.1z"/><path d="M17 3.5v4M15 5.5h4"/></svg>
+    Modes
+  </button>
   <button class="service" data-view="wallpaper" aria-current="page">
     <svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="m3.5 16 5-5 4 4 2.5-2.5 5.5 5.5"/><circle cx="15.5" cy="9.5" r="1.3"/></svg>
     Wallpaper
@@ -77,7 +81,6 @@
 
   <section class="view view--home only-home" aria-label="Home">
     <div class="home-header">
-      <img src="/brand/badge/powered-by-bramble-color-dark.png" alt="Powered by Bramble">
       <div class="h-clock"><span class="h-time" id="h-time"></span><span class="h-date" id="h-date"></span></div>
       <div class="h-weather" id="h-weather" hidden>
         <svg class="h-weather__icon" id="h-weather-icon" viewBox="0 0 48 48" aria-hidden="true"></svg>
@@ -85,12 +88,40 @@
         <div class="h-weather__details"><span id="h-weather-city"></span><span id="h-weather-details"></span></div>
       </div>
     </div>
-    <button class="h-wallpaper" id="h-wallpaper" aria-label="Wallpaper">
-      <div class="preview" id="h-wallpaper-preview"></div>
-      <div class="h-desktop" id="h-desktop" aria-hidden="true"></div>
-    </button>
-    <div class="h-moods" id="h-moods" hidden></div>
-    <div class="h-tiles" id="h-tiles"></div>
+    <div class="h-main">
+      <div class="h-stage">
+        <button class="h-wallpaper" id="h-wallpaper" aria-label="Wallpaper">
+          <div class="preview" id="h-wallpaper-preview"></div>
+          <div class="h-desktop" id="h-desktop" aria-hidden="true"></div>
+        </button>
+        <div class="h-now">
+          <div class="h-now__what"><span class="h-now__name" id="h-now-name"></span><span class="h-now__type" id="h-now-type"></span></div>
+          <button class="button" id="h-pause">Pause</button>
+          <button class="button" id="h-next">Next</button>
+        </div>
+        <div class="h-modes" id="h-moods"></div>
+      </div>
+      <div class="h-pc">
+        <h2>This PC</h2>
+        <div class="group h-rows" id="h-rows"></div>
+      </div>
+    </div>
+    <div class="h-shortcuts" id="h-tiles"></div>
+  </section>
+
+  <section class="view view--modes only-modes" aria-label="Modes">
+    <h1>Modes</h1>
+    <p class="modes-intro" id="mood-help"></p>
+    <form class="save" id="mood-form">
+      <input id="mood-name" maxlength="40" placeholder="Name the current setup" autocomplete="off" aria-label="Mode name">
+      <button class="button button--accent" type="submit">Save as a mode</button>
+      <button class="tool-chip" type="button" id="mood-import"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19.5h14"/></svg><span>Import</span></button>
+    </form>
+    <div class="mood-preview" id="mood-preview" hidden></div>
+    <div class="title-section" id="moods-title" hidden><h2>My modes<span class="count" id="mood-count"></span></h2></div>
+    <div class="moods" id="moods" hidden></div>
+    <div class="title-section"><h2>Start from a model</h2><span class="config">Built from your current setup</span></div>
+    <div class="starters" id="mood-starters"></div>
   </section>
 
   <section class="view only-wallpaper" aria-label="Wallpaper">
@@ -105,27 +136,11 @@
       </div>
     </div>
 
-    <div class="title-section title-section--tabs">
-      <div class="segments tabs" id="wp-tabs" role="tablist" aria-label="Wallpaper sections">
-        <button role="tab" data-tab="library">Library<span class="count" id="count"></span></button>
-        <button role="tab" data-tab="moods">Moods<span class="count" id="mood-count"></span></button>
-      </div>
+    <div class="title-section">
+      <h2>Library<span class="count" id="count"></span></h2>
       <button class="link" id="folder"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Open folder</button>
     </div>
     <div class="grid" id="grid"></div>
-
-    <div id="wp-moods" hidden>
-      <form class="save" id="mood-form">
-        <input id="mood-name" maxlength="40" placeholder="Name the current setup" autocomplete="off" aria-label="Mood name">
-        <button class="button button--accent" type="submit">Save as a mood</button>
-        <button class="tool-chip" type="button" id="mood-import"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19.5h14"/></svg><span>Import</span></button>
-      </form>
-      <div class="mood-preview" id="mood-preview" hidden></div>
-      <p class="help-section help-moods" id="mood-help"></p>
-      <div class="moods" id="moods" hidden></div>
-      <div class="title-section"><h2>Start from a model</h2><span class="config">Built from your current setup</span></div>
-      <div class="starters" id="mood-starters"></div>
-    </div>
   </section>
 
   <section class="view view--mouse only-mouse" aria-label="Mouse">
@@ -143,6 +158,13 @@
           <button class="button" id="s-initial">Reset to default</button>
         </div>
       </div>
+      <form class="mouse-draft" id="s-draft" hidden>
+        <span class="mouse-draft__text" id="s-draft-text"></span>
+        <input id="s-draft-name" maxlength="40" placeholder="Name the new theme" autocomplete="off" aria-label="Theme name">
+        <button class="button button--accent" type="submit">Save as a theme</button>
+        <button class="button" type="button" id="s-update" hidden></button>
+        <button class="link" type="button" id="s-discard">Discard</button>
+      </form>
       <div class="roles" id="s-roles"></div>
     </div>
     <div class="title-section title-section--tabs">
@@ -333,7 +355,7 @@
   </section>
 
   <section class="view view--create only-create" aria-label="Create">
-    <h1>Create</h1>
+    <div class="cr-head"><h1>Create</h1><div class="cr-save" id="create-save"></div></div>
     <div id="create-zone"></div>
   </section>
 
@@ -554,9 +576,14 @@
     <h2>Display</h2>
     <div class="group">
       <div class="setting">
-        <label for="r-size"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="12.5" width="8" height="8" rx="1.5"/><rect x="13" y="3.5" width="7.5" height="7.5" rx="1.5"/><path d="M6.5 9.5V6.5h3"/></svg><span>Icon size<small>Size of the icons on the desktop</small></span></span><output id="r-size-value"></output></label>
-        <input type="range" id="r-size" min="16" max="256" step="8" disabled>
-        <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
+        <label><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="12.5" width="8" height="8" rx="1.5"/><rect x="13" y="3.5" width="7.5" height="7.5" rx="1.5"/><path d="M6.5 9.5V6.5h3"/></svg><span>Icon size<small>Size of the icons on the desktop</small></span></span><output id="r-size-value"></output></label>
+        <div class="segments segments--sizes" id="r-size" role="radiogroup" aria-label="Icon size">
+          <button role="radio" data-value="32" title="Very small" aria-label="Very small" disabled><i></i></button>
+          <button role="radio" data-value="40" title="Small" aria-label="Small" disabled><i></i></button>
+          <button role="radio" data-value="48" title="Medium" aria-label="Medium" disabled><i></i></button>
+          <button role="radio" data-value="64" title="Large" aria-label="Large" disabled><i></i></button>
+          <button role="radio" data-value="96" title="Very large" aria-label="Very large" disabled><i></i></button>
+        </div>
       </div>
       <label class="toggle">
         <input type="checkbox" id="r-auto">

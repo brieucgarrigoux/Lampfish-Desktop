@@ -106,7 +106,8 @@ namespace Bramble
                 string requestedFolder = RequestedFolder(args);
                 if (!firstInstance)
                 {
-                    if (requestedFolder != null)
+                    if (args.Contains("--quit")) try { File.WriteAllText(RequestFile, "::quit"); } catch { }
+                    else if (requestedFolder != null)
                         try { File.WriteAllText(RequestFile, requestedFolder); } catch { }
                     EventWaitHandle signal;
                     if (EventWaitHandle.TryOpenExisting(OpenSignal, out signal)) signal.Set();
@@ -184,7 +185,7 @@ namespace Bramble
                 while (true)
                 {
                     signal.WaitOne();
-                    context.Post(_ => { OpenSettings(); HandleRequest(); }, null);
+                    context.Post(_ => { if (!HandleRequest()) OpenSettings(); }, null);
                 }
             }) { IsBackground = true };
             crumbs.Start();
@@ -196,18 +197,20 @@ namespace Bramble
             return i >= 0 && i + 1 < args.Length ? args[i + 1] : null;
         }
 
-        static void HandleRequest()
+        static bool HandleRequest()
         {
             try
             {
-                if (!File.Exists(RequestFile)) return;
+                if (!File.Exists(RequestFile)) return false;
                 string folder = File.ReadAllText(RequestFile).Trim();
                 File.Delete(RequestFile);
+                if (folder == "::quit") { Quit(); return true; }
                 Icons.Ask(folder);
                 requestedView = "icons";
                 SendState();
             }
             catch (Exception ex) { Log(ex); }
+            return false;
         }
 
         public static void OnInterface(Action action)
@@ -452,15 +455,6 @@ namespace Bramble
 
         public static int WallpaperCount { get { return ListWallpapers().Count(); } }
 
-        public static string WallpaperTitle
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(R.Wallpaper)) return null;
-                return Directory.Exists(Path.Combine(WallpapersFolder, R.Wallpaper)) ? R.Wallpaper : Path.GetFileNameWithoutExtension(R.Wallpaper);
-            }
-        }
-
         static void Adjust(bool reloadOtherwise) { ForEachWallpaper(f => f.Adjust(R, reloadOtherwise)); }
 
         static void Effects() { ForEachWallpaper(f => f.Effects(R)); }
@@ -504,6 +498,14 @@ namespace Bramble
                 .Select(Path.GetFileName)
                 .OrderBy(n => { int i = Array.IndexOf(Featured, n); return i < 0 ? Featured.Length : i; })
                 .ThenBy(n => n, StringComparer.CurrentCultureIgnoreCase);
+        }
+
+        static long Stamp(string name)
+        {
+            string path = Path.Combine(WallpapersFolder, name);
+            if (!Directory.Exists(path)) return File.Exists(path) ? File.GetLastWriteTimeUtc(path).Ticks / 10000000 : 0;
+            string config = Path.Combine(path, "config.json");
+            return (File.Exists(config) ? File.GetLastWriteTimeUtc(config) : Directory.GetLastWriteTimeUtc(path)).Ticks / 10000000;
         }
 
         public static string UrlMedia(string name)
@@ -645,7 +647,9 @@ namespace Bramble
             if (environment == null) return;
             if (settingsWindow == null)
             {
-                settingsWindow = new SettingsForm();
+                var form = new SettingsForm();
+                settingsWindow = form;
+                form.FormClosed += (s, e) => { if (settingsWindow == form) { settingsWindow = null; pageReady = false; } };
                 settingsWindow.Show();
                 await settingsWindow.Initialize(environment, Receive);
             }
@@ -736,6 +740,7 @@ namespace Bramble
                 case "speed": R.Speed = Convert.ToInt32(m["value"]); Adjust(!live); if (live) return; break;
                 case "pauseAuto": R.PauseAuto = (bool)m["value"]; UpdateVisibility(); break;
                 case "pause": TogglePause(); return;
+                case "next": NextWallpaper(); return;
                 case "startup": ToggleStartup(); break;
                 case "weather": R.Weather = !R.Weather; break;
                 case "zoom": R.Zoom = Math.Max(70, Math.Min(200, Convert.ToInt32(m["value"]))); if (settingsWindow != null) settingsWindow.SetZoom(R.Zoom); break;
@@ -795,7 +800,7 @@ namespace Bramble
             var state = new
             {
                 type = "state",
-                wallpapers = ListWallpapers().Select(n => new { name = n, type = WallpaperType(n), url = UrlMedia(n), custom = File.Exists(Path.Combine(WallpapersFolder, n, "config.json")) }).ToArray(),
+                wallpapers = ListWallpapers().Select(n => new { name = n, type = WallpaperType(n), url = UrlMedia(n), custom = File.Exists(Path.Combine(WallpapersFolder, n, "config.json")), stamp = Stamp(n) }).ToArray(),
                 current = R.Wallpaper,
                 displays = OrderedScreens().Select((s, i) =>
                 {
@@ -897,22 +902,30 @@ namespace Bramble
                 }
             }
             catch (Exception ex) { Log(ex); }
+            foreach (var folder in new[] { Environment.SpecialFolder.DesktopDirectory, Environment.SpecialFolder.Programs })
+                FollowShortcut(Path.Combine(Environment.GetFolderPath(folder), "Bramble.lnk"), exe);
+        }
+
+        // Windows moves a shortcut's target along with a renamed folder but leaves its icon path behind.
+        static void FollowShortcut(string lnk, string exe)
+        {
             try
             {
-                string lnk = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Bramble.lnk");
                 if (!File.Exists(lnk)) return;
                 Type type = Type.GetTypeFromProgID("WScript.Shell");
                 object shell = Activator.CreateInstance(type);
                 object r = type.InvokeMember("CreateShortcut", System.Reflection.BindingFlags.InvokeMethod, null, shell, new object[] { lnk });
                 Type t = r.GetType();
                 Func<string, string> read = name => (t.InvokeMember(name, System.Reflection.BindingFlags.GetProperty, null, r, null) as string) ?? "";
-                string target = read("TargetPath"), icon = read("IconLocation");
+                string target = read("TargetPath"), icon = Environment.ExpandEnvironmentVariables(read("IconLocation").Split(',')[0]);
                 bool ours = target.EndsWith("Bramble.exe", StringComparison.OrdinalIgnoreCase);
-                if (ours && (!target.Equals(exe, StringComparison.OrdinalIgnoreCase) || !icon.StartsWith(exe, StringComparison.OrdinalIgnoreCase)))
+                bool staleIcon = icon.Length > 0 && !File.Exists(icon);
+                if (ours && (!target.Equals(exe, StringComparison.OrdinalIgnoreCase) || staleIcon))
                 {
                     t.InvokeMember("TargetPath", System.Reflection.BindingFlags.SetProperty, null, r, new object[] { exe });
                     t.InvokeMember("WorkingDirectory", System.Reflection.BindingFlags.SetProperty, null, r, new object[] { Root });
-                    t.InvokeMember("IconLocation", System.Reflection.BindingFlags.SetProperty, null, r, new object[] { exe + ",0" });
+                    if (staleIcon || icon.EndsWith("Bramble.exe", StringComparison.OrdinalIgnoreCase))
+                        t.InvokeMember("IconLocation", System.Reflection.BindingFlags.SetProperty, null, r, new object[] { exe + ",0" });
                     t.InvokeMember("Save", System.Reflection.BindingFlags.InvokeMethod, null, r, null);
                 }
                 System.Runtime.InteropServices.Marshal.FinalReleaseComObject(r);

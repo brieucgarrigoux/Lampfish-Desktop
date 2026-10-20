@@ -147,6 +147,7 @@ namespace Bramble
             {
                 e.Cancel = true;
                 Hide();
+                Send("{\"type\":\"window.closed\"}");
             }
             base.OnFormClosing(e);
         }

@@ -1,3 +1,12 @@
+.segments--sizes button { display: grid; place-items: center; height: 30px; padding: 0; }
+.segments--sizes i { display: block; width: var(--s); height: var(--s); border: 1.5px solid currentColor; border-radius: calc(var(--s) / 4); }
+.segments--sizes button:nth-child(1) i { --s: 8px; }
+.segments--sizes button:nth-child(2) i { --s: 10px; }
+.segments--sizes button:nth-child(3) i { --s: 12px; }
+.segments--sizes button:nth-child(4) i { --s: 15px; }
+.segments--sizes button:nth-child(5) i { --s: 19px; }
+.segments--sizes button:disabled { opacity: .4; cursor: default; }
+
 .view--arrange { max-width: 1120px; margin-inline: auto; }
 
 .map {
@@ -30,8 +39,8 @@
 .arrangement[aria-checked="true"] { background: var(--group-up); }
 .arrangement[aria-checked="true"] .name-ag { color: var(--text); }
 .arrangement[aria-checked="true"] rect.t0, .arrangement[aria-checked="true"] rect.t2 { fill: var(--accent); }
-.arrangement[aria-checked="true"] rect.t1, .arrangement[aria-checked="true"] rect.t3 { fill: #5a20ab; }
-.screen-label { position: absolute; margin-top: 6px; font: 600 11px/1 var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); white-space: nowrap; pointer-events: none; }
+.arrangement[aria-checked="true"] rect.t1, .arrangement[aria-checked="true"] rect.t3 { fill: var(--accent-strong); }
+.screen-label { position: absolute; margin-top: 6px; font: 600 11.5px/1 var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); white-space: nowrap; pointer-events: none; }
 .screen-label.primary { color: var(--accent); }
 .point { position: absolute; z-index: 2; cursor: grab; touch-action: none; transition: opacity .2s; }
 .scene.settled .point { transition: left .25s ease-out, top .25s ease-out, opacity .2s; }
@@ -66,7 +75,7 @@
 .button-sort--large { grid-column: 1 / -1; }
 .button-sort:disabled { opacity: .4; pointer-events: none; }
 
-.category { justify-content: flex-start; cursor: grab; touch-action: none; transition: background .12s; }
+.category { justify-content: flex-start; cursor: grab; touch-action: none; transition: background var(--fast); }
 .category .name-cat { flex: 1; }
 .category:hover { background: var(--group-up); }
 .category:first-child { border-radius: var(--radius-group) var(--radius-group) 0 0; }

@@ -44,24 +44,54 @@
     select.append(o);
   }
 
+  const expanded = new Set();
+  const CHEVRON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>';
+
+  function triggers(m) {
+    const parts = [];
+    if (m.time) parts.push(tr('every day at {0}', m.time));
+    if (m.screens) parts.push(m.screens === 1 ? tr('with 1 screen') : tr('with {0} screens', m.screens));
+    if (m.power) parts.push(tr(m.power === 'mains' ? 'on mains power' : 'on battery'));
+    if (m.app) parts.push(tr('with {0}', m.app));
+    if (m.headset) parts.push(tr('with headphones'));
+    const starts = parts.length ? tr('Starts {0}', parts.join(', ')) : tr('Starts by hand only');
+    return m.opens && m.opens.length ? starts + ' · ' + tr('Opens {0}', m.opens.join(', ')) : starts;
+  }
+
   function card(m) {
     const el = document.createElement('article');
     el.className = 'mood' + (m.current ? ' current' : '');
     el.innerHTML = `
       <div class="mood__head"><h3 class="mood__name" title="Double-click to rename"></h3><span class="mood__badge"></span></div>
       <ul class="mood__facts"></ul>
-      <div class="mood__auto">
+      <button class="mood__summary" aria-expanded="false"><span></span>${CHEVRON}</button>
+      <div class="mood__auto" hidden>
         <label class="mood__time"><span data-what="time"></span><input type="time" aria-label="Start time"></label>
         <label class="mood__time"><span data-what="screens"></span><select data-what="screens" aria-label="Number of screens"></select></label>
         <label class="mood__time"><span data-what="power"></span><select data-what="power" aria-label="Power"></select></label>
+        <div class="mood__time" data-row="app"><span data-what="app"></span><span class="mood__pick"></span></div>
+        <label class="mood__time" data-row="headset"><span data-what="headset"></span><span class="toggler"><input type="checkbox" data-what="headset"></span></label>
+        <div class="mood__time mood__opens" data-row="opens"><span data-what="opens"></span><span class="mood__chips"></span></div>
       </div>
       <div class="mood__actions"><button class="button button--accent" data-do="apply"></button><button class="button" data-do="update"></button><button class="link" data-do="export"></button><button class="link" data-do="remove"></button></div>`;
     const name = el.querySelector('.mood__name');
     name.textContent = m.name;
     el.querySelector('.mood__badge').textContent = m.current ? tr('Active') : '';
     el.querySelector('.mood__facts').append(...facts(m));
+
+    const summary = el.querySelector('.mood__summary'), auto = el.querySelector('.mood__auto');
+    summary.firstElementChild.textContent = triggers(m);
+    summary.title = triggers(m);
+    const open = expanded.has(m.id);
+    auto.hidden = !open;
+    summary.setAttribute('aria-expanded', String(open));
+    summary.addEventListener('click', () => {
+      if (expanded.has(m.id)) expanded.delete(m.id); else expanded.add(m.id);
+      render();
+    });
+
     el.querySelector('[data-what="time"]').textContent = tr('Starts every day at');
-    const time = el.querySelector('input');
+    const time = el.querySelector('input[type="time"]');
     time.value = m.time || '';
     time.addEventListener('change', () => send('moods.time', { id: m.id, value: time.value }));
     el.querySelector('span[data-what="screens"]').textContent = tr('Starts with');
@@ -76,6 +106,51 @@
     option(power, 'battery', tr('Battery'));
     power.value = m.power || '';
     power.addEventListener('change', () => send('moods.power', { id: m.id, value: power.value }));
+
+    el.querySelector('[data-what="app"]').textContent = tr('Starts with the app');
+    el.querySelector('[data-row="app"]').title = tr('The previous setup comes back when the app closes');
+    const pick = el.querySelector('.mood__pick');
+    if (m.app) {
+      const chip = document.createElement('button');
+      chip.className = 'chip mood__chip';
+      chip.innerHTML = '<span></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg>';
+      chip.firstChild.textContent = m.app;
+      chip.title = tr('Remove');
+      chip.addEventListener('click', () => send('moods.appClear', { id: m.id }));
+      pick.append(chip);
+    } else {
+      const choose = document.createElement('button');
+      choose.className = 'link';
+      choose.textContent = tr('Choose');
+      choose.addEventListener('click', () => send('moods.app', { id: m.id }));
+      pick.append(choose);
+    }
+
+    el.querySelector('span[data-what="headset"]').textContent = tr('Starts with headphones');
+    el.querySelector('[data-row="headset"]').title = tr('The previous setup comes back when the headphones are removed');
+    const headset = el.querySelector('input[data-what="headset"]');
+    headset.checked = !!m.headset;
+    headset.addEventListener('change', () => send('moods.headset', { id: m.id, value: headset.checked }));
+
+    el.querySelector('[data-what="opens"]').textContent = tr('Opens');
+    const chips = el.querySelector('.mood__chips');
+    (m.opens || []).forEach((label, i) => {
+      const chip = document.createElement('button');
+      chip.className = 'chip mood__chip';
+      chip.innerHTML = '<span></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg>';
+      chip.firstChild.textContent = label;
+      chip.title = tr('Remove');
+      chip.addEventListener('click', () => send('moods.openRemove', { id: m.id, index: i }));
+      chips.append(chip);
+    });
+    if (!m.opens || m.opens.length < 8) {
+      const add = document.createElement('button');
+      add.className = 'link';
+      add.textContent = tr('Add');
+      add.addEventListener('click', () => send('moods.openAdd', { id: m.id }));
+      chips.append(add);
+    }
+
     const [apply, update, exporter, remove] = el.querySelectorAll('[data-do]');
     apply.textContent = m.current ? tr('Applied') : tr('Apply');
     apply.disabled = m.current;
@@ -119,7 +194,7 @@
     box.querySelector('.mood__facts').append(...facts(m.mood));
     box.querySelector('.mood-preview__warnings').append(...warnings.map(fact));
     const [add, cancel] = box.querySelectorAll('[data-do]');
-    add.textContent = tr('Add this mood');
+    add.textContent = tr('Add this mode');
     cancel.textContent = tr('Cancel');
     add.addEventListener('click', () => { box.hidden = true; send('moods.add'); });
     cancel.addEventListener('click', () => { box.hidden = true; send('moods.cancel'); });
@@ -128,9 +203,9 @@
 
   function render() {
     $('mood-count').textContent = moods.length || '';
-    $('mood-help').textContent = moods.length ? tr('One click applies the wallpaper, cursors and sounds') : tr('Nothing saved yet. Set things up the way you like, then save them here.');
+    $('mood-help').textContent = moods.length ? tr('A mode brings back a wallpaper, cursors and sounds in one click, or by itself at the right moment') : tr('Set everything up, then save it as a mode to bring it back in one click');
     zone.replaceChildren(...moods.map(card));
-    zone.hidden = moods.length === 0;
+    zone.hidden = $('moods-title').hidden = moods.length === 0;
   }
 
   function state(list) {
@@ -149,24 +224,5 @@
   });
   $('mood-import').addEventListener('click', () => send('moods.import'));
 
-  const grid = $('grid'), panel = $('wp-moods'), folder = $('folder');
-  let tab = 'library';
-  try { tab = localStorage.getItem('wallpaper.tab') === 'moods' ? 'moods' : 'library'; } catch (e) { }
-  function showTab() {
-    for (const b of $('wp-tabs').children) {
-      b.setAttribute('aria-selected', String(b.dataset.tab === tab));
-      b.setAttribute('aria-checked', String(b.dataset.tab === tab));
-    }
-    grid.hidden = tab !== 'library';
-    folder.hidden = tab !== 'library';
-    panel.hidden = tab !== 'moods';
-  }
-  for (const b of $('wp-tabs').children) b.addEventListener('click', () => {
-    tab = b.dataset.tab;
-    try { localStorage.setItem('wallpaper.tab', tab); } catch (e) { }
-    showTab();
-  });
-  showTab();
-
-  Bramble.moods = { state, event, visible() { }, showTab: t => { tab = t; showTab(); } };
+  Bramble.moods = { state, event };
 })();

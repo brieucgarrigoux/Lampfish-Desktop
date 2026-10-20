@@ -4,16 +4,19 @@
   let network = null, stats = null, shown = false, timer = 0, keyWallpaper = '', map = null, weather = null, tasks = null;
   const images = new Map(), appIcons = new Map();
 
-  const SERVICES = [
+  const ROWS = [
+    ['processor', 'Processor', 'hardware', '<rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/><rect x="9.5" y="9.5" width="5" height="5" rx=".8"/><path d="M9.5 3.5v3M14.5 3.5v3M9.5 17.5v3M14.5 17.5v3M3.5 9.5h3M3.5 14.5h3M17.5 9.5h3M17.5 14.5h3"/>'],
+    ['memory', 'Memory', 'hardware', '<rect x="3.5" y="7" width="17" height="9.5" rx="1.5"/><path d="M7.5 10.5v2.5M11 10.5v2.5M14.5 10.5v2.5M6 16.5v2.5M18 16.5v2.5"/>'],
+    ['disk', 'Disk', 'files', '<rect x="3.5" y="6.5" width="17" height="11" rx="2"/><path d="M6.5 12h6"/><circle cx="16.5" cy="12" r="1.2"/>'],
+    ['power', 'Battery', 'hardware', '<rect x="3.5" y="8" width="15" height="8" rx="1.5"/><path d="M21 11v2M11.5 9.5 9 12.5h3l-2.5 3"/>'],
+    ['network', 'Network', 'network', '<path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.2" r="1.1"/>'],
+  ];
+  const SHORTCUTS = [
     ['icons', 'Icons', '<rect x="4" y="4" width="16" height="16" rx="4"/><path d="m12 7.8 1.2 2.6 2.8.3-2.1 1.9.6 2.8-2.5-1.4-2.5 1.4.6-2.8-2.1-1.9 2.8-.3z"/>'],
     ['arrange', 'Arrange', '<rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><rect x="14" y="14" width="6" height="6" rx="1.2"/>'],
     ['mouse', 'Mouse', '<path d="M6 3.5 18 12.3l-5.6.8-3.2 4.9z"/><path d="m12.4 13.1 3.6 6.4"/>'],
     ['station', 'Sounds', '<path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/>'],
-    ['files', 'Folders', '<path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/>'],
-    ['hardware', 'Hardware', '<rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/><rect x="9.5" y="9.5" width="5" height="5" rx=".8"/><path d="M9.5 3.5v3M14.5 3.5v3M9.5 17.5v3M14.5 17.5v3M3.5 9.5h3M3.5 14.5h3M17.5 9.5h3M17.5 14.5h3"/>'],
     ['tasks', 'Tasks', '<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M6.5 13h2.5l1.5-4 3 7 1.5-3h2.5"/>'],
-    ['network', 'Network', '<path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.2" r="1.1"/>'],
-    ['power', 'Power', '<rect x="3.5" y="8" width="15" height="8" rx="1.5"/><path d="M21 11v2M11.5 9.5 9 12.5h3l-2.5 3"/>'],
   ];
   const ARRANGEMENTS = { left: 'Left', right: 'Right', top: 'Top', bottom: 'Bottom', frame: 'Frame', center: 'Center', corners: 'Corners', blocks: 'Blocks' };
   const UNITS = ['bytes', 'KB', 'MB', 'GB', 'TB'].map(u => tr(u));
@@ -23,31 +26,41 @@
     return o.toLocaleString(LOCALE, { maximumFractionDigits: o >= 100 || i === 0 ? 0 : 1 }) + ' ' + UNITS[i];
   }
 
-  const grid = $('h-tiles');
   const tiles = {};
-  for (const [view, name, icon] of SERVICES) {
+  const glyph = icon => `<svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${icon}</svg>`;
+  for (const [key, name, view, icon] of ROWS) {
+    const b = document.createElement('button');
+    b.className = 'h-row';
+    b.innerHTML = `${glyph(icon)}<span class="h-row__what"><span class="h-row__name"></span><span class="h-detail"></span></span><span class="h-visual"></span><span class="h-value"></span>`;
+    b.querySelector('.h-row__name').textContent = tr(name);
+    b.addEventListener('click', () => showView(view));
+    $('h-rows').append(b);
+    tiles[key] = { el: b, name: b.querySelector('.h-row__name'), value: b.querySelector('.h-value'), detail: b.querySelector('.h-detail'), visual: b.querySelector('.h-visual') };
+  }
+  for (const [view, name, icon] of SHORTCUTS) {
     const b = document.createElement('button');
     b.className = 'h-tile';
-    b.innerHTML = `<header><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${icon}</svg><span class="h-name"></span><svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></header>
-      <span class="h-value"></span><span class="h-detail"></span><span class="h-visual"></span>`;
-    b.querySelector('.h-name').textContent = name;
-
-    b.addEventListener('click', () => showView(view === 'power' ? 'hardware' : view));
-    grid.append(b);
-    tiles[view] = { el: b, value: b.querySelector('.h-value'), detail: b.querySelector('.h-detail'), visual: b.querySelector('.h-visual') };
+    b.innerHTML = `<header>${glyph(icon)}<span class="h-name"></span></header><span class="h-value"></span><span class="h-visual"></span>`;
+    b.querySelector('.h-name').textContent = tr(name);
+    b.addEventListener('click', () => showView(view));
+    $('h-tiles').append(b);
+    tiles[view] = { el: b, value: b.querySelector('.h-value'), detail: null, visual: b.querySelector('.h-visual') };
   }
-  const set = (view, value, detail, part, alert) => {
-    const t = tiles[view];
+  const set = (key, value, detail, alert) => {
+    const t = tiles[key];
     t.value.textContent = value || '–';
-    t.detail.textContent = detail || '';
+    if (t.detail) t.detail.textContent = detail || '';
+    t.el.title = t.detail ? '' : detail || '';
     t.el.classList.toggle('alert', !!alert);
   };
 
-  const visual = (view, html) => { const v = tiles[view].visual; if (v.dataset.key !== html) { v.dataset.key = html; v.innerHTML = html; } };
+  const visual = (key, html) => { const v = tiles[key].visual; if (v.dataset.key !== html) { v.dataset.key = html; v.innerHTML = html; } };
   const bar = part => `<span class="h-bar"><i style="width:${Math.max(0, Math.min(100, part)).toFixed(1)}%"></i></span>`;
   const urlIcon = a => `/app/icon-cache/${encodeURIComponent(a.key)}-${a.retro ? 32 : 64}.png`;
   const urlCursor = a => `/app/cursor-cache/${encodeURIComponent(a.key)}-${a.retro ? 32 : 64}.png`;
   $('h-wallpaper').addEventListener('click', () => showView('wallpaper'));
+  $('h-pause').addEventListener('click', () => send('pause'));
+  $('h-next').addEventListener('click', () => send('next'));
 
   function duration(s) {
     const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60);
@@ -62,7 +75,7 @@
 
     const primary = (e.displays || []).find(d => d.primary);
     const wallpaper = primary ? wallpaperFor(primary.key) : e.wallpapers && e.wallpapers.find(f => f.name === e.current);
-    const key = (wallpaper ? wallpaper.name : '') + '|' + e.light + '|' + e.speed + '|' + e.fit;
+    const key = (wallpaper ? wallpaper.name + '@' + wallpaper.stamp : '') + '|' + e.light + '|' + e.speed + '|' + e.fit;
     if (key !== keyWallpaper) {
       keyWallpaper = key;
       const zone = $('h-wallpaper-preview');
@@ -73,82 +86,97 @@
         zone.append(m);
       }
     }
-    $('h-wallpaper').classList.toggle('paused', !!(e.paused || e.onBattery));
+    const paused = !!(e.paused || e.onBattery);
+    $('h-wallpaper').classList.toggle('paused', paused);
     $('h-wallpaper').classList.toggle('fit', e.fit === 'fit');
+    $('h-now-name').textContent = wallpaper ? wallpaper.name.replace(/\.[^.]+$/, '') : tr('No wallpaper selected');
+    $('h-now-type').textContent = wallpaper ? wallpaper.type.toUpperCase() : '';
+    $('h-pause').textContent = tr(e.paused ? 'Resume' : 'Pause');
+    $('h-pause').setAttribute('aria-pressed', String(!!e.paused));
+    $('h-next').disabled = !e.wallpapers || e.wallpapers.length < 2;
 
     const s = e.station;
     if (s) {
       const active = s.events.filter(x => x.active).length;
-      const last = s.log && s.log[0];
-      const label = last && (s.events.find(x => x.id === last.type) || {}).label;
-      set('station', tr(!s.active ? 'Sounds off' : s.silence ? 'Silent' : '{0} events on', active),
-        last ? tr('Last: {0} at {1}', tr(label || last.type), new Date(last.when).toLocaleTimeString(LOCALE, { hour: '2-digit', minute: '2-digit' })) : '');
-
-      visual('station', '<span class="h-leds">' + s.events.map(x => `<i class="${x.active && s.active ? 'on' : ''}" title="${x.label}"></i>`).join('') + '</span>');
+      set('station', tr(!s.active ? 'Sounds off' : s.silence ? 'Silent' : active === 1 ? '1 event on' : '{0} events on', active));
+      visual('station', '<span class="h-leds">' + s.events.map(x => `<i class="${x.active && s.active ? 'on' : ''}"></i>`).join('') + '</span>');
     }
 
     if (network) {
       const t = network.history && network.history[0];
-      set('network', !network.connected ? tr('No connection') : network.wifi ? (network.network || 'Wi-Fi') : tr('Cable'),
-        [network.ipv4, t ? tr('last test ↓ {0} Mbit/s', Math.round(t.down)) : ''].filter(Boolean).join(' · '), null, !network.connected);
       const sig = network.wifi && network.signal >= 0 ? network.signal : network.connected ? 100 : 0;
+      set('network', !network.connected ? tr('Offline') : network.wifi ? sig + ' %' : tr('Cable'),
+        [network.connected && network.wifi ? network.network || 'Wi-Fi' : '', t ? '↓ ' + Math.round(t.down) + ' Mbit/s' : ''].filter(Boolean).join(' · '), !network.connected);
       visual('network', '<span class="h-signal">' + [1, 2, 3, 4].map(i => `<i class="${sig > (i - 1) * 25 ? 'on' : ''}"></i>`).join('') + '</span>');
     }
 
     if (stats) {
-      const ram = stats.memory.used / stats.memory.total * 100;
-      set('hardware', tr('Processor {0} %', Math.round(stats.processor.total)), tr('Memory {0} %', Math.round(ram)), ram, ram >= 90);
+      const ram = stats.memory.used / stats.memory.total * 100, t = stats.temperature;
+      set('processor', Math.round(stats.processor.total) + ' %', t != null ? Math.round(t) + ' °C' : stats.processor.threads.length ? tr('{0} threads', stats.processor.threads.length) : '');
+      tiles.processor.visual.innerHTML = '<span class="h-threads">' + stats.processor.threads.slice(0, 16).map(v => `<i style="--h:${Math.max(8, Math.min(100, v)).toFixed(0)}%"></i>`).join('') + '</span>';
+      set('memory', Math.round(ram) + ' %', tr('{0} of {1}', size(stats.memory.used).replace(/ \S+$/, ''), size(stats.memory.total)), ram >= 90);
+      visual('memory', bar(ram));
 
-      tiles.hardware.visual.innerHTML = '<span class="h-threads">' + stats.processor.threads.map(v => `<i style="--h:${Math.max(6, Math.min(100, v)).toFixed(0)}%"></i>`).join('') + '</span>';
+      const b = stats.battery;
+      if (b) {
+        tiles.power.name.textContent = tr('Battery');
+        set('power', b.charge + ' %', b.mains ? tr('Plugged in') : b.remaining > 0 ? tr('{0} left', duration(b.remaining)) : tr('On battery'), b.charge <= 15 && !b.mains);
+        visual('power', '<span class="h-cell">' + Array.from({ length: 5 }, (_, i) => `<i class="${i < Math.ceil(b.charge / 20) ? (b.charge <= 15 && !b.mains ? 'low' : 'on') : ''}"></i>`).join('') + '</span><span class="h-tip"></span>');
+      } else {
+        tiles.power.name.textContent = tr('Power');
+        set('power', tr('Plugged in'), '');
+        visual('power', '');
+      }
+    }
 
-      const b = stats.battery, t = stats.temperature;
-      const hot = t != null ? ' · ' + Math.round(t) + ' °C' : '';
-      if (b) visual('power', '<span class="h-cell">' + Array.from({ length: 10 }, (_, i) => `<i class="${i < Math.ceil(b.charge / 10) ? (b.charge <= 15 && !b.mains ? 'low' : 'on') : ''}"></i>`).join('') + '</span><span class="h-tip"></span>');
-      if (b) set('power', tr('Battery {0} %', b.charge),
-        (b.mains ? tr('Plugged in') : b.remaining > 0 ? tr('{0} left', duration(b.remaining)) : tr('On battery')) + hot, b.charge, b.charge <= 15 && !b.mains);
-      else set('power', tr('Plugged in'), t != null ? tr('Temperature {0} °C', Math.round(t)) : '', null, false);
+    const fi = e.files;
+    if (fi && fi.disks && fi.disks[0]) {
+      const d = fi.disks[0];
+      tiles.disk.name.textContent = tr('Disk {0}', (d.path || '').slice(0, 2));
+      set('disk', Math.round((d.size - d.free) / d.size * 100) + ' %', tr('{0} free of {1}', size(d.free), size(d.size)), d.free / d.size < 0.1);
+      visual('disk', bar((d.size - d.free) / d.size * 100));
+    }
+
+    const a = e.icons;
+    if (a) {
+      set('icons', tr(a.customized.length > 1 ? '{0} customized folders' : a.customized.length ? '1 customized folder' : 'No customized folder', a.customized.length));
+      visual('icons', '<span class="h-images">' + a.customized.filter(x => x.preview).slice(0, 4).map(x => `<img src="${urlIcon(x.preview)}" class="${x.preview.retro ? 'retro' : ''}" alt="">`).join('') + '</span>');
     }
 
     const r = e.arrange;
-    if (r && Bramble.arrange && Bramble.arrange.thumbnail) visual('arrange', '<span class="h-thumbnail">' + Bramble.arrange.thumbnail(r.arrangement || 'left') + '</span>');
-    if (r) set('arrange', tr(ARRANGEMENTS[r.arrangement] || 'Left'), tr(r.layouts.length > 1 ? '{0} saved layouts' : r.layouts.length ? '1 saved layout' : 'No saved layout', r.layouts.length));
+    if (r) {
+      set('arrange', tr(ARRANGEMENTS[r.arrangement] || 'Left'), tr(r.layouts.length > 1 ? '{0} saved layouts' : r.layouts.length ? '1 saved layout' : 'No saved layout', r.layouts.length));
+      if (Bramble.arrange && Bramble.arrange.thumbnail) visual('arrange', '<span class="h-thumbnail">' + Bramble.arrange.thumbnail(r.arrangement || 'left') + '</span>');
+    }
 
     const so = e.mouse;
-    if (so) set('mouse', tr(so.themeTitle), tr('{0} px pointer', so.settings.size === 0 ? 16 : 32 + (so.settings.size - 1) * 16));
-
-    if (so) visual('mouse', '<span class="h-images">' + ['Arrow', 'Hand', 'IBeam', 'Wait'].map(id => so.roles.find(x => x.id === id)).filter(x => x && x.preview).map(x => `<img src="${urlCursor(x.preview)}" class="${x.preview.retro ? 'retro' : ''}" alt="">`).join('') + '</span>');
-
-    const a = e.icons;
-
-    if (a) visual('icons', '<span class="h-images">' + a.customized.filter(x => x.preview).slice(0, 6).map(x => `<img src="${urlIcon(x.preview)}" class="${x.preview.retro ? 'retro' : ''}" alt="" title="${x.name}">`).join('') + '</span>');
-    if (a) set('icons', tr(a.customized.length > 1 ? '{0} customized folders' : a.customized.length ? '1 customized folder' : 'No customized folder', a.customized.length), tr('Folder icons'));
+    if (so) {
+      set('mouse', tr(so.themeTitle), tr('{0} px pointer', so.settings.size === 0 ? 16 : 32 + (so.settings.size - 1) * 16));
+      visual('mouse', '<span class="h-images">' + ['Arrow', 'Hand', 'IBeam', 'Wait'].map(id => so.roles.find(x => x.id === id)).filter(x => x && x.preview).map(x => `<img src="${urlCursor(x.preview)}" class="${x.preview.retro ? 'retro' : ''}" alt="">`).join('') + '</span>');
+    }
 
     renderMoods(e.moods || []);
 
     if (tasks) {
       const apps = tasks.items.filter(t => t.kind === 'app').sort((a, b) => b.memory - a.memory), top = apps[0];
       set('tasks', tr(apps.length > 1 ? '{0} apps open' : apps.length ? '1 app open' : 'No app open', apps.length), top ? tr('Busiest: {0}', top.name) + ' · ' + size(top.memory) : '');
-      visual('tasks', '<span class="h-images">' + apps.filter(t => appIcons.get(t.id)).slice(0, 5).map(t => `<img src="${appIcons.get(t.id)}" alt="">`).join('') + '</span>');
-    }
-
-    const fi = e.files;
-    if (fi && fi.disks && fi.disks[0]) {
-      const d = fi.disks[0];
-      set('files', tr('{0} free', size(d.free)), tr('{0} of {1}', d.name, size(d.size)), null, d.free / d.size < 0.1);
-      visual('files', bar((d.size - d.free) / d.size * 100));
+      visual('tasks', '<span class="h-images">' + apps.filter(t => appIcons.get(t.id)).slice(0, 4).map(t => `<img src="${appIcons.get(t.id)}" alt="">`).join('') + '</span>');
     }
   }
 
   function renderMoods(moods) {
     const zone = $('h-moods');
-    zone.hidden = moods.length === 0;
     const key = moods.map(m => m.id + (m.current ? '*' : '') + m.name).join('|');
-    if (zone.dataset.key === key) return;
+    if (zone.dataset.key === key && zone.children.length) return;
     zone.dataset.key = key;
     const title = document.createElement('span');
-    title.className = 'h-moods__title';
-    title.textContent = tr('Moods');
-    zone.replaceChildren(title, ...moods.map(m => {
+    title.className = 'h-modes__title';
+    title.textContent = tr('Modes');
+    const more = document.createElement('button');
+    more.className = 'link h-modes__more';
+    more.textContent = moods.length ? tr('All modes') : tr('Save the current setup as a mode');
+    more.addEventListener('click', () => showView('modes'));
+    zone.replaceChildren(title, ...moods.slice(0, 4).map(m => {
       const b = document.createElement('button');
       b.className = 'tool-chip';
       b.setAttribute('aria-pressed', String(!!m.current));
@@ -156,7 +184,7 @@
       b.title = m.current ? tr('Active') : tr('Apply');
       b.addEventListener('click', () => { if (!m.current) send('moods.apply', { id: m.id }); });
       return b;
-    }));
+    }), more);
   }
 
   function time(code) {

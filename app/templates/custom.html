@@ -46,7 +46,7 @@
     if (m.bramble === 'config') { config = m.config; dirty = true; apply(); }
     if (m.bramble === 'audio') window.__audio(m.level);
   });
-  if (!params.has('preview')) fetch('config.json').then(r => r.json()).then(c => { config = c; apply(); });
+  if (!params.has('preview')) fetch('config.json', { cache: 'no-store' }).then(r => r.json()).then(c => { config = c; apply(); });
   if (parent !== window) parent.postMessage({ bramble: 'ready' }, '*');
 
   const $ = id => document.getElementById(id);

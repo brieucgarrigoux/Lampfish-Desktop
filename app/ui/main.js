@@ -44,7 +44,7 @@ if (LANGUAGE !== 'en') {
   }).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRIBUTES_TRANSLATED });
 }
 const Bramble = { state: null, station: null, icons: null, arrange: null, mouse: null, network: null, files: null, hardware: null, tasks: null, moods: null, creator: null };
-const VIEWS = ['home', 'wallpaper', 'create', 'icons', 'arrange', 'mouse', 'station', 'files', 'hardware', 'tasks', 'network', 'settings'];
+const VIEWS = ['home', 'modes', 'wallpaper', 'create', 'icons', 'arrange', 'mouse', 'station', 'files', 'hardware', 'tasks', 'network', 'settings'];
 
 const scrolls = {}, narrowLayout = matchMedia('(max-width: 900px)');
 const scrollZones = () => narrowLayout.matches ? [document.scrollingElement] : [document.querySelector('.contents'), document.querySelector('.panel')];
@@ -118,6 +118,7 @@ webview.addEventListener('message', e => {
   if (m.type && m.type.startsWith('tasks.')) { if (Bramble.tasks) Bramble.tasks.event(m); return; }
   if (m.type && m.type.startsWith('hardware.')) { if (Bramble.hardware) Bramble.hardware.event(m); return; }
   if (m.type && m.type.startsWith('moods.')) { if (Bramble.moods) Bramble.moods.event(m); return; }
+  if (m.type === 'window.closed') { if (Bramble.creator) Bramble.creator.reset(); return; }
   render(m);
 });
 
@@ -319,7 +320,7 @@ function renderWallpaper(state, before) {
   const wallpaper = shownWallpaper();
   $('speed').disabled = !!wallpaper && wallpaper.type === 'gif';
 
-  const key = state.wallpapers.map(f => f.name).join('|');
+  const key = state.wallpapers.map(f => f.name + '@' + f.stamp).join('|');
   if (key !== keyGrid) { keyGrid = key; buildGrid(); }
   const list = state.displays || [], split = list.length > 1 && list.some(d => d.wallpaper);
   for (const card of document.querySelectorAll('.card')) {
@@ -328,14 +329,14 @@ function renderWallpaper(state, before) {
     card.querySelector('.badge-screens').replaceChildren(...using.map(d => Object.assign(document.createElement('i'), { textContent: d.n, title: tr('Screen {0}', d.n) })));
   }
   $('count').textContent = state.wallpapers.length;
-  const keyV = (wallpaper ? wallpaper.name : '') + '|' + state.fit + '|' + heroScreen;
+  const keyV = (wallpaper ? wallpaper.name + '@' + wallpaper.stamp : '') + '|' + state.fit + '|' + heroScreen;
   if (keyV !== keyHero) { keyHero = keyV; buildHero(); }
   else adjustHero(state.light, state.speed);
   if (!before || before.paused !== state.paused || before.onBattery !== state.onBattery) freezeHero();
 }
 
 function urlHero(wallpaper, light, speed) {
-  const settings = `light=${light}&speed=${speed}&fit=${Bramble.state.fit}`;
+  const settings = `light=${light}&speed=${speed}&fit=${Bramble.state.fit}&v=${wallpaper.stamp}`;
   if (wallpaper.type === 'html') return `${wallpaper.url}?${settings}`;
   return `/app/player/player.html?type=${wallpaper.type}&src=${encodeURIComponent(wallpaper.url)}&${settings}`;
 }
@@ -450,7 +451,7 @@ function livePreview(wallpaper, card) {
   if (wallpaper.type !== 'html') return preview(wallpaper, card);
   const e = Bramble.state || {};
   const frame = document.createElement('iframe');
-  frame.src = wallpaper.url + '?light=' + (e.light != null ? e.light : 50) + '&speed=' + (e.speed != null ? e.speed : 50) + '&fit=' + (e.fit || 'fill');
+  frame.src = wallpaper.url + '?light=' + (e.light != null ? e.light : 50) + '&speed=' + (e.speed != null ? e.speed : 50) + '&fit=' + (e.fit || 'fill') + '&v=' + wallpaper.stamp;
   frame.tabIndex = -1;
   return frame;
 }
@@ -458,7 +459,7 @@ function livePreview(wallpaper, card) {
 function preview(wallpaper, card) {
   if (wallpaper.type === 'html') {
     const frame = document.createElement('iframe');
-    frame.src = wallpaper.url + '?light=50&speed=50&thumbnail=1';
+    frame.src = wallpaper.url + '?light=50&speed=50&thumbnail=1&v=' + wallpaper.stamp;
     frame.loading = 'lazy';
     frame.tabIndex = -1;
     let live = null, leaving = 0;
@@ -469,7 +470,7 @@ function preview(wallpaper, card) {
       live.className = 'live';
       live.tabIndex = -1;
       live.addEventListener('load', () => { if (live && card.matches(':hover')) live.classList.add('shown'); });
-      live.src = wallpaper.url + '?light=50&speed=50';
+      live.src = wallpaper.url + '?light=50&speed=50&v=' + wallpaper.stamp;
       frame.after(live);
     });
     card.addEventListener('mouseleave', () => {

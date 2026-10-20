@@ -8,20 +8,30 @@
 
   const url = (a, size) => `/app/cursor-cache/${encodeURIComponent(a.key)}-${size}.png`;
 
-  function image(a, large) {
+  function image(a) {
     const img = document.createElement('img');
     img.alt = '';
     img.loading = 'lazy';
     if (!a) return img;
-    if (large) { img.src = url(a, a.retro ? 32 : 64); img.classList.toggle('retro', a.retro); }
-    else img.src = url(a, a.retro ? 32 : 64);
+    img.src = url(a, a.retro ? 32 : 64);
+    img.classList.toggle('retro', a.retro);
     return img;
   }
   const chosenRole = () => s && s.roles.find(r => r.id === role);
   const samePath = (a, b) => !!a && !!b && a.toLowerCase() === b.toLowerCase();
 
+  function renderDraft() {
+    const title = $('s-theme');
+    title.textContent = s.themeTitle;
+    if (s.unsaved && s.based) title.append(Object.assign(document.createElement('span'), { className: 'badge-modified', textContent: tr('Modified') }));
+    $('s-draft').hidden = !s.unsaved;
+    $('s-draft-text').textContent = s.based ? tr('Changes not saved in a theme') : tr('These cursors are not saved in a theme');
+    $('s-update').hidden = !s.editable;
+    $('s-update').textContent = tr('Update “{0}”', s.themeTitle);
+    $('s-discard').hidden = !s.based;
+  }
+
   function renderRoles() {
-    $('s-theme').textContent = s.themeTitle;
     $('s-roles').replaceChildren(...s.roles.map(r => {
       const b = document.createElement('button');
       b.className = 'role' + (r.id === role ? ' chosen' : '');
@@ -30,7 +40,7 @@
       const frame = document.createElement('span');
       frame.className = 'role__case';
       frame.innerHTML = '';
-      frame.append(image(r.preview, true));
+      frame.append(image(r.preview));
       const name = document.createElement('span');
       name.className = 'role__name';
       name.textContent = r.name;
@@ -90,7 +100,7 @@
     const frame = document.createElement('div');
     frame.className = 'tile__case';
     frame.innerHTML = '';
-    frame.append(image(c.preview, true));
+    frame.append(image(c.preview));
     const footer = document.createElement('div');
     footer.className = 'tile__footer';
     footer.innerHTML = '<span class="name"></span>';
@@ -110,15 +120,85 @@
     return t;
   }
 
+  const SECTIONS = [['bramble', 'Bramble'], ['system', 'Windows'], ['mine', 'My themes']];
+  const ACTIONS = {
+    rename: ['Rename', '<path d="M4.5 19.5h4l10-10-4-4-10 10z"/><path d="m13 7 4 4"/>'],
+    duplicate: ['Duplicate', '<rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M5.5 15.5v-8a2 2 0 0 1 2-2h8"/>'],
+    remove: ['Remove', '<path d="M5 7h14M9.5 7V5h5v2M7 7l1 12h8l1-12"/>'],
+  };
+
+  function rename(card, th) {
+    const name = card.querySelector('.theme__name');
+    const input = Object.assign(document.createElement('input'), { className: 'theme__rename', maxLength: 40, value: th.title });
+    input.setAttribute('aria-label', tr('Theme name'));
+    name.replaceWith(input);
+    input.focus();
+    input.select();
+    let done = false;
+    const finish = save => {
+      if (done) return;
+      done = true;
+      const v = input.value.trim();
+      if (save && v && v !== th.title) send('mouse.rename', { name: th.name, to: v });
+      else input.replaceWith(name);
+    };
+    input.addEventListener('click', e => e.stopPropagation());
+    input.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') finish(true); else if (e.key === 'Escape') finish(false); });
+    input.addEventListener('blur', () => finish(true));
+  }
+
   function themeCard(th) {
-    const c = document.createElement('button');
-    c.className = 'theme' + (th.name === s.theme ? ' current' : '') + (th.bramble ? ' theme--bramble' : '');
+    const c = document.createElement('div');
+    c.className = 'theme' + (th.name === s.theme ? ' current' : '');
+    c.tabIndex = 0;
+    c.setAttribute('role', 'button');
     c.dataset.name = th.name;
-    c.innerHTML = '<span class="theme__showcase"></span><span class="theme__name"></span>';
-    for (const a of th.showcase) c.querySelector('.theme__showcase').append(image(a, false));
+    c.innerHTML = '<span class="theme__showcase"></span><span class="theme__name"></span><span class="theme__actions"></span>';
+    for (const a of th.showcase) c.querySelector('.theme__showcase').append(image(a));
     c.querySelector('.theme__name').textContent = th.title;
-    c.addEventListener('click', () => send('mouse.theme', { name: th.name }));
+    const apply = () => send('mouse.theme', { name: th.name });
+    c.addEventListener('click', apply);
+    c.addEventListener('keydown', e => { if (e.target === c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); apply(); } });
+    for (const what of th.kind === 'mine' ? ['rename', 'duplicate', 'remove'] : ['duplicate']) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'theme__action theme__action--' + what;
+      b.title = tr(ACTIONS[what][0]);
+      b.setAttribute('aria-label', tr(ACTIONS[what][0]));
+      b.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${ACTIONS[what][1]}</svg>`;
+      b.addEventListener('click', e => {
+        e.stopPropagation();
+        if (what === 'rename') rename(c, th);
+        else if (what === 'duplicate') send('mouse.duplicate', { name: th.name });
+        else send('mouse.removeTheme', { name: th.name });
+      });
+      c.querySelector('.theme__actions').append(b);
+    }
+    if (th.kind === 'mine') c.querySelector('.theme__name').addEventListener('dblclick', e => { e.stopPropagation(); rename(c, th); });
     return c;
+  }
+
+  function newTheme() {
+    const tile = document.createElement('button');
+    tile.type = 'button';
+    tile.className = 'theme theme--add';
+    tile.innerHTML = '<strong>+</strong><span></span>';
+    tile.lastChild.textContent = tr('New theme');
+    tile.title = tr('Saves the current cursors as a theme');
+    tile.addEventListener('click', () => {
+      const form = document.createElement('form');
+      form.className = 'theme theme--form';
+      form.innerHTML = '<input maxlength="40" autocomplete="off"><button class="button button--accent" type="submit"></button>';
+      const input = form.querySelector('input');
+      input.placeholder = tr('Name the new theme');
+      input.setAttribute('aria-label', tr('Theme name'));
+      form.querySelector('button').textContent = tr('Save');
+      form.addEventListener('submit', e => { e.preventDefault(); send('mouse.save', { name: input.value }); });
+      input.addEventListener('keydown', e => { if (e.key === 'Escape') { form.replaceWith(tile); tile.focus(); } });
+      tile.replaceWith(form);
+      input.focus();
+    });
+    return tile;
   }
 
   function renderLibrary() {
@@ -126,15 +206,25 @@
     renderTabs();
     const zone = $('s-library');
     if (!library) return;
-    const key = tab + '#' + library.themes.length + '#' + library.custom.map(p => p.path).join('|') + '#' + s.theme;
+    const key = tab + '#' + library.themes.map(t => t.name).join('|') + '#' + library.custom.map(p => p.path).join('|') + '#' + s.theme;
     if (key === keyLibrary) { mark(); return; }
     keyLibrary = key;
     zone.replaceChildren();
     if (tab === 'themes') {
-      const g = document.createElement('div');
-      g.className = 'themes';
-      g.append(...library.themes.map(themeCard));
-      zone.append(g);
+      for (const [kind, label] of SECTIONS) {
+        const list = library.themes.filter(t => t.kind === kind);
+        if (!list.length && kind !== 'mine') continue;
+        const head = document.createElement('h3');
+        head.className = 'themes__title';
+        head.innerHTML = '<span></span><span class="count"></span>';
+        head.firstChild.textContent = tr(label);
+        head.lastChild.textContent = list.length || '';
+        const g = document.createElement('div');
+        g.className = 'themes';
+        g.append(...list.map(themeCard));
+        if (kind === 'mine') g.append(newTheme());
+        zone.append(head, g);
+      }
     } else {
       const g = document.createElement('div');
       g.className = 'tiles tiles--cursors';
@@ -213,6 +303,7 @@
     $('s-initial').disabled = !!s.standard;
     $('s-original').hidden = !s.original;
     if (!chosenRole()) role = s.roles[0].id;
+    renderDraft();
     renderRoles();
     renderSettings();
     renderLibrary();
@@ -238,6 +329,13 @@
   $('s-initial').addEventListener('click', () => send('mouse.initial'));
   $('s-original').addEventListener('click', () => send('mouse.original'));
   $('s-folder').addEventListener('click', () => send('mouse.folder'));
+  $('s-draft').addEventListener('submit', e => {
+    e.preventDefault();
+    send('mouse.save', { name: $('s-draft-name').value });
+    $('s-draft-name').value = '';
+  });
+  $('s-update').addEventListener('click', () => send('mouse.update'));
+  $('s-discard').addEventListener('click', () => send('mouse.discard'));
 
   Bramble.mouse = { state, event, visible };
 })();

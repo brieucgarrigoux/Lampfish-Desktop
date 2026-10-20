@@ -40,7 +40,7 @@ WALLPAPERS = {
 
 def main():
     template = open(TEMPLATE, encoding='utf-8', newline='').read().replace('\r\n', '\n')
-    start = "if (!params.has('preview')) fetch('config.json').then(r => r.json()).then(c => { config = c; apply(); });"
+    start = "if (!params.has('preview')) fetch('config.json', { cache: 'no-store' }).then(r => r.json()).then(c => { config = c; apply(); });"
     assert start in template
     for name, item in WALLPAPERS.items():
         page = template.replace(start, "Promise.resolve().then(() => { config = %s; apply(); });" % json.dumps(item['config'], separators=(',', ':')))

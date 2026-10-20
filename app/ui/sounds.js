@@ -83,7 +83,7 @@
     const state = !s.active ? 'Sounds off' : s.silence ? 'Silent' : !e.active ? 'Off' : '';
     $('banner-sound-name').textContent = [tr(packOf(e.sound)), tr(titleOf(e.sound))].filter(Boolean).join(' · ');
     $('banner-state').textContent = state ? tr(state) : '';
-    $('banner-sound').classList.toggle('muted', !s.active || s.silence || !e.active);
+    $('banner-sound').classList.toggle('muted', !s.active || s.silence);
     $('banner-listen').classList.toggle('playing', !!playback);
     $('banner-listen').querySelector('.listen-label').textContent = tr(playback ? 'Stop' : 'Listen');
   }

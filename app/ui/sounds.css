@@ -23,7 +23,7 @@
 .knob { --v: 0; position: relative; width: 72px; height: 72px; border-radius: 50%; cursor: ew-resize; touch-action: none; }
 .knob::before { content: ""; position: absolute; inset: 11px; border-radius: 50%; background: var(--wallpaper); box-shadow: inset 0 2px 5px rgba(0, 0, 0, .9), 0 1px 0 rgba(255, 255, 255, .06); }
 .knob__ring { position: absolute; inset: 0; }
-.knob__ring i { position: absolute; left: 50%; top: 50%; width: 3.5px; height: 3.5px; margin: -1.75px; border-radius: 50%; background: #23242e; transform: rotate(var(--angle)) translateY(-33px); transition: background .1s, box-shadow .1s; }
+.knob__ring i { position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; margin: -2px; border-radius: 50%; background: #2b2c38; box-shadow: inset 0 1px 1px rgba(0, 0, 0, .6); transform: rotate(var(--angle)) translateY(-33px); transition: background .1s, box-shadow .1s; }
 .knob__ring i.lit { background: #b794ff; box-shadow: 0 0 5px 1px rgba(149, 97, 243, .95), 0 0 12px rgba(149, 97, 243, .5); }
 .banner-sound.muted .knob__ring i.lit { background: var(--text-pale); box-shadow: none; }
 .knob__button { position: absolute; inset: 14px; border-radius: 50%;
@@ -53,9 +53,9 @@
 .pack-header { display: flex; align-items: center; gap: 8px; padding-right: 12px; }
 .pack-open { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; padding: 11px 12px; border: 0; border-radius: var(--radius-group); background: none; text-align: left; transition: background var(--fast); }
 .pack-open:hover { background: var(--group-up); }
-.pack-open h3 { margin: 0; font-size: 13.5px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pack-open h3 { margin: 0; font-size: 13px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pack-open .count { font: 12px var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); }
-.chevron-pack { flex: none; width: 14px; height: 14px; fill: none; stroke: var(--text-pale); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform .15s; }
+.chevron-pack { flex: none; width: 14px; height: 14px; fill: none; stroke: var(--text-pale); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform var(--fast); }
 .pack.open .chevron-pack { transform: rotate(90deg); }
 .pack.current .pack-open h3::after { content: ""; display: inline-block; width: 6px; height: 6px; margin-left: 8px; border-radius: 50%; background: var(--accent); vertical-align: middle; }
 .pack > .group { display: none; margin: 0; background: none; border-top: 1px solid var(--hairline); border-radius: 0 0 var(--radius-group) var(--radius-group); }
