@@ -173,7 +173,7 @@ def draw():
     ])
     c['Hand'] = (outline(hand), (6, 1))
     c['Pin'] = (overlay(ARROW, badge(['.PPP.', 'PPLPP', 'PLLLP', 'PPLPP', '.PPP.', '..P..', '..P..']), 8, 7), (0, 0))
-    c['Person'] = (overlay(ARROW, badge(['.PPP.', '.PLP.', '.PPP.', '.....', 'PPPPP', 'PLLLP', 'PPPPP']), 8, 7), (0, 0))
+    c['Person'] = (overlay(ARROW, badge(['.PP.', 'PLPP', 'PPPP', '.PP.', '....', 'PPPP', 'LPPP', 'PPPP']), 9, 6), (0, 0))
     return c
 
 def image(g, tint, s):
