@@ -429,7 +429,7 @@
     ]));
     const copy = document.createElement('div');
     copy.className = 'group';
-    copy.innerHTML = '<button class="row action"><span class="caption"><svg class="glyph glyph--small" viewBox="0 0 24 24" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6.5a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"/></svg><span>Copy summary<small>Model, Windows, processor, memory, storage and screens, ready to paste</small></span></span></button>';
+    copy.innerHTML = '<button class="row action"><span class="caption"><svg class="glyph glyph--small" viewBox="0 0 24 24" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6.5a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"/></svg><span>Copy summary<small>The main specs, ready to paste in a message</small></span></span></button>';
     copy.firstChild.addEventListener('click', () => navigator.clipboard.writeText(summary()).then(() => toast(tr('Summary copied'), false, 2200)));
     sections.push(copy);
 

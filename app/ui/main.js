@@ -54,7 +54,7 @@ function showView(view) {
   document.body.dataset.view = view;
   if (previous !== view) scrollZones().forEach((z, i) => { z.scrollTop = (scrolls[view] || [])[i] || 0; });
   for (const b of document.querySelectorAll('.service')) {
-    if (b.dataset.view === view) b.setAttribute('aria-current', 'page');
+    if (b.dataset.view === view) { b.setAttribute('aria-current', 'page'); b.scrollIntoView({ block: 'nearest' }); }
     else b.removeAttribute('aria-current');
   }
   try { localStorage.setItem('view', view); } catch (e) { }

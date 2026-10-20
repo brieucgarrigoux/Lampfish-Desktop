@@ -5,6 +5,56 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+- Wallpaper per screen: a selector under the large preview picks every screen or one of them, and a badge on each wallpaper shows the screens it covers. Slideshow, moods, removal and Next wallpaper follow it.
+- Wallpapers fade through black when they change.
+- Power saving: a Frame rate choice (30 or 60 images a second) for every HTML wallpaper, and the wallpaper pauses while the session is locked.
+- Shuffle for the slideshow and for Next wallpaper, without repeating the current wallpaper or showing it on two screens when there is a choice.
+- Videos, GIFs and images pulse lightly with the sound when React to sound is on.
+- A dark tray menu: Open Bramble, Next wallpaper, Pause or resume the wallpaper, Moods, Sounds and Quit. The tray tooltip names the wallpaper or says it is paused.
+- Undo after applying a mood, resetting the cursors, applying an icon to subfolders, resetting every folder icon, loading a sound pair and clearing the test history. Removing a mood can be undone instead of confirmed.
+- Back to original for cursors and folder icons: Bramble remembers how they were before it first changed them.
+- Moods: start on mains power or on battery, export a mood to a file and import one, with a preview first (a wallpaper or cursor theme missing on this PC is reported, nothing is ever run).
+- Tasks: search by name, description or publisher (Ctrl F, Escape clears it), and a sheet for each program with its publisher, version, size and location, whether it starts with Windows and its open network connections.
+- Hardware: Copy summary puts the main specs in the clipboard, ready to paste in a message.
+- Home: a Tasks tile (apps open, the busiest one) and a row of moods to apply in one click.
+- Settings: a Connections group that lists every outside service Bramble talks to and when, and an update check (off by default, once a day, or Check now).
+- Keyboard: Ctrl 1 to 9 open the services in the order of the bar, Ctrl Tab the next one, Ctrl comma the settings.
+- The window remembers its size, position and maximized state.
+
+### Changed
+- One design system across the app: the same corner radii, text sizes, switches, buttons, selection and focus ring everywhere, and explanation lines easier to read.
+- The title bar is dark, like the window.
+- Cards keep their relief without the heavy shadow, with a fine light edge instead.
+- The chosen row of a list has a violet tint and a violet icon (Sounds, Icons, Folders, Tasks), and pressed tool buttons share one style.
+- The rail gets more compact on short windows so every service stays visible.
+- Narrow windows scroll as one page below 900 px, and the window can now be as small as 720 x 560.
+- Home opens first on a new install, and each service keeps its scroll position.
+- Browser shortcuts (print, find, reload) no longer work in the window.
+- Previews in Home, Wallpaper and Arrange react to sound only when React to sound is on.
+- The large preview shows the wallpaper at the proportions of the real screen, and fades in.
+- Hovering a wallpaper fades its animation in instead of reloading it.
+- Edit and Remove sit together on a wallpaper card, and Remove asks to Confirm.
+- Arrange shows the sort in use, and each screen of the map shows its own wallpaper with its number under it.
+- Mouse: the pointer size reads in pixels in the panel too, role names fit on two lines, and each role's tooltip names its file.
+- Network: the step being measured fills its line as the test goes.
+- Settings are regrouped: General, Connections, Data, About.
+- The drop zone is a dashed frame that says which files are expected, and loading states share one small spinner.
+- Starting with Windows uses the --background option (--discret still works).
+
+### Fixed
+- Folders: Run the analysis again lost its icon and its explanation, the analyzed source lost its icon, and the centre of the rings cut its numbers.
+- Hardware: the disk read speed was labelled Playing, long values crushed the labels in the panel, and a card left alone on the last row now spans the width.
+- Mouse: the 16 px pointer size read as 1, and cursor themes whose files were deleted showed empty cards.
+- Wallpaper: the armed Remove button covered Edit, and No wallpaper selected was misspelled.
+- Arrange: undoing the removal of a layout did nothing.
+- Moods: Active stayed shown after the settings had changed.
+- Desktop: when File Explorer recreates the window behind the icons, the wallpaper reattaches instead of reloading every screen, and wallpaper windows are attached the way Windows expects.
+- Cursors: the click point of the pixel themes was half a cell off (arrow tip, precision cross, hand), the pixel themes get a 16 px size, Bramble Glass gets a 48 px size for its animated cursors, and the busy cursors turn at the same pace.
+- Create: the draft survives a language change, and its duplicate Reset row is gone.
+- Dropping an image from a browser explains that it must be saved first.
+- Frozen previews no longer repaint (Aurora and wallpapers made in Create), and wallpapers made in Create no longer draw faster than 60 images a second.
+
 ## [0.2.0] - 2026-10-19
 
 ### Added

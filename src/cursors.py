@@ -1,14 +1,15 @@
 """Builds Bramble's pixel-art cursor themes: python src/cursors.py
 
-Each cursor is drawn on a 16 x 16 grid (one letter per cell), then scaled without smoothing to 32, 48, 64, 96
+Each cursor is drawn on a 16 x 16 grid (one letter per cell), then scaled without smoothing to 16, 32, 48, 64, 96
 and 128 px in a single file, so Windows picks the size matching the pointer size setting.
+Hotspots are given in grid units measured from the top left edge, so they land on the same point at every size.
 Output: app/cursor-themes/<theme>/<role>.cur|.ani
 """
 import math, os, struct
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUTPUT = os.path.join(ROOT, 'app', 'cursor-themes')
-SCALES = [2, 3, 4, 6, 8]
+SCALES = [1, 2, 3, 4, 6, 8]
 SCALES_ANI = [2, 3, 4, 8]  # Windows refuses to load an .ani frame with more than four sizes.
 
 TINTS = {
@@ -100,28 +101,28 @@ def draw():
     c['Arrow'] = (ARROW, (0, 0))
     c['Help'] = (overlay(ARROW, badge(['PPP', '..P', '.P.', '...', '.P.'], 1), 10, 0), (0, 0))
     c['AppStarting'] = ([overlay(ARROW, mini_ring(t), 9, 9) for t in range(12)], (0, 0))
-    c['Wait'] = ([ring(t) for t in range(12)], (7, 7))
+    c['Wait'] = ([ring(t) for t in range(12)], (8, 8))
     g = empty()
     for (x, y) in [(2, 2), (3, 2), (4, 2), (2, 3), (2, 4), (13, 2), (12, 2), (11, 2), (13, 3), (13, 4),
                    (2, 13), (3, 13), (4, 13), (2, 12), (2, 11), (13, 13), (12, 13), (11, 13), (13, 12), (13, 11)]:
         g[y][x] = 'L'
     g[7][7] = g[7][8] = g[8][7] = g[8][8] = 'P'
-    c['Crosshair'] = (outline(g), (7, 7))
+    c['Crosshair'] = (outline(g), (8, 8))
     g = empty()
     for x in (5, 6, 8, 9): g[1][x] = g[14][x] = 'P'
     for y in range(2, 14): g[y][7] = 'L'
-    c['IBeam'] = (outline(g), (7, 8))
+    c['IBeam'] = (outline(g), (7.5, 8))
     g = empty()
     for t in range(10):
         g[12 - t][3 + t] = 'P'; g[13 - t][3 + t] = 'L' if t < 9 else 'D'
     g[14][1] = g[13][2] = 'L'; g[2][12] = g[1][13] = 'D'
-    c['NWPen'] = (outline(g), (1, 14))
+    c['NWPen'] = (outline(g), (1.5, 14.5))
     g = empty()
     for y in range(16):
         for x in range(16):
             d = math.hypot(x - 7.5, y - 7.5)
             if 4.6 <= d <= 6.3 or (d < 4.8 and abs((x - 7.5) - (y - 7.5)) < 1.1): g[y][x] = 'P'
-    c['No'] = (outline(g), (7, 7))
+    c['No'] = (outline(g), (8, 8))
     def double(vertical):
         g = empty()
         for i in range(3, 13): g[i][7] = 'L'
@@ -129,8 +130,8 @@ def draw():
             for d in range(-width, width + 1):
                 g[k][7 + d] = 'P'; g[15 - k][7 + d] = 'P'
         return outline(g) if vertical else outline([list(r) for r in zip(*g)])
-    c['SizeNS'] = (double(True), (7, 7))
-    c['SizeWE'] = (double(False), (7, 7))
+    c['SizeNS'] = (double(True), (7.5, 8))
+    c['SizeWE'] = (double(False), (8, 7.5))
     def diagonal(mirror):
         g = empty()
         for i in range(4, 12): g[i][i] = 'L'
@@ -139,20 +140,20 @@ def draw():
         g[3][3] = g[12][12] = 'P'
         if mirror: g = [row[::-1] for row in g]
         return outline(g)
-    c['SizeNWSE'] = (diagonal(False), (7, 7))
-    c['SizeNESW'] = (diagonal(True), (8, 7))
+    c['SizeNWSE'] = (diagonal(False), (8, 8))
+    c['SizeNESW'] = (diagonal(True), (8, 8))
     g = empty()
     for i in range(3, 13): g[i][7] = g[7][i] = 'L'
     for k, width in ((1, 0), (2, 1), (3, 2)):
         for d in range(-width, width + 1):
             g[k][7 + d] = g[15 - k][7 + d] = g[7 + d][k] = g[7 + d][15 - k] = 'P'
-    c['SizeAll'] = (outline(g), (7, 7))
+    c['SizeAll'] = (outline(g), (7.5, 7.5))
     g = empty()
     for k in range(5):
         for d in range(-k, k + 1): g[1 + k][7 + d] = 'P'
     for y in range(6, 15):
         for x in (6, 7, 8): g[y][x] = 'L' if x == 6 else 'P'
-    c['UpArrow'] = (outline(g), (7, 1))
+    c['UpArrow'] = (outline(g), (7.5, 1))
     hand = grid([
         '',
         '.....LP',
@@ -197,7 +198,7 @@ def image(g, tint, s):
     return header + bytes(pixels) + bytes(mask)
 
 def cur(g, hotspot, tint, scales=None):
-    images = [(16 * s, hotspot[0] * s + s // 2, hotspot[1] * s + s // 2, image(g, tint, s)) for s in (scales or SCALES)]
+    images = [(16 * s, min(16 * s - 1, round(hotspot[0] * s)), min(16 * s - 1, round(hotspot[1] * s)), image(g, tint, s)) for s in (scales or SCALES)]
     head = struct.pack('<HHH', 0, 2, len(images))
     offset = 6 + 16 * len(images)
     entries, data = b'', b''

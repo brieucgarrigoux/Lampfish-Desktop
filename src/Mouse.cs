@@ -38,6 +38,8 @@ namespace Bramble
         {
             Directory.CreateDirectory(CustomFolder);
             Directory.CreateDirectory(Cache);
+            var original = Program.R.CursorsOriginal;
+            if (original != null && (original.Roles == null || original.Roles.Values.Any(Ours))) Program.R.CursorsOriginal = null;
         }
 
         class Theme { public string Name, Source; public string[] Paths; }
@@ -186,10 +188,18 @@ namespace Bramble
             return true;
         }
 
+        static bool Ours(string path)
+        {
+            path = Environment.ExpandEnvironmentVariables(path ?? "");
+            return path.StartsWith(FolderThemes + "\\", StringComparison.OrdinalIgnoreCase) || path.StartsWith(CustomFolder + "\\", StringComparison.OrdinalIgnoreCase);
+        }
+
         static void Remember()
         {
             if (Program.R.CursorsOriginal != null) return;
-            Program.R.CursorsOriginal = Capture();
+            var now = Capture();
+            if (now.Roles.Values.Any(Ours)) return;
+            Program.R.CursorsOriginal = now;
             Program.Save();
         }
 

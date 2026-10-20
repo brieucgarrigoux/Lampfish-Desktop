@@ -10,6 +10,7 @@ import cursors
 
 THEME = 'Bramble Glass'
 SIZES = [32, 48, 64, 128]
+SIZES_CUR = [16, 32, 48, 64, 128]
 UNITS = 32
 K = 16
 TOP, BOTTOM = (160, 112, 250), (84, 28, 160)
@@ -242,7 +243,7 @@ def cur(image, hotspot, sizes):
         data += d
     return head + entries + data
 
-def ani(images, hotspot, sizes, jiffies=4, rates=None):
+def ani(images, hotspot, sizes, jiffies=5, rates=None):
     anih = struct.pack('<IIIIIIIII', 36, len(images), len(images), 0, 0, 0, 0, jiffies, 1)
     body = b'fram' + b''.join(cursors.chunk(b'icon', cur(i, hotspot, sizes)) for i in images)
     rate = cursors.chunk(b'rate', struct.pack('<%dI' % len(rates), *rates)) if rates else b''
@@ -251,7 +252,7 @@ def ani(images, hotspot, sizes, jiffies=4, rates=None):
 
 GLINT = ('Arrow', 'Help', 'Crosshair', 'IBeam', 'NWPen', 'UpArrow', 'Hand', 'Pin', 'Person')
 GLINT_STEPS = 8
-GLINT_SIZES = [32, 64, 96]
+GLINT_SIZES = [32, 48, 64, 96]
 
 def main():
     folder = os.path.join(cursors.OUTPUT, THEME)
@@ -265,7 +266,7 @@ def main():
             frames = [images[0]] + [glint(images[0], value, k, GLINT_STEPS) for k in range(GLINT_STEPS)]
             open(os.path.join(folder, role + '.ani'), 'wb').write(ani(frames, hotspot, GLINT_SIZES, rates=[150] + [3] * GLINT_STEPS))
         else:
-            open(os.path.join(folder, role + '.cur'), 'wb').write(cur(images[0], hotspot, SIZES))
+            open(os.path.join(folder, role + '.cur'), 'wb').write(cur(images[0], hotspot, SIZES_CUR))
     print(THEME, len(drawings), 'cursors')
 
 if __name__ == '__main__':

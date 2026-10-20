@@ -71,6 +71,18 @@ h2 .count { margin-left: 8px; font: 400 12px var(--numbers); font-variant-numeri
 .service[aria-current="page"] { color: #fff; font-weight: 600; background: linear-gradient(135deg, rgba(149, 97, 243, .34), rgba(90, 32, 171, .16)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), inset 0 0 0 1px rgba(149, 97, 243, .38), 0 6px 16px rgba(90, 32, 171, .28); }
 .service[aria-current="page"] svg { stroke: #d8c6ff; filter: drop-shadow(0 0 6px rgba(149, 97, 243, .8)); }
 .service--settings { margin-top: auto; }
+@media (max-height: 760px) {
+  .rail { padding: 10px 0; }
+  .rail .logo { width: 46px; height: 46px; }
+  .service { padding: 6px 0 5px; gap: 4px; }
+}
+@media (max-height: 680px) {
+  .rail { gap: 0; padding: 4px 0; }
+  .rail .logo { width: 36px; height: 36px; }
+  .logo-home { padding: 4px 0; margin-bottom: 2px; }
+  .service { padding: 4px 0 3px; gap: 3px; }
+  .rail-sep { margin: 4px 0; }
+}
 @container rail (min-width: 140px) {
   .service:not(.logo-home) { flex-direction: row; justify-content: flex-start; gap: 12px; width: calc(100% - 20px); padding: 9px 12px; font-size: 13px; }
   .rail-sep { width: calc(100% - 40px); }
@@ -162,7 +174,7 @@ body[data-view="tasks"]:not(.sheet-open) .panel { display: none; }
 .group > * + *::before { content: ""; position: absolute; top: 0; left: 14px; right: 0; height: 1px; background: var(--hairline); }
 .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 14px; }
 .row > .caption { flex: 1 1 auto; }
-.row:has(> .value) > .caption { flex: 1 0 auto; max-width: 62%; }
+.panel .row:has(> .value) > .caption { flex: 1 0 auto; max-width: 62%; }
 .row .value { flex: 0 4 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-soft); }
 .row .time { font: 12px var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); }
 .row.empty { color: var(--text-pale); }

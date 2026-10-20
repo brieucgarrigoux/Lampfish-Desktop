@@ -11,25 +11,25 @@
   <a href="CHANGELOG.md">Changelog</a>
 </p>
 
-Bramble lives in the system tray and gathers wallpapers, icons, cursors, sounds, desktop layout, disk usage, network, hardware and running programs in a single app, instead of a patchwork of separate tools. It needs no administrator rights, no account and no server, and it collects no data: everything stays on your PC.
+Bramble lives in the system tray and gathers wallpapers, icons, cursors, sounds, desktop layout, disk usage, network, hardware and running programs in a single app, instead of a patchwork of separate tools. It needs no administrator rights, no account and no server, and it collects no data: everything stays on your PC. Settings list the few outside services it calls (weather, connection test, update check) and when.
 
 ## Services
 
 | Service | What it does |
 | --- | --- |
-| **Home** | The time, today's weather, your current wallpaper with your real desktop icons on it, and the state of every service at a glance. |
-| **Wallpaper** | Animated wallpapers behind the desktop icons: videos, GIFs, animated images, HTML pages, optionally pulsing with the sound playing, and moods that apply a wallpaper, cursors and sounds in one click, at a set time or with a set number of screens. Pauses on battery or when a window covers the screen. |
+| **Home** | The time, today's weather, your current wallpaper with your real desktop icons on it, your moods in one click, and the state of every service at a glance. |
+| **Wallpaper** | Animated wallpapers behind the desktop icons, one for every screen or one per screen: videos, GIFs, animated images, HTML pages, optionally pulsing with the sound playing, with fades, a slideshow that can shuffle and a frame rate choice. Moods apply a wallpaper, cursors and sounds in one click, at a set time, with a set number of screens or on battery, and can be exported and imported. Pauses on battery, when a window covers the screen or while the session is locked. |
 | **Create** | Builds a wallpaper from your logo and background: themes, particles, glow, a sound reaction and a live preview with snap guides where the logo and the text are placed, typed and resized. Made wallpapers can be edited again. |
-| **Icons** | Gives any folder an icon from the Windows library (sorted retro pixel / modern) or your own, from the app or the right-click menu. |
-| **Mouse** | Cursor themes (including original pixel-art themes and a smooth, lightly animated one), per-role cursors, pointer size, speed, double-click, wheel and extras. |
+| **Icons** | Gives any folder an icon from the Windows library (sorted retro pixel / modern) or your own, from the app or the right-click menu, with a way back to the icon it had before. |
+| **Mouse** | Cursor themes (including original pixel-art themes and a smooth, lightly animated one), per-role cursors, pointer size, speed, double-click, wheel and extras, with a way back to the cursors you had before. |
 | **Sounds** | A sound for thirteen system events (startup, lock, sleep, charger, USB devices, docking station, speed test), with a sound library, loudness matching and import. |
 | **Arrange** | A live map of your screens (one, two, three or more) to sort and lay out desktop icons, with undo, a way back to the original layout, and layouts saved per screen setup. |
 | **Folders** | What takes up space on a drive, as rings (in the spirit of DaisyDisk), without administrator rights. |
 | **Network** | Connection details, live traffic, a security check of the connection, and a speed test with jitter, loaded latency (graded A to F) and history. |
-| **Tasks** | What is running, grouped by program with its icon, publisher, memory and processor use, sorted into apps, command-line, background and system programs. Ends a program on request. |
-| **Hardware** | Processor, memory, graphics, storage, battery, screens, temperature and connected devices, read live, with a plain-language health summary. |
+| **Tasks** | What is running, grouped by program with its icon, publisher, memory and processor use, sorted into apps, command-line, background and system programs, with a search and a sheet per program (version, location, start with Windows, open connections). Ends a program on request. |
+| **Hardware** | Processor, memory, graphics, storage, battery, screens, temperature and connected devices, read live, with a plain-language health summary and a summary to copy. |
 
-The interface is in English, with a French translation (automatic, following the Windows language, or chosen in Settings).
+The interface is in English, with a French translation (automatic, following the Windows language, or chosen in Settings). Ctrl 1 to 9 open the services, Ctrl Tab the next one, Ctrl comma the settings, and the tray menu skips to the next wallpaper, pauses it or applies a mood.
 
 ## Requirements
 
@@ -60,7 +60,9 @@ The script uses the C# compiler that ships with Windows (no Visual Studio needed
 Bramble.exe          built by src\build.ps1
 app\ui\              the settings window (HTML, CSS, JavaScript), translations in locales\
 app\player\          the page that plays a wallpaper
+app\templates\       the page behind wallpapers made in Create
 app\cursor-themes\   Bramble cursor themes
+app\sounds\          the notes of the connection test
 wallpapers\          wallpapers
 sounds\              sound packs
 src\                 C# code, build scripts and generators
