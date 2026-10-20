@@ -57,6 +57,7 @@
     geo.base = (R - geo.r0) * (1 - REFINE) / (1 - Math.pow(REFINE, LEVELS));
     const d = Math.round(geo.r0 * 2 - 4);
     center.style.width = center.style.height = d + 'px';
+    center.style.setProperty('--d', d + 'px');
     zone.style.setProperty('--ring', Math.round(geo.r0 * 2 + 36) + 'px');
   }
 
@@ -291,7 +292,6 @@
     const show = $('f-show');
     show.hidden = !view;
     $('f-copy').hidden = !view;
-    show.textContent = chosen ? 'Show file' : "Show in File Explorer";
     if (f && f.running) return;
     $('f-footer').textContent = f && f.analyzed
       ? `${plural(f.files, 'file')} · ${size(f.bytes)} · ${tr('analyzed in {0} s', Math.max(1, Math.round(f.duration)).toLocaleString(LOCALE))}`
@@ -349,7 +349,10 @@
       return b;
     }));
 
-    $('f-restart').querySelector('span').textContent = f.running ? "Stop the analysis" : "Run the analysis again";
+    const restart = $('f-restart').querySelector('.caption > span');
+    restart.firstChild.textContent = f.running ? 'Stop the analysis' : 'Run the analysis again';
+    restart.querySelector('small').textContent = f.running ? 'Stops reading the folders' : 'Reads the contents again';
+    $('f-restart').querySelector('.glyph').innerHTML = f.running ? '<rect x="7" y="7" width="10" height="10" rx="1.5"/>' : '<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4v4h-4"/>';
   }
 
   function renderTypes() {

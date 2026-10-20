@@ -46,8 +46,13 @@ if (LANGUAGE !== 'en') {
 const Bramble = { state: null, station: null, icons: null, arrange: null, mouse: null, network: null, files: null, hardware: null, tasks: null, moods: null, creator: null };
 const VIEWS = ['home', 'wallpaper', 'create', 'icons', 'arrange', 'mouse', 'station', 'files', 'hardware', 'tasks', 'network', 'settings'];
 
+const scrolls = {}, narrowLayout = matchMedia('(max-width: 900px)');
+const scrollZones = () => narrowLayout.matches ? [document.scrollingElement] : [document.querySelector('.contents'), document.querySelector('.panel')];
 function showView(view) {
+  const previous = document.body.dataset.view;
+  if (previous && previous !== view) scrolls[previous] = scrollZones().map(z => z.scrollTop);
   document.body.dataset.view = view;
+  if (previous !== view) scrollZones().forEach((z, i) => { z.scrollTop = (scrolls[view] || [])[i] || 0; });
   for (const b of document.querySelectorAll('.service')) {
     if (b.dataset.view === view) b.setAttribute('aria-current', 'page');
     else b.removeAttribute('aria-current');
@@ -62,10 +67,18 @@ function showView(view) {
   if (Bramble.hardware) Bramble.hardware.visible(view === 'hardware');
   if (Bramble.tasks) Bramble.tasks.visible(view === 'tasks');
   if (Bramble.creator) Bramble.creator.visible(view === 'create');
-  send('audioPreview', { value: ['home', 'wallpaper', 'create', 'arrange'].includes(view) });
+  send('audioPreview', { value: view === 'create' });
   if (Bramble.home) Bramble.home.visible(view === 'home');
 }
 for (const b of document.querySelectorAll('.service')) b.addEventListener('click', () => showView(b.dataset.view));
+const iconRail = matchMedia('(max-width: 620px)');
+function railTitles() {
+  for (const b of document.querySelectorAll('.rail .service:not(.logo-home)')) {
+    if (iconRail.matches) b.title = b.textContent.trim(); else b.removeAttribute('title');
+  }
+}
+iconRail.addEventListener('change', railTitles);
+railTitles();
 
 const LEVEL_BARS = 48, levelTarget = new Array(LEVEL_BARS).fill(0), levelShown = new Array(LEVEL_BARS).fill(0);
 const levelBars = Array.from({ length: LEVEL_BARS }, () => { const i = document.createElement('i'); $('level-bars').append(i); return i; });
@@ -87,12 +100,13 @@ webview.addEventListener('message', e => {
   const m = e.data;
   if (m.type === 'audio.level') {
     levelTarget.push(m.level); levelTarget.shift();
-    for (const f of document.querySelectorAll('#hero-preview iframe, .cr-stage iframe, .wallpaper-map iframe, #h-wallpaper iframe')) { try { f.contentWindow.postMessage({ bramble: 'audio', level: m.level }, '*'); } catch (e) { } }
+    const previews = Bramble.state && Bramble.state.reactive ? '#hero-preview iframe, .cr-stage iframe, .wallpaper-map iframe, #h-wallpaper iframe' : '.cr-stage iframe';
+    for (const f of document.querySelectorAll(previews)) { try { f.contentWindow.postMessage({ bramble: 'audio', level: m.level }, '*'); } catch (e) { } }
     if (!levelLoop && document.body.dataset.view === 'wallpaper') levelLoop = requestAnimationFrame(levelFrame);
     return;
   }
 
-  if (Bramble.home && m.type && (m.type.startsWith('network.') || m.type.startsWith('hardware.') || m.type === 'arrange.map')) Bramble.home.event(m);
+  if (Bramble.home && m.type && (m.type.startsWith('network.') || m.type.startsWith('hardware.') || m.type === 'arrange.map' || m.type === 'tasks.list')) Bramble.home.event(m);
   if (m.type && m.type.startsWith('home.')) { if (Bramble.home) Bramble.home.event(m); return; }
   if (m.type && m.type.startsWith('station.')) { if (Bramble.station) Bramble.station.event(m); return; }
   if (m.type && m.type.startsWith('icons.')) { if (Bramble.icons) Bramble.icons.event(m); return; }
@@ -103,6 +117,7 @@ webview.addEventListener('message', e => {
   if (m.type && m.type.startsWith('creator.')) { if (Bramble.creator) Bramble.creator.event(m); return; }
   if (m.type && m.type.startsWith('tasks.')) { if (Bramble.tasks) Bramble.tasks.event(m); return; }
   if (m.type && m.type.startsWith('hardware.')) { if (Bramble.hardware) Bramble.hardware.event(m); return; }
+  if (m.type && m.type.startsWith('moods.')) { if (Bramble.moods) Bramble.moods.event(m); return; }
   render(m);
 });
 
@@ -115,10 +130,12 @@ function render(state) {
   $('startup').checked = state.startup;
   $('weather').checked = state.weather;
   check('language', state.language || 'auto');
-  check('zoom', String([90, 100, 115, 130].reduce((a, b) => Math.abs(b - (state.zoom || 100)) < Math.abs(a - (state.zoom || 100)) ? b : a)));
+  check('zoom', String(state.zoom || 100));
+  renderUpdates(state.updates);
   if (state.about) {
     $('about-version').textContent = tr('Version {0} · built on {1}', state.about.version, new Date(state.about.compile).toLocaleDateString(LOCALE, { day: 'numeric', month: 'long', year: 'numeric' }));
     $('about-folder').textContent = state.about.folder;
+    $('folder-bramble').title = state.about.folder;
     $('about-errors').textContent = tr(state.about.errors ? 'Some errors were logged' : 'No errors logged');
   }
   renderWallpaper(state, before);
@@ -132,10 +149,23 @@ function render(state) {
 
   if (state.view && VIEWS.includes(state.view)) showView(state.view);
 
-  if (state.removed && state.removed !== removalShown) toast(tr('“{0}” removed', state.removed), true, DURATION_REMOVAL);
-  if (!state.removed && removalShown) $('toast').classList.remove('visible');
-  removalShown = state.removed;
+  const undoable = state.undoable || (state.removed ? tr('“{0}” removed', state.removed) : null);
+  if (undoable && undoable !== removalShown) toast(undoable, true, DURATION_REMOVAL);
+  if (!undoable && removalShown) $('toast').classList.remove('visible');
+  removalShown = undoable;
   if (state.announcement) toast(state.announcement, false, 4000);
+}
+
+const UPDATE_STATES = { never: 'Not checked yet', checking: 'Checking…', latest: 'Bramble is up to date', none: 'No published version found yet', failed: 'GitHub could not be reached, try again later' };
+function renderUpdates(u) {
+  if (!u) return;
+  $('updates-auto').checked = u.auto;
+  const ready = u.status === 'available';
+  $('update-state').textContent = ready ? tr('Version {0} is available', u.version) : tr(UPDATE_STATES[u.status] || UPDATE_STATES.never);
+  $('update-check').textContent = tr(ready ? 'Download it' : 'Check now');
+  $('update-check').classList.toggle('update-ready', ready);
+  $('update-check').disabled = u.status === 'checking';
+  document.querySelector('.service--settings').classList.toggle('has-update', ready);
 }
 
 let toastTimer = 0;
@@ -154,9 +184,12 @@ $('undo').addEventListener('click', () => { $('toast').classList.remove('visible
 
 let depth = 0;
 const carriesFiles = e => [...e.dataTransfer.types].includes('Files');
+const DROP_HINTS = { wallpaper: 'Videos, GIFs, images or HTML pages', icons: 'ICO files or images', mouse: 'Cursor files, .cur or .ani', station: 'MP3, AAC, OGG, FLAC or WAV sounds' };
 addEventListener('dragenter', e => {
-  if (!carriesFiles(e) || ['arrange', 'files', 'hardware', 'tasks', 'create', 'network'].includes(document.body.dataset.view)) return;
+  const view = document.body.dataset.view;
+  if (!carriesFiles(e) || !DROP_HINTS[view]) return;
   e.preventDefault();
+  $('drop-hint').textContent = tr(DROP_HINTS[view]);
   if (++depth === 1) document.body.classList.add('drag');
 });
 addEventListener('dragleave', () => {
@@ -173,12 +206,15 @@ addEventListener('drop', e => {
   const action = { icons: 'icons.drop', mouse: 'mouse.drop', wallpaper: 'drop' }[view];
   if (view === 'station' && Bramble.station) Bramble.station.ingest([...files]);
   else if (action) {
-    try { webview.postMessageWithAdditionalObjects({ action }, files); } catch (e) { }
+    try { webview.postMessageWithAdditionalObjects({ action }, files); }
+    catch (x) { toast(tr('Only files saved on this PC can be added: save it first, then drop the file'), false, 5000); }
   }
 });
 
 $('startup').addEventListener('change', () => send('startup'));
 $('weather').addEventListener('change', () => { send('weather'); send('home.weather'); });
+$('updates-auto').addEventListener('change', e => send('updates.auto', { value: e.target.checked }));
+$('update-check').addEventListener('click', () => send(Bramble.state && Bramble.state.updates && Bramble.state.updates.status === 'available' ? 'updates.open' : 'updates.check'));
 $('folder-bramble').addEventListener('click', () => send('folderBramble'));
 $('log-errors').addEventListener('click', () => send('log'));
 
@@ -208,15 +244,62 @@ const CURSORS = {
 };
 const withoutExtension = name => name.replace(/\.[a-z0-9]{2,5}$/i, '');
 const currentWallpaper = () => Bramble.state && Bramble.state.wallpapers.find(f => f.name === Bramble.state.current);
+function wallpaperFor(key) {
+  const state = Bramble.state;
+  if (!state || !state.wallpapers) return null;
+  const d = (state.displays || []).find(x => x.key === key);
+  return state.wallpapers.find(f => f.name === (d && d.wallpaper ? d.wallpaper : state.current));
+}
 
 const fill = cursor => cursor.style.setProperty('--pct', cursor.value + '%');
 
+let heroScreen = '';
+try { heroScreen = localStorage.getItem('wallpaper.screen') || ''; } catch (e) { }
+const heroDisplay = () => { const list = (Bramble.state && Bramble.state.displays) || []; return list.find(d => d.key === heroScreen) || list.find(d => d.primary) || list[0]; };
+const shownWallpaper = () => heroScreen ? wallpaperFor(heroScreen) : currentWallpaper();
+
+function renderScreens(state) {
+  const list = state.displays || [];
+  if (heroScreen && !list.some(d => d.key === heroScreen)) heroScreen = '';
+  const zone = $('hero-screens');
+  zone.hidden = list.length < 2;
+  const key = list.map(d => d.key).join('|') + '#' + heroScreen;
+  if (zone.dataset.key === key) return;
+  zone.dataset.key = key;
+  zone.replaceChildren(...[{ key: '', n: tr('All') }, ...list].map(d => {
+    const b = document.createElement('button');
+    b.setAttribute('role', 'radio');
+    b.setAttribute('aria-checked', String(d.key === heroScreen));
+    b.textContent = d.n;
+    b.title = d.key ? tr('Screen {0}', d.n) + ' · ' + d.w + ' × ' + d.h + (d.primary ? tr(' · main') : '') : tr('Every screen');
+    b.addEventListener('click', () => {
+      heroScreen = d.key;
+      try { localStorage.setItem('wallpaper.screen', heroScreen); } catch (e) { }
+      renderWallpaper(Bramble.state, Bramble.state);
+    });
+    return b;
+  }));
+}
+
+function fitHero() {
+  const d = heroDisplay(), box = $('hero-preview'), s = d && d.scale ? d.scale : 1;
+  const vw = d ? d.w / s : 1920, vh = d ? d.h / s : 1080;
+  const k = Math.max(box.clientWidth / vw, box.clientHeight / vh) || .5;
+  $('hero').style.setProperty('--vw', vw.toFixed(1));
+  $('hero').style.setProperty('--vh', vh.toFixed(1));
+  $('hero').style.setProperty('--k', k.toFixed(5));
+  return k;
+}
+new ResizeObserver(() => { fitHero(); if (Bramble.state) heroEffects(Number($('blur').value), Number($('saturation').value), Number($('dim').value)); }).observe($('hero'));
+
 function renderWallpaper(state, before) {
   $('pause').textContent = state.paused ? 'Resume' : 'Pause';
+  renderScreens(state);
+  fitHero();
 
   $('hero').classList.toggle('paused', state.paused);
   $('hero').classList.toggle('on-battery', state.onBattery);
-  $('hero-type').textContent = state.onBattery ? 'Paused on battery' : (currentWallpaper() ? TYPES[currentWallpaper().type] : '');
+  $('hero-type').textContent = state.onBattery ? 'Paused on battery' : (shownWallpaper() ? TYPES[shownWallpaper().type] : '');
 
   for (const id in CURSORS) {
     $(id).value = state[id];
@@ -226,20 +309,26 @@ function renderWallpaper(state, before) {
   heroEffects(state.blur, state.saturation, state.dim);
   check('fit', state.fit);
   check('slideshow', String(state.slideshow));
+  check('frameRate', String(state.frameRate || 60));
+  $('shuffle').checked = !!state.shuffle;
   $('pauseAuto').checked = state.pauseAuto;
   $('pauseOnBattery').checked = state.pauseOnBattery;
   $('reactive').checked = state.reactive;
   $('level-row').hidden = !state.reactive;
 
-  const wallpaper = currentWallpaper();
+  const wallpaper = shownWallpaper();
   $('speed').disabled = !!wallpaper && wallpaper.type === 'gif';
 
   const key = state.wallpapers.map(f => f.name).join('|');
   if (key !== keyGrid) { keyGrid = key; buildGrid(); }
-  for (const card of document.querySelectorAll('.card'))
-    card.classList.toggle('current', card.dataset.name === state.current);
+  const list = state.displays || [], split = list.length > 1 && list.some(d => d.wallpaper);
+  for (const card of document.querySelectorAll('.card')) {
+    card.classList.toggle('current', !!wallpaper && card.dataset.name === wallpaper.name);
+    const using = split ? list.filter(d => (d.wallpaper || state.current) === card.dataset.name) : [];
+    card.querySelector('.badge-screens').replaceChildren(...using.map(d => Object.assign(document.createElement('i'), { textContent: d.n, title: tr('Screen {0}', d.n) })));
+  }
   $('count').textContent = state.wallpapers.length;
-  const keyV = state.current + '|' + state.fit;
+  const keyV = (wallpaper ? wallpaper.name : '') + '|' + state.fit + '|' + heroScreen;
   if (keyV !== keyHero) { keyHero = keyV; buildHero(); }
   else adjustHero(state.light, state.speed);
   if (!before || before.paused !== state.paused || before.onBattery !== state.onBattery) freezeHero();
@@ -252,7 +341,7 @@ function urlHero(wallpaper, light, speed) {
 }
 
 function buildHero() {
-  const wallpaper = currentWallpaper(), state = Bramble.state;
+  const wallpaper = shownWallpaper(), state = Bramble.state;
   const zone = $('hero-preview');
   zone.replaceChildren();
   hero = null; heroDirect = false;
@@ -265,6 +354,9 @@ function buildHero() {
   }
   hero = document.createElement('iframe');
   hero.tabIndex = -1;
+  hero.className = 'arriving';
+  const frame = hero;
+  frame.addEventListener('load', () => setTimeout(() => frame.classList.remove('arriving'), 120), { once: true });
   hero.src = urlHero(wallpaper, state.light, state.speed);
   heroSet = state.light + '|' + state.speed;
   zone.append(hero);
@@ -280,14 +372,14 @@ function adjustHero(light, speed) {
   }
   clearTimeout(reload);
   reload = setTimeout(() => {
-    const wallpaper = currentWallpaper();
+    const wallpaper = shownWallpaper();
     if (wallpaper && hero) hero.src = urlHero(wallpaper, light, speed);
   }, 250);
 }
 
 function heroEffects(blur, saturation, dim) {
   const filters = [];
-  if (blur > 0) filters.push(`blur(${(blur * 0.3 * $('hero').clientWidth / screen.width).toFixed(2)}px)`);
+  if (blur > 0) filters.push(`blur(${(blur * 0.3 * (Number($('hero').style.getPropertyValue('--k')) || .5)).toFixed(2)}px)`);
   if (saturation != 50) filters.push(`saturate(${saturation / 50})`);
   $('hero-effects').style.backdropFilter = filters.join(' ') || 'none';
   $('hero-effects').style.background = `rgba(0, 0, 0, ${dim / 100 * 0.75})`;
@@ -318,19 +410,19 @@ function buildGrid() {
     card.tabIndex = 0;
     card.dataset.name = wallpaper.name;
     card.innerHTML = `<div class="preview"></div>
-      <div class="footer"><span class="name"></span><span class="badge">${TYPES[wallpaper.type]}</span></div>
-      ${wallpaper.custom ? '<button class="edit" tabindex="-1">Edit</button>' : ''}<button class="remove" tabindex="-1">Remove</button>`;
+      <div class="footer"><span class="name"></span><span class="badge-screens"></span><span class="badge">${TYPES[wallpaper.type]}</span></div>
+      <div class="card-actions">${wallpaper.custom ? '<button class="edit" tabindex="-1">Edit</button>' : ''}<button class="remove" tabindex="-1">Remove</button></div>`;
     card.querySelector('.name').textContent = withoutExtension(wallpaper.name);
     card.querySelector('.name').title = wallpaper.name;
     card.querySelector('.preview').append(preview(wallpaper, card));
 
-    const choose = () => send('choose', { name: wallpaper.name });
+    const choose = () => send('choose', { name: wallpaper.name, screen: heroScreen });
     const button = card.querySelector('.remove');
     let armed = 0;
     const disarm = () => { clearTimeout(armed); armed = 0; button.textContent = tr('Remove'); button.classList.remove('armed'); };
     const remove = () => {
       if (armed) { disarm(); send('remove', { name: wallpaper.name }); return; }
-      button.textContent = tr('Click again to remove');
+      button.textContent = tr('Confirm');
       button.classList.add('armed');
       armed = setTimeout(disarm, 3000);
     };
@@ -366,12 +458,25 @@ function livePreview(wallpaper, card) {
 function preview(wallpaper, card) {
   if (wallpaper.type === 'html') {
     const frame = document.createElement('iframe');
-    const still = wallpaper.url + '?light=50&speed=50&thumbnail=1', live = wallpaper.url + '?light=50&speed=50';
-    frame.src = still;
+    frame.src = wallpaper.url + '?light=50&speed=50&thumbnail=1';
     frame.loading = 'lazy';
     frame.tabIndex = -1;
-    card.addEventListener('mouseenter', () => { frame.src = live; });
-    card.addEventListener('mouseleave', () => { frame.src = still; });
+    let live = null, leaving = 0;
+    card.addEventListener('mouseenter', () => {
+      clearTimeout(leaving);
+      if (live) { live.classList.add('shown'); return; }
+      live = document.createElement('iframe');
+      live.className = 'live';
+      live.tabIndex = -1;
+      live.addEventListener('load', () => { if (live && card.matches(':hover')) live.classList.add('shown'); });
+      live.src = wallpaper.url + '?light=50&speed=50';
+      frame.after(live);
+    });
+    card.addEventListener('mouseleave', () => {
+      if (!live) return;
+      live.classList.remove('shown');
+      leaving = setTimeout(() => { if (live) { live.remove(); live = null; } }, 320);
+    });
     return frame;
   }
   if (wallpaper.type === 'video') {
@@ -448,12 +553,13 @@ for (const id in CURSORS) {
     cursor.dispatchEvent(new Event('change'));
   });
 }
-for (const group of ['fit', 'slideshow'])
+for (const group of ['fit', 'slideshow', 'frameRate'])
   for (const b of $(group).children)
     b.addEventListener('click', () => {
       check(group, b.dataset.value);
-      send(group, { value: group === 'slideshow' ? Number(b.dataset.value) : b.dataset.value });
+      send(group, { value: group === 'fit' ? b.dataset.value : Number(b.dataset.value) });
     });
+$('shuffle').addEventListener('change', e => send('shuffle', { value: e.target.checked }));
 $('pauseAuto').addEventListener('change', e => send('pauseAuto', { value: e.target.checked }));
 $('pauseOnBattery').addEventListener('change', e => send('pauseOnBattery', { value: e.target.checked }));
 $('reactive').addEventListener('change', e => send('reactive', { value: e.target.checked }));
@@ -461,13 +567,13 @@ $('pause').addEventListener('click', () => send('pause'));
 $('folder').addEventListener('click', () => send('folder'));
 
 addEventListener('DOMContentLoaded', () => {
-  let view = 'wallpaper';
+  let view = 'home';
   try { const v = localStorage.getItem('view'); if (VIEWS.includes(v)) view = v; } catch (e) { }
   showView(view);
   send('state');
 });
 
-const ZOOMS = [80, 90, 100, 110, 125, 150];
+const ZOOMS = [80, 90, 100, 115, 130, 150];
 function zoomBy(step) {
   const now = (Bramble.state && Bramble.state.zoom) || 100;
   let i = ZOOMS.reduce((best, z, k) => Math.abs(z - now) < Math.abs(ZOOMS[best] - now) ? k : best, 0);
@@ -479,7 +585,15 @@ addEventListener('keydown', e => {
   if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
   if (e.key === '+' || e.key === '=') { e.preventDefault(); zoomBy(1); }
   else if (e.key === '-' || e.key === '_') { e.preventDefault(); zoomBy(-1); }
-  else if (e.key === '0') { e.preventDefault(); send('zoom', { value: 100 }); }
+  else if (e.key === '0' || e.code === 'Digit0' || e.code === 'Numpad0') { e.preventDefault(); send('zoom', { value: 100 }); }
+});
+addEventListener('keydown', e => {
+  if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+  const view = document.body.dataset.view, digit = /^(?:Digit|Numpad)([1-9])$/.exec(e.code);
+  if (digit && !e.shiftKey) { e.preventDefault(); showView(VIEWS[Number(digit[1]) - 1]); }
+  else if (e.key === 'Tab') { e.preventDefault(); showView(VIEWS[(VIEWS.indexOf(view) + (e.shiftKey ? VIEWS.length - 1 : 1)) % VIEWS.length]); }
+  else if (e.key === ',') { e.preventDefault(); showView('settings'); }
+  else if (e.key.toLowerCase() === 'f' && view === 'tasks' && $('t-search')) { e.preventDefault(); $('t-search').focus(); $('t-search').select(); }
 });
 let zoomWheel = 0;
 addEventListener('wheel', e => {

@@ -209,9 +209,33 @@
       ...storage.filter(c => c.dataset.key.startsWith('disk')), ...storage.filter(c => !c.dataset.key.startsWith('disk'))];
     dash.append(...ordered.filter(Boolean));
     zone.replaceChildren(header, dash);
+    dashWatch.disconnect();
+    dashWatch.observe(dash);
     mark();
     updateDevices();
     if (stats) update();
+  }
+
+  const dashWatch = new ResizeObserver(entries => widenLast(entries[0].target));
+  function widenLast(dash) {
+    const first = dash.firstElementChild, last = dash.lastElementChild;
+    if (!first || last === first) return;
+    last.classList.remove('m-card--wide');
+    if (Math.abs(last.offsetLeft - first.offsetLeft) < 2 && last.offsetWidth < dash.clientWidth - 2) last.classList.add('m-card--wide');
+  }
+
+  function summary() {
+    const s = inv.system, p = inv.processor || {}, m = inv.memory, line = (label, ...parts) => tr(label) + ': ' + parts.filter(Boolean).join(' · ');
+    const lines = [[s.manufacturer, s.model].filter(Boolean).join(' ') || tr('Computer'),
+      line('Windows', (s.windows || '').replace(/^Microsoft\s+/, ''), s.version),
+      line('Processor', shortName(p.name), p.cores ? tr('{0} cores', p.cores) : '', p.threads ? tr('{0} threads', p.threads) : ''),
+      line('Memory', size(m.modules.reduce((t, b) => t + b.capacity, 0), 0), m.modules[0] && m.modules[0].type)];
+    for (const g of inv.graphics) lines.push(line('Graphics', g.name, g.memory > 0 ? size(g.memory, 0) : ''));
+    for (const d of inv.disks) lines.push(line('Storage', d.name, d.type, d.bus, size(d.size, 0), ...d.volumes.map(v => v.letter + ' ' + tr('{0} free', size(v.free, 0)))));
+    for (const e of inv.screens) lines.push(line('Screen', e.n + ' · ' + nameScreen(e), `${e.w} × ${e.h}`, e.hz ? e.hz + ' Hz' : '', e.inches ? tr('{0} in', e.inches.toLocaleString(LOCALE)) : '', e.port));
+    if (inv.battery) lines.push(line('Battery', inv.battery.name, stats && stats.battery ? stats.battery.charge + ' %' : ''));
+    for (const n of inv.networks) lines.push(line('Network', n.name, n.type, n.speed > 0 ? tr('link {0}', link(n.speed)) : ''));
+    return lines.join('\r\n');
   }
 
   function update() {
@@ -250,7 +274,7 @@
       if (!k || !v) continue;
       k.value.textContent = pct(v.activity);
       k.word.textContent = tr(v.activity < 5 ? 'Idle' : v.activity < 60 ? 'Working' : 'Very busy');
-      k.facts.textContent = [d.type, d.bus, size(d.size, 0), '↓ ' + throughput(v.playback), '↑ ' + throughput(v.write)].filter(Boolean).join(' · ');
+      k.facts.textContent = [d.type, d.bus, size(d.size, 0), '↓ ' + throughput(v.read), '↑ ' + throughput(v.write)].filter(Boolean).join(' · ');
       plot(k.curve, record('disk-' + d.number, v.activity), 100);
       for (const vol of d.volumes) if (vol.free / vol.size < 0.1) alerts.push(tr('Drive {0} is almost full', vol.letter));
     }
@@ -326,7 +350,6 @@
     'L2 cache': '<path d="m12 4 8 4-8 4-8-4zM4 12l8 4 8-4M4 16l8 4 8-4"/>',
     'L3 cache': '<path d="m12 4 8 4-8 4-8-4zM4 12l8 4 8-4M4 16l8 4 8-4"/>',
     'Installed': '<rect x="3.5" y="7" width="17" height="9" rx="1.2"/><path d="M7 10v3M10.5 10v3M14 10v3M17.5 10v3"/>',
-    'Used': '<rect x="3.5" y="7" width="17" height="9" rx="1.2"/><path d="M7 10v3M10.5 10v3"/>',
     'Memory in use': '<rect x="3.5" y="7" width="17" height="9" rx="1.2"/><path d="M7 10v3M10.5 10v3"/>',
     'Dedicated memory': '<rect x="3.5" y="7" width="17" height="9" rx="1.2"/><path d="M7 10v3M10.5 10v3M14 10v3M17.5 10v3"/>',
     'Slots': '<rect x="4" y="5" width="4" height="14" rx="1"/><rect x="10" y="5" width="4" height="14" rx="1"/><rect x="16" y="5" width="4" height="14" rx="1" stroke-dasharray="2 2"/>',
@@ -338,7 +361,7 @@
     'Manufacturer': '<path d="M3.5 20V10l5 3V10l5 3V6l7 4v10z"/>',
     'Part number': '<path d="M5 5v14M8 5v14M11 5v14M15 5v14M19 5v14"/>',
     'Driver': '<circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.5M12 18v2.5M20.5 12H18M6 12H3.5M18 6l-1.8 1.8M7.8 16.2 6 18M18 18l-1.8-1.8M7.8 7.8 6 6"/>',
-    'Playing': '<path d="M12 4v12M7 11l5 5 5-5M5 20h14"/>',
+    'Read': '<path d="M12 4v12M7 11l5 5 5-5M5 20h14"/>',
     'Write': '<path d="M12 20V8M7 13l5-5 5 5M5 4h14"/>',
     'Received': '<path d="M12 4v12M7 11l5 5 5-5M5 20h14"/>',
     'Sent': '<path d="M12 20V8M7 13l5-5 5 5M5 4h14"/>',
@@ -404,6 +427,11 @@
       ['Up since', lit > 0 ? duration(lit) : null],
       ['Temperature', stats && stats.temperature != null ? stats.temperature.toLocaleString(LOCALE) + ' °C' : null],
     ]));
+    const copy = document.createElement('div');
+    copy.className = 'group';
+    copy.innerHTML = '<button class="row action"><span class="caption"><svg class="glyph glyph--small" viewBox="0 0 24 24" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6.5a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"/></svg><span>Copy summary<small>Model, Windows, processor, memory, storage and screens, ready to paste</small></span></span></button>';
+    copy.firstChild.addEventListener('click', () => navigator.clipboard.writeText(summary()).then(() => toast(tr('Summary copied'), false, 2200)));
+    sections.push(copy);
 
     const p = inv.processor || {};
     if (choice === 'processor') sections.push(...group('Processor', [
@@ -445,7 +473,7 @@
       if (d) {
         sections.push(...group('Storage', [
           ['Model', d.name], ['Type', [d.type, d.bus].filter(Boolean).join(' ')], ['Capacity', size(d.size, 0)],
-          ['Activity', v ? pct(v.activity) : null], ['Playing', v ? throughput(v.playback) : null], ['Write', v ? throughput(v.write) : null],
+          ['Activity', v ? pct(v.activity) : null], ['Read', v ? throughput(v.read) : null], ['Write', v ? throughput(v.write) : null],
         ]));
         for (const vol of d.volumes) sections.push(...group(tr('Volume {0}', vol.letter), [
           ['Name', vol.name], ['Size', size(vol.size, 0)], ['Used', size(vol.size - vol.free, 0)], ['Free', size(vol.free, 0)],

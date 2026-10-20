@@ -43,7 +43,19 @@
     return { v: 2, background: b, logo: l, title: Object.assign({}, st.title), particles: Object.assign({}, st.particles), glow: Object.assign({}, st.glow), sound };
   }
 
+  let keeping = 0;
+  function keep() {
+    clearTimeout(keeping);
+    keeping = setTimeout(() => {
+      const draft = { st, theme, editing };
+      try { sessionStorage.setItem('create.draft', JSON.stringify(draft)); }
+      catch (e) { try { sessionStorage.setItem('create.draft', JSON.stringify({ st: Object.assign({}, st, { files: { logo: null, background: null } }), theme, editing })); } catch (x) { } }
+    }, 400);
+  }
+  function forget() { clearTimeout(keeping); try { sessionStorage.removeItem('create.draft'); } catch (e) { } }
+
   function push() {
+    keep();
     layout();
     if (queued || !frame) return;
     queued = requestAnimationFrame(() => {
@@ -217,7 +229,6 @@
     push();
   }
 
-  // ---- themes, drawn as small renders of the real thing
   function seeded(seed) { let s = seed; return () => (s = (s * 1664525 + 1013904223) % 4294967296) / 4294967296; }
   function hexA(c, a) {
     const n = parseInt(c.slice(1), 16);
@@ -273,7 +284,6 @@
   });
   function paintThemes() { for (const [id, b] of themeButtons) b.setAttribute('aria-pressed', String(id === theme)); }
 
-  // ---- cards (right panel)
   const titleInput = Object.assign(document.createElement('input'), { type: 'text', maxLength: 40, placeholder: tr('Optional text') });
   titleInput.className = 'cr-text';
   titleInput.addEventListener('input', () => { st.title.text = titleInput.value; push(); });
@@ -284,8 +294,7 @@
     row('Horizontal position', slider('logoX', 0, 100, () => st.logo.x, v => { st.logo.x = v; }, ' %', 50)),
     row('Vertical position', slider('logoY', 0, 100, () => st.logo.y, v => { st.logo.y = v; }, ' %', 44)),
     row('Soft shadow', slider('logoShadow', 0, 100, () => st.logo.shadow, v => { st.logo.shadow = v; }, ' %', 60)),
-    row('Gentle float', toggle('logoFloat', () => st.logo.float, v => { st.logo.float = v; })),
-    row('Position and size', (() => { const b = el('button', 'button', tr('Reset')); b.type = 'button'; b.addEventListener('click', () => { st.logo.x = 50; st.logo.y = 44; st.logo.size = 28; sync(); }); return b; })()));
+    row('Gentle float', toggle('logoFloat', () => st.logo.float, v => { st.logo.float = v; })));
 
   const textCard = card('Text',
     row('Text', titleInput),
@@ -388,7 +397,6 @@
     tagged('vibe', row('Vibration strength', slider('soundVibeAmount', 5, 100, () => st.sound.vibeAmount, v => { st.sound.vibeAmount = v; }, ' %', 50))),
     tagged('sound', row('Effects color', effectColor, 'For the rings and ripples')));
 
-  // ---- stage with draggable handles and guides
   const stage = el('div', 'cr-stage');
   frame = document.createElement('iframe');
   frame.src = '/app/templates/custom.html?preview=1&light=50&speed=50';
@@ -571,7 +579,6 @@
   inline.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === 'Escape') { e.preventDefault(); endEdit(); } });
   inline.addEventListener('blur', endEdit);
 
-  // ---- page
   const hint = el('p', 'cr-hint', tr('Drag the logo or the text to place it. Click the text to type. Scroll over it or pull its corner to resize. Hold Alt to move without snapping.'));
   const themeTitle = el('div', 'title-section');
   themeTitle.append(el('h2', '', tr('Start from a theme')), el('span', 'config', tr('Pick a look, then make it yours on the right')));
@@ -606,16 +613,30 @@
     if (tab) tab.click();
     showView('wallpaper');
     leaveEdit();
+    forget();
   }
   create.addEventListener('click', () => save(!!editing));
   copy.addEventListener('click', () => { editing = null; nameInput.disabled = false; save(false); });
-  startNew.addEventListener('click', () => { leaveEdit(); Object.assign(st, fresh()); theme = 'midnight'; syncAll(); });
+  startNew.addEventListener('click', () => { leaveEdit(); Object.assign(st, fresh()); theme = 'midnight'; syncAll(); forget(); });
 
   const save$ = el('div', 'cr-save');
   save$.append(nameInput, copy, create);
 
   zone.append(banner, stage, tools, hint, themeTitle, themes, save$, input);
   panel.append(logoCard, textCard, backgroundCard, particlesCard, glowCard, soundCard);
+  function editMode(name) {
+    editing = name;
+    nameInput.value = name;
+    nameInput.disabled = true;
+    banner.hidden = false;
+    banner.replaceChildren(el('span', '', tr('Editing {0}', name)), startNew);
+    create.textContent = tr('Save changes');
+    copy.hidden = false;
+  }
+  try {
+    const draft = JSON.parse(sessionStorage.getItem('create.draft') || 'null');
+    if (draft && draft.st) { Object.assign(st, draft.st); theme = draft.theme || ''; if (draft.editing) editMode(draft.editing); }
+  } catch (e) { }
   syncAll();
 
   function fromConfig(c, files) {
@@ -649,14 +670,8 @@
     event(m) {
       if (m.type !== 'creator.opened') return;
       Object.assign(st, fromConfig(m.config || {}, { logo: m.logo, background: m.background }));
-      editing = m.name;
       theme = '';
-      nameInput.value = m.name;
-      nameInput.disabled = true;
-      banner.hidden = false;
-      banner.replaceChildren(el('span', '', tr('Editing {0}', m.name)), startNew);
-      create.textContent = tr('Save changes');
-      copy.hidden = false;
+      editMode(m.name);
       st.aspect = 1;
       if (st.files.logo) { const probe = new Image(); probe.onload = () => { st.aspect = probe.naturalHeight / probe.naturalWidth; layout(); }; probe.src = st.files.logo; }
       syncAll();

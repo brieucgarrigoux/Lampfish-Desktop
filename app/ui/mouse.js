@@ -25,7 +25,8 @@
     $('s-roles').replaceChildren(...s.roles.map(r => {
       const b = document.createElement('button');
       b.className = 'role' + (r.id === role ? ' chosen' : '');
-      b.title = r.path || 'Windows cursor';
+      b.dataset.path = r.path || '';
+      b.title = tr(r.name) + ' · ' + (r.path ? r.path.split('\\').pop() : tr('Windows cursor'));
       const frame = document.createElement('span');
       frame.className = 'role__case';
       frame.innerHTML = '';
@@ -47,7 +48,7 @@
     if (!r.path || !/\.ani$/i.test(r.path)) return;
     const info = motion.get(r.path);
     if (!info) { send('mouse.frames', { path: r.path }); return; }
-    const img = [...$('s-roles').children].find(b => b.title === r.path)?.querySelector('img');
+    const img = [...$('s-roles').children].find(b => b.dataset.path === r.path)?.querySelector('img');
     if (!img) return;
     const home = img.src;
     let i = 0, spent = 0;
@@ -157,7 +158,7 @@
   }
 
   const TEXTS = {
-    size: v => String(v),
+    size: v => PX(Number(v)) + ' px',
     speed: v => String(v),
     doubleClick: v => v + ' ms',
     knob: v => v == 1 ? tr('1 line') : tr('{0} lines', v),
@@ -209,6 +210,8 @@
 
   function state(n) {
     s = n;
+    $('s-initial').disabled = !!s.standard;
+    $('s-original').hidden = !s.original;
     if (!chosenRole()) role = s.roles[0].id;
     renderRoles();
     renderSettings();
@@ -233,6 +236,7 @@
   }
 
   $('s-initial').addEventListener('click', () => send('mouse.initial'));
+  $('s-original').addEventListener('click', () => send('mouse.original'));
   $('s-folder').addEventListener('click', () => send('mouse.folder'));
 
   Bramble.mouse = { state, event, visible };

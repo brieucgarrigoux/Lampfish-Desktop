@@ -21,6 +21,7 @@ namespace Bramble
         public List<string> Customized = new List<string>();
         public bool Subfolders;
         public string Size = "medium";
+        public Dictionary<string, string> Originals = new Dictionary<string, string>();
     }
 
     static class Icons
@@ -304,11 +305,67 @@ namespace Bramble
             if (Choose(folder)) Program.Save();
         }
 
+        static string Current(string folder)
+        {
+            var icon = ReadIcon(folder);
+            return icon == null ? "" : icon.Item1 + "," + icon.Item2;
+        }
+
+        static string OriginalOf(string folder)
+        {
+            string v;
+            return R.Originals != null && folder != null && R.Originals.TryGetValue(folder.ToLowerInvariant(), out v) ? v : null;
+        }
+
+        static void Remember(string folder)
+        {
+            if (R.Originals == null) R.Originals = new Dictionary<string, string>();
+            string key = folder.ToLowerInvariant();
+            if (R.Originals.ContainsKey(key) || R.Customized.Contains(folder, StringComparer.OrdinalIgnoreCase)) return;
+            R.Originals[key] = Current(folder);
+        }
+
+        static void Write(string folder, string icon)
+        {
+            int comma = string.IsNullOrEmpty(icon) ? -1 : icon.LastIndexOf(',');
+            int index;
+            if (comma < 0 || !int.TryParse(icon.Substring(comma + 1), out index)) { ResetToDefault(folder); return; }
+            WriteIcon(folder, icon.Substring(0, comma), index);
+        }
+
+        static void Restore(string folder)
+        {
+            if (folder == null || !Directory.Exists(folder)) return;
+            Write(folder, OriginalOf(folder));
+            R.Customized.RemoveAll(d => string.Equals(d, folder, StringComparison.OrdinalIgnoreCase));
+        }
+
+        class Before { public string Folder, Icon; public bool Customized; }
+
+        static Before Snapshot(string folder)
+        {
+            var b = new Before { Folder = folder, Icon = Current(folder), Customized = R.Customized.Contains(folder, StringComparer.OrdinalIgnoreCase) };
+            Remember(folder);
+            return b;
+        }
+
+        static void Rewind(List<Before> list)
+        {
+            foreach (var b in list)
+            {
+                if (!Directory.Exists(b.Folder)) continue;
+                Write(b.Folder, b.Icon);
+                R.Customized.RemoveAll(d => string.Equals(d, b.Folder, StringComparison.OrdinalIgnoreCase));
+                if (b.Customized) R.Customized.Add(b.Folder);
+            }
+        }
+
         static void Apply(string id)
         {
             string folder = R.Chosen, file = IconPath(id);
             if (file == null) return;
             if (folder == null || !Directory.Exists(folder)) { Program.Announce("No folder chosen"); return; }
+            var before = new List<Before> { Snapshot(folder) };
             int hr = WriteIcon(folder, file, IconIndex(id));
             if (hr != 0) { Program.Announce("Protected folder, icon unchanged"); Program.Log(new Exception("SHGetSetFolderCustomSettings 0x" + hr.ToString("X8") + " : " + folder)); return; }
             if (!R.Customized.Contains(folder, StringComparer.OrdinalIgnoreCase)) R.Customized.Add(folder);
@@ -321,13 +378,15 @@ namespace Bramble
                     foreach (string under in Directory.GetDirectories(folder))
                     {
                         if ((File.GetAttributes(under) & (FileAttributes.System | FileAttributes.Hidden | FileAttributes.ReparsePoint)) != 0) continue;
+                        var snapshot = Snapshot(under);
                         if (WriteIcon(under, file, IconIndex(id)) != 0) continue;
+                        before.Add(snapshot);
                         if (!R.Customized.Contains(under, StringComparer.OrdinalIgnoreCase)) R.Customized.Add(under);
                         n++;
                     }
                 }
                 catch (Exception ex) { Program.Log(ex); }
-                if (n > 0) Program.Announce(n > 1 ? "Icon also applied to {0} subfolders" : "Icon also applied to 1 subfolder", n);
+                if (n > 0) Program.Undoable(Language.T(n > 1 ? "Icon also applied to {0} subfolders" : "Icon also applied to 1 subfolder", n), () => Rewind(before));
             }
         }
 
@@ -347,8 +406,9 @@ namespace Bramble
         static void ResetAll()
         {
             var list = R.Customized.ToList();
-            foreach (string d in list) ResetToDefault(d);
-            Program.Announce(list.Count > 1 ? "{0} folders reset" : "1 folder reset", list.Count);
+            var before = list.Select(d => new Before { Folder = d, Icon = Current(d), Customized = true }).ToList();
+            foreach (string d in list) Restore(d);
+            Program.Undoable(Language.T(list.Count > 1 ? "{0} folders reset" : "1 folder reset", list.Count), () => Rewind(before));
         }
 
         static void ResetToDefault(string folder)
@@ -450,6 +510,7 @@ namespace Bramble
                 name = string.IsNullOrEmpty(name) ? folder : name,
                 id = IdOf(icon),
                 custom = ReadIcon(folder) != null,
+                original = !string.IsNullOrEmpty(OriginalOf(folder)) && OriginalOf(folder) != Current(folder),
                 preview = icon == null ? null : Preview(icon.Item1, icon.Item2),
             };
         }
@@ -520,6 +581,7 @@ namespace Bramble
                     return false;
                 case "apply": Apply(Text(m, "id")); return true;
                 case "initial": ResetToDefault(R.Chosen); return true;
+                case "original": Restore(R.Chosen); return true;
                 case "choose": return Choose(Text(m, "path"));
                 case "browse": Browse(); return true;
                 case "open":

@@ -39,6 +39,40 @@ namespace Bramble
         [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern int GetClassName(IntPtr hwnd, StringBuilder s, int n);
         [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern int RegisterWindowMessage(string name);
         [DllImport("user32.dll")] public static extern bool DestroyIcon(IntPtr icon);
+        [DllImport("dwmapi.dll")] public static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
+
+        public static readonly int Build = ReadBuild();
+
+        static int ReadBuild()
+        {
+            try
+            {
+                using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion"))
+                {
+                    int n;
+                    return key != null && int.TryParse(key.GetValue("CurrentBuildNumber") as string, out n) ? n : 0;
+                }
+            }
+            catch { return 0; }
+        }
+
+        public static void DarkFrame(IntPtr hwnd)
+        {
+            int on = 1;
+            if (DwmSetWindowAttribute(hwnd, 20, ref on, 4) != 0) DwmSetWindowAttribute(hwnd, 19, ref on, 4);
+            if (Build < 22000) return;
+            int caption = 0x0F0B0A, text = 0xF0E9E8, border = 0x362B2A;
+            DwmSetWindowAttribute(hwnd, 35, ref caption, 4);
+            DwmSetWindowAttribute(hwnd, 36, ref text, 4);
+            DwmSetWindowAttribute(hwnd, 34, ref border, 4);
+        }
+
+        public static void Rounded(IntPtr hwnd)
+        {
+            if (Build < 22000) return;
+            int round = 2;
+            DwmSetWindowAttribute(hwnd, 33, ref round, 4);
+        }
 
         public const uint SND_ASYNC = 0x0001, SND_NODEFAULT = 0x0002, SND_MEMORY = 0x0004;
         [DllImport("winmm.dll", SetLastError = true)] public static extern bool PlaySound(IntPtr sound, IntPtr module, uint options);

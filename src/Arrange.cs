@@ -284,7 +284,7 @@ namespace Bramble
         [System.Runtime.InteropServices.DllImport("user32.dll")] static extern IntPtr MonitorFromPoint(Point pt, int flags);
         [System.Runtime.InteropServices.DllImport("shcore.dll")] static extern int GetDpiForMonitor(IntPtr monitor, int type, out uint x, out uint y);
 
-        static double Scale(Screen s)
+        public static double Scale(Screen s)
         {
             uint x, y;
             try { if (GetDpiForMonitor(MonitorFromPoint(new Point(s.Bounds.X + 1, s.Bounds.Y + 1), 2), 0, out x, out y) == 0) return x / 96.0; }

@@ -392,8 +392,12 @@ namespace Bramble
                     int i = Array.FindIndex(Events, x => x[0] == Text(m, "event"));
                     if (p == null || i < 0) return false;
                     i -= i % 2;
-                    Setting(Events[i][0]).Sound = p[1];
-                    Setting(Events[i + 1][0]).Sound = p[2];
+                    var first = Setting(Events[i][0]);
+                    var second = Setting(Events[i + 1][0]);
+                    string before1 = first.Sound, before2 = second.Sound;
+                    first.Sound = p[1];
+                    second.Sound = p[2];
+                    Program.Undoable(Language.T("Pair loaded: {0}", Language.T(p[0])), () => { first.Sound = before1; second.Sound = before2; });
                     return true;
                 }
                 case "detect":

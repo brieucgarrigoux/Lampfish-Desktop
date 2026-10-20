@@ -94,12 +94,22 @@ namespace Bramble
             return parent != IntPtr.Zero && Native.IsWindow(parent) && Native.IsWindow(workerW);
         }
 
+        public static bool Recover()
+        {
+            if (!raised || parent == IntPtr.Zero || !Native.IsWindow(parent)) return false;
+            IntPtr w = Native.FindWindowEx(parent, IntPtr.Zero, "WorkerW", null), i = Native.FindWindowEx(parent, IntPtr.Zero, "SHELLDLL_DefView", null);
+            if (w == IntPtr.Zero || i == IntPtr.Zero) return false;
+            workerW = w;
+            icons = i;
+            return true;
+        }
+
         public static void Attach(IntPtr window, Rectangle screen)
         {
-            Native.SetParent(window, parent);
             int style = Native.GetWindowLong(window, Native.GWL_STYLE);
             style = (style & ~(Native.WS_POPUP | Native.WS_CAPTION | Native.WS_THICKFRAME)) | Native.WS_CHILD;
             Native.SetWindowLong(window, Native.GWL_STYLE, style);
+            Native.SetParent(window, parent);
 
             var p = new Native.POINT { X = screen.Left, Y = screen.Top };
             Native.ScreenToClient(parent, ref p);

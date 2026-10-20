@@ -1,8 +1,8 @@
 'use strict';
 
 (function () {
-  let network = null, stats = null, shown = false, timer = 0, keyWallpaper = '', map = null, weather = null;
-  const images = new Map();
+  let network = null, stats = null, shown = false, timer = 0, keyWallpaper = '', map = null, weather = null, tasks = null;
+  const images = new Map(), appIcons = new Map();
 
   const SERVICES = [
     ['icons', 'Icons', '<rect x="4" y="4" width="16" height="16" rx="4"/><path d="m12 7.8 1.2 2.6 2.8.3-2.1 1.9.6 2.8-2.5-1.4-2.5 1.4.6-2.8-2.1-1.9 2.8-.3z"/>'],
@@ -11,8 +11,9 @@
     ['station', 'Sounds', '<path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/>'],
     ['files', 'Folders', '<path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/>'],
     ['hardware', 'Hardware', '<rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/><rect x="9.5" y="9.5" width="5" height="5" rx=".8"/><path d="M9.5 3.5v3M14.5 3.5v3M9.5 17.5v3M14.5 17.5v3M3.5 9.5h3M3.5 14.5h3M17.5 9.5h3M17.5 14.5h3"/>'],
-    ['power', 'Power', '<rect x="3.5" y="8" width="15" height="8" rx="1.5"/><path d="M21 11v2M11.5 9.5 9 12.5h3l-2.5 3"/>'],
+    ['tasks', 'Tasks', '<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M6.5 13h2.5l1.5-4 3 7 1.5-3h2.5"/>'],
     ['network', 'Network', '<path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.2" r="1.1"/>'],
+    ['power', 'Power', '<rect x="3.5" y="8" width="15" height="8" rx="1.5"/><path d="M21 11v2M11.5 9.5 9 12.5h3l-2.5 3"/>'],
   ];
   const ARRANGEMENTS = { left: 'Left', right: 'Right', top: 'Top', bottom: 'Bottom', frame: 'Frame', center: 'Center', corners: 'Corners', blocks: 'Blocks' };
   const UNITS = ['bytes', 'KB', 'MB', 'GB', 'TB'].map(u => tr(u));
@@ -59,7 +60,8 @@
     $('h-time').textContent = new Date().toLocaleTimeString(LOCALE, { hour: '2-digit', minute: '2-digit' });
     if (!e) return;
 
-    const wallpaper = e.wallpapers && e.wallpapers.find(f => f.name === e.current);
+    const primary = (e.displays || []).find(d => d.primary);
+    const wallpaper = primary ? wallpaperFor(primary.key) : e.wallpapers && e.wallpapers.find(f => f.name === e.current);
     const key = (wallpaper ? wallpaper.name : '') + '|' + e.light + '|' + e.speed + '|' + e.fit;
     if (key !== keyWallpaper) {
       keyWallpaper = key;
@@ -112,7 +114,7 @@
     if (r) set('arrange', tr(ARRANGEMENTS[r.arrangement] || 'Left'), tr(r.layouts.length > 1 ? '{0} saved layouts' : r.layouts.length ? '1 saved layout' : 'No saved layout', r.layouts.length));
 
     const so = e.mouse;
-    if (so) set('mouse', tr(so.themeTitle), tr('{0} px pointer', 32 + (so.settings.size - 1) * 16));
+    if (so) set('mouse', tr(so.themeTitle), tr('{0} px pointer', so.settings.size === 0 ? 16 : 32 + (so.settings.size - 1) * 16));
 
     if (so) visual('mouse', '<span class="h-images">' + ['Arrow', 'Hand', 'IBeam', 'Wait'].map(id => so.roles.find(x => x.id === id)).filter(x => x && x.preview).map(x => `<img src="${urlCursor(x.preview)}" class="${x.preview.retro ? 'retro' : ''}" alt="">`).join('') + '</span>');
 
@@ -121,12 +123,40 @@
     if (a) visual('icons', '<span class="h-images">' + a.customized.filter(x => x.preview).slice(0, 6).map(x => `<img src="${urlIcon(x.preview)}" class="${x.preview.retro ? 'retro' : ''}" alt="" title="${x.name}">`).join('') + '</span>');
     if (a) set('icons', tr(a.customized.length > 1 ? '{0} customized folders' : a.customized.length ? '1 customized folder' : 'No customized folder', a.customized.length), tr('Folder icons'));
 
+    renderMoods(e.moods || []);
+
+    if (tasks) {
+      const apps = tasks.items.filter(t => t.kind === 'app').sort((a, b) => b.memory - a.memory), top = apps[0];
+      set('tasks', tr(apps.length > 1 ? '{0} apps open' : apps.length ? '1 app open' : 'No app open', apps.length), top ? tr('Busiest: {0}', top.name) + ' · ' + size(top.memory) : '');
+      visual('tasks', '<span class="h-images">' + apps.filter(t => appIcons.get(t.id)).slice(0, 5).map(t => `<img src="${appIcons.get(t.id)}" alt="">`).join('') + '</span>');
+    }
+
     const fi = e.files;
     if (fi && fi.disks && fi.disks[0]) {
       const d = fi.disks[0];
       set('files', tr('{0} free', size(d.free)), tr('{0} of {1}', d.name, size(d.size)), null, d.free / d.size < 0.1);
       visual('files', bar((d.size - d.free) / d.size * 100));
     }
+  }
+
+  function renderMoods(moods) {
+    const zone = $('h-moods');
+    zone.hidden = moods.length === 0;
+    const key = moods.map(m => m.id + (m.current ? '*' : '') + m.name).join('|');
+    if (zone.dataset.key === key) return;
+    zone.dataset.key = key;
+    const title = document.createElement('span');
+    title.className = 'h-moods__title';
+    title.textContent = tr('Moods');
+    zone.replaceChildren(title, ...moods.map(m => {
+      const b = document.createElement('button');
+      b.className = 'tool-chip';
+      b.setAttribute('aria-pressed', String(!!m.current));
+      b.textContent = m.name;
+      b.title = m.current ? tr('Active') : tr('Apply');
+      b.addEventListener('click', () => { if (!m.current) send('moods.apply', { id: m.id }); });
+      return b;
+    }));
   }
 
   function time(code) {
@@ -231,6 +261,7 @@
       if (m.type === 'network.infos') network = m;
       else if (network) network.history = m.history;
     } else if (m.type === 'hardware.stats') stats = m;
+    else if (m.type === 'tasks.list') { tasks = m; for (const t of m.items) if (t.info && t.info.icon) appIcons.set(t.id, t.info.icon); }
     else return;
     if (shown) render();
   }
@@ -244,12 +275,13 @@
     send('hardware.stats');
     send('home.weather');
     send('arrange.map', { full: images.size === 0 });
+    send('tasks.list', { fresh: appIcons.size === 0 });
     let turn = 0;
     timer = setInterval(() => {
       if (!shown || document.visibilityState !== 'visible') return;
       send('hardware.stats');
       render();
-      if (++turn % 5 === 0) send('arrange.map');
+      if (++turn % 5 === 0) { send('arrange.map'); send('tasks.list'); }
       if (turn % 450 === 0) send('home.weather');
     }, 2000);
   }

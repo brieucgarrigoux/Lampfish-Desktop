@@ -13,7 +13,7 @@
   ];
   const KIND_NAMES = { app: 'App', console: 'Command line', background: 'Background', system: 'System' };
   let shown = false, timer = 0, confirming = '', confirmTimer = 0, data = null;
-  let filter = 'all', order = { key: 'memory', direction: -1 };
+  let filter = 'all', order = { key: 'memory', direction: -1 }, search = '', chosen = null, sheet = null, turn = 0;
 
   const UNITS = ['bytes', 'KB', 'MB', 'GB', 'TB'].map(u => tr(u));
   function size(o) {
@@ -51,6 +51,7 @@
       el, img: el.querySelector('img'), name: el.querySelector('.task__name'), detail: el.querySelector('.task__detail'),
       cpu: el.querySelector('.task__cpu'), memory: el.querySelector('.task__memory'), end: el.querySelector('.task__end'),
     };
+    el.addEventListener('click', e => { if (!e.target.closest('.task__end')) { if (chosen === id) close(); else choose(id); } });
     r.end.addEventListener('click', () => {
       clearTimeout(confirmTimer);
       if (confirming === id) { confirming = ''; send('tasks.end', { id }); }
@@ -85,7 +86,9 @@
     $('t-help').textContent = tr(KINDS.find(k => k[0] === filter)[2]);
     if (!data) return;
 
-    const items = data.items.filter(t => filter === 'all' || t.kind === filter);
+    const words = search.trim().toLowerCase();
+    const matches = t => { const d = details.get(t.id) || {}; return [t.name, d.description, d.company].some(x => x && x.toLowerCase().includes(words)); };
+    const items = data.items.filter(t => (filter === 'all' || t.kind === filter) && (!words || matches(t)));
     const value = t => order.key === 'name' ? t.name.toLowerCase() : t[order.key];
     items.sort((a, b) => (value(a) < value(b) ? -1 : value(a) > value(b) ? 1 : 0) * order.direction);
 
@@ -108,13 +111,117 @@
       r.end.textContent = confirming === t.id ? tr('Confirm') : tr('End');
       r.end.classList.toggle('confirm', confirming === t.id);
       r.end.title = warning(t);
+      r.el.classList.toggle('chosen', t.id === chosen);
       list.append(r.el);
     }
     for (const [id, r] of rows) if (!seen.has(id)) { r.el.remove(); rows.delete(id); }
     $('t-empty').hidden = items.length > 0;
+    $('t-empty').textContent = words ? tr('No program matches “{0}”', search.trim()) : tr('Nothing here');
+    renderSheet();
+  }
+
+  function choose(id) {
+    chosen = id;
+    sheet = null;
+    document.body.classList.add('sheet-open');
+    send('tasks.details', { id });
+    render();
+  }
+
+  function close() {
+    chosen = null;
+    sheet = null;
+    document.body.classList.remove('sheet-open');
+    render();
+  }
+
+  const ago = iso => {
+    const s = Math.max(0, (Date.now() - new Date(iso)) / 1000), h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), d = Math.floor(h / 24);
+    return d ? tr('{0} d {1} h', d, h % 24) : h ? tr('{0} h {1}', h, String(m).padStart(2, '0')) : tr('{0} min', Math.max(1, m));
+  };
+  const ICONS = {
+    publisher: '<path d="M3.5 20V10l5 3V10l5 3V6l7 4v10z"/>',
+    version: '<path d="M4 12V4.5h7.5l8.5 8.5-7.5 7.5z"/><circle cx="8.5" cy="8.5" r="1.3"/>',
+    size: '<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 14h16"/>',
+    startup: '<path d="M12 3.5v8"/><path d="M7 6.3a7 7 0 1 0 10 0"/>',
+    processes: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
+    started: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+    memory: '<rect x="3.5" y="7" width="17" height="9" rx="1.2"/><path d="M7 10v3M10.5 10v3M14 10v3M17.5 10v3"/>',
+    cpu: '<rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/><rect x="9.5" y="9.5" width="5" height="5" rx=".8"/>',
+    network: '<path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.2" r="1.1"/>',
+    listen: '<circle cx="12" cy="12" r="2"/><path d="M7.5 7.5a6.4 6.4 0 0 0 0 9M16.5 7.5a6.4 6.4 0 0 1 0 9"/>',
+    remote: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/>',
+    folder: '<path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/>',
+  };
+  const STARTUP = { registry: 'Yes, from the registry', folder: 'Yes, from the Startup folder', off: 'Turned off in Windows', no: 'No' };
+
+  function group(title, rows) {
+    const h = document.createElement('h2');
+    h.textContent = title;
+    const g = document.createElement('div');
+    g.className = 'group';
+    for (const [icon, label, value] of rows.filter(r => r[2] != null && r[2] !== '')) {
+      const l = document.createElement('div');
+      l.className = 'row';
+      l.innerHTML = `<span class="caption"><svg class="glyph glyph--small" viewBox="0 0 24 24" aria-hidden="true">${ICONS[icon]}</svg><span></span></span><span class="value"></span>`;
+      l.querySelector('.caption > span').textContent = label;
+      l.querySelector('.value').textContent = value;
+      l.querySelector('.value').title = value;
+      g.append(l);
+    }
+    return g.children.length ? [h, g] : [];
+  }
+
+  function renderSheet() {
+    const zone = $('t-details');
+    const t = data && chosen && data.items.find(x => x.id === chosen);
+    if (!t) {
+      if (zone.dataset.key !== 'empty') { zone.dataset.key = 'empty'; zone.innerHTML = '<p class="help-section t-hint"></p>'; zone.firstChild.textContent = tr('Pick a program to see where it comes from, what it uses and whether it starts with Windows'); }
+      return;
+    }
+    const d = details.get(t.id) || {}, s = sheet && sheet.id === t.id ? sheet : null;
+    const fresh = [];
+    const head = document.createElement('div');
+    head.className = 't-sheet__head';
+    head.innerHTML = '<span class="task__icon"><img alt="" hidden></span><div><span class="title"></span><span class="path"></span></div><button class="t-close" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg></button>';
+    head.querySelector('.t-close').addEventListener('click', close);
+    if (d.icon) { head.querySelector('img').src = d.icon; head.querySelector('img').hidden = false; }
+    head.querySelector('.title').textContent = t.name;
+    head.querySelector('.path').textContent = d.description || tr(KIND_NAMES[t.kind]);
+    fresh.push(head);
+    if (s) {
+      fresh.push(...group(tr('Program'), [
+        ['publisher', tr('Publisher'), s.company], ['version', tr('Version'), s.version], ['size', tr('Size'), s.size ? size(s.size) : null],
+        ['startup', tr('Starts with Windows'), s.path ? tr(STARTUP[s.startup] || 'No') : null],
+      ]));
+      if (s.path) {
+        const show = document.createElement('button');
+        show.className = 'row action';
+        show.innerHTML = `<span class="caption"><svg class="glyph glyph--small" viewBox="0 0 24 24" aria-hidden="true">${ICONS.folder}</svg><span></span></span><svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>`;
+        show.querySelector('.caption > span').innerHTML = '';
+        show.querySelector('.caption > span').append(tr('Show in File Explorer'), Object.assign(document.createElement('small'), { textContent: s.path }));
+        show.title = s.path;
+        show.addEventListener('click', () => send('tasks.show', { path: s.path }));
+        const g = document.createElement('div');
+        g.className = 'group';
+        g.append(show);
+        fresh.push(g);
+      }
+    }
+    fresh.push(...group(tr('Right now'), [
+      ['processes', tr('Processes'), String(t.count)], ['started', tr('Running for'), s && s.started ? ago(s.started) : null],
+      ['memory', tr('Memory'), size(t.memory)], ['cpu', tr('Processor'), pct(t.cpu)],
+    ]));
+    if (s) fresh.push(...group(tr('Network'), [
+      ['network', tr('Open connections'), String(s.established)], ['listen', tr('Waiting for connections'), s.listening ? String(s.listening) : null],
+      ...s.remotes.map(r => ['remote', tr('Connected to'), r]),
+    ]));
+    zone.dataset.key = t.id;
+    zone.replaceChildren(...fresh);
   }
 
   function event(m) {
+    if (m.type === 'tasks.details') { if (m.id === chosen) { sheet = m; renderSheet(); } return; }
     if (m.type !== 'tasks.list') return;
     data = m;
     for (const t of m.items) if (t.info) details.set(t.id, t.info);
@@ -127,9 +234,16 @@
     if (!yes) return;
     send('tasks.list', { fresh: true });
     timer = setInterval(() => {
-      if (shown && document.visibilityState === 'visible') send('tasks.list');
+      if (!shown || document.visibilityState !== 'visible') return;
+      send('tasks.list');
+      if (chosen && ++turn % 3 === 0) send('tasks.details', { id: chosen });
     }, 2000);
   }
+
+  const field = $('t-search');
+  field.addEventListener('input', () => { search = field.value; render(); });
+  field.addEventListener('keydown', e => { if (e.key === 'Escape' && field.value) { e.stopPropagation(); field.value = ''; search = ''; render(); } });
+  addEventListener('keydown', e => { if (e.key === 'Escape' && shown && chosen && e.target !== field) close(); });
 
   render();
   Bramble.tasks = { event, visible };

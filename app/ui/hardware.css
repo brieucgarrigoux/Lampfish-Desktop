@@ -1,20 +1,20 @@
 .view--hardware { max-width: 1120px; margin-inline: auto; container: hardware / inline-size; }
 .board .empty { position: static; padding: 120px 0; }
 
-.m-header { display: flex; align-items: center; gap: 16px; padding: 16px 18px; border-radius: 12px; background: var(--group); }
-.m-header > .glyph { width: 44px; height: 44px; padding: 10px; border-radius: 12px; }
+.m-header { display: flex; align-items: center; gap: 16px; padding: 16px 18px; }
+.m-header > .glyph { width: 44px; height: 44px; padding: 10px; border-radius: var(--radius-card); }
 .m-header__what { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.m-header__what .title { font: 600 17px/1.2 "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.m-header__what .path { font-size: 12.5px; color: var(--text-pale); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.m-header__what .title { font: 600 16px/1.2 var(--display); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.m-header__what .path { font-size: 12px; color: var(--text-pale); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .m-health { flex: none; display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 99px; background: var(--accent-dim); color: var(--accent); font-size: 13px; font-weight: 600; }
 .m-health i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; box-shadow: 0 0 6px currentColor; }
-.m-health.alert { background: rgba(255, 92, 108, .14); color: var(--danger); }
+.m-health.alert { background: var(--danger-dim); color: var(--danger); }
 
 .m-dash { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-auto-flow: dense; gap: 14px; margin-top: 16px; }
 .m-dash > .m-card { grid-column: span 4; }
 .m-dash > [data-key="processor"] { grid-column: span 8; }
 .m-dash > [data-key^="disk"], .m-dash > [data-key^="network"] { grid-column: span 6; }
-.m-dash > .m-card--large { grid-column: span 12; }
+.m-dash > .m-card--large, .m-dash > .m-card--wide { grid-column: span 12; }
 .m-dash:has([data-key="battery"]) > .m-card--large { grid-column: span 8; }
 .m-dash .m-display { flex: 1; display: flex; flex-direction: column; gap: 10px; }
 .m-dash .m-display .mini-curve { margin-top: auto; }
@@ -24,18 +24,15 @@
 @container hardware (max-width: 760px) { .m-dash > .m-card { grid-column: span 6 !important; } .m-dash > [data-key="processor"], .m-dash > .m-card--large { grid-column: 1 / -1 !important; } }
 @container hardware (max-width: 440px) { .m-dash > .m-card { grid-column: 1 / -1 !important; } }
 .m-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
-.m-card { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 14px 16px 12px; border-radius: 12px; background: var(--group);
-  cursor: pointer; outline: none; transition: background .12s; min-width: 0; contain: layout paint; }
-.m-card:hover { background: var(--group-up); }
-.m-card:focus-visible { box-shadow: inset 0 0 0 1px var(--accent); }
-.m-card.chosen { background: var(--group-up); }
+.m-card { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 14px 16px 12px; cursor: pointer; min-width: 0; contain: layout paint; }
+.m-card.chosen { background: var(--shell-up); }
 .m-card--large { grid-column: 1 / -1; }
 .m-card header { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .m-card header > div { min-width: 0; }
 .m-card h3 { margin: 0; font-size: 13px; font-weight: 600; color: var(--text-soft); }
 .m-model { margin: 1px 0 0; font-size: 13.5px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .m-measure { display: flex; align-items: baseline; gap: 10px; }
-.m-value { font: 600 30px/1 "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.m-value { font: 600 30px/1 var(--display); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
 .m-word { font-size: 13px; color: var(--text-soft); }
 .m-card[data-level="medium"] .m-word { color: var(--accent); }
 .m-card[data-level="up"] .m-word, .m-card[data-level="up"] .m-value { color: var(--danger); }
@@ -59,7 +56,7 @@
 
 
 .m-screens { display: flex; align-items: flex-end; justify-content: center; gap: 10px; height: 70px; }
-.m-screen { flex: none; display: grid; place-items: center; border-radius: 4px; background: #0b0c10; box-shadow: inset 0 0 0 1px var(--hairline-strong);
+.m-screen { flex: none; display: grid; place-items: center; border-radius: 4px; background: #0b0c10; transition: box-shadow var(--fast), color var(--fast); box-shadow: inset 0 0 0 1px var(--hairline-strong);
   font: 600 13px var(--numbers); color: var(--text-pale); }
 .m-screen.primary { box-shadow: inset 0 0 0 1px rgba(149, 97, 243, .6); color: var(--accent); }
 .m-list-screens { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
@@ -67,7 +64,6 @@
 .m-list-screens b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .m-list-screens span { flex: none; font: 12px var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); }
 
-.only-hardware .row .value { max-width: 60%; overflow: hidden; text-overflow: ellipsis; }
 .m-card[data-level="up"] .m-bar i { background: var(--danger); }
 
 .cell-relief { display: flex; align-items: center; gap: 0; }

@@ -26,11 +26,11 @@
 (() => {
   const params = new URLSearchParams(location.search);
   const thumbnail = params.has('thumbnail');
-  let config = null, light = 1, speed = 1, frozen = false;
+  let config = null, light = 1, speed = 1, frozen = false, dirty = true;
   let audio = 0, audioTarget = 0, lastRaw = 0, lastBeat = 0;
   const ripples = [], history = new Array(96).fill(0);
 
-  window.__adjust = (l, v) => { light = Number(l) / 50; speed = Math.pow(2, (Number(v) - 50) / 25); };
+  window.__adjust = (l, v) => { light = Number(l) / 50; speed = Math.pow(2, (Number(v) - 50) / 25); dirty = true; };
   window.__adjust(params.get('light') ?? 50, params.get('speed') ?? 50);
   window.__audio = l => {
     l = Number(l);
@@ -42,8 +42,8 @@
   addEventListener('message', e => {
     const m = e.data || {};
     if (m.bramble === 'adjust') window.__adjust(m.light, m.speed);
-    if (m.bramble === 'freeze') frozen = m.value;
-    if (m.bramble === 'config') { config = m.config; apply(); }
+    if (m.bramble === 'freeze') { frozen = m.value; dirty = true; }
+    if (m.bramble === 'config') { config = m.config; dirty = true; apply(); }
     if (m.bramble === 'audio') window.__audio(m.level);
   });
   if (!params.has('preview')) fetch('config.json').then(r => r.json()).then(c => { config = c; apply(); });
@@ -190,7 +190,10 @@
 
   let t = 0, before = performance.now(), frames = 0, historyClock = 0;
   function draw(now) {
-    if (innerWidth !== w || innerHeight !== h) resize();
+    if (innerWidth !== w || innerHeight !== h) { resize(); dirty = true; }
+    if (frozen && !dirty && Math.abs(audioTarget - audio) < .002) { setTimeout(() => requestAnimationFrame(draw), 250); return; }
+    if (now - before < 1000 / 62) { requestAnimationFrame(draw); return; }
+    dirty = false;
     const dt = Math.min(.05, (now - before) / 1000);
     before = now;
     audio += (audioTarget - audio) * Math.min(1, dt * 14);

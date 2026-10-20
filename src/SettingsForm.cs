@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Web.WebView2.Core;
@@ -17,10 +18,21 @@ namespace Bramble
         {
             Text = "Bramble";
             Icon = Program.AppIcon;
-            StartPosition = FormStartPosition.CenterScreen;
-            BackColor = Color.FromArgb(10, 10, 15);
-            Size = new Size(LogicalToDeviceUnits(1200), LogicalToDeviceUnits(780));
-            MinimumSize = new Size(LogicalToDeviceUnits(900), LogicalToDeviceUnits(600));
+            BackColor = Color.FromArgb(10, 11, 15);
+            MinimumSize = new Size(LogicalToDeviceUnits(720), LogicalToDeviceUnits(560));
+            var w = Program.R.Window;
+            var saved = w == null ? Rectangle.Empty : new Rectangle(w.X, w.Y, w.Width, w.Height);
+            if (w != null && Screen.AllScreens.Any(s => { var v = Rectangle.Intersect(s.WorkingArea, saved); return v.Width >= 240 && v.Height >= 160; }))
+            {
+                StartPosition = FormStartPosition.Manual;
+                Bounds = saved;
+                if (w.Maximized) WindowState = FormWindowState.Maximized;
+            }
+            else
+            {
+                StartPosition = FormStartPosition.CenterScreen;
+                Size = new Size(LogicalToDeviceUnits(1200), LogicalToDeviceUnits(780));
+            }
             view = new WebView2 { Dock = DockStyle.Fill, DefaultBackgroundColor = BackColor };
             Controls.Add(view);
         }
@@ -33,6 +45,9 @@ namespace Bramble
             core.Settings.AreDevToolsEnabled = false;
             core.Settings.IsStatusBarEnabled = false;
             core.Settings.IsZoomControlEnabled = false;
+            core.Settings.AreBrowserAcceleratorKeysEnabled = false;
+            core.Settings.IsPinchZoomEnabled = false;
+            core.Settings.IsSwipeNavigationEnabled = false;
             core.IsMuted = true;
             view.ZoomFactor = Program.R.Zoom / 100.0;
             core.SetVirtualHostNameToFolderMapping(WallpaperForm.AppHost, Program.Root, CoreWebView2HostResourceAccessKind.DenyCors);
@@ -59,6 +74,36 @@ namespace Bramble
         }
 
         public void SetZoom(int percent) { view.ZoomFactor = percent / 100.0; }
+
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+            Native.DarkFrame(Handle);
+        }
+
+        FormWindowState shape = FormWindowState.Normal;
+
+        protected override void OnResizeEnd(EventArgs e)
+        {
+            base.OnResizeEnd(e);
+            Remember();
+        }
+
+        protected override void OnSizeChanged(EventArgs e)
+        {
+            base.OnSizeChanged(e);
+            if (WindowState == shape || !Visible) return;
+            shape = WindowState;
+            Remember();
+        }
+
+        void Remember()
+        {
+            if (WindowState == FormWindowState.Minimized || !IsHandleCreated) return;
+            var b = WindowState == FormWindowState.Normal ? Bounds : RestoreBounds;
+            Program.R.Window = new WindowPlace { X = b.X, Y = b.Y, Width = b.Width, Height = b.Height, Maximized = WindowState == FormWindowState.Maximized };
+            Program.Save();
+        }
 
         bool changing, changeAgain;
 

@@ -1,22 +1,24 @@
 'use strict';
 
 (function () {
-  const ZONES = ['.contents', '.panel'];
+  const ZONES = ['.contents', '.panel', 'document'];
 
   for (const sel of ZONES) {
-    const zone = document.querySelector(sel);
+    const whole = sel === 'document';
+    const zone = whole ? document.scrollingElement : document.querySelector(sel);
     if (!zone) continue;
-    zone.classList.add('scrollable');
+    if (!whole) zone.classList.add('scrollable');
     const rail = document.createElement('div');
     rail.className = 'rail-scrollable';
     rail.innerHTML = '<i class="thumb-scrollable"></i>';
     document.body.append(rail);
     const thumb = rail.firstChild;
-    let image = 0;
+    let frame = 0;
 
+    const box = () => whole ? { top: 0, right: innerWidth, width: innerWidth, height: innerHeight } : zone.getBoundingClientRect();
     function place() {
-      image = 0;
-      const r = zone.getBoundingClientRect();
+      frame = 0;
+      const r = box();
       const rest = zone.scrollHeight - zone.clientHeight;
       if (r.width === 0 || r.height === 0 || rest <= 1) { rail.hidden = true; return; }
       rail.hidden = false;
@@ -28,14 +30,14 @@
       thumb.style.height = h + 'px';
       thumb.style.transform = `translateY(${((up - h) * zone.scrollTop / rest).toFixed(1)}px)`;
     }
-    const plus_later = () => { if (!image) image = requestAnimationFrame(place); };
+    const schedule = () => { if (!frame) frame = requestAnimationFrame(place); };
 
-    zone.addEventListener('scroll', () => { plus_later(); rail.classList.add('active'); clearTimeout(rail.timer); rail.timer = setTimeout(() => rail.classList.remove('active'), 900); }, { passive: true });
-    new ResizeObserver(plus_later).observe(zone);
-    new MutationObserver(plus_later).observe(zone, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden', 'class', 'style'] });
-    addEventListener('resize', plus_later);
+    (whole ? window : zone).addEventListener('scroll', () => { schedule(); rail.classList.add('active'); clearTimeout(rail.timer); rail.timer = setTimeout(() => rail.classList.remove('active'), 900); }, { passive: true });
+    new ResizeObserver(schedule).observe(whole ? document.body : zone);
+    new MutationObserver(schedule).observe(whole ? document.body : zone, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden', 'class', 'style'] });
+    addEventListener('resize', schedule);
 
-    new MutationObserver(plus_later).observe(document.body, { attributes: true, attributeFilter: ['data-view', 'style'] });
+    new MutationObserver(schedule).observe(document.body, { attributes: true, attributeFilter: ['data-view', 'style'] });
 
     let grip = null;
     thumb.addEventListener('pointerdown', e => {
@@ -62,6 +64,6 @@
     });
 
     rail.addEventListener('wheel', e => { zone.scrollTop += e.deltaY; }, { passive: true });
-    plus_later();
+    schedule();
   }
 })();

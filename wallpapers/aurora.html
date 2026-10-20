@@ -18,8 +18,8 @@
 
   const params = new URLSearchParams(location.search);
   const thumbnail = params.has('thumbnail');
-  let light, speed, frozen = false;
-  window.__adjust = (l, v) => { light = Number(l) / 50; speed = Math.pow(2, (Number(v) - 50) / 25); };
+  let light, speed, frozen = false, dirty = true;
+  window.__adjust = (l, v) => { light = Number(l) / 50; speed = Math.pow(2, (Number(v) - 50) / 25); dirty = true; };
   window.__adjust(params.get('light') ?? 50, params.get('speed') ?? 50);
   let audio = 0, audioTarget = 0;
   window.__audio = l => { audioTarget = Number(l); };
@@ -27,7 +27,7 @@
   addEventListener('message', e => {
     const m = e.data || {};
     if (m.bramble === 'adjust') window.__adjust(m.light, m.speed);
-    if (m.bramble === 'freeze') frozen = m.value;
+    if (m.bramble === 'freeze') { frozen = m.value; dirty = true; }
     if (m.bramble === 'audio') window.__audio(m.level);
   });
   if (parent !== window) parent.postMessage({ bramble: 'ready' }, '*');
@@ -68,12 +68,14 @@
   function draw(time) {
     if (innerWidth !== w || innerHeight !== h) resize();
     if (thumbnail && w && h && ++images > 8) return;
+    if (frozen && !dirty) { setTimeout(() => requestAnimationFrame(draw), 250); return; }
     requestAnimationFrame(draw);
     if (time - previous < 33) return;
     const dt = Math.min(time - previous, 100);
     audio += (audioTarget - audio) * Math.min(1, dt / 70);
     if (!frozen) t += dt * speed * (1 + audio * 3);
     previous = time;
+    dirty = false;
     paint();
   }
 

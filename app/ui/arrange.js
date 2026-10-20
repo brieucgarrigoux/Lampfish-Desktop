@@ -37,9 +37,9 @@
     }));
   }
 
-  function wallpaperBehind(screen) {
+  function wallpaperBehind(screen, e) {
     const state = Bramble.state;
-    const wallpaper = state && state.wallpapers && state.wallpapers.find(f => f.name === state.current);
+    const wallpaper = wallpaperFor(`${e.w}x${e.h}@${e.x},${e.y}`);
     if (!wallpaper) return;
     const box = document.createElement('div');
     box.className = 'preview wallpaper-map';
@@ -75,7 +75,7 @@
     const k = scale, frame = { w: (right - left) * k, h: (down - up) * k };
 
     const key = map.screens.map(e => [e.x, e.y, e.w, e.h, e.tx, e.ty, e.tw, e.th].join(',')).join('|') + '@' + width
-      + '@' + (Bramble.state ? Bramble.state.current + '/' + Bramble.state.dim + '/' + Bramble.state.fit : '');
+      + '@' + (Bramble.state ? Bramble.state.current + '/' + Bramble.state.dim + '/' + Bramble.state.fit + '/' + JSON.stringify(Bramble.state.displays || []) : '');
     if (key !== keyScreens) {
       keyScreens = key;
       zone.replaceChildren(label);
@@ -95,11 +95,12 @@
         screen.classList.toggle('fit', !!Bramble.state && Bramble.state.fit === 'fit');
 
         const name = document.createElement('span');
-        name.className = 'number';
+        name.className = 'screen-label' + (e.primary ? ' primary' : '');
         name.textContent = e.n + (e.primary ? tr(' · main') : '');
-        screen.append(...taskbars(e), name);
-        wallpaperBehind(screen);
-        scene.append(screen);
+        Object.assign(name.style, { left: (e.x - left) * k + GAP + 'px', top: (e.y - up + e.h) * k + 'px' });
+        screen.append(...taskbars(e));
+        wallpaperBehind(screen, e);
+        scene.append(screen, name);
       }
       zone.append(scene);
       requestAnimationFrame(() => requestAnimationFrame(() => scene.classList.add('settled')));
@@ -214,6 +215,7 @@
       return l;
     }));
     $('r-restore').checked = r.restoreAuto;
+    for (const b of document.querySelectorAll('[data-sort]')) b.setAttribute('aria-pressed', String(b.dataset.sort === r.lastSort));
     $('arrange-undo').disabled = !r.canUndo;
     $('arrange-original').disabled = !r.hasOriginal;
   }

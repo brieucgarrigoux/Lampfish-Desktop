@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Win32;
 
 namespace Bramble
 {
@@ -208,10 +209,173 @@ namespace Bramble
             else if (refused > 0) Program.Announce("{0} could not be closed", name);
         }
 
+        static object Details(string id)
+        {
+            var pids = new HashSet<int>();
+            string path = null, name = id;
+            DateTime started = DateTime.MaxValue;
+            foreach (var p in Process.GetProcesses())
+                using (p)
+                {
+                    string where = PathOf(p.Id);
+                    if (Identify(p.ProcessName, where) != id) continue;
+                    pids.Add(p.Id);
+                    name = p.ProcessName;
+                    if (path == null) path = where;
+                    try { if (p.StartTime < started) started = p.StartTime; } catch { }
+                }
+            string description = null, company = null, version = null;
+            long size = 0;
+            if (path != null && File.Exists(path))
+            {
+                try
+                {
+                    var v = FileVersionInfo.GetVersionInfo(path);
+                    description = string.IsNullOrWhiteSpace(v.FileDescription) ? null : v.FileDescription.Trim();
+                    company = string.IsNullOrWhiteSpace(v.CompanyName) ? null : v.CompanyName.Trim();
+                    version = string.IsNullOrWhiteSpace(v.ProductVersion) ? (string.IsNullOrWhiteSpace(v.FileVersion) ? null : v.FileVersion.Trim()) : v.ProductVersion.Trim();
+                    size = new FileInfo(path).Length;
+                }
+                catch { }
+            }
+            var tcp = Connections(pids);
+            return new
+            {
+                type = "tasks.details", id = id, name = name, path = path, description = description, company = company, version = version, size = size,
+                started = started == DateTime.MaxValue ? null : started.ToString("o"), processes = pids.Count, startup = Startup(path),
+                established = tcp.Count(c => c[0] == "5"), listening = tcp.Count(c => c[0] == "2"),
+                remotes = tcp.Where(c => c[0] == "5").Select(c => c[1]).Distinct().Take(5).ToArray(),
+            };
+        }
+
+        static readonly string[][] RunKeys =
+        {
+            new[] { "user", @"Software\Microsoft\Windows\CurrentVersion\Run" },
+            new[] { "machine", @"Software\Microsoft\Windows\CurrentVersion\Run" },
+            new[] { "machine", @"Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" },
+        };
+
+        static string Startup(string path)
+        {
+            if (path == null) return null;
+            string file = Path.GetFileName(path);
+            try
+            {
+                foreach (var k in RunKeys)
+                {
+                    var root = k[0] == "user" ? Registry.CurrentUser : Registry.LocalMachine;
+                    using (var key = root.OpenSubKey(k[1]))
+                    {
+                        if (key == null) continue;
+                        foreach (string value in key.GetValueNames())
+                        {
+                            string command = Environment.ExpandEnvironmentVariables(key.GetValue(value) as string ?? "");
+                            if (command.IndexOf(path, StringComparison.OrdinalIgnoreCase) < 0) continue;
+                            return Disabled(root, value) ? "off" : "registry";
+                        }
+                    }
+                }
+                foreach (string folder in new[] { Environment.GetFolderPath(Environment.SpecialFolder.Startup), Environment.GetFolderPath(Environment.SpecialFolder.CommonStartup) })
+                {
+                    if (!Directory.Exists(folder)) continue;
+                    foreach (string lnk in Directory.GetFiles(folder, "*.lnk"))
+                        if (string.Equals(Target(lnk), path, StringComparison.OrdinalIgnoreCase)) return "folder";
+                }
+            }
+            catch (Exception ex) { Program.Log(ex); }
+            return "no";
+        }
+
+        static bool Disabled(RegistryKey root, string value)
+        {
+            using (var key = root.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run"))
+            {
+                var data = key == null ? null : key.GetValue(value) as byte[];
+                return data != null && data.Length > 0 && (data[0] & 1) == 1;
+            }
+        }
+
+        static string Target(string lnk)
+        {
+            object shell = null, link = null;
+            try
+            {
+                Type type = Type.GetTypeFromProgID("WScript.Shell");
+                shell = Activator.CreateInstance(type);
+                link = type.InvokeMember("CreateShortcut", System.Reflection.BindingFlags.InvokeMethod, null, shell, new object[] { lnk });
+                return link.GetType().InvokeMember("TargetPath", System.Reflection.BindingFlags.GetProperty, null, link, null) as string;
+            }
+            catch { return null; }
+            finally
+            {
+                if (link != null) Marshal.FinalReleaseComObject(link);
+                if (shell != null) Marshal.FinalReleaseComObject(shell);
+            }
+        }
+
+        static List<string[]> Connections(HashSet<int> pids)
+        {
+            var list = new List<string[]>();
+            foreach (int family in new[] { 2, 23 })
+            {
+                int size = 0;
+                GetExtendedTcpTable(IntPtr.Zero, ref size, false, family, 5, 0);
+                if (size <= 0) continue;
+                IntPtr buffer = Marshal.AllocHGlobal(size);
+                try
+                {
+                    if (GetExtendedTcpTable(buffer, ref size, false, family, 5, 0) != 0) continue;
+                    int count = Marshal.ReadInt32(buffer), row = family == 2 ? 24 : 56;
+                    for (int i = 0; i < count; i++)
+                    {
+                        IntPtr r = buffer + 4 + i * row;
+                        int state = family == 2 ? Marshal.ReadInt32(r) : Marshal.ReadInt32(r + 48), pid = Marshal.ReadInt32(r + (family == 2 ? 20 : 52));
+                        if (!pids.Contains(pid)) continue;
+                        string remote;
+                        if (family == 2)
+                        {
+                            var ip = new System.Net.IPAddress(BitConverter.GetBytes(Marshal.ReadInt32(r + 12)));
+                            remote = ip + ":" + Port(Marshal.ReadInt32(r + 16));
+                        }
+                        else
+                        {
+                            var bytes = new byte[16];
+                            Marshal.Copy(r + 24, bytes, 0, 16);
+                            remote = "[" + new System.Net.IPAddress(bytes) + "]:" + Port(Marshal.ReadInt32(r + 44));
+                        }
+                        list.Add(new[] { state.ToString(), remote });
+                    }
+                }
+                finally { Marshal.FreeHGlobal(buffer); }
+            }
+            return list;
+        }
+
+        static int Port(int raw) { return ((raw & 0xFF) << 8) | ((raw >> 8) & 0xFF); }
+
         public static bool Receive(string action, Dictionary<string, object> m)
         {
             switch (action)
             {
+                case "details":
+                {
+                    object value;
+                    string program = m.TryGetValue("id", out value) && value != null ? value.ToString() : null;
+                    if (program == null) return false;
+                    Task.Run(() => Details(program)).ContinueWith(t => Program.OnInterface(() =>
+                    {
+                        if (t.IsFaulted) { Program.Log(t.Exception); return; }
+                        Program.Send(t.Result);
+                    }));
+                    return false;
+                }
+                case "show":
+                {
+                    object value;
+                    string path = m.TryGetValue("path", out value) && value != null ? value.ToString() : null;
+                    if (path != null && File.Exists(path)) Process.Start("explorer.exe", "/select,\"" + path + "\"");
+                    return false;
+                }
                 case "list":
                     if (running) return false;
                     object fresh;
@@ -243,5 +407,6 @@ namespace Bramble
         [DllImport("kernel32.dll")] static extern IntPtr OpenProcess(uint access, bool inherit, int id);
         [DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr handle);
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode)] static extern bool QueryFullProcessImageName(IntPtr process, int flags, StringBuilder name, ref int size);
+        [DllImport("iphlpapi.dll")] static extern uint GetExtendedTcpTable(IntPtr table, ref int size, bool order, int family, int kind, uint reserved);
     }
 }

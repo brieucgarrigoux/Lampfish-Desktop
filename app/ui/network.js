@@ -200,6 +200,7 @@
       const li = document.createElement('li');
       const r = res(key);
       li.className = r ? (r.ok ? 'done' : 'failed') : running && next && next[0] === key ? 'active' : '';
+      if (li.className === 'active' && test.direct && test.direct.phase === key) { li.classList.add('measuring'); li.style.setProperty('--progress', Math.round(test.direct.progress * 100) + '%'); }
       li.innerHTML = '<i>' + glyph(icon) + '</i><span></span>';
       li.querySelector('span').textContent = name;
       return li;

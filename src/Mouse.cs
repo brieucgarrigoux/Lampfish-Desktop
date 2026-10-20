@@ -42,6 +42,14 @@ namespace Bramble
 
         class Theme { public string Name, Source; public string[] Paths; }
 
+        public class Snapshot
+        {
+            public Dictionary<string, string> Roles = new Dictionary<string, string>();
+            public string Scheme;
+            public int Source;
+            public int Size = 32;
+        }
+
         static List<Theme> Themes()
         {
             var list = new List<Theme>();
@@ -71,7 +79,7 @@ namespace Bramble
                     string value = key.GetValue(name) as string;
                     if (string.IsNullOrEmpty(name) || value == null || list.Any(t => t.Name == name)) continue;
                     var paths = value.Split(',').Select(c => Environment.ExpandEnvironmentVariables(c.Trim())).ToArray();
-                    if (paths.Length >= 13) list.Add(new Theme { Name = name, Source = source, Paths = paths });
+                    if (paths.Length >= 13 && paths.Take(Roles.Length).Any(p => p.Length > 0 && File.Exists(p))) list.Add(new Theme { Name = name, Source = source, Paths = paths });
                 }
             }
         }
@@ -92,6 +100,7 @@ namespace Bramble
         {
             var theme = Themes().FirstOrDefault(t => t.Name == name);
             if (theme == null) return;
+            Remember();
             using (var key = Registry.CurrentUser.CreateSubKey(Key))
             {
                 for (int i = 0; i < Roles.Length; i++)
@@ -109,6 +118,7 @@ namespace Bramble
         static void Assign(string role, string file)
         {
             if (!Roles.Any(r => r[0] == role) || !File.Exists(file)) return;
+            Remember();
             using (var key = Registry.CurrentUser.CreateSubKey(Key))
             {
                 key.SetValue(role, file, RegistryValueKind.ExpandString);
@@ -119,6 +129,68 @@ namespace Bramble
                 key.SetValue("Scheme Source", 1, RegistryValueKind.DWord);
             }
             Reload();
+        }
+
+        static string[] aero;
+        static string[] Aero()
+        {
+            if (aero != null) return aero;
+            using (var key = Registry.LocalMachine.OpenSubKey(SchemesKey))
+            {
+                string v = key == null ? null : key.GetValue("Windows Aero") as string;
+                if (v != null) aero = v.Split(',').Select(c => Environment.ExpandEnvironmentVariables(c.Trim())).ToArray();
+            }
+            return aero;
+        }
+
+        static Snapshot Capture()
+        {
+            var s = new Snapshot();
+            using (var key = Registry.CurrentUser.OpenSubKey(Key))
+            {
+                foreach (var r in Roles) s.Roles[r[0]] = key == null ? "" : (key.GetValue(r[0], "", RegistryValueOptions.DoNotExpandEnvironmentNames) as string) ?? "";
+                s.Scheme = key == null ? null : key.GetValue("") as string;
+                object source = key == null ? null : key.GetValue("Scheme Source"), size = key == null ? null : key.GetValue("CursorBaseSize");
+                s.Source = source is int ? (int)source : 0;
+                s.Size = size is int ? (int)size : 32;
+            }
+            return s;
+        }
+
+        static void Restore(Snapshot s)
+        {
+            using (var key = Registry.CurrentUser.CreateSubKey(Key))
+            {
+                foreach (var r in Roles)
+                {
+                    string v;
+                    key.SetValue(r[0], s.Roles.TryGetValue(r[0], out v) && v != null ? v : "", RegistryValueKind.ExpandString);
+                }
+                if (s.Scheme != null) key.SetValue("", s.Scheme); else key.DeleteValue("", false);
+                key.SetValue("Scheme Source", s.Source, RegistryValueKind.DWord);
+            }
+            SetSize(s.Size < 32 ? 0 : Math.Max(1, Math.Min(15, (s.Size - 32) / 16 + 1)));
+            Reload();
+        }
+
+        static bool Same(Snapshot a, Snapshot b)
+        {
+            if (a == null || b == null || a.Size != b.Size) return false;
+            foreach (var r in Roles)
+            {
+                string x, y;
+                a.Roles.TryGetValue(r[0], out x);
+                b.Roles.TryGetValue(r[0], out y);
+                if (!string.Equals(Environment.ExpandEnvironmentVariables(x ?? ""), Environment.ExpandEnvironmentVariables(y ?? ""), StringComparison.OrdinalIgnoreCase)) return false;
+            }
+            return true;
+        }
+
+        static void Remember()
+        {
+            if (Program.R.CursorsOriginal != null) return;
+            Program.R.CursorsOriginal = Capture();
+            Program.Save();
         }
 
         static void Reload()
@@ -138,6 +210,8 @@ namespace Bramble
         }
 
         public static string ThemeName { get { return CurrentTheme(); } }
+
+        public static bool HasTheme(string name) { return Themes().Any(t => t.Name == name); }
 
         public static void SetTheme(string name) { ApplyTheme(name); }
 
@@ -349,13 +423,19 @@ namespace Bramble
 
         static void AdjustSize(int n)
         {
+            Remember();
+            SetSize(n);
+            Reload();
+        }
+
+        static void SetSize(int n)
+        {
             n = Math.Max(0, Math.Min(15, n));
             int pixels = n == 0 ? 16 : 32 + (n - 1) * 16;
             using (var key = Registry.CurrentUser.CreateSubKey(Key)) key.SetValue("CursorBaseSize", pixels, RegistryValueKind.DWord);
             using (var key = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Accessibility")) key.SetValue("CursorSize", Math.Max(1, n), RegistryValueKind.DWord);
 
             SystemParametersInfo(SPI_SETCURSORBASESIZE, 0, new IntPtr(pixels), SPIF_UPDATEINIFILE | SPIF_SENDCHANGE);
-            Reload();
         }
 
         static object Settings()
@@ -425,7 +505,21 @@ namespace Bramble
                 case "frames": Frames(Text(m, "path")); return false;
                 case "theme": ApplyTheme(Text(m, "name")); return true;
                 case "assign": Assign(Text(m, "role"), Text(m, "path")); return true;
-                case "initial": ApplyTheme(Themes().Select(t => t.Name).FirstOrDefault(n => n == "Windows Aero") ?? "Windows Aero"); return true;
+                case "initial":
+                {
+                    var before = Capture();
+                    ApplyTheme("Windows Aero");
+                    Program.Undoable(Language.T("Cursors back to the Windows default"), () => Restore(before));
+                    return true;
+                }
+                case "original":
+                {
+                    if (Program.R.CursorsOriginal == null) return false;
+                    var before = Capture();
+                    Restore(Program.R.CursorsOriginal);
+                    Program.Undoable(Language.T("Cursors back to how they were before Bramble"), () => Restore(before));
+                    return true;
+                }
                 case "adjust": Adjust(Text(m, "what"), m["value"]); return !(m.ContainsKey("live") && Convert.ToBoolean(m["live"]));
                 case "add":
                 {
@@ -457,9 +551,20 @@ namespace Bramble
         {
             var current = Current();
             string theme = CurrentTheme();
+            var now = Capture();
+            var aero = Aero();
+            Func<Snapshot, bool> standard = x => aero != null && x.Size == 32 && Roles.Select((r, i) => i).All(i =>
+            {
+                string v;
+                x.Roles.TryGetValue(Roles[i][0], out v);
+                return string.IsNullOrEmpty(v) || string.Equals(Environment.ExpandEnvironmentVariables(v), i < aero.Length ? aero[i] : "", StringComparison.OrdinalIgnoreCase);
+            });
+            var original = Program.R.CursorsOriginal;
             return new
             {
                 theme = theme,
+                standard = standard(now),
+                original = original != null && !Same(original, now) && !standard(original),
                 themeTitle = string.IsNullOrEmpty(theme) ? Language.T("Custom") : NameTheme(theme),
                 roles = Roles.Select((r, i) => new { id = r[0], name = r[1], path = current[i], preview = Preview(current[i]) }).ToArray(),
                 settings = Settings(),

@@ -8,9 +8,9 @@
 
   .full { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: var(--framing, cover); }
 
-  .media { filter: brightness(var(--shine, 1)); }
-  .scene { position: absolute; inset: 0; animation: derive 50s ease-in-out infinite alternate; }
-  @keyframes derive {
+  .media { filter: brightness(calc(var(--shine, 1) * var(--pulse, 1))); }
+  .scene { position: absolute; inset: 0; animation: drift 50s ease-in-out infinite alternate; filter: brightness(var(--pulse, 1)); }
+  @keyframes drift {
     from { transform: scale(1.04) translate(-0.8%, -0.5%); }
     to   { transform: scale(1.10) translate(0.8%, 0.6%); }
   }
@@ -65,7 +65,7 @@
   } else if (type === 'image') {
     animateImage(src);
   } else {
-    document.body.innerHTML = '<div class="empty">None wallpaper selected</div>';
+    document.body.innerHTML = '<div class="empty">No wallpaper selected</div>';
   }
   apply();
 
@@ -79,9 +79,20 @@
 
   window.__adjust = (l, v) => { light = Number(l); speed = Number(v); apply(); };
 
+  let target = 0, level = 0, pulsing = 0;
+  function pulse() {
+    pulsing = 0;
+    level += (target - level) * .25;
+    if (Math.abs(target - level) < .002) level = target;
+    document.documentElement.style.setProperty('--pulse', (1 + level * .18).toFixed(3));
+    if (level !== target) pulsing = requestAnimationFrame(pulse);
+  }
+  window.__audio = v => { target = Math.max(0, Math.min(1, Number(v) || 0)); if (!pulsing) pulsing = requestAnimationFrame(pulse); };
+
   addEventListener('message', e => {
     const m = e.data || {};
     if (m.bramble === 'adjust') window.__adjust(m.light, m.speed);
+    if (m.bramble === 'audio') window.__audio(m.level);
     if (m.bramble === 'freeze') {
       for (const a of document.getAnimations()) m.value ? a.pause() : a.play();
       if (media && media.tagName === 'VIDEO') m.value ? media.pause() : media.play();

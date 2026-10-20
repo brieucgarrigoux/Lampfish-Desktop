@@ -28,6 +28,7 @@
     $('target-open').hidden = !c;
     $('target-initial').hidden = !c;
     $('target-initial').disabled = !(c && c.custom);
+    $('target-original').hidden = !(c && c.original);
   }
 
   function folderRow(folder) {
@@ -62,7 +63,7 @@
     $('icons-reset-all').disabled = n === 0;
     const names = d.customized.map(f => f.name);
     const listed = names.length > 2 ? tr('{0}, {1} and {2} more', names[0], names[1], names.length - 2) : names.join(' ' + tr('and') + ' ');
-    $('reset-all-help').textContent = n ? tr('Default icon back for {0}', listed) : tr('No customized folder');
+    $('reset-all-help').textContent = n ? tr('Their own icon back for {0}', listed) : tr('No customized folder');
   }
 
   function renderTabs() {
@@ -150,7 +151,7 @@
     }
     if (!icons) {
       const p = progress;
-      zone.innerHTML = `<div class="waiting">Preparing the library<span class="count"></span></div>`;
+      zone.innerHTML = `<div class="waiting loading">Preparing the library<span class="count"></span></div>`;
       if (p && p.total) zone.querySelector('.count').textContent = `${p.done} / ${p.total}`;
       return;
     }
@@ -230,6 +231,7 @@
   $('target-browse').addEventListener('click', () => send('icons.browse'));
   $('target-open').addEventListener('click', () => send('icons.open'));
   $('target-initial').addEventListener('click', () => send('icons.initial'));
+  $('target-original').addEventListener('click', () => send('icons.original'));
   $('icons-folder').addEventListener('click', () => send('icons.folderIcons'));
   $('menu-click').addEventListener('change', e => send('icons.menu', { value: e.target.checked }));
   $('under-folders').addEventListener('change', e => send('icons.subfolders', { value: e.target.checked }));
@@ -240,20 +242,7 @@
   });
   $('icons-refresh').addEventListener('click', () => send('icons.refresh'));
 
-  let confirm = 0;
-  $('icons-reset-all').addEventListener('click', () => {
-    const b = $('icons-reset-all');
-    if (!b.classList.contains('confirming')) {
-      b.classList.add('confirming');
-      b.querySelector('#reset-all-title').firstChild.textContent = tr('Click again to confirm');
-      confirm = setTimeout(() => { b.classList.remove('confirming'); b.querySelector('#reset-all-title').firstChild.textContent = tr('Reset everything'); }, 4000);
-      return;
-    }
-    clearTimeout(confirm);
-    b.classList.remove('confirming');
-    b.querySelector('#reset-all-title').firstChild.textContent = tr('Reset everything');
-    send('icons.resetAll');
-  });
+  $('icons-reset-all').addEventListener('click', () => send('icons.resetAll'));
 
   Bramble.icons = { state, event, visible };
 })();

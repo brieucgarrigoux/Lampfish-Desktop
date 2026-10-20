@@ -26,11 +26,11 @@
 (() => {
   const params = new URLSearchParams(location.search);
   const thumbnail = params.has('thumbnail');
-  let config = null, light = 1, speed = 1, frozen = false;
+  let config = null, light = 1, speed = 1, frozen = false, dirty = true;
   let audio = 0, audioTarget = 0, lastRaw = 0, lastBeat = 0;
   const ripples = [], history = new Array(96).fill(0);
 
-  window.__adjust = (l, v) => { light = Number(l) / 50; speed = Math.pow(2, (Number(v) - 50) / 25); };
+  window.__adjust = (l, v) => { light = Number(l) / 50; speed = Math.pow(2, (Number(v) - 50) / 25); dirty = true; };
   window.__adjust(params.get('light') ?? 50, params.get('speed') ?? 50);
   window.__audio = l => {
     l = Number(l);
@@ -42,8 +42,8 @@
   addEventListener('message', e => {
     const m = e.data || {};
     if (m.bramble === 'adjust') window.__adjust(m.light, m.speed);
-    if (m.bramble === 'freeze') frozen = m.value;
-    if (m.bramble === 'config') { config = m.config; apply(); }
+    if (m.bramble === 'freeze') { frozen = m.value; dirty = true; }
+    if (m.bramble === 'config') { config = m.config; dirty = true; apply(); }
     if (m.bramble === 'audio') window.__audio(m.level);
   });
   Promise.resolve().then(() => { config = {"v":2,"background":{"type":"gradient","color":"#12062b","color2":"#6b2a7a","angle":200,"fit":"cover","dim":0,"vignette":100,"drift":0,"image":null},"logo":{"size":25,"x":50,"y":48,"shadow":60,"float":true,"image":"https://app.example/brand/logo/berry-color.png"},"title":{"text":"","size":6,"weight":600,"color":"#f4e7f0","x":50,"y":72,"font":"sans"},"particles":{"type":"fireflies","color":"#ffb3e0","amount":55,"size":120,"speed":100},"glow":{"on":true,"color":"#ff6ec4","strength":70},"sound":{"on":true,"pulse":true,"ripples":true,"ring":true,"vibe":true,"vibeAmount":15,"particles":true,"color":""}}; apply(); });
@@ -190,7 +190,10 @@
 
   let t = 0, before = performance.now(), frames = 0, historyClock = 0;
   function draw(now) {
-    if (innerWidth !== w || innerHeight !== h) resize();
+    if (innerWidth !== w || innerHeight !== h) { resize(); dirty = true; }
+    if (frozen && !dirty && Math.abs(audioTarget - audio) < .002) { setTimeout(() => requestAnimationFrame(draw), 250); return; }
+    if (now - before < 1000 / 62) { requestAnimationFrame(draw); return; }
+    dirty = false;
     const dt = Math.min(.05, (now - before) / 1000);
     before = now;
     audio += (audioTarget - audio) * Math.min(1, dt * 14);

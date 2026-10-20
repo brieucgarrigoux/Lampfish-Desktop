@@ -19,12 +19,19 @@ using Microsoft.Win32;
 
 namespace Bramble
 {
+    class ScreenWallpaper { public string Key, Wallpaper; }
+
+    class WindowPlace { public int X, Y, Width, Height; public bool Maximized; }
+
     class Settings
     {
         public string Language = "auto";
         public bool Weather = true;
         public List<Dictionary<string, object>> NetworkTests = new List<Dictionary<string, object>>();
         public string Wallpaper = "bramble-logo.html";
+        public List<ScreenWallpaper> ScreenWallpapers = new List<ScreenWallpaper>();
+        public bool Shuffle;
+        public int FrameRate = 60;
         public int Light = 50;
         public int Speed = 50;
         public bool PauseAuto = true;
@@ -43,6 +50,10 @@ namespace Bramble
         public IconsSettings Folders;
         public ArrangeSettings Arrange = new ArrangeSettings();
         public DiskUsageSettings DiskUsage = new DiskUsageSettings();
+        public Mouse.Snapshot CursorsOriginal;
+        public WindowPlace Window;
+        public bool UpdatesAuto;
+        public string UpdatesLast;
     }
 
     static class Program
@@ -71,14 +82,15 @@ namespace Bramble
         static CoreWebView2Environment environment;
         static readonly List<WallpaperForm> screens = new List<WallpaperForm>();
         static SettingsForm settingsWindow;
-        static NotifyIcon icon;
         static System.Windows.Forms.Timer rebuild, removalDelay;
-        static string removed, removalPath, announcement, requestedView;
+        static string removed, undoText, removalPath, announcement, requestedView;
         static DateTime nextSlideshow = DateTime.MaxValue;
         static bool onBattery;
         static Action removalUndo;
-        static ToolStripMenuItem soundsMenu;
         static SynchronizationContext context;
+        static readonly Random random = new Random();
+        static int missing;
+        static bool locked;
         static DateTime lastBuild = DateTime.MinValue;
         static int generation;
         static readonly Queue<DateTime> rebuilds = new Queue<DateTime>();
@@ -116,7 +128,8 @@ namespace Bramble
 
                 using (var stream = typeof(Program).Assembly.GetManifestResourceStream("icon.ico"))
                     AppIcon = new Icon(stream);
-                Sounds.Start(args.Contains("--discret"));
+                bool background = args.Contains("--background") || args.Contains("--discret");
+                Sounds.Start(background);
                 Icons.Start();
                 Mouse.Start();
                 Arrange.Start();
@@ -128,8 +141,9 @@ namespace Bramble
 
                 int iView = Array.IndexOf(args, "--view");
                 if (iView >= 0 && iView + 1 < args.Length) requestedView = args[iView + 1];
-                CreateIcon();
+                Tray.Create();
                 ListenSignal();
+                Updates.Start();
 
                 removalDelay = new System.Windows.Forms.Timer { Interval = 8000 };
                 removalDelay.Tick += (s, e) => { Discard(); SendState(); };
@@ -138,6 +152,13 @@ namespace Bramble
                 rebuild = new System.Windows.Forms.Timer { Interval = 1500 };
                 rebuild.Tick += (s, e) => { rebuild.Stop(); Build(); };
                 SystemEvents.DisplaySettingsChanged += (s, e) => { RebuildSoon(); Arrange.ScreensChanged(); Moods.ScreensChanged(); };
+                SystemEvents.SessionSwitch += (s, e) =>
+                {
+                    if (e.Reason == SessionSwitchReason.SessionLock) locked = true;
+                    else if (e.Reason == SessionSwitchReason.SessionUnlock) locked = false;
+                    else return;
+                    UpdateVisibility();
+                };
                 var watcher = new Watcher(RebuildSoon);
 
                 var slideshow = new System.Windows.Forms.Timer { Interval = 20000 };
@@ -149,7 +170,7 @@ namespace Bramble
                 fullscreen.Tick += (s, e) => UpdateVisibility();
                 fullscreen.Start();
 
-                Start(!args.Contains("--discret") || requestedFolder != null);
+                Start(!background || requestedFolder != null);
                 Application.Run();
                 GC.KeepAlive(watcher);
             }
@@ -283,7 +304,7 @@ namespace Bramble
                     f.Show();
                     await f.Initialize(environment);
                     if (number != generation) { f.Dispose(); return; }
-                    f.Show(R);
+                    f.Show(R, WallpaperOf(f.Screen), false);
                     await Task.Delay(400);
                     if (number != generation) { f.Dispose(); return; }
                     if (pending || f.IsDisposed) return;
@@ -332,8 +353,13 @@ namespace Bramble
 
             if (screens.Count > 0)
             {
+                if (!Desktop.Valid() && Desktop.Recover()) Desktop.ArrangeWallpaperWindows();
+                bool lost = !Desktop.Valid();
+                missing = lost ? missing + 1 : 0;
                 var dead = screens.FirstOrDefault(f => !f.Alive);
-                string reason = !Desktop.Valid() ? "Desktop missing" : dead != null ? dead.Problem : null;
+                string reason = lost ? (missing >= 3 ? "Desktop missing" : null) : dead != null ? dead.Problem : null;
+                if (lost && reason == null) return;
+                if (reason != null && rebuild.Enabled) return;
                 if (reason != null)
                 {
                     while (rebuilds.Count > 0 && (DateTime.Now - rebuilds.Peek()).TotalSeconds > 60) rebuilds.Dequeue();
@@ -368,7 +394,7 @@ namespace Bramble
             foreach (var f in screens)
             {
                 bool cache = covered.Contains(Screen.FromRectangle(f.Screen).WorkingArea);
-                if (paused || cache || battery) f.Suspend(); else f.Resume();
+                if (paused || cache || battery || locked) f.Suspend(); else f.Resume();
             }
         }
 
@@ -390,7 +416,50 @@ namespace Bramble
             if (dead) RebuildSoon();
         }
 
-        static void Apply() { ForEachWallpaper(f => f.Show(R)); }
+        static void Apply(bool fade = true) { ForEachWallpaper(f => f.Show(R, WallpaperOf(f.Screen), fade)); }
+
+        public static string ScreenKey(Rectangle b) { return b.Width + "x" + b.Height + "@" + b.X + "," + b.Y; }
+
+        public static List<Screen> OrderedScreens() { return Screen.AllScreens.OrderBy(s => s.Bounds.X).ThenBy(s => s.Bounds.Y).ToList(); }
+
+        static bool Exists(string name)
+        {
+            return !string.IsNullOrEmpty(name) && (File.Exists(Path.Combine(WallpapersFolder, name)) || Directory.Exists(Path.Combine(WallpapersFolder, name)));
+        }
+
+        public static string WallpaperOf(Rectangle bounds)
+        {
+            string key = ScreenKey(bounds);
+            var x = R.ScreenWallpapers.FirstOrDefault(s => s.Key == key);
+            return x != null && Exists(x.Wallpaper) ? x.Wallpaper : R.Wallpaper;
+        }
+
+        static void SetScreenWallpaper(string key, string name)
+        {
+            R.ScreenWallpapers.RemoveAll(s => s.Key == key);
+            if (name != R.Wallpaper) R.ScreenWallpapers.Add(new ScreenWallpaper { Key = key, Wallpaper = name });
+        }
+
+        public static bool Paused { get { return paused; } }
+
+        public static void TogglePause()
+        {
+            paused = !paused;
+            UpdateVisibility();
+            Tray.Update();
+            SendState();
+        }
+
+        public static int WallpaperCount { get { return ListWallpapers().Count(); } }
+
+        public static string WallpaperTitle
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(R.Wallpaper)) return null;
+                return Directory.Exists(Path.Combine(WallpapersFolder, R.Wallpaper)) ? R.Wallpaper : Path.GetFileNameWithoutExtension(R.Wallpaper);
+            }
+        }
 
         static void Adjust(bool reloadOtherwise) { ForEachWallpaper(f => f.Adjust(R, reloadOtherwise)); }
 
@@ -401,14 +470,27 @@ namespace Bramble
             nextSlideshow = R.Slideshow > 0 ? DateTime.Now.AddMinutes(R.Slideshow) : DateTime.MaxValue;
         }
 
-        static void NextWallpaper()
+        public static void NextWallpaper()
         {
             var wallpapers = ListWallpapers().ToList();
             RestartSlideshow();
             if (wallpapers.Count < 2) return;
-            R.Wallpaper = wallpapers[(wallpapers.IndexOf(R.Wallpaper) + 1) % wallpapers.Count];
+            var taken = new List<string>();
+            Func<string, string> pick = now =>
+            {
+                var free = wallpapers.Where(n => n != now && !taken.Contains(n)).ToList();
+                if (free.Count == 0) free = wallpapers.Where(n => n != now).ToList();
+                string chosen = R.Shuffle ? free[random.Next(free.Count)]
+                    : wallpapers.Skip(wallpapers.IndexOf(now) + 1).Concat(wallpapers).First(n => free.Contains(n));
+                taken.Add(chosen);
+                return chosen;
+            };
+            R.Wallpaper = pick(R.Wallpaper);
+            foreach (var x in R.ScreenWallpapers) x.Wallpaper = pick(x.Wallpaper);
+            R.ScreenWallpapers.RemoveAll(x => x.Wallpaper == R.Wallpaper);
             Apply();
             Save();
+            Tray.Update();
             SendState();
         }
 
@@ -472,9 +554,17 @@ namespace Bramble
             string path = Path.Combine(WallpapersFolder, name);
             if (!File.Exists(path) && !Directory.Exists(path)) return;
             bool current = name == R.Wallpaper;
-            if (current) { R.Wallpaper = ListWallpapers().FirstOrDefault(n => n != name); Apply(); }
+            var exceptions = R.ScreenWallpapers.Where(s => s.Wallpaper == name).ToList();
+            if (current) R.Wallpaper = ListWallpapers().FirstOrDefault(n => n != name);
+            R.ScreenWallpapers.RemoveAll(s => s.Wallpaper == name);
+            if (current || exceptions.Count > 0) Apply();
             string title = Directory.Exists(path) ? name : Path.GetFileNameWithoutExtension(name);
-            SetAside(path, title, () => { if (current) { R.Wallpaper = name; Apply(); } });
+            SetAside(path, title, () =>
+            {
+                if (current) R.Wallpaper = name;
+                R.ScreenWallpapers.AddRange(exceptions);
+                if (current || exceptions.Count > 0) Apply();
+            });
         }
 
         public static void SetAside(string path, string title, Action undo)
@@ -507,25 +597,37 @@ namespace Bramble
             removalDelay.Start();
         }
 
+        public static void Undoable(string text, Action undo)
+        {
+            Discard();
+            undoText = text;
+            removalPath = null;
+            removalUndo = undo;
+            removalDelay.Start();
+        }
+
         static void UndoRemoval()
         {
-            if (removed == null) return;
+            if (removed == null && undoText == null) return;
             removalDelay.Stop();
-            string source = Path.Combine(RemovedFolder, Path.GetFileName(removalPath));
             if (removalPath != null && !File.Exists(removalPath) && !Directory.Exists(removalPath))
             {
+                string source = Path.Combine(RemovedFolder, Path.GetFileName(removalPath));
                 if (Directory.Exists(source)) Directory.Move(source, removalPath);
                 else if (File.Exists(source)) File.Move(source, removalPath);
             }
-            if (removalUndo != null) removalUndo();
+            var undo = removalUndo;
             removed = null;
+            undoText = null;
             removalUndo = null;
+            if (undo != null) undo();
         }
 
         static void Discard()
         {
             if (removalDelay != null) removalDelay.Stop();
             removed = null;
+            undoText = null;
             removalUndo = null;
             try
             {
@@ -561,7 +663,7 @@ namespace Bramble
             {
                 if (!Sounds.Receive(action.Substring(action.IndexOf('.') + 1), m)) return;
                 Save();
-                UpdateMenu();
+                Tray.Update();
                 SendState();
                 return;
             }
@@ -583,6 +685,12 @@ namespace Bramble
             }
 
             if (action.StartsWith("home.")) { Weather.Receive(action.Substring(action.IndexOf('.') + 1)); return; }
+
+            if (action.StartsWith("updates."))
+            {
+                if (Updates.Receive(action.Substring(action.IndexOf('.') + 1), m)) { Save(); SendState(); }
+                return;
+            }
 
             if (action.StartsWith("mouse."))
             {
@@ -606,7 +714,18 @@ namespace Bramble
             if (action == "state") pageReady = true;
             switch (action)
             {
-                case "choose": R.Wallpaper = (string)m["name"]; Apply(); RestartSlideshow(); break;
+                case "choose":
+                {
+                    string name = (string)m["name"], screen = m.ContainsKey("screen") ? m["screen"] as string : null;
+                    if (string.IsNullOrEmpty(screen)) { R.Wallpaper = name; R.ScreenWallpapers.Clear(); }
+                    else SetScreenWallpaper(screen, name);
+                    Apply();
+                    RestartSlideshow();
+                    Tray.Update();
+                    break;
+                }
+                case "shuffle": R.Shuffle = (bool)m["value"]; break;
+                case "frameRate": R.FrameRate = Convert.ToInt32(m["value"]) >= 60 ? 60 : 30; ForEachWallpaper(f => f.FrameRate(R.FrameRate)); break;
                 case "blur": R.Blur = Convert.ToInt32(m["value"]); Effects(); if (live) return; break;
                 case "saturation": R.Saturation = Convert.ToInt32(m["value"]); Effects(); if (live) return; break;
                 case "dim": R.Dim = Convert.ToInt32(m["value"]); Effects(); if (live) return; break;
@@ -616,7 +735,7 @@ namespace Bramble
                 case "light": R.Light = Convert.ToInt32(m["value"]); Adjust(!live); if (live) return; break;
                 case "speed": R.Speed = Convert.ToInt32(m["value"]); Adjust(!live); if (live) return; break;
                 case "pauseAuto": R.PauseAuto = (bool)m["value"]; UpdateVisibility(); break;
-                case "pause": paused = !paused; UpdateVisibility(); break;
+                case "pause": TogglePause(); return;
                 case "startup": ToggleStartup(); break;
                 case "weather": R.Weather = !R.Weather; break;
                 case "zoom": R.Zoom = Math.Max(70, Math.Min(200, Convert.ToInt32(m["value"]))); if (settingsWindow != null) settingsWindow.SetZoom(R.Zoom); break;
@@ -630,7 +749,7 @@ namespace Bramble
                     R.Language = chosen;
                     Language.Choose(R.Language);
                     Save();
-                    TranslateMenu();
+                    Tray.Update();
                     if (settingsWindow != null) settingsWindow.ChangeLanguage();
                     return;
                 }
@@ -678,6 +797,15 @@ namespace Bramble
                 type = "state",
                 wallpapers = ListWallpapers().Select(n => new { name = n, type = WallpaperType(n), url = UrlMedia(n), custom = File.Exists(Path.Combine(WallpapersFolder, n, "config.json")) }).ToArray(),
                 current = R.Wallpaper,
+                displays = OrderedScreens().Select((s, i) =>
+                {
+                    string key = ScreenKey(s.Bounds);
+                    var x = R.ScreenWallpapers.FirstOrDefault(w => w.Key == key && Exists(w.Wallpaper));
+                    return new { key = key, n = i + 1, primary = s.Primary, w = s.Bounds.Width, h = s.Bounds.Height, scale = Arrange.Scale(s), wallpaper = x == null ? null : x.Wallpaper };
+                }).ToArray(),
+                shuffle = R.Shuffle,
+                frameRate = R.FrameRate,
+                updates = Updates.State(),
                 light = R.Light,
                 speed = R.Speed,
                 pauseAuto = R.PauseAuto,
@@ -701,10 +829,11 @@ namespace Bramble
                     compile = File.GetLastWriteTime(Application.ExecutablePath).ToString("yyyy-MM-dd"),
                     folder = Root,
                     errors = File.Exists(Path.Combine(Root, "errors.log")),
-                    windows = Environment.OSVersion.Version.Build >= 22000 ? "Windows 11" : "Windows 10",
+                    windows = Native.Build >= 22000 ? "Windows 11" : "Windows 10",
                 },
                 screens = screens.Count,
                 removed = removed,
+                undoable = undoText,
                 announcement = announcement,
                 station = Sounds.State(),
                 icons = Icons.State(),
@@ -752,7 +881,7 @@ namespace Bramble
             using (var key = Registry.CurrentUser.CreateSubKey(StartupKey))
             {
                 if (StartupEnabled()) key.DeleteValue("Bramble", false);
-                else key.SetValue("Bramble", "\"" + Application.ExecutablePath + "\" --discret");
+                else key.SetValue("Bramble", "\"" + Application.ExecutablePath + "\" --background");
             }
         }
 
@@ -764,7 +893,7 @@ namespace Bramble
                 using (var key = Registry.CurrentUser.OpenSubKey(StartupKey, true))
                 {
                     string v = key == null ? null : key.GetValue("Bramble") as string;
-                    if (v != null && v.IndexOf(exe, StringComparison.OrdinalIgnoreCase) < 0) key.SetValue("Bramble", "\"" + exe + "\" --discret");
+                    if (v != null && (v.IndexOf(exe, StringComparison.OrdinalIgnoreCase) < 0 || v.Contains("--discret"))) key.SetValue("Bramble", "\"" + exe + "\" --background");
                 }
             }
             catch (Exception ex) { Log(ex); }
@@ -792,42 +921,14 @@ namespace Bramble
             catch (Exception ex) { Log(ex); }
         }
 
-        static void CreateIcon()
-        {
-            var menu = new ContextMenuStrip();
-            menu.Items.Add("Settings…", null, (s, e) => OpenSettings()).Tag = "Settings…";
-            menu.Items.Add("Pause", null, (s, e) => { paused = !paused; UpdateVisibility(); SendState(); }).Tag = "Pause";
-            soundsMenu = new ToolStripMenuItem("Sounds", null, (s, e) => { Sounds.Toggle(); Save(); UpdateMenu(); SendState(); }) { Tag = "Sounds" };
-            menu.Items.Add(soundsMenu);
-            menu.Items.Add(new ToolStripSeparator());
-            menu.Items.Add("Quit", null, (s, e) => Quit()).Tag = "Quit";
-            iconMenu = menu;
-            TranslateMenu();
-
-            icon = new NotifyIcon { Icon = new Icon(AppIcon, SystemInformation.SmallIconSize), Text = "Bramble", ContextMenuStrip = menu, Visible = true };
-            icon.MouseUp += (s, e) => { if (e.Button == MouseButtons.Left) OpenSettings(); };
-            UpdateMenu();
-        }
-
-        static ContextMenuStrip iconMenu;
-        static void TranslateMenu()
-        {
-            if (iconMenu == null) return;
-            foreach (ToolStripItem item in iconMenu.Items)
-                if (item.Tag is string) item.Text = Language.T((string)item.Tag);
-        }
-
-        public static void UpdateMenu()
-        {
-            if (soundsMenu != null) soundsMenu.Checked = Sounds.Active;
-        }
+        public static void UpdateMenu() { Tray.Update(); }
 
         public static bool Quitting { get { return quitting; } }
 
-        static void Quit()
+        public static void Quit()
         {
             quitting = true;
-            icon.Visible = false;
+            Tray.Hide();
             Sounds.Stop();
             Discard();
             if (settingsWindow != null) settingsWindow.Shutdown();

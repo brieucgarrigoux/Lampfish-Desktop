@@ -392,7 +392,7 @@ namespace Bramble
                 gpuBytes = (long)(gpuMemory.Values("Dedicated Usage").Values.Sum(v => (double)v) + gpuMemory.Values("Shared Usage").Values.Sum(v => (double)v));
 
             var inactive = disks.Values("% Idle Time");
-            var playback = disks.Values("Disk Read Bytes/sec");
+            var reads = disks.Values("Disk Read Bytes/sec");
             var write = disks.Values("Disk Write Bytes/sec");
             var byDisk = new Dictionary<string, object>();
             foreach (var p in inactive)
@@ -400,9 +400,9 @@ namespace Bramble
                 if (p.Key == "_Total") continue;
                 string number = p.Key.Split(' ')[0];
                 float l, e;
-                playback.TryGetValue(p.Key, out l);
+                reads.TryGetValue(p.Key, out l);
                 write.TryGetValue(p.Key, out e);
-                byDisk[number] = new { activity = Math.Round(Math.Max(0, Math.Min(100, 100 - p.Value)), 1), playback = (long)l, write = (long)e };
+                byDisk[number] = new { activity = Math.Round(Math.Max(0, Math.Min(100, 100 - p.Value)), 1), read = (long)l, write = (long)e };
             }
 
             double seconds = lastMeasure == DateTime.MinValue ? 0 : (DateTime.Now - lastMeasure).TotalSeconds;

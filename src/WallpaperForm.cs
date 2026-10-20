@@ -15,6 +15,9 @@ namespace Bramble
         readonly WebView2 view;
         public Rectangle Screen { get; private set; }
         Settings last;
+        string shown;
+        int ticket;
+        bool loaded;
         public bool Suspended { get; private set; }
 
         public WallpaperForm(Rectangle screen)
@@ -63,8 +66,10 @@ namespace Bramble
             await view.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(ScriptPause);
             view.CoreWebView2.NavigationCompleted += (s, e) =>
             {
+                loaded = true;
                 if (Suspended) Freeze(true);
                 if (last != null) Effects(last);
+                FrameRate(Program.R.FrameRate);
             };
             view.CoreWebView2.ProcessFailed += (s, e) =>
             {
@@ -81,8 +86,29 @@ namespace Bramble
 
         const string ScriptPause = @"(() => {
   const raf = window.requestAnimationFrame.bind(window);
-  let frozen = false, waiting = [];
-  window.requestAnimationFrame = cb => frozen ? (waiting.push(cb), 0) : raf(cb);
+  let frozen = false, waiting = [], fps = 60, allowed = -1, due = 0;
+  const gate = cb => function step(t) {
+    if (t !== allowed) {
+      if (t + 1 < due) { raf(step); return; }
+      allowed = t;
+      const interval = 1000 / fps;
+      due = t - due > interval ? t + interval : due + interval;
+    }
+    cb(t);
+  };
+  window.requestAnimationFrame = cb => frozen ? (waiting.push(cb), 0) : raf(gate(cb));
+  window.__fps = f => { fps = Math.max(10, Math.min(240, f)); due = 0; };
+  new MutationObserver((list, o) => {
+    if (!document.documentElement) return;
+    o.disconnect();
+    const s = document.createElement('style');
+    s.textContent = 'html::after{content:"""";position:fixed;inset:0;z-index:2147483647;background:#000;pointer-events:none;transition:opacity .5s ease-out}html.__bramble-shown::after{opacity:0}html.__bramble-hiding::after{opacity:1;transition:opacity .25s ease-in}';
+    document.documentElement.appendChild(s);
+  }).observe(document, { childList: true });
+  const show = () => raf(() => raf(() => document.documentElement && document.documentElement.classList.add('__bramble-shown')));
+  addEventListener('load', show, { once: true });
+  setTimeout(show, 2500);
+  window.__veil = () => document.documentElement.classList.add('__bramble-hiding');
   window.__freeze = f => {
     if (f === frozen) return;
     frozen = f;
@@ -100,7 +126,7 @@ namespace Bramble
     }
     if (!f) {
       document.querySelectorAll('canvas[data-frozen]').forEach(c => c.remove());
-      const l = waiting; waiting = []; l.forEach(cb => raf(cb));
+      const l = waiting; waiting = []; l.forEach(cb => raf(gate(cb)));
     }
   };
   window.__effects = (blur, saturation, dim) => {
@@ -155,13 +181,25 @@ namespace Bramble
             if (core != null) core.ExecuteScriptAsync("window.__freeze && window.__freeze(" + (f ? "true" : "false") + ")");
         }
 
-        public void Show(Settings r)
+        public async void Show(Settings r, string wallpaper, bool fade)
         {
             var core = view.CoreWebView2;
             if (core == null) return;
             last = r;
+            shown = wallpaper;
+            int mine = ++ticket;
+            if (fade && loaded)
+            {
+                try { await core.ExecuteScriptAsync("window.__veil && window.__veil()"); } catch { }
+                await Task.Delay(280);
+                if (mine != ticket || IsDisposed || view.CoreWebView2 == null) return;
+            }
+            Navigate(view.CoreWebView2, r, wallpaper);
+        }
 
-            string path = string.IsNullOrEmpty(r.Wallpaper) ? null : Path.Combine(Program.WallpapersFolder, r.Wallpaper);
+        void Navigate(CoreWebView2 core, Settings r, string wallpaper)
+        {
+            string path = string.IsNullOrEmpty(wallpaper) ? null : Path.Combine(Program.WallpapersFolder, wallpaper);
             if (path == null || !(File.Exists(path) || Directory.Exists(path)))
             {
                 core.Navigate("https://" + AppHost + "/app/player/player.html?type=empty");
@@ -169,8 +207,8 @@ namespace Bramble
             }
 
             string settings = "light=" + r.Light + "&speed=" + r.Speed + "&fit=" + r.Fit;
-            string url = Program.UrlMedia(r.Wallpaper);
-            string type = Program.WallpaperType(r.Wallpaper);
+            string url = Program.UrlMedia(wallpaper);
+            string type = Program.WallpaperType(wallpaper);
             if (type == "html")
                 core.Navigate(url + "?" + settings);
             else
@@ -184,7 +222,7 @@ namespace Bramble
             try
             {
                 string done = await core.ExecuteScriptAsync("typeof window.__adjust === 'function' ? (window.__adjust(" + r.Light + ", " + r.Speed + "), 1) : 0");
-                if (done != "1" && reloadOtherwise) Show(r);
+                if (done != "1" && reloadOtherwise) Show(r, shown, true);
             }
             catch (Exception ex) { Program.Log(ex); }
         }
@@ -193,6 +231,12 @@ namespace Bramble
         {
             var core = view.CoreWebView2;
             if (core != null) core.ExecuteScriptAsync("window.__audio && window.__audio(" + level + ")");
+        }
+
+        public void FrameRate(int fps)
+        {
+            var core = view.CoreWebView2;
+            if (core != null) core.ExecuteScriptAsync("window.__fps && window.__fps(" + fps + ")");
         }
 
         public void Effects(Settings r)

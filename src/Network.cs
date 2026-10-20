@@ -190,7 +190,16 @@ namespace Bramble
                 case "settings":
                     try { System.Diagnostics.Process.Start("ms-settings:network-status"); } catch (Exception ex) { Program.Log(ex); }
                     break;
-                case "forget": History.Clear(); Program.Save(); Program.Send(Infos()); break;
+                case "forget":
+                {
+                    var copy = History.ToList();
+                    History.Clear();
+                    Program.Save();
+                    Program.Send(Infos());
+                    Program.Undoable(Language.T("Test history cleared"), () => { History.Clear(); History.AddRange(copy); Program.Save(); Program.Send(Infos()); });
+                    Program.SendState();
+                    break;
+                }
             }
         }
 
