@@ -249,7 +249,7 @@
     fitPreview();
 
     const width = (map.caseW / e.w * 100).toFixed(3) + '%', height = (map.caseH / e.h * 100).toFixed(3) + '%';
-    const dpi = e.scale || 1, iconPx = (map.iconSize || 48) * dpi, lead = Math.round(4 * dpi), shift = Math.max(0, (map.caseW - iconPx) / 2);
+    const dpi = e.scale || 1, iconPx = (map.iconSize || 48) * dpi, lead = 5, shift = Math.max(0, (map.caseW - iconPx) / 2);
     const image = Math.min(100, iconPx / map.caseW * 100).toFixed(1) + '%';
     const seen = new Set();
     for (const el of map.elements) {

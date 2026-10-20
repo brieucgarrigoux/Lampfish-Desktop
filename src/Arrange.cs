@@ -134,7 +134,9 @@ namespace Bramble
             public Rectangle Zone; public int Columns, Rows;
             public readonly HashSet<Point> Taken = new HashSet<Point>();
             readonly Size cell;
-            readonly int icon, lead, line;
+            // Windows draws the icon 5 px below the item position (measured at 100 and 125 %).
+            const int lead = 5;
+            readonly int icon, line;
             readonly Font font;
             double originX, originY, stepX, stepY;
             readonly Dictionary<int, double> shift = new Dictionary<int, double>();
@@ -144,7 +146,6 @@ namespace Bramble
                 Zone = zone;
                 cell = c;
                 icon = (int)Math.Round(iconSize * scale);
-                lead = (int)Math.Round(4 * scale, MidpointRounding.AwayFromZero);
                 var title = SystemFonts.IconTitleFont;
                 font = new Font(title.FontFamily, (float)(title.SizeInPoints * 96 / 72 * scale), title.Style, GraphicsUnit.Pixel);
                 line = font.Height;
@@ -155,7 +156,6 @@ namespace Bramble
                 Spread(Visual(1));
             }
 
-            // Windows draws the icon a few pixels below the item position, so this runs from the top of the icon to the bottom of its name.
             int Visual(int lines) { return icon + lead + lines * line; }
 
             // Like the columns, the rows keep half the space between two rows above the first one and below the last one.

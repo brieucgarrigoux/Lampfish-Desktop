@@ -107,6 +107,7 @@
       requestAnimationFrame(() => requestAnimationFrame(() => scene.classList.add('settled')));
     }
     const scene = zone.querySelector('.scene');
+    scene.classList.toggle('unnamed', map.caseW * k < 44);
     const seen = new Set();
     for (const el of map.elements) {
       if (el.icon) images.set(el.id, el.icon);
@@ -127,7 +128,7 @@
         scene.append(name, p);
       }
       const screen = map.screens.find(e => el.x >= e.x && el.x < e.x + e.w && el.y >= e.y && el.y < e.y + e.h) || map.screens[0];
-      const dpi = screen.scale || 1, lead = Math.round(4 * dpi);
+      const dpi = screen.scale || 1, lead = 5;
       p.dataset.id = el.id;
       p.dataset.name = el.name;
       p.dataset.lead = lead;
