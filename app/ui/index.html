@@ -23,8 +23,8 @@
 </head>
 <body data-view="wallpaper">
 
-<nav class="rail" aria-label="Services" data-resizable="right" data-variable="--width-rail" data-min="76" data-max="230" data-initial="92">
-  <button class="logo-home service" data-view="home" title="Home" aria-label="Home"><img class="logo" src="/brand/logo/logo-bramble-192.png" alt=""></button>
+<nav class="rail" aria-label="Services" data-resizable="right" data-variable="--width-rail" data-key="rail-width" data-min="76" data-max="230" data-initial="180">
+  <button class="logo-home service" data-view="home" title="Home" aria-label="Home"><img class="logo" src="/brand/logo/logo-bramble-192.png" alt=""><span class="wordmark" aria-hidden="true">Bramble</span></button>
   <button class="service" data-view="modes">
     <svg viewBox="0 0 24 24"><path d="M19.5 14.6A7.6 7.6 0 0 1 9.4 4.5a7.6 7.6 0 1 0 10.1 10.1z"/><path d="M17 3.5v4M15 5.5h4"/></svg>
     Modes
@@ -95,7 +95,7 @@
           <div class="h-desktop" id="h-desktop" aria-hidden="true"></div>
         </button>
         <div class="h-now">
-          <div class="h-now__what"><span class="h-now__name" id="h-now-name"></span><span class="h-now__type" id="h-now-type"></span></div>
+          <div class="h-now__what"><span class="h-now__name" id="h-now-name" translate="no"></span><span class="h-now__type" id="h-now-type"></span></div>
           <button class="button" id="h-pause">Pause</button>
           <button class="button" id="h-next">Next</button>
         </div>
@@ -112,14 +112,9 @@
   <section class="view view--modes only-modes" aria-label="Modes">
     <h1>Modes</h1>
     <p class="modes-intro" id="mood-help"></p>
-    <form class="save" id="mood-form">
-      <input id="mood-name" maxlength="40" placeholder="Name the current setup" autocomplete="off" aria-label="Mode name">
-      <button class="button button--accent" type="submit">Save as a mode</button>
-      <button class="tool-chip" type="button" id="mood-import"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19.5h14"/></svg><span>Import</span></button>
-    </form>
     <div class="mood-preview" id="mood-preview" hidden></div>
-    <div class="title-section" id="moods-title" hidden><h2>My modes<span class="count" id="mood-count"></span></h2></div>
-    <div class="moods" id="moods" hidden></div>
+    <div class="title-section title-section--first"><h2>My modes<span class="count" id="mood-count"></span></h2><button class="link" id="mood-import"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19.5h14"/></svg>Import</button></div>
+    <div class="moods" id="moods"></div>
     <div class="title-section"><h2>Start from a model</h2><span class="config">Built from your current setup</span></div>
     <div class="starters" id="mood-starters"></div>
   </section>
@@ -130,7 +125,7 @@
       <div class="preview" id="hero-preview"></div>
       <div class="effects" id="hero-effects"></div>
       <div class="strip">
-        <div class="what"><span class="title" id="hero-name"></span><span class="type" id="hero-type"></span></div>
+        <div class="what"><span class="title" id="hero-name" translate="no"></span><span class="type" id="hero-type"></span></div>
         <div class="segments hero-screens" id="hero-screens" role="radiogroup" aria-label="Screen" hidden></div>
         <button class="pause" id="pause">Pause</button>
       </div>
@@ -472,14 +467,14 @@
       </div>
       <label class="toggle">
         <input type="checkbox" id="shuffle">
-        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h3.5c4 0 5 10 9 10H20M4 17h3.5c1.7 0 2.8-1.7 3.8-3.6M13 10.6C14 8.7 15 7 16.5 7H20M17.5 4.5 20 7l-2.5 2.5M17.5 14.5 20 17l-2.5 2.5"/></svg><span>Shuffle<small>The next wallpaper is picked at random</small></span></span>
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h3.5c4 0 5 10 9 10H20M4 17h3.5c1.7 0 2.8-1.7 3.8-3.6M13 10.6C14 8.7 15 7 16.5 7H20M17.5 4.5 20 7l-2.5 2.5M17.5 14.5 20 17l-2.5 2.5"/></svg><span>Shuffle<small>Picks the next one at random</small></span></span>
       </label>
     </div>
     <h2>Sound</h2>
     <div class="group">
       <label class="toggle">
         <input type="checkbox" id="reactive">
-        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/></svg><span>React to sound<small>The wallpaper pulses with what you play</small></span></span>
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/></svg><span>React to sound<small>Pulses with what you play</small></span></span>
       </label>
       <div class="row level-row" id="level-row" hidden><div class="level-bars" id="level-bars" aria-hidden="true"></div></div>
     </div>
@@ -487,7 +482,7 @@
     <div class="group">
       <label class="toggle">
         <input type="checkbox" id="pauseAuto">
-        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg><span>Pause in full screen<small>When a window covers the screen</small></span></span>
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg><span>Pause in full screen<small>When a window fills the screen</small></span></span>
       </label>
       <label class="toggle">
         <input type="checkbox" id="pauseOnBattery">
@@ -576,7 +571,7 @@
     <h2>Display</h2>
     <div class="group">
       <div class="setting">
-        <label><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="12.5" width="8" height="8" rx="1.5"/><rect x="13" y="3.5" width="7.5" height="7.5" rx="1.5"/><path d="M6.5 9.5V6.5h3"/></svg><span>Icon size<small>Size of the icons on the desktop</small></span></span><output id="r-size-value"></output></label>
+        <label><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="12.5" width="8" height="8" rx="1.5"/><rect x="13" y="3.5" width="7.5" height="7.5" rx="1.5"/><path d="M6.5 9.5V6.5h3"/></svg><span>Icon size<small>Size of the desktop icons</small></span></span><output id="r-size-value"></output></label>
         <div class="segments segments--sizes" id="r-size" role="radiogroup" aria-label="Icon size">
           <button role="radio" data-value="32" title="Very small" aria-label="Very small" disabled><i></i></button>
           <button role="radio" data-value="40" title="Small" aria-label="Small" disabled><i></i></button>
@@ -698,6 +693,8 @@
   <div class="only-hardware" id="m-details"></div>
 
   <div class="only-tasks" id="t-details"></div>
+
+  <div class="only-modes" id="mood-sheet"></div>
 
   <div class="only-create" id="create-panel"></div>
 

@@ -175,12 +175,13 @@
     const more = document.createElement('button');
     more.className = 'link h-modes__more';
     more.textContent = moods.length ? tr('All modes') : tr('Save the current setup as a mode');
-    more.addEventListener('click', () => showView('modes'));
+    more.addEventListener('click', () => { if (moods.length || !Bramble.moods) showView('modes'); else Bramble.moods.startNew(); });
     zone.replaceChildren(title, ...moods.slice(0, 4).map(m => {
       const b = document.createElement('button');
       b.className = 'tool-chip';
       b.setAttribute('aria-pressed', String(!!m.current));
       b.textContent = m.name;
+      b.translate = false;
       b.title = m.current ? tr('Active') : tr('Apply');
       b.addEventListener('click', () => { if (!m.current) send('moods.apply', { id: m.id }); });
       return b;
@@ -248,7 +249,7 @@
     fitPreview();
 
     const width = (map.caseW / e.w * 100).toFixed(3) + '%', height = (map.caseH / e.h * 100).toFixed(3) + '%';
-    const iconPx = 48 * (e.scale || 1), shift = Math.max(0, (map.caseW - iconPx) / 2);
+    const dpi = e.scale || 1, iconPx = (map.iconSize || 48) * dpi, lead = Math.round(4 * dpi), shift = Math.max(0, (map.caseW - iconPx) / 2);
     const image = Math.min(100, iconPx / map.caseW * 100).toFixed(1) + '%';
     const seen = new Set();
     for (const el of map.elements) {
@@ -267,7 +268,7 @@
       if (images.has(el.id) && img.src !== images.get(el.id)) img.src = images.get(el.id);
       b.querySelector('i').textContent = el.name;
       b.style.left = ((el.x - e.x - shift) / e.w * 100).toFixed(3) + '%';
-      b.style.top = ((el.y - e.y) / e.h * 100).toFixed(3) + '%';
+      b.style.top = ((el.y + lead - e.y) / e.h * 100).toFixed(3) + '%';
       b.style.width = width;
       b.style.height = height;
       img.style.width = image;

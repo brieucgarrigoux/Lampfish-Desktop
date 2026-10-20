@@ -17,6 +17,7 @@ function tr(text, ...values) {
 }
 const ATTRIBUTES_TRANSLATED = ['title', 'aria-label', 'placeholder', 'alt'];
 function translateAttributes(e) {
+  if (!e.translate) return;
   for (const a of ATTRIBUTES_TRANSLATED) {
     const v = e.getAttribute(a), c = v && v.trim();
     if (c && DICT[c] && DICT[c] !== c) e.setAttribute(a, DICT[c]);
@@ -24,11 +25,12 @@ function translateAttributes(e) {
 }
 function translateNode(n) {
   if (n.nodeType === 3) {
+    if (n.parentElement && !n.parentElement.translate) return;
     const v = n.nodeValue, c = v.trim();
     if (c && DICT[c] && DICT[c] !== c) n.nodeValue = v.replace(c, DICT[c]);
     return;
   }
-  if (n.nodeType !== 1 || n.tagName === 'SCRIPT' || n.tagName === 'STYLE') return;
+  if (n.nodeType !== 1 || n.tagName === 'SCRIPT' || n.tagName === 'STYLE' || !n.translate) return;
   translateAttributes(n);
   for (const e of n.childNodes) translateNode(e);
 }
@@ -414,6 +416,7 @@ function buildGrid() {
       <div class="footer"><span class="name"></span><span class="badge-screens"></span><span class="badge">${TYPES[wallpaper.type]}</span></div>
       <div class="card-actions">${wallpaper.custom ? '<button class="edit" tabindex="-1">Edit</button>' : ''}<button class="remove" tabindex="-1">Remove</button></div>`;
     card.querySelector('.name').textContent = withoutExtension(wallpaper.name);
+    card.querySelector('.name').translate = false;
     card.querySelector('.name').title = wallpaper.name;
     card.querySelector('.preview').append(preview(wallpaper, card));
 
@@ -456,10 +459,10 @@ function livePreview(wallpaper, card) {
   return frame;
 }
 
-function preview(wallpaper, card) {
+function preview(wallpaper, card, light = 50, speed = 50) {
   if (wallpaper.type === 'html') {
     const frame = document.createElement('iframe');
-    frame.src = wallpaper.url + '?light=50&speed=50&thumbnail=1&v=' + wallpaper.stamp;
+    frame.src = `${wallpaper.url}?light=${light}&speed=${speed}&thumbnail=1&v=${wallpaper.stamp}`;
     frame.loading = 'lazy';
     frame.tabIndex = -1;
     let live = null, leaving = 0;
@@ -470,7 +473,7 @@ function preview(wallpaper, card) {
       live.className = 'live';
       live.tabIndex = -1;
       live.addEventListener('load', () => { if (live && card.matches(':hover')) live.classList.add('shown'); });
-      live.src = wallpaper.url + '?light=50&speed=50&v=' + wallpaper.stamp;
+      live.src = `${wallpaper.url}?light=${light}&speed=${speed}&v=${wallpaper.stamp}`;
       frame.after(live);
     });
     card.addEventListener('mouseleave', () => {

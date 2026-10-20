@@ -161,17 +161,18 @@ namespace Bramble
             return new { icon = IconOf(path), description, company, path };
         }
 
-        static string IconOf(string path)
+        public static string IconOf(string path)
         {
             try
             {
                 using (Icon icon = Icon.ExtractAssociatedIcon(path))
+                using (var large = icon.ToBitmap())
                 using (var small = new Bitmap(32, 32, PixelFormat.Format32bppArgb))
                 {
                     using (var g = Graphics.FromImage(small))
                     {
                         g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                        g.DrawImage(icon.ToBitmap(), 0, 0, 32, 32);
+                        g.DrawImage(large, 0, 0, 32, 32);
                     }
                     using (var stream = new MemoryStream())
                     {

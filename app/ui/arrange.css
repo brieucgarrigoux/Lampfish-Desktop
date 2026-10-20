@@ -45,7 +45,10 @@
 .point { position: absolute; z-index: 2; cursor: grab; touch-action: none; transition: opacity .2s; }
 .scene.settled .point { transition: left .25s ease-out, top .25s ease-out, opacity .2s; }
 .scene .point.grabbed { z-index: 3; cursor: grabbing; transition: none; filter: drop-shadow(0 0 0 var(--accent)) drop-shadow(0 4px 10px rgba(0, 0, 0, .6)); }
-.map.hidden .point { opacity: .3; }
+.map.hidden .point, .map.hidden .point-name { opacity: .3; }
+.point-name { position: absolute; z-index: 1; transform: translateX(-50%); color: #fff; line-height: 1.2; text-align: center; text-shadow: 0 1px 2px rgba(0, 0, 0, .9); pointer-events: none; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow-wrap: anywhere; }
+.scene.settled .point-name { transition: left .25s ease-out, top .25s ease-out, opacity .2s; }
+.scene:has(.point.grabbed) .point-name { transition: opacity .2s; }
 .label {
   position: absolute; z-index: 3; transform: translateX(-50%); padding: 3px 8px; border-radius: var(--radius-small); max-width: 220px;
   background: var(--group-up); box-shadow: 0 0 0 1px var(--hairline-strong); font-size: 12px; white-space: nowrap;

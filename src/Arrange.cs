@@ -134,7 +134,7 @@ namespace Bramble
             public Rectangle Zone; public int Columns, Rows;
             public readonly HashSet<Point> Taken = new HashSet<Point>();
             readonly Size cell;
-            readonly int icon, gap, inset, line, margin;
+            readonly int icon, lead, line;
             readonly Font font;
             double originX, originY, stepX, stepY;
             readonly Dictionary<int, double> shift = new Dictionary<int, double>();
@@ -144,27 +144,32 @@ namespace Bramble
                 Zone = zone;
                 cell = c;
                 icon = (int)Math.Round(iconSize * scale);
-                gap = (int)Math.Round(4 * scale);
-                inset = (int)Math.Round(2 * scale);
-                margin = inset + (int)Math.Round(2 * scale);
+                lead = (int)Math.Round(4 * scale, MidpointRounding.AwayFromZero);
                 var title = SystemFonts.IconTitleFont;
                 font = new Font(title.FontFamily, (float)(title.SizeInPoints * 96 / 72 * scale), title.Style, GraphicsUnit.Pixel);
                 line = font.Height;
                 Columns = Math.Max(1, zone.Width / c.Width);
-                Rows = Math.Max(1, (zone.Height - inset - Visual(2) - margin) / c.Height + 1);
+                Rows = Math.Max(1, (zone.Height - line) / c.Height);
                 originX = zone.X + Math.Max(0, (c.Width - icon) / 2);
-                originY = zone.Y + inset;
                 stepX = c.Width;
-                stepY = c.Height;
+                Spread(Visual(1));
             }
 
-            int Visual(int lines) { return icon + gap + lines * line; }
+            // Windows draws the icon a few pixels below the item position, so this runs from the top of the icon to the bottom of its name.
+            int Visual(int lines) { return icon + lead + lines * line; }
+
+            // Like the columns, the rows keep half the space between two rows above the first one and below the last one.
+            void Spread(int bottom)
+            {
+                stepY = Math.Max(cell.Height, (Zone.Height + Visual(1) - bottom) / (double)Rows);
+                originY = Zone.Y + (stepY - Visual(1)) / 2 - lead;
+            }
 
             int Lines(string name)
             {
                 if (string.IsNullOrEmpty(name)) return 1;
                 var size = TextRenderer.MeasureText(name, font, new Size(int.MaxValue, int.MaxValue), TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
-                return size.Width > cell.Width - gap * 2 ? 2 : 1;
+                return size.Width > cell.Width - lead * 2 ? 2 : 1;
             }
 
             public void Fit(List<KeyValuePair<Point, DesktopIcons.Element>> used, string arrangement)
@@ -175,14 +180,15 @@ namespace Bramble
                 if (arrangement == "center")
                 {
                     int w = maxX - minX + 1, h = maxY - minY + 1;
+                    stepY = cell.Height;
                     originX = Zone.X + (Zone.Width - w * cell.Width) / 2.0 + Math.Max(0, (cell.Width - icon) / 2) - minX * cell.Width;
-                    originY = Zone.Y + (Zone.Height - ((h - 1) * cell.Height + Visual(bottom))) / 2.0 - minY * cell.Height;
+                    originY = Zone.Y + (Zone.Height - ((h - 1) * cell.Height + Visual(bottom))) / 2.0 - lead - minY * cell.Height;
                     foreach (var row in used.GroupBy(u => u.Key.Y))
                         shift[row.Key] = (w - row.Count()) * cell.Width / 2.0;
                     return;
                 }
                 if (maxX == Columns - 1 && Columns > 1) stepX = (Zone.Width - cell.Width) / (double)(Columns - 1);
-                if (maxY == Rows - 1 && Rows > 1) stepY = (Zone.Height - inset - Visual(bottom) - margin) / (double)(Rows - 1);
+                if (maxY == Rows - 1) Spread(Visual(bottom));
             }
 
             public Point Pixel(Point p)

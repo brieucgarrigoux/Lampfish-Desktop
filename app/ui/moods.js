@@ -1,228 +1,443 @@
 'use strict';
 
 (function () {
-  const zone = $('moods');
-  let moods = [];
+  const zone = $('moods'), sheet = $('mood-sheet');
+  let moods = [], models = [], chosen = null, naming = false, keyGrid = '';
 
-  const STARTERS = [
-    ['night', 'Night', 'Dimmer wallpaper, softer sounds'],
-    ['focus', 'Focus', 'Calmer wallpaper, sounds silenced'],
-    ['cinema', 'Cinema', 'Dark wallpaper, sounds silenced'],
-  ];
-  const SOUNDS = { on: 'Sounds on', silent: 'Sounds silenced', off: 'Sounds off' };
+  const MODELS = {
+    night: ['Night', 'Dimmer wallpaper, softer sounds', '<path d="M19.5 14.6A7.6 7.6 0 0 1 9.4 4.5a7.6 7.6 0 1 0 10.1 10.1z"/>'],
+    focus: ['Focus', 'Calmer wallpaper, sounds silenced', '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/>'],
+    cinema: ['Cinema', 'Dark wallpaper, sounds silenced', '<rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="m10.2 9.3 4.6 2.7-4.6 2.7z"/>'],
+  };
+  const ICONS = {
+    wallpaper: '<rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="m3.5 16 5-5 4 4 2.5-2.5 5.5 5.5"/><circle cx="15.5" cy="9.5" r="1.3"/>',
+    cursor: '<path d="M6 3.5 18 12.3l-5.6.8-3.2 4.9z"/><path d="m12.4 13.1 3.6 6.4"/>',
+    on: '<path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>',
+    silent: '<path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z"/><path d="m16 10 4 4M20 10l-4 4"/>',
+    off: '<path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z"/><path d="m3.5 3.5 17 17"/>',
+    dim: '<path d="M19.5 14.6A7.6 7.6 0 0 1 9.4 4.5a7.6 7.6 0 1 0 10.1 10.1z"/>',
+    react: '<path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/>',
+    time: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+    screens: '<rect x="3.5" y="4.5" width="17" height="12" rx="1.5"/><path d="M9 20h6M12 16.5V20"/>',
+    mains: '<path d="M9 3.5v4M15 3.5v4M7 7.5h10v3a5 5 0 0 1-10 0zM12 15.5v5"/>',
+    battery: '<rect x="3" y="8" width="16" height="8" rx="2"/><path d="M21 10.5v3M6 11v2"/>',
+    app: '<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M3.5 8.5h17"/>',
+    headset: '<path d="M4.5 15v-3a7.5 7.5 0 0 1 15 0v3"/><rect x="3.5" y="14" width="4" height="6" rx="1.5"/><rect x="16.5" y="14" width="4" height="6" rx="1.5"/>',
+    hand: '<path d="m9 9 10 3.6-4.2 1.2-1.2 4.2z"/><path d="m5 5 1.6 1.6M9 3v2.2M3 9h2.2"/>',
+    opens: '<path d="M14 4.5h5.5V10M19.5 4.5 11 13"/><path d="M17.5 13.5v4a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2h4"/>',
+    export: '<path d="M12 15V4M7.5 8.5 12 4l4.5 4.5"/><path d="M5 13.5v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/>',
+    remove: '<path d="M5 7h14M9.5 7V5h5v2M7 7l1 12h8l1-12"/>',
+    rename: '<path d="M4.5 19.5h4l10-10-4-4-10 10z"/><path d="m13 7 4 4"/>',
+    close: '<path d="m7 7 10 10M17 7 7 17"/>',
+    play: '<path d="M8.5 5.8v12.4a.8.8 0 0 0 1.2.7l9.6-6.2a.8.8 0 0 0 0-1.4L9.7 5.1a.8.8 0 0 0-1.2.7z"/>',
+  };
+  const svg = (path, cls) => `<svg${cls ? ` class="${cls}"` : ''} viewBox="0 0 24 24" aria-hidden="true">${path}</svg>`;
 
-  const starters = $('mood-starters');
-  for (const [kind, name, help] of STARTERS) {
-    const b = document.createElement('button');
-    b.className = 'starter';
-    b.innerHTML = '<span class="starter__name"></span><span class="starter__help"></span>';
-    b.querySelector('.starter__name').textContent = tr(name);
-    b.querySelector('.starter__help').textContent = tr(help);
-    b.addEventListener('click', () => send('moods.starter', { kind }));
-    starters.append(b);
+  function el(tag, cls, text) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
   }
 
-  function fact(text) {
-    const li = document.createElement('li');
-    li.textContent = text;
-    return li;
+  function cover(m, host) {
+    const box = el('div', 'preview mood__cover');
+    const state = Bramble.state, w = state && state.wallpapers ? state.wallpapers.find(f => f.name === m.wallpaper) : null;
+    if (w) {
+      box.append(preview(w, host, m.light, m.speed));
+      const look = [];
+      if (m.blur > 0) look.push(`blur(${(m.blur * .04).toFixed(2)}px)`);
+      if (m.saturation != null && m.saturation !== 50) look.push(`saturate(${m.saturation / 50})`);
+      if (look.length) box.style.setProperty('--look', look.join(' '));
+    } else {
+      box.classList.add('mood__cover--none');
+      box.insertAdjacentHTML('beforeend', svg(ICONS.wallpaper));
+    }
+    const veil = el('i', 'mood__veil');
+    veil.style.background = `rgba(0, 0, 0, ${((m.dim || 0) / 100 * .75).toFixed(3)})`;
+    box.append(veil);
+    return box;
   }
 
-  function facts(m) {
-    return [
-      fact(tr('Wallpaper: {0}', m.wallpaper ? m.wallpaper.replace(/\.[^.]+$/, '') : tr('none'))),
-      fact(m.dim > 0 ? tr('Dimmed {0} %', m.dim) : tr('Not dimmed')),
-      fact(m.theme ? tr('Cursors: {0}', m.theme) : tr('Cursors unchanged')),
-      fact(tr(SOUNDS[m.sounds]) + (m.sounds === 'on' ? ` · ${m.volume} %` : '')),
-    ];
+  function trait(icon, text, title) {
+    const t = el('span', 'trait');
+    t.title = title;
+    if (typeof icon === 'string') t.insertAdjacentHTML('beforeend', svg(icon));
+    else t.append(icon);
+    if (text) t.append(el('span', '', text));
+    return t;
   }
 
-  function option(select, value, text) {
-    const o = document.createElement('option');
-    o.value = value;
-    o.textContent = text;
-    select.append(o);
+  function cursorImage(m) {
+    if (!m.look || !m.look.arrow) return null;
+    const img = el('img', 'trait__cursor');
+    img.alt = '';
+    img.src = `/app/cursor-cache/${encodeURIComponent(m.look.arrow.key)}-32.png`;
+    img.classList.toggle('retro', m.look.arrow.retro);
+    return img;
   }
 
-  const expanded = new Set();
-  const CHEVRON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>';
+  const SOUNDS = { on: 'Sounds on · {0} %', silent: 'Sounds silenced', off: 'Sounds off' };
+  function traits(m) {
+    const row = el('div', 'mood__traits');
+    const theme = m.look ? m.look.title : m.theme;
+    row.append(
+      trait(cursorImage(m) || ICONS.cursor, theme || tr('Unchanged'), theme ? tr('Cursors: {0}', theme) : tr('Cursors unchanged')),
+      trait(ICONS[m.sounds] || ICONS.on, m.sounds === 'on' ? m.volume + ' %' : tr(m.sounds === 'silent' ? 'Silenced' : 'Off'), tr(SOUNDS[m.sounds] || SOUNDS.on, m.volume)),
+      trait(ICONS.dim, m.dim + ' %', m.dim > 0 ? tr('Dimmed {0} %', m.dim) : tr('Not dimmed')));
+    return row;
+  }
 
-  function triggers(m) {
-    const parts = [];
-    if (m.time) parts.push(tr('every day at {0}', m.time));
-    if (m.screens) parts.push(m.screens === 1 ? tr('with 1 screen') : tr('with {0} screens', m.screens));
-    if (m.power) parts.push(tr(m.power === 'mains' ? 'on mains power' : 'on battery'));
-    if (m.app) parts.push(tr('with {0}', m.app));
-    if (m.headset) parts.push(tr('with headphones'));
-    const starts = parts.length ? tr('Starts {0}', parts.join(', ')) : tr('Starts by hand only');
-    return m.opens && m.opens.length ? starts + ' · ' + tr('Opens {0}', m.opens.join(', ')) : starts;
+  function appImage(src) {
+    const img = el('img', 'start__app');
+    img.alt = '';
+    img.src = src;
+    return img;
+  }
+
+  function starts(m) {
+    const row = el('div', 'mood__starts');
+    const pill = (icon, text, title) => { const p = trait(icon, text, title); p.className = 'start'; row.append(p); };
+    if (m.time) pill(ICONS.time, m.time, tr('Every day at {0}', m.time));
+    if (m.screens) pill(ICONS.screens, String(m.screens), m.screens === 1 ? tr('With 1 screen') : tr('With {0} screens', m.screens));
+    if (m.power) pill(ICONS[m.power] || ICONS.mains, tr(m.power === 'mains' ? 'Plugged in' : 'Battery'), tr(m.power === 'mains' ? 'When plugged in' : 'On battery'));
+    if (m.app) pill(m.appIcon ? appImage(m.appIcon) : ICONS.app, m.app, tr('When {0} opens', m.app));
+    if (m.headset) pill(ICONS.headset, '', tr('With headphones'));
+    if (!row.children.length) pill(ICONS.hand, tr('By hand'), tr('Starts only when applied'));
+    if (m.opens && m.opens.length) {
+      const opens = el('span', 'start start--opens');
+      opens.title = tr('Opens {0}', m.opens.map(o => o.name).join(', '));
+      opens.insertAdjacentHTML('beforeend', svg(ICONS.opens));
+      for (const o of m.opens.slice(0, 3)) if (o.icon) opens.append(appImage(o.icon));
+      if (!m.opens.some(o => o.icon) || m.opens.length > 3) opens.append(el('span', '', String(m.opens.length)));
+      row.append(opens);
+    }
+    return row;
   }
 
   function card(m) {
-    const el = document.createElement('article');
-    el.className = 'mood' + (m.current ? ' current' : '');
-    el.innerHTML = `
-      <div class="mood__head"><h3 class="mood__name" title="Double-click to rename"></h3><span class="mood__badge"></span></div>
-      <ul class="mood__facts"></ul>
-      <button class="mood__summary" aria-expanded="false"><span></span>${CHEVRON}</button>
-      <div class="mood__auto" hidden>
-        <label class="mood__time"><span data-what="time"></span><input type="time" aria-label="Start time"></label>
-        <label class="mood__time"><span data-what="screens"></span><select data-what="screens" aria-label="Number of screens"></select></label>
-        <label class="mood__time"><span data-what="power"></span><select data-what="power" aria-label="Power"></select></label>
-        <div class="mood__time" data-row="app"><span data-what="app"></span><span class="mood__pick"></span></div>
-        <label class="mood__time" data-row="headset"><span data-what="headset"></span><span class="toggler"><input type="checkbox" data-what="headset"></span></label>
-        <div class="mood__time mood__opens" data-row="opens"><span data-what="opens"></span><span class="mood__chips"></span></div>
-      </div>
-      <div class="mood__actions"><button class="button button--accent" data-do="apply"></button><button class="button" data-do="update"></button><button class="link" data-do="export"></button><button class="link" data-do="remove"></button></div>`;
-    const name = el.querySelector('.mood__name');
-    name.textContent = m.name;
-    el.querySelector('.mood__badge').textContent = m.current ? tr('Active') : '';
-    el.querySelector('.mood__facts').append(...facts(m));
-
-    const summary = el.querySelector('.mood__summary'), auto = el.querySelector('.mood__auto');
-    summary.firstElementChild.textContent = triggers(m);
-    summary.title = triggers(m);
-    const open = expanded.has(m.id);
-    auto.hidden = !open;
-    summary.setAttribute('aria-expanded', String(open));
-    summary.addEventListener('click', () => {
-      if (expanded.has(m.id)) expanded.delete(m.id); else expanded.add(m.id);
-      render();
-    });
-
-    el.querySelector('[data-what="time"]').textContent = tr('Starts every day at');
-    const time = el.querySelector('input[type="time"]');
-    time.value = m.time || '';
-    time.addEventListener('change', () => send('moods.time', { id: m.id, value: time.value }));
-    el.querySelector('span[data-what="screens"]').textContent = tr('Starts with');
-    const screens = el.querySelector('select[data-what="screens"]');
-    for (const n of [0, 1, 2, 3, 4]) option(screens, n, n === 0 ? tr('Never') : n === 1 ? tr('1 screen') : tr('{0} screens', n));
-    screens.value = m.screens || 0;
-    screens.addEventListener('change', () => send('moods.screens', { id: m.id, value: Number(screens.value) }));
-    el.querySelector('span[data-what="power"]').textContent = tr('Starts on');
-    const power = el.querySelector('select[data-what="power"]');
-    option(power, '', tr('Never'));
-    option(power, 'mains', tr('Mains power'));
-    option(power, 'battery', tr('Battery'));
-    power.value = m.power || '';
-    power.addEventListener('change', () => send('moods.power', { id: m.id, value: power.value }));
-
-    el.querySelector('[data-what="app"]').textContent = tr('Starts with the app');
-    el.querySelector('[data-row="app"]').title = tr('The previous setup comes back when the app closes');
-    const pick = el.querySelector('.mood__pick');
-    if (m.app) {
-      const chip = document.createElement('button');
-      chip.className = 'chip mood__chip';
-      chip.innerHTML = '<span></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg>';
-      chip.firstChild.textContent = m.app;
-      chip.title = tr('Remove');
-      chip.addEventListener('click', () => send('moods.appClear', { id: m.id }));
-      pick.append(chip);
-    } else {
-      const choose = document.createElement('button');
-      choose.className = 'link';
-      choose.textContent = tr('Choose');
-      choose.addEventListener('click', () => send('moods.app', { id: m.id }));
-      pick.append(choose);
+    const c = el('article', 'mood' + (m.current ? ' current' : ''));
+    c.tabIndex = 0;
+    c.setAttribute('role', 'button');
+    c.setAttribute('aria-label', m.name);
+    c.dataset.id = m.id;
+    const art = cover(m, c);
+    if (!m.current) {
+      const play = el('button', 'mood__play');
+      play.type = 'button';
+      play.title = tr('Apply');
+      play.setAttribute('aria-label', tr('Apply {0}', m.name));
+      play.innerHTML = svg(ICONS.play);
+      play.addEventListener('click', e => { e.stopPropagation(); send('moods.apply', { id: m.id }); });
+      art.append(play);
     }
-
-    el.querySelector('span[data-what="headset"]').textContent = tr('Starts with headphones');
-    el.querySelector('[data-row="headset"]').title = tr('The previous setup comes back when the headphones are removed');
-    const headset = el.querySelector('input[data-what="headset"]');
-    headset.checked = !!m.headset;
-    headset.addEventListener('change', () => send('moods.headset', { id: m.id, value: headset.checked }));
-
-    el.querySelector('[data-what="opens"]').textContent = tr('Opens');
-    const chips = el.querySelector('.mood__chips');
-    (m.opens || []).forEach((label, i) => {
-      const chip = document.createElement('button');
-      chip.className = 'chip mood__chip';
-      chip.innerHTML = '<span></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg>';
-      chip.firstChild.textContent = label;
-      chip.title = tr('Remove');
-      chip.addEventListener('click', () => send('moods.openRemove', { id: m.id, index: i }));
-      chips.append(chip);
-    });
-    if (!m.opens || m.opens.length < 8) {
-      const add = document.createElement('button');
-      add.className = 'link';
-      add.textContent = tr('Add');
-      add.addEventListener('click', () => send('moods.openAdd', { id: m.id }));
-      chips.append(add);
-    }
-
-    const [apply, update, exporter, remove] = el.querySelectorAll('[data-do]');
-    apply.textContent = m.current ? tr('Applied') : tr('Apply');
-    apply.disabled = m.current;
-    update.textContent = tr('Update');
-    update.title = tr('Replace it with the current setup');
-    exporter.textContent = tr('Export');
-    exporter.title = tr('Saves it as a file to share or keep');
-    remove.textContent = tr('Remove');
-    apply.addEventListener('click', () => send('moods.apply', { id: m.id }));
-    update.addEventListener('click', () => send('moods.update', { id: m.id }));
-    exporter.addEventListener('click', () => send('moods.export', { id: m.id }));
-    remove.addEventListener('click', () => send('moods.remove', { id: m.id }));
-    name.addEventListener('dblclick', () => {
-      const input = document.createElement('input');
-      input.className = 'mood__rename';
-      input.maxLength = 40;
-      input.value = m.name;
-      name.replaceWith(input);
-      input.focus();
-      input.select();
-      const done = save => {
-        if (save && input.value.trim() && input.value.trim() !== m.name) send('moods.rename', { id: m.id, name: input.value });
-        else render();
-      };
-      input.addEventListener('keydown', e => { if (e.key === 'Enter') done(true); else if (e.key === 'Escape') done(false); });
-      input.addEventListener('blur', () => done(true));
-    });
-    return el;
+    const head = el('div', 'mood__head');
+    head.append(Object.assign(el('h3', 'mood__name', m.name), { translate: false }));
+    if (m.current) head.append(el('span', 'mood__badge', tr('Active')));
+    c.append(art, head, traits(m), starts(m));
+    const open = () => choose(m.id);
+    c.addEventListener('click', open);
+    c.addEventListener('keydown', e => { if (e.target === c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); open(); } });
+    return c;
   }
 
-  function preview(m) {
+  function newMode() {
+    const tile = el('div', 'mood mood--add');
+    const state = Bramble.state || {};
+    const art = cover({ wallpaper: state.current, light: state.light, speed: state.speed, blur: state.blur, saturation: state.saturation, dim: state.dim }, tile);
+    art.insertAdjacentHTML('beforeend', `<span class="mood__plus" aria-hidden="true">${svg('<path d="M12 5.5v13M5.5 12h13"/>')}</span>`);
+    const head = el('div', 'mood__head');
+    head.append(el('h3', 'mood__name', tr('New mode')));
+    const help = el('p', 'mood__help', tr('Saves the wallpaper, cursors and sounds'));
+    tile.append(art, head, help);
+    const ask = () => {
+      naming = true;
+      const form = el('form', 'mood__form');
+      form.innerHTML = '<input maxlength="40" autocomplete="off"><button class="button button--accent" type="submit"></button>';
+      const input = form.querySelector('input');
+      input.placeholder = tr('Name this mode');
+      input.setAttribute('aria-label', tr('Mode name'));
+      form.querySelector('button').textContent = tr('Save');
+      form.addEventListener('submit', e => { e.preventDefault(); naming = false; send('moods.save', { name: input.value }); });
+      const cancel = () => { naming = false; keyGrid = ''; render(); };
+      input.addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); cancel(); } });
+      input.addEventListener('blur', () => setTimeout(() => { if (naming && form.isConnected && !form.contains(document.activeElement) && !input.value.trim()) cancel(); }, 150));
+      tile.classList.add('naming');
+      tile.removeAttribute('role');
+      tile.removeAttribute('tabindex');
+      help.replaceWith(form);
+      input.focus();
+    };
+    if (naming) setTimeout(ask);
+    else {
+      tile.tabIndex = 0;
+      tile.setAttribute('role', 'button');
+      tile.title = tr('Saves the current wallpaper, cursors and sounds as a mode');
+      tile.addEventListener('click', () => { if (!naming) ask(); });
+      tile.addEventListener('keydown', e => { if (!naming && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); ask(); } });
+    }
+    return tile;
+  }
+
+  function renderModels() {
+    const list = $('mood-starters');
+    const key = JSON.stringify(models) + '|' + (Bramble.state ? Bramble.state.wallpapers.map(w => w.name + '@' + w.stamp).join() : '');
+    if (list.dataset.key === key) return;
+    list.dataset.key = key;
+    list.replaceChildren(...models.filter(m => MODELS[m.kind]).map(m => {
+      const [name, help, icon] = MODELS[m.kind];
+      const b = el('button', 'starter');
+      b.type = 'button';
+      b.title = tr('Adds a mode built from the current setup');
+      const art = cover(m, b);
+      art.insertAdjacentHTML('beforeend', svg(icon, 'starter__icon'));
+      b.append(art, el('span', 'starter__name', tr(name)), el('span', 'starter__help', tr(help)));
+      b.addEventListener('click', () => send('moods.starter', { kind: m.kind }));
+      return b;
+    }));
+  }
+
+  function choose(id) {
+    chosen = id;
+    render();
+  }
+
+  function close() { choose(null); }
+
+  function row(icon, title, help, control) {
+    const r = el('div', 'row');
+    const caption = el('span', 'caption');
+    caption.innerHTML = svg(icon, 'glyph glyph--small');
+    const text = el('span', '', title);
+    if (help) text.append(Object.assign(el('small', '', help), { title: help }));
+    caption.append(text);
+    r.append(caption);
+    if (control) r.append(control);
+    return r;
+  }
+
+  function stacked(icon, title, help, control) {
+    const r = row(icon, title, help);
+    r.className = 'choice';
+    r.append(control);
+    return r;
+  }
+
+  function segments(options, value, pick, label) {
+    const s = el('div', 'segments');
+    s.setAttribute('role', 'radiogroup');
+    s.setAttribute('aria-label', label);
+    for (const [v, text] of options) {
+      const b = el('button', '', text);
+      b.type = 'button';
+      b.setAttribute('role', 'radio');
+      b.setAttribute('aria-checked', String(v === value));
+      b.addEventListener('click', () => { if (v !== value) pick(v); });
+      s.append(b);
+    }
+    return s;
+  }
+
+  function chip(label, icon, title, remove) {
+    const c = el('button', 'chip mood__chip');
+    c.type = 'button';
+    c.title = title;
+    if (icon) c.append(appImage(icon));
+    c.append(el('span', '', label));
+    c.insertAdjacentHTML('beforeend', svg(ICONS.close));
+    c.addEventListener('click', remove);
+    return c;
+  }
+
+  function rename(head, m) {
+    const title = head.querySelector('.title');
+    if (!title) return;
+    const input = Object.assign(el('input', 'm-sheet__rename'), { maxLength: 40, value: m.name });
+    input.setAttribute('aria-label', tr('Mode name'));
+    title.replaceWith(input);
+    input.focus();
+    input.select();
+    let done = false;
+    const finish = save => {
+      if (done) return;
+      done = true;
+      const v = input.value.trim();
+      if (save && v && v !== m.name) send('moods.rename', { id: m.id, name: v });
+      else input.replaceWith(title);
+    };
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') finish(true); else if (e.key === 'Escape') { e.stopPropagation(); finish(false); } });
+    input.addEventListener('blur', () => finish(true));
+  }
+
+  function renderSheet() {
+    const m = moods.find(x => x.id === chosen);
+    document.body.classList.toggle('mode-open', !!m);
+    if (!m) { sheet.dataset.key = ''; sheet.replaceChildren(); return; }
+    const key = JSON.stringify(m) + '|' + (Bramble.state ? Bramble.state.wallpapers.map(w => w.name + '@' + w.stamp).join() : '');
+    if (sheet.dataset.key === key) return;
+    sheet.dataset.key = key;
+
+    const head = el('div', 'm-sheet__head');
+    head.innerHTML = '<div><span class="title"></span><span class="path"></span></div>';
+    head.querySelector('.title').textContent = m.name;
+    head.querySelector('.title').translate = false;
+    head.querySelector('.title').title = tr('Double-click to rename');
+    head.querySelector('.title').addEventListener('dblclick', () => rename(head, m));
+    head.querySelector('.path').textContent = m.current ? tr('Active right now') : tr('Not applied');
+    for (const [what, label] of [['rename', 'Rename'], ['close', 'Close']]) {
+      const b = el('button', 'm-sheet__tool');
+      b.type = 'button';
+      b.title = tr(label);
+      b.setAttribute('aria-label', tr(label));
+      b.innerHTML = svg(ICONS[what]);
+      b.addEventListener('click', () => what === 'close' ? close() : rename(head, m));
+      head.append(b);
+    }
+
+    const art = cover(m, sheet);
+    art.classList.add('mood__cover--sheet');
+    const actions = el('div', 'm-sheet__actions');
+    const apply = el('button', 'button button--accent', tr(m.current ? 'Applied' : 'Apply'));
+    apply.disabled = m.current;
+    apply.addEventListener('click', () => send('moods.apply', { id: m.id }));
+    const update = el('button', 'button', tr('Update'));
+    update.title = tr('Replaces what it brings back with the current setup');
+    update.addEventListener('click', () => send('moods.update', { id: m.id }));
+    actions.append(apply, update);
+
+    const brings = el('div', 'group');
+    const value = text => Object.assign(el('span', 'value', text), { title: text });
+    const wallpaper = m.wallpaper ? m.wallpaper.replace(/\.[^.]+$/, '') : tr('No wallpaper');
+    const theme = m.look ? m.look.title : m.theme;
+    brings.append(
+      row(ICONS.wallpaper, tr('Wallpaper'), m.screenWallpapers === 1 ? tr('Plus one screen with its own wallpaper') : m.screenWallpapers > 1 ? tr('Plus {0} screens with their own wallpaper', m.screenWallpapers) : '', value(wallpaper)),
+      row(ICONS.dim, tr('Dim'), '', value(m.dim > 0 ? m.dim + ' %' : tr('Not dimmed'))),
+      row(ICONS.cursor, tr('Cursors'), '', value(theme || tr('Unchanged'))),
+      row(ICONS[m.sounds] || ICONS.on, tr('Sounds'), '', value(m.sounds === 'on' ? tr('On · {0} %', m.volume) : tr(m.sounds === 'silent' ? 'Silenced' : 'Off'))));
+    if (m.reactive != null) brings.append(row(ICONS.react, tr('React to sound'), '', value(tr(m.reactive ? 'On' : 'Off'))));
+
+    const auto = el('div', 'group');
+    const time = Object.assign(el('input', 'm-time'), { type: 'time', value: m.time || '' });
+    time.setAttribute('aria-label', tr('Start time'));
+    time.addEventListener('change', () => send('moods.time', { id: m.id, value: time.value }));
+    const clock = el('span', 'm-field');
+    clock.append(time);
+    if (m.time) {
+      const clear = el('button', 'm-sheet__tool m-sheet__tool--small');
+      clear.type = 'button';
+      clear.title = tr('Never');
+      clear.setAttribute('aria-label', tr('Clear the time'));
+      clear.innerHTML = svg(ICONS.close);
+      clear.addEventListener('click', () => send('moods.time', { id: m.id, value: '' }));
+      clock.append(clear);
+    }
+    auto.append(
+      stacked(ICONS.time, tr('At a set time'), tr('Every day, when the PC is on'), clock),
+      stacked(ICONS.screens, tr('With screens'), tr('When this many screens are connected'),
+        segments([[0, tr('Never')], [1, '1'], [2, '2'], [3, '3'], [4, '4']], m.screens || 0, v => send('moods.screens', { id: m.id, value: v }), tr('Number of screens'))),
+      stacked(ICONS.mains, tr('Power source'), tr('Plugged in or on battery'),
+        segments([['', tr('Never')], ['mains', tr('Plugged in')], ['battery', tr('Battery')]], m.power || '', v => send('moods.power', { id: m.id, value: v }), tr('Power source'))));
+    let app;
+    if (m.app) app = chip(m.app, m.appIcon, tr('Remove'), () => send('moods.appClear', { id: m.id }));
+    else {
+      app = el('button', 'button', tr('Choose'));
+      app.addEventListener('click', () => send('moods.app', { id: m.id }));
+    }
+    auto.append(stacked(ICONS.app, tr('When an app opens'), tr('Undone when the app closes'), app));
+    const headset = el('label', 'toggle');
+    headset.innerHTML = `<input type="checkbox"><span class="caption">${svg(ICONS.headset, 'glyph glyph--small')}<span></span></span>`;
+    const label = headset.querySelector('.caption > span');
+    label.append(tr('With headphones'), el('small', '', tr('Undone when unplugged')));
+    const box = headset.querySelector('input');
+    box.checked = !!m.headset;
+    box.addEventListener('change', () => send('moods.headset', { id: m.id, value: box.checked }));
+    auto.append(headset);
+
+    const opens = el('div', 'group');
+    const list = el('div', 'mood__chips');
+    (m.opens || []).forEach((o, i) => list.append(chip(o.name, o.icon, tr('Remove'), () => send('moods.openRemove', { id: m.id, index: i }))));
+    if (!m.opens || m.opens.length < 8) {
+      const add = el('button', 'link');
+      add.type = 'button';
+      add.innerHTML = svg('<path d="M12 5v14M5 12h14"/>');
+      add.append(tr('Add'));
+      add.addEventListener('click', () => send('moods.openAdd', { id: m.id }));
+      list.append(add);
+    }
+    opens.append(stacked(ICONS.opens, tr('Apps or files'), tr('Opened each time the mode is applied'), list));
+
+    const more = el('div', 'group');
+    const action = (icon, title, help, run, cls) => {
+      const b = el('button', 'row action' + (cls ? ' ' + cls : ''));
+      b.innerHTML = `<span class="caption">${svg(icon, 'glyph glyph--small')}<span></span></span>`;
+      b.querySelector('.caption > span').append(title, el('small', '', help));
+      b.addEventListener('click', run);
+      return b;
+    };
+    more.append(
+      action(ICONS.export, tr('Export'), tr('Saves it as a file to share or keep'), () => send('moods.export', { id: m.id })),
+      action(ICONS.remove, tr('Remove'), tr('Can be undone for a few seconds'), () => send('moods.remove', { id: m.id }), 'stop'));
+
+    sheet.replaceChildren(head, art, actions, el('h2', '', tr('What it brings back')), brings,
+      el('h2', '', tr('Starts by itself')), auto, el('h2', '', tr('Opens with it')), opens, more);
+  }
+
+  function showImport(m) {
     const box = $('mood-preview');
     const warnings = [];
     if (m.missingWallpaper) warnings.push(tr('Its wallpaper is not on this PC: the current one is kept'));
     if (m.missingTheme) warnings.push(tr('Its cursor theme is not on this PC: cursors stay as they are'));
-    box.innerHTML = `<div class="mood-preview__head"><span class="mood-preview__title"></span><span class="mood__badge"></span></div>
-      <ul class="mood__facts"></ul><ul class="mood-preview__warnings"></ul>
-      <div class="mood__actions"><button class="button button--accent" data-do="add"></button><button class="button" data-do="cancel"></button></div>`;
-    box.querySelector('.mood-preview__title').textContent = tr('Import “{0}”', m.mood.name);
-    box.querySelector('.mood__badge').textContent = tr('Preview');
-    box.querySelector('.mood__facts').append(...facts(m.mood));
-    box.querySelector('.mood-preview__warnings').append(...warnings.map(fact));
-    const [add, cancel] = box.querySelectorAll('[data-do]');
-    add.textContent = tr('Add this mode');
-    cancel.textContent = tr('Cancel');
+    const art = cover(m.mood, box);
+    const body = el('div', 'mood-preview__body');
+    const head = el('div', 'mood__head');
+    head.append(el('h3', 'mood__name', tr('Import “{0}”', m.mood.name)), el('span', 'mood__badge', tr('Preview')));
+    const notes = el('ul', 'mood-preview__warnings');
+    for (const w of warnings) notes.append(el('li', '', w));
+    const actions = el('div', 'm-sheet__actions');
+    const add = el('button', 'button button--accent', tr('Add this mode'));
+    const cancel = el('button', 'button', tr('Cancel'));
     add.addEventListener('click', () => { box.hidden = true; send('moods.add'); });
     cancel.addEventListener('click', () => { box.hidden = true; send('moods.cancel'); });
+    actions.append(add, cancel);
+    body.append(head, traits(m.mood), starts(m.mood), notes, actions);
+    box.replaceChildren(art, body);
     box.hidden = false;
   }
 
   function render() {
     $('mood-count').textContent = moods.length || '';
     $('mood-help').textContent = moods.length ? tr('A mode brings back a wallpaper, cursors and sounds in one click, or by itself at the right moment') : tr('Set everything up, then save it as a mode to bring it back in one click');
-    zone.replaceChildren(...moods.map(card));
-    zone.hidden = $('moods-title').hidden = moods.length === 0;
+    if (chosen && !moods.some(m => m.id === chosen)) chosen = null;
+    const state = Bramble.state || {};
+    const key = JSON.stringify(moods) + '|' + [state.current, state.light, state.speed, state.blur, state.saturation, state.dim].join() + '|' + (state.wallpapers ? state.wallpapers.map(w => w.name + '@' + w.stamp).join() : '');
+    if (key !== keyGrid && !naming) {
+      keyGrid = key;
+      zone.replaceChildren(...moods.map(card), newMode());
+    }
+    for (const c of zone.querySelectorAll('.mood[data-id]')) c.classList.toggle('open', c.dataset.id === chosen);
+    renderModels();
+    renderSheet();
   }
 
   function state(list) {
     moods = list;
+    models = (Bramble.state && Bramble.state.moodModels) || [];
     render();
   }
 
   function event(m) {
-    if (m.type === 'moods.preview') preview(m);
+    if (m.type === 'moods.preview') showImport(m);
   }
 
-  $('mood-form').addEventListener('submit', e => {
-    e.preventDefault();
-    send('moods.save', { name: $('mood-name').value });
-    $('mood-name').value = '';
-  });
-  $('mood-import').addEventListener('click', () => send('moods.import'));
+  function startNew() {
+    showView('modes');
+    naming = true;
+    keyGrid = '';
+    zone.replaceChildren(...moods.map(card), newMode());
+  }
 
-  Bramble.moods = { state, event };
+  $('mood-import').addEventListener('click', () => send('moods.import'));
+  addEventListener('keydown', e => { if (e.key === 'Escape' && chosen && document.body.dataset.view === 'modes' && !(e.target.matches && e.target.matches('input:not([type="checkbox"]), select'))) close(); });
+
+  Bramble.moods = { state, event, startNew };
 })();

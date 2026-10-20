@@ -27,6 +27,7 @@ namespace Bramble
         static MoodSetting pending, revertFor, revertState;
         static string revertKind, revertMood;
         static readonly Dictionary<string, bool> appsRunning = new Dictionary<string, bool>();
+        static readonly Dictionary<string, string> appIcons = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         static bool? headphones;
         static bool primed;
         static readonly JavaScriptSerializer json = new JavaScriptSerializer();
@@ -233,17 +234,48 @@ namespace Bramble
             Automatic(All.FirstOrDefault(m => m.Power == kind && !Matches(m)));
         }
 
-        static MoodSetting Starter(string kind)
+        static readonly string[] Starters = { "night", "focus", "cinema" };
+
+        static bool Tune(MoodSetting mood, string kind)
         {
-            var mood = Capture(Language.T(kind == "night" ? "Night" : kind == "focus" ? "Focus" : "Cinema"));
             switch (kind)
             {
-                case "night": mood.Dim = Math.Min(100, mood.Dim + 30); mood.Light = Math.Max(10, mood.Light - 20); mood.Volume = Math.Min(mood.Volume, 50); break;
-                case "focus": mood.Silence = true; mood.Dim = Math.Min(100, mood.Dim + 20); mood.Speed = Math.Max(10, mood.Speed - 25); break;
-                case "cinema": mood.Silence = true; mood.Dim = 70; mood.Light = Math.Max(10, mood.Light - 15); break;
-                default: return null;
+                case "night": mood.Dim = Math.Min(100, mood.Dim + 30); mood.Light = Math.Max(10, mood.Light - 20); mood.Volume = Math.Min(mood.Volume, 50); return true;
+                case "focus": mood.Silence = true; mood.Dim = Math.Min(100, mood.Dim + 20); mood.Speed = Math.Max(10, mood.Speed - 25); return true;
+                case "cinema": mood.Silence = true; mood.Dim = 70; mood.Light = Math.Max(10, mood.Light - 15); return true;
             }
+            return false;
+        }
+
+        static MoodSetting Starter(string kind)
+        {
+            if (!Starters.Contains(kind)) return null;
+            var mood = Capture(Language.T(kind == "night" ? "Night" : kind == "focus" ? "Focus" : "Cinema"));
+            Tune(mood, kind);
             return mood;
+        }
+
+        public static object Models()
+        {
+            var r = Program.R;
+            return Starters.Select(kind =>
+            {
+                var m = new MoodSetting { Wallpaper = r.Wallpaper, Fit = r.Fit, Light = r.Light, Speed = r.Speed, Blur = r.Blur, Saturation = r.Saturation, Dim = r.Dim, Volume = r.Dock.Volume };
+                Tune(m, kind);
+                return new { kind, wallpaper = m.Wallpaper, fit = m.Fit, light = m.Light, speed = m.Speed, blur = m.Blur, saturation = m.Saturation, dim = m.Dim };
+            }).ToArray();
+        }
+
+        static string IconOf(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return null;
+            string icon;
+            if (!appIcons.TryGetValue(path, out icon))
+            {
+                icon = File.Exists(path) || Directory.Exists(path) ? Tasks.IconOf(path) : null;
+                appIcons[path] = icon;
+            }
+            return icon;
         }
 
         static void Export(MoodSetting mood)
@@ -318,16 +350,20 @@ namespace Bramble
             }
         }
 
-        static object Describe(MoodSetting m) { return Describe(m, null); }
+        static object Describe(MoodSetting m) { return Describe(m, null, Mouse.Looks(new[] { m.Theme })); }
 
-        static object Describe(MoodSetting m, MoodSetting active)
+        static object Describe(MoodSetting m, MoodSetting active, Dictionary<string, object> looks)
         {
+            object look;
+            looks.TryGetValue(m.Theme ?? "", out look);
             return new
             {
-                id = m.Id, name = m.Name, wallpaper = m.Wallpaper, dim = m.Dim, light = m.Light, theme = m.Theme,
+                id = m.Id, name = m.Name, wallpaper = m.Wallpaper, fit = m.Fit, dim = m.Dim, light = m.Light, speed = m.Speed, blur = m.Blur, saturation = m.Saturation,
+                screenWallpapers = m.ScreenWallpapers == null ? 0 : m.ScreenWallpapers.Count, reactive = m.Reactive,
+                theme = m.Theme, look,
                 sounds = !m.SoundsActive ? "off" : m.Silence ? "silent" : "on", volume = m.Volume, time = m.Time, screens = m.Screens, power = m.Power ?? "",
-                app = string.IsNullOrEmpty(m.App) ? null : Path.GetFileNameWithoutExtension(m.App), headset = m.Headset,
-                opens = (m.Opens ?? new List<string>()).Select(o => Path.GetFileNameWithoutExtension(o)).ToArray(),
+                app = string.IsNullOrEmpty(m.App) ? null : Path.GetFileNameWithoutExtension(m.App), appIcon = IconOf(m.App), headset = m.Headset,
+                opens = (m.Opens ?? new List<string>()).Select(o => new { name = Path.GetFileNameWithoutExtension(o), icon = IconOf(o) }).ToArray(),
                 current = m == active,
             };
         }
@@ -453,7 +489,8 @@ namespace Bramble
         public static object State()
         {
             var active = Active();
-            return All.Select(m => Describe(m, active)).ToArray();
+            var looks = Mouse.Looks(All.Select(m => m.Theme));
+            return All.Select(m => Describe(m, active, looks)).ToArray();
         }
     }
 }

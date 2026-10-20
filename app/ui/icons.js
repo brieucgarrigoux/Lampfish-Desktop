@@ -63,7 +63,7 @@
     $('icons-reset-all').disabled = n === 0;
     const names = d.customized.map(f => f.name);
     const listed = names.length > 2 ? tr('{0}, {1} and {2} more', names[0], names[1], names.length - 2) : names.join(' ' + tr('and') + ' ');
-    $('reset-all-help').textContent = n ? tr('Their own icon back for {0}', listed) : tr('No customized folder');
+    $('reset-all-help').textContent = $('reset-all-help').title = n ? tr('Their own icon back for {0}', listed) : tr('No customized folder');
   }
 
   function renderTabs() {

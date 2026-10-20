@@ -325,7 +325,7 @@
   titleInput.addEventListener('input', () => { st.title.text = titleInput.value; push(); });
 
   const logoCard = card('Logo',
-    row('Logo', picker('logo', 'Choose a logo'), 'A PNG with a transparent background works best'),
+    row('Logo', picker('logo', 'Choose a logo'), 'A transparent PNG works best'),
     row('Size', slider('logoSize', 5, 70, () => st.logo.size, v => { st.logo.size = v; }, ' %', 28)),
     row('Horizontal position', slider('logoX', 0, 100, () => st.logo.x, v => { st.logo.x = v; }, ' %', 50)),
     row('Vertical position', slider('logoY', 0, 100, () => st.logo.y, v => { st.logo.y = v; }, ' %', 44)),
@@ -427,7 +427,7 @@
     row('React to sound', toggle('soundOn', () => st.sound.on, v => { st.sound.on = v; syncRows(); }), 'Choose one effect or several'),
     tagged('sound', row('Pulse', toggle('soundPulse', () => st.sound.pulse, v => { st.sound.pulse = v; }), 'The logo and the glow breathe')),
     tagged('sound', row('Particles', toggle('soundParticles', () => st.sound.particles, v => { st.sound.particles = v; }), 'The particles speed up and shine')),
-    tagged('sound', row('Wave ring', toggle('soundRing', () => st.sound.ring, v => { st.sound.ring = v; }), 'A smooth ring that follows the sound')),
+    tagged('sound', row('Wave ring', toggle('soundRing', () => st.sound.ring, v => { st.sound.ring = v; }), 'A ring that follows the sound')),
     tagged('sound', row('Ripples', toggle('soundRipples', () => st.sound.ripples, v => { st.sound.ripples = v; }), 'Rings spread out on each beat')),
     tagged('sound', row('Vibration', toggle('soundVibe', () => st.sound.vibe, v => { st.sound.vibe = v; syncRows(); }), 'The logo trembles with the bass')),
     tagged('vibe', row('Vibration strength', slider('soundVibeAmount', 5, 100, () => st.sound.vibeAmount, v => { st.sound.vibeAmount = v; }, ' %', 50))),
@@ -674,7 +674,7 @@
   $('create-save').append(nameInput, copy, create);
 
   zone.append(banner, stage, tools, hint, themeTitle, themes, input);
-  panel.append(logoCard, textCard, backgroundCard, particlesCard, glowCard, soundCard);
+  panel.append(soundCard, logoCard, textCard, backgroundCard, particlesCard, glowCard);
   function editMode(name) {
     editing = name;
     nameInput.value = name;

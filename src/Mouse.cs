@@ -335,6 +335,16 @@ namespace Bramble
 
         public static bool HasTheme(string name) { return Themes().Any(t => t.Name == name); }
 
+        public static Dictionary<string, object> Looks(IEnumerable<string> names)
+        {
+            var wanted = new HashSet<string>(names.Where(n => !string.IsNullOrEmpty(n)));
+            var looks = new Dictionary<string, object>();
+            if (wanted.Count > 0)
+                foreach (var t in Themes().Where(t => wanted.Contains(t.Name)))
+                    looks[t.Name] = new { title = NameTheme(t.Name), arrow = Preview(t.Paths[0]) };
+            return looks;
+        }
+
         public static void SetTheme(string name) { ApplyTheme(name); }
 
         static string CurrentTheme()

@@ -56,7 +56,7 @@
   let map = null;
   let shown = false, timer = 0, drag = null, keyScreens = '';
   const images = new Map();
-  const points = new Map();
+  const points = new Map(), names = new Map();
   let scale = 1, origin = { x: 0, y: 0 };
 
   const GAP = 2;
@@ -80,6 +80,7 @@
       keyScreens = key;
       zone.replaceChildren(label);
       points.clear();
+      names.clear();
       const scene = document.createElement('div');
       scene.className = 'scene';
       scene.style.width = frame.w + 'px';
@@ -106,7 +107,6 @@
       requestAnimationFrame(() => requestAnimationFrame(() => scene.classList.add('settled')));
     }
     const scene = zone.querySelector('.scene');
-    const size = Math.max(9, Math.round(map.caseW * 0.4 * k));
     const seen = new Set();
     for (const el of map.elements) {
       if (el.icon) images.set(el.id, el.icon);
@@ -121,17 +121,29 @@
         p.addEventListener('pointerenter', () => showLabel(p));
         p.addEventListener('pointerleave', () => { if (!drag) label.classList.remove('visible'); });
         points.set(el.id, p);
-        scene.append(p);
+        const name = document.createElement('span');
+        name.className = 'point-name';
+        names.set(el.id, name);
+        scene.append(name, p);
       }
+      const screen = map.screens.find(e => el.x >= e.x && el.x < e.x + e.w && el.y >= e.y && el.y < e.y + e.h) || map.screens[0];
+      const dpi = screen.scale || 1, lead = Math.round(4 * dpi);
       p.dataset.id = el.id;
       p.dataset.name = el.name;
+      p.dataset.lead = lead;
       if (images.has(el.id) && p.src !== images.get(el.id)) p.src = images.get(el.id);
-      p.style.width = p.style.height = size + 'px';
+      p.style.width = p.style.height = Math.max(8, Math.round(map.iconSize * dpi * k)) + 'px';
+      const name = names.get(el.id);
+      name.textContent = el.name;
+      name.style.width = map.caseW * k + 'px';
+      name.style.fontSize = Math.max(7, 12 * dpi * k).toFixed(1) + 'px';
+      p.dataset.gap = (3 * dpi * k).toFixed(1);
       if (drag && drag.point === p) continue;
       p.style.left = (el.x - left) * k + 'px';
-      p.style.top = (el.y - up) * k + 'px';
+      p.style.top = (el.y + lead - up) * k + 'px';
+      placeName(p);
     }
-    for (const [id, p] of points) if (!seen.has(id)) { p.remove(); points.delete(id); }
+    for (const [id, p] of points) if (!seen.has(id)) { p.remove(); names.get(id).remove(); points.delete(id); names.delete(id); }
     zone.classList.toggle('hidden', map.hidden);
 
     if (!sizing) showSize(map.iconSize);
@@ -140,6 +152,14 @@
       $(id).checked = map[key];
       $(id).disabled = false;
     }
+  }
+
+  function placeName(p) {
+    const name = names.get(p.dataset.id);
+    if (!name) return;
+    const size = parseFloat(p.style.width);
+    name.style.left = parseFloat(p.style.left) + size / 2 + 'px';
+    name.style.top = parseFloat(p.style.top) + size + Number(p.dataset.gap || 0) + 'px';
   }
 
   function showLabel(p) {
@@ -166,6 +186,7 @@
     const y = Math.max(0, Math.min(scene.clientHeight - p.offsetHeight, e.clientY - drag.dy));
     p.style.left = x + 'px';
     p.style.top = y + 'px';
+    placeName(p);
     drag.moves = true;
     showLabel(p);
   }
@@ -178,7 +199,7 @@
       send('arrange.move', {
         id: p.dataset.id,
         x: Math.round(p.offsetLeft / scale + origin.x),
-        y: Math.round(p.offsetTop / scale + origin.y),
+        y: Math.round(p.offsetTop / scale + origin.y - Number(p.dataset.lead || 0)),
       });
     drag = null;
     label.classList.remove('visible');
@@ -261,6 +282,7 @@
       l.innerHTML = `<div class="what"><span class="name-layout"></span><span class="details"></span></div>
         <button class="remove">Remove</button><button class="button">Restore</button>`;
       l.querySelector('.name-layout').textContent = d.name;
+      l.querySelector('.name-layout').translate = false;
       l.querySelector('.details').textContent = d.screens + ' · ' + formatDate(d.date);
       const restore = l.querySelector('.button');
       restore.disabled = !d.current;

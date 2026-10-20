@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Modes are visual: each mode shows its own wallpaper as a cover, dimmed as it will be on the desktop, with its cursors, sounds and triggers as icons, and a play button applies it. A click opens its settings in the side panel (what it brings back, when it starts by itself, what it opens, export, remove). A New mode tile saves the current setup, and the models show the current wallpaper with their effect.
+- Arrange: the screen map draws each icon at its real size, with its name under it.
 - Modes start when a chosen app opens or when headphones are plugged in, and the previous setup comes back when the app closes or the headphones are removed (unless something was changed meanwhile). A mode can also open apps or files when it is applied.
 - Mouse: your own cursor themes. Cursors changed by hand show Modified with Save as a theme and Discard; your themes can be renamed, updated, duplicated and removed (with undo), and any theme can be duplicated to start from it.
 - Network: the connection test shows a signal travelling to the next step, a turning ring on the step being measured, and each finished step pops and shows its result; a bubble explains each step.
@@ -27,6 +29,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - The window remembers its size, position and maximized state.
 
 ### Changed
+- The bar on the left shows the name of each service beside its icon, with the Bramble name at the top. Dragging its edge still narrows it to icons with names below.
+- Create: React to sound comes first in the panel.
+- Arrange: the first row keeps the same space from the top of the screen as the longest name of the last row from the taskbar, instead of touching the top edge.
+- Home: the desktop preview draws the icons at their real size and place.
+- Explanation lines that did not fit are shorter (Wallpaper, Create, Arrange), and the French texts no longer address the reader.
 - Moods are now called Modes and have their own place at the top of the bar.
 - Create: the name and the Create button sit next to the title instead of covering the themes, every setting of the panel has its icon, Click to type and Add your logo stay on one line however small the box, and the editor starts fresh after the window is closed.
 - Arrange: the icon size is one of five sizes (Very small to Very large) instead of a slider, and icons are laid out again after a size change so they never overlap.
@@ -56,6 +63,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Starting with Windows uses the --background option (--discret still works).
 
 ### Fixed
+- The bar and the side panel stayed narrow after the window had been narrow for a moment.
+- Empty lists (Network addresses and test history, Sounds history, Folders) showed their message floating over the page.
+- French: names given in Bramble (modes, layouts, own cursor themes, wallpapers) were translated when they matched a word of the interface.
 - Folders: Run the analysis again lost its icon and its explanation, the analyzed source lost its icon, and the centre of the rings cut its numbers.
 - Hardware: the disk read speed was labelled Playing, long values crushed the labels in the panel, and a card left alone on the last row now spans the width.
 - Mouse: the 16 px pointer size read as 1, and cursor themes whose files were deleted showed empty cards.

@@ -156,6 +156,7 @@
     c.innerHTML = '<span class="theme__showcase"></span><span class="theme__name"></span><span class="theme__actions"></span>';
     for (const a of th.showcase) c.querySelector('.theme__showcase').append(image(a));
     c.querySelector('.theme__name').textContent = th.title;
+    c.querySelector('.theme__name').translate = th.kind !== 'mine';
     const apply = () => send('mouse.theme', { name: th.name });
     c.addEventListener('click', apply);
     c.addEventListener('keydown', e => { if (e.target === c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); apply(); } });

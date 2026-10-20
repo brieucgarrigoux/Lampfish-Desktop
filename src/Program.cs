@@ -827,6 +827,7 @@ namespace Bramble
                 reactive = R.Reactive,
                 zoom = R.Zoom,
                 moods = Moods.State(),
+                moodModels = Moods.Models(),
                 language = R.Language,
                 about = new
                 {

@@ -8,7 +8,7 @@
     const variable = panel.dataset.variable;
     const min = Number(panel.dataset.min || 260), max = Number(panel.dataset.max || 640);
     const initial = Number(panel.dataset.initial || 300);
-    const key = 'width' + variable;
+    const key = panel.dataset.key || 'width' + variable;
 
     const handle = document.createElement('div');
     handle.className = 'handle';
@@ -18,8 +18,9 @@
     handle.setAttribute('aria-label', 'Panel width');
     document.body.append(handle);
 
-    let width = initial;
-    try { width = Number(localStorage.getItem(key)) || initial; } catch (e) { }
+    let wanted = initial;
+    try { wanted = Number(localStorage.getItem(key)) || initial; } catch (e) { }
+    let width = wanted;
 
     function limit() {
       const c = document.querySelector('.contents');
@@ -33,7 +34,7 @@
       handle.setAttribute('aria-valuenow', width);
       handle.setAttribute('aria-valuemin', min);
       handle.setAttribute('aria-valuemax', max);
-      if (remember) try { localStorage.setItem(key, width); } catch (e) { }
+      if (remember) { wanted = width; try { localStorage.setItem(key, width); } catch (e) { } }
       place();
     }
 
@@ -78,7 +79,7 @@
     });
 
     new ResizeObserver(place).observe(panel);
-    addEventListener('resize', () => apply(width, false));
-    apply(width, false);
+    addEventListener('resize', () => apply(wanted, false));
+    apply(wanted, false);
   }
 })();
