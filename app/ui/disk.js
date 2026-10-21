@@ -334,15 +334,17 @@
   function renderSources() {
     const sources = $('f-sources');
     const same = (a, b) => a && b && a.replace(/\\$/, '').toLowerCase() === b.replace(/\\$/, '').toLowerCase();
-    const rows = f.disks.map(d => ({ icon: 'disk', name: d.name, value: size(d.size), action: () => send('files.source', { value: d.path }), active: same(f.source, d.path) }));
-    rows.push({ icon: 'bramble', name: 'Home folder', value: '', action: () => send('files.source', { value: 'custom' }), active: same(f.source, f.custom) });
+    const rows = f.disks.map(d => ({ icon: 'disk', name: d.name, note: tr('The whole drive, Windows included'), value: size(d.size), action: () => send('files.source', { value: d.path }), active: same(f.source, d.path) }));
+    rows.push({ icon: 'bramble', name: 'Personal folder', note: f.custom, value: '', action: () => send('files.source', { value: 'custom' }), active: same(f.source, f.custom) });
     const other = !rows.some(l => l.active);
-    rows.push({ icon: 'folder', name: other ? f.sourceName : 'Choose a folder', value: '', action: () => send('files.browse'), active: other, choose: true });
+    rows.push({ icon: 'folder', name: other ? f.sourceName : 'Choose a folder', note: other ? f.source : tr('Pick any folder'), value: '', action: () => send('files.browse'), active: other, choose: true });
     sources.replaceChildren(...rows.map(l => {
       const b = document.createElement('button');
       b.className = 'row action f-source' + (l.active ? ' active' : '');
-      b.innerHTML = glyph(l.icon) + '<span class="name-source"></span><span class="value"></span>';
-      b.querySelector('.name-source').textContent = l.name;
+      b.innerHTML = glyph(l.icon) + '<span class="name-source"><span></span><small></small></span><span class="value"></span>';
+      b.querySelector('.name-source > span').textContent = l.name;
+      b.querySelector('.name-source small').textContent = l.note || '';
+      b.title = l.note || '';
       b.querySelector('.value').textContent = l.value;
       if (l.active) b.setAttribute('aria-current', 'true');
       b.addEventListener('click', l.action);
