@@ -51,15 +51,28 @@ namespace Bramble
             return d != null && d.TryGetValue(key, out v) && v != null ? Convert.ToDouble(v, CultureInfo.InvariantCulture) : double.NaN;
         }
 
-        static object Read()
+        // The Cloudflare endpoint is undocumented, so country.is (open source, free, no key) takes over when it fails.
+        static void Locate()
         {
-            if (city == null)
+            try
             {
                 var m = json.Deserialize<Dictionary<string, object>>(Download("https://speed.cloudflare.com/meta", "https://speed.cloudflare.com/"));
                 lat = Number(m, "latitude");
                 lon = Number(m, "longitude");
-                city = m.ContainsKey("city") && m["city"] != null ? m["city"].ToString() : "";
+                if (!double.IsNaN(lat) && !double.IsNaN(lon)) { city = m.ContainsKey("city") && m["city"] != null ? m["city"].ToString() : ""; return; }
             }
+            catch (Exception ex) { Program.Log(ex); }
+            var c = json.Deserialize<Dictionary<string, object>>(Download("https://api.country.is/?fields=city,location", null));
+            var place = c.ContainsKey("location") ? c["location"] as Dictionary<string, object> : null;
+            lat = Number(place, "latitude");
+            lon = Number(place, "longitude");
+            if (double.IsNaN(lat) || double.IsNaN(lon)) throw new Exception("No location found for the weather");
+            city = c.ContainsKey("city") && c["city"] != null ? c["city"].ToString() : "";
+        }
+
+        static object Read()
+        {
+            if (city == null) Locate();
             string url = string.Format(CultureInfo.InvariantCulture,
                 "https://api.open-meteo.com/v1/forecast?latitude={0:0.###}&longitude={1:0.###}&current=temperature_2m,apparent_temperature,weather_code,is_day,wind_speed_10m,relative_humidity_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
                 lat, lon);

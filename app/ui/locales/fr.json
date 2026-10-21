@@ -780,7 +780,7 @@
  "Check for updates": "Vérifier les mises à jour",
  "Check now": "Vérifier",
  "Checking…": "Vérification…",
- "Cloudflare finds your approximate location from your IP address, Open-Meteo sends the forecast": "Cloudflare déduit la position approximative de l'adresse IP, Open-Meteo envoie les prévisions",
+ "Cloudflare or country.is finds your approximate location from your IP address, Open-Meteo sends the forecast": "Cloudflare ou country.is déduit la position approximative de l'adresse IP, Open-Meteo envoie les prévisions",
  "Cloudflare measures the speed, OVH takes over when Cloudflare limits the test": "Cloudflare mesure le débit, OVH prend le relais quand Cloudflare limite le test",
  "Connected to": "Connecté à",
  "Connections": "Connexions",
