@@ -14,10 +14,12 @@ New-Item -ItemType Directory -Force (Join-Path $tmp 'Bramble'), $dist | Out-Null
 $target = Join-Path $tmp 'Bramble'
 
 Copy-Item (Join-Path $root 'Bramble.exe'), (Join-Path $root 'Bramble.exe.config'), (Join-Path $root 'README.md'), (Join-Path $root 'CHANGELOG.md'), (Join-Path $root 'LICENSE') $target
-foreach ($d in 'app\ui', 'app\player', 'app\sounds', 'app\templates', 'app\lib', 'app\cursor-themes', 'brand\logo', 'brand\badge', 'wallpapers') {
+foreach ($d in 'app\ui', 'app\player', 'app\sounds', 'app\templates', 'app\lib', 'app\cursor-themes', 'brand\logo', 'brand\badge') {
     Copy-Item (Join-Path $root $d) (Join-Path $target $d) -Recurse -Force
 }
-Get-ChildItem (Join-Path $target 'wallpapers') -Filter *.lnk | Remove-Item -Force
+# Only the wallpapers that come with Bramble: the ones made or added on this PC stay here.
+New-Item -ItemType Directory -Force (Join-Path $target 'wallpapers') | Out-Null
+foreach ($f in 'bramble-logo.html', 'bramble-dusk.html', 'bramble.html', 'aurora.html') { Copy-Item (Join-Path $root "wallpapers\$f") (Join-Path $target 'wallpapers') }
 foreach ($f in 'berry-white.png', 'berry-black.png') { Remove-Item (Join-Path $target "brand\logo\$f") -ErrorAction SilentlyContinue }
 Get-ChildItem (Join-Path $target 'brand\badge') | Where-Object { $_.Name -notin 'powered-by-bramble-color-dark.png', 'powered-by-bramble-pill.png' } | Remove-Item -Force
 New-Item -ItemType Directory -Force (Join-Path $target 'sounds') | Out-Null
