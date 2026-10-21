@@ -49,7 +49,7 @@ namespace Bramble
             next.Text = Language.T("Next wallpaper");
             next.Enabled = Program.WallpaperCount > 1;
             pause.Text = Language.T(Program.Paused ? "Resume wallpaper" : "Pause wallpaper");
-            moods.Text = Language.T("Modes");
+            moods.Text = Language.T("Themes");
             sounds.Text = Language.T("Sounds");
             sounds.Checked = Sounds.Active;
             quit.Text = Language.T("Quit");

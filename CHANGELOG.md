@@ -14,25 +14,25 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Home: Previous goes back to the wallpaper shown before, next to Pause and Next.
 - Tasks: a Memory card at the top shows how full the memory is and how much closing the programs not in use would free, with a Free up memory button. It lists the programs that can be closed without risk, never Windows, security, drivers, file sync, remote access, programs playing sound, Bramble or the app in use. The ticked ones close like with their X, programs without a window stop, after a warning and a confirming click. Above 80 %, the memory row of Home leads there.
 - Mouse: the cursor library is sorted by family. All shows every theme; Bramble, Windows and My cursors show their themes, then each of their cursors, so one cursor of a Bramble theme can replace a single role.
-- Modes: each mode has an icon on its cover, picked among 13 in its settings (Night, Focus and Cinema get a moon, a target and a film), a mode can warm the screen (Night does), and three steps at the top explain how modes work.
-- Modes are visual: each mode shows its own wallpaper as a cover, dimmed as it will be on the desktop, with its cursors, sounds and triggers as icons, and a play button applies it. A click opens its settings in the side panel (what it brings back, when it starts by itself, what it opens, export, remove). A New mode tile saves the current setup, and the models show the current wallpaper with their effect.
+- Themes: each theme has an icon on its cover, picked among 13 in its settings (Night, Focus and Cinema get a moon, a target and a film), a theme can warm the screen (Night does), and three steps at the top explain how themes work.
+- Themes are visual: each theme shows its own wallpaper as a cover, dimmed as it will be on the desktop, with its cursors, sounds and triggers as icons, and a play button applies it. A click opens its settings in the side panel (what it brings back, when it starts by itself, what it opens, export, remove). A New theme tile saves the current setup, and the models show the current wallpaper with their effect.
 - Arrange: the screen map draws each icon at its real size, with its name under it.
-- Modes start when a chosen app opens or when headphones are plugged in, and the previous setup comes back when the app closes or the headphones are removed (unless something was changed meanwhile). A mode can also open apps or files when it is applied.
+- Themes start when a chosen app opens or when headphones are plugged in, and the previous setup comes back when the app closes or the headphones are removed (unless something was changed meanwhile). A theme can also open apps or files when it is applied.
 - Mouse: your own cursor themes. Cursors changed by hand show Modified with Save as a theme and Discard; your themes can be renamed, updated, duplicated and removed (with undo), and any theme can be duplicated to start from it.
 - Network: the connection test shows a signal travelling to the next step, a turning ring on the step being measured, and each finished step pops and shows its result; a bubble explains each step.
 - `Bramble.exe --quit` closes a running Bramble.
-- Wallpaper per screen: a selector under the large preview picks every screen or one of them, and a badge on each wallpaper shows the screens it covers. Slideshow, modes, removal and Next wallpaper follow it.
+- Wallpaper per screen: a selector under the large preview picks every screen or one of them, and a badge on each wallpaper shows the screens it covers. Slideshow, themes, removal and Next wallpaper follow it.
 - Wallpapers fade through black when they change.
 - Power saving: a Frame rate choice (30 or 60 images a second) for every HTML wallpaper, and the wallpaper pauses while the session is locked.
 - Shuffle for the slideshow and for Next wallpaper, without repeating the current wallpaper or showing it on two screens when there is a choice.
 - Videos, GIFs and images pulse lightly with the sound when React to sound is on.
-- A dark tray menu: Open Bramble, Next wallpaper, Pause or resume the wallpaper, Modes, Sounds and Quit.
-- Undo after applying a mode, resetting the cursors, applying an icon to subfolders, resetting every folder icon, loading a sound pair and clearing the test history. Removing a mode can be undone instead of confirmed.
+- A dark tray menu: Open Bramble, Next wallpaper, Pause or resume the wallpaper, Themes, Sounds and Quit.
+- Undo after applying a theme, resetting the cursors, applying an icon to subfolders, resetting every folder icon, loading a sound pair and clearing the test history. Removing a theme can be undone instead of confirmed.
 - Back to original for the mouse and folder icons: Bramble remembers how they were before it first changed them, pointer speed, precision, double-click, wheel and extras included.
-- Modes: start on mains power or on battery, export a mode to a file and import one, with a preview first (a wallpaper or cursor theme missing on this PC is reported, nothing is ever run).
+- Themes: start on mains power or on battery, export a theme to a file and import one, with a preview first (a wallpaper or cursor theme missing on this PC is reported, nothing is ever run).
 - Tasks: search by name, description or publisher (Ctrl F, Escape clears it), and a sheet for each program with its publisher, version, size and location, whether it starts with Windows and its open network connections.
 - Hardware: Copy summary puts the main specs in the clipboard, ready to paste in a message.
-- Home, rebuilt in two columns that fit the window: the desktop preview with Pause, Next and the modes, This PC (processor, memory, disk, battery, network), and shortcuts to Icons, Arrange, Mouse, Sounds and Tasks.
+- Home, rebuilt in two columns that fit the window: the desktop preview with Pause, Next and the themes, This PC (processor, memory, disk, battery, network), and shortcuts to Icons, Arrange, Mouse, Sounds and Tasks.
 - Settings: a Connections group that lists every outside service Bramble talks to and when, and an update check (off by default, once a day, or Check now).
 - Keyboard: Ctrl 1 to 9 open the services in the order of the bar, Ctrl Tab the next one, Ctrl comma the settings.
 - The window remembers its size, position and maximized state.
@@ -41,14 +41,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Tasks: the Memory card is rebuilt like the Network security card, with a lamp, a segmented meter, three checks (in use, available, can be freed) and a violet Free up memory key. Programs from 60 MB are now offered, and the icon is a memory module.
 - Sounds: one Sounds on switch instead of Sounds on and Silent, which did the same thing, and the list of events is titled Events.
 - Create: the preview adapts to the height of the window, so the themes stay visible without scrolling.
-- Settings that appear with an option (React to sound in Create and Wallpaper, Screen and sleep on Home, the icons of a mode) open and close smoothly instead of making everything under them jump.
+- Settings that appear with an option (React to sound in Create and Wallpaper, Screen and sleep on Home, the icons of a theme) open and close smoothly instead of making everything under them jump.
 - The small taskbar drawn in previews shows the violet app icon.
 - The bar on the left shows the name of each service beside its icon, with the Bramble name at the top. Dragging its edge still narrows it to icons with names below.
 - Create: React to sound comes first in the panel.
 - Arrange: the first row keeps the same space from the top of the screen as the longest name of the last row from the taskbar, instead of touching the top edge.
 - Home: the desktop preview draws the icons at their real size and place.
 - Explanation lines that did not fit are shorter (Wallpaper, Create, Arrange), and the French texts no longer address the reader.
-- Moods are now called Modes and have their own place at the top of the bar.
+- Moods are now called Themes and have their own place at the top of the bar.
 - Create: the name and the Create button sit next to the title instead of covering the themes, every setting of the panel has its icon, Click to type and Add your logo stay on one line however small the box, and the editor starts fresh after the window is closed.
 - Arrange: the icon size is one of five sizes (Very small to Very large) instead of a slider, and icons are laid out again after a size change so they never overlap.
 - Arrange: every arrangement is even, with the same margin left and right, the last row close to the taskbar and an exact centre. Arranging turns off Windows' Align icons to grid, which pulled the icons back to its own grid.
@@ -86,13 +86,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Icons could end up outside every screen after auto arrange was turned off, after Undo or Back to original, when the screens had changed in between.
 - The bar and the side panel stayed narrow after the window had been narrow for a moment.
 - Empty lists (Network addresses and test history, Sounds history, Folders) showed their message floating over the page.
-- French: names given in Bramble (modes, layouts, own cursor themes, wallpapers) were translated when they matched a word of the interface.
+- French: names given in Bramble (themes, layouts, own cursor themes, wallpapers) were translated when they matched a word of the interface.
 - Folders: Run the analysis again lost its icon and its explanation, the analyzed source lost its icon, and the centre of the rings cut its numbers.
 - Hardware: the disk read speed was labelled Playing, long values crushed the labels in the panel, and a card left alone on the last row now spans the width.
 - Mouse: the 16 px pointer size read as 1, and cursor themes whose files were deleted showed empty cards.
 - Wallpaper: the armed Remove button covered Edit, and No wallpaper selected was misspelled.
 - Arrange: undoing the removal of a layout did nothing.
-- Modes: Active stayed shown after the settings had changed, and two modes with the same settings were both shown as Active.
+- Themes: Active stayed shown after the settings had changed, and two themes with the same settings were both shown as Active.
 - Mouse: cursors picked by hand were saved in a hidden theme named Bramble that looked like a built-in one. It is now one of your themes.
 - Arrange: Align to grid read and changed the wrong Windows setting, so it never worked and the arrangements could not be even.
 - The thumbnail of a wallpaper edited in Create showed the old version until Bramble restarted.

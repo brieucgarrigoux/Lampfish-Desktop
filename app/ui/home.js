@@ -194,10 +194,10 @@
     zone.dataset.key = key;
     const title = document.createElement('span');
     title.className = 'h-modes__title';
-    title.textContent = tr('Modes');
+    title.textContent = tr('Themes');
     const more = document.createElement('button');
     more.className = 'link h-modes__more';
-    more.textContent = moods.length ? tr('All modes') : tr('Save the current setup as a mode');
+    more.textContent = moods.length ? tr('All themes') : tr('Save the current setup as a theme');
     more.addEventListener('click', () => { if (moods.length || !Bramble.moods) showView('modes'); else Bramble.moods.startNew(); });
     zone.replaceChildren(title, ...moods.slice(0, 4).map(m => {
       const b = document.createElement('button');

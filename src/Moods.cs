@@ -297,8 +297,8 @@ namespace Bramble
         {
             using (var dialog = new SaveFileDialog())
             {
-                dialog.Title = Language.T("Export a mode");
-                dialog.Filter = Language.T("Bramble mode") + "|*.json";
+                dialog.Title = Language.T("Export a theme");
+                dialog.Filter = Language.T("Bramble theme") + "|*.json";
                 dialog.FileName = string.Join("_", mood.Name.Split(Path.GetInvalidFileNameChars())) + ".json";
                 if (dialog.ShowDialog(Program.SettingsWindow) != DialogResult.OK) return;
                 var data = new Dictionary<string, object>
@@ -332,13 +332,13 @@ namespace Bramble
         {
             using (var dialog = new OpenFileDialog())
             {
-                dialog.Title = Language.T("Import a mode");
-                dialog.Filter = Language.T("Bramble mode") + "|*.json";
+                dialog.Title = Language.T("Import a theme");
+                dialog.Filter = Language.T("Bramble theme") + "|*.json";
                 if (dialog.ShowDialog(Program.SettingsWindow) != DialogResult.OK) return;
                 Dictionary<string, object> d = null;
                 try { if (new FileInfo(dialog.FileName).Length <= 64 * 1024) d = json.Deserialize<Dictionary<string, object>>(File.ReadAllText(dialog.FileName)); }
                 catch (Exception ex) { Program.Log(ex); }
-                if (d == null || Word(d, "bramble", 10) != "mood") { Program.Announce("This file is not a Bramble mode"); Program.SendState(); return; }
+                if (d == null || Word(d, "bramble", 10) != "mood") { Program.Announce("This file is not a Bramble theme"); Program.SendState(); return; }
 
                 string wallpaper = Word(d, "wallpaper", 200), time = Word(d, "time", 5), powerTrigger = Word(d, "power", 10), fit = Word(d, "fit", 4);
                 if (wallpaper != Path.GetFileName(wallpaper) || wallpaper.Contains("..")) wallpaper = "";
@@ -358,7 +358,7 @@ namespace Bramble
                     Icon = IconOrNone(Word(d, "icon", 20)), Warm = d.ContainsKey("warm") && d["warm"] != null ? (int?)Number(d, "warm", 0, 100, 0) : null,
                     ScreenWallpapers = new List<ScreenWallpaper>(),
                 };
-                if (pending.Name.Length == 0) pending.Name = string.Format(Language.T("Mode {0}"), All.Count + 1);
+                if (pending.Name.Length == 0) pending.Name = string.Format(Language.T("Theme {0}"), All.Count + 1);
                 bool hasWallpaper = pending.Wallpaper.Length > 0 && (File.Exists(Path.Combine(Program.WallpapersFolder, pending.Wallpaper)) || Directory.Exists(Path.Combine(Program.WallpapersFolder, pending.Wallpaper)));
                 if (!hasWallpaper) pending.Wallpaper = Program.R.Wallpaper;
                 bool hasTheme = pending.Theme.Length == 0 || Mouse.HasTheme(pending.Theme);
@@ -394,7 +394,7 @@ namespace Bramble
                 case "save":
                 {
                     string name = Text(m, "name").Trim();
-                    if (name.Length == 0) name = string.Format(Language.T("Mode {0}"), All.Count + 1);
+                    if (name.Length == 0) name = string.Format(Language.T("Theme {0}"), All.Count + 1);
                     var fresh = Capture(name.Length > 40 ? name.Substring(0, 40) : name);
                     All.Add(fresh);
                     Program.R.CurrentMood = fresh.Id;
@@ -458,7 +458,7 @@ namespace Bramble
                     if (mood == null) return false;
                     using (var dialog = new OpenFileDialog())
                     {
-                        dialog.Title = Language.T("Choose the app that starts this mode");
+                        dialog.Title = Language.T("Choose the app that starts this theme");
                         dialog.Filter = Language.T("Programs") + "|*.exe";
                         if (dialog.ShowDialog(Program.SettingsWindow) != DialogResult.OK) return false;
                         mood.App = dialog.FileName;
@@ -474,7 +474,7 @@ namespace Bramble
                     if (mood == null) return false;
                     using (var dialog = new OpenFileDialog())
                     {
-                        dialog.Title = Language.T("Apps or files to open with this mode");
+                        dialog.Title = Language.T("Apps or files to open with this theme");
                         dialog.Filter = Language.T("Programs and shortcuts") + "|*.exe;*.lnk|" + Language.T("All files") + "|*.*";
                         dialog.Multiselect = true;
                         if (dialog.ShowDialog(Program.SettingsWindow) != DialogResult.OK) return false;

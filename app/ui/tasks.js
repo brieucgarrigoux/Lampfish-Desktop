@@ -14,7 +14,7 @@
   const KIND_NAMES = { app: 'App', console: 'Command line', background: 'Background', system: 'System' };
   let shown = false, timer = 0, confirming = '', confirmTimer = 0, data = null;
   let filter = 'all', order = { key: 'memory', direction: -1 }, search = '', chosen = null, sheet = null, turn = 0;
-  let freeing = false, free = null, picked = new Set(), armed = 0, closing = false;
+  let freeing = false, free = null, picked = new Set(), armed = 0, closing = false, leaving = new Set();
 
   const UNITS = ['bytes', 'KB', 'MB', 'GB', 'TB'].map(u => tr(u));
   function size(o) {
@@ -189,6 +189,8 @@
 
   function renderMemory() {
     const card = $('t-memory');
+    $('t-free').dataset.state = closing ? 'progress' : '';
+    $('t-free').lastElementChild.textContent = tr(closing ? 'Closing…' : 'Free up memory');
     if (!free) { $('t-memory-hint').textContent = tr(closing ? 'Closing the programs' : 'Looking for what can be closed'); return; }
     const used = free.total - free.available, part = free.total ? used / free.total * 100 : 0;
     const n = free.items.length, total = free.items.reduce((a, i) => a + i.memory, 0);
@@ -224,7 +226,7 @@
 
   function renderFree() {
     const zone = $('t-details');
-    const key = 'free:' + JSON.stringify([free, [...picked], !!armed, LANGUAGE]);
+    const key = 'free:' + JSON.stringify([free && free.items.map(i => i.id), free && Math.round((free.total - free.available) / free.total * 100), [...picked], !!armed, [...leaving], closing, LANGUAGE]);
     if (zone.dataset.key === key) return;
     const head = document.createElement('div');
     head.className = 't-sheet__head';
@@ -264,15 +266,16 @@
       for (const item of free.items) {
         const d = details.get(item.id) || {};
         const l = document.createElement('label');
-        l.className = 'row t-free__row';
+        l.className = 'row t-free__row' + (leaving.has(item.id) ? ' closing' : '');
         l.innerHTML = '<input type="checkbox"><span class="task__icon"><img alt="" hidden></span><span class="task__what"><span class="task__name"></span><span class="task__detail"></span></span><span class="number"></span>';
         const box = l.querySelector('input');
         box.checked = picked.has(item.id);
+        box.disabled = closing;
         box.addEventListener('change', () => { if (box.checked) picked.add(item.id); else picked.delete(item.id); armed = 0; renderFree(); });
         if (d.icon) { l.querySelector('img').src = d.icon; l.querySelector('img').hidden = false; }
         l.querySelector('.task__name').textContent = d.description || item.name;
         l.querySelector('.task__name').title = item.name;
-        l.querySelector('.task__detail').textContent = item.kind === 'app' ? tr('Can ask to save first') : tr('Background, stops at once');
+        l.querySelector('.task__detail').textContent = leaving.has(item.id) ? tr('Closing…') : item.kind === 'app' ? tr('Can ask to save first') : tr('Background, stops at once');
         l.querySelector('.number').textContent = size(item.memory);
         g.append(l);
       }
@@ -286,16 +289,16 @@
       fresh.push(warn);
       const go = document.createElement('button');
       go.className = 'button t-free__go' + (armed ? ' armed' : '');
-      go.disabled = chosenItems.length === 0;
-      go.textContent = !chosenItems.length ? tr('Tick what to close') : armed ? tr('Confirm: close {0}', chosenItems.length === 1 ? tr('1 program') : tr('{0} programs', chosenItems.length))
+      go.disabled = chosenItems.length === 0 || closing;
+      go.textContent = closing ? tr('Closing…') : !chosenItems.length ? tr('Tick what to close') : armed ? tr('Confirm: close {0}', chosenItems.length === 1 ? tr('1 program') : tr('{0} programs', chosenItems.length))
         : tr('Close {0} · {1}', chosenItems.length === 1 ? tr('1 program') : tr('{0} programs', chosenItems.length), size(total));
       go.addEventListener('click', () => {
         clearTimeout(armed);
         if (!armed) { armed = setTimeout(() => { armed = 0; renderFree(); }, 4000); renderFree(); return; }
         armed = 0;
         send('tasks.free', { ids: chosenItems.map(i => i.id) });
+        leaving = new Set(chosenItems.map(i => i.id));
         picked = new Set();
-        free = null;
         closing = true;
         renderMemory();
         renderFree();
@@ -357,7 +360,7 @@
 
   function event(m) {
     if (m.type === 'tasks.details') { if (m.id === chosen) { sheet = m; renderSheet(); } return; }
-    if (m.type === 'tasks.free') { free = m; closing = false; const ids = new Set(m.items.map(i => i.id)); picked = new Set([...picked].filter(id => ids.has(id))); renderMemory(); if (freeing) renderFree(); return; }
+    if (m.type === 'tasks.free') { if (closing && !m.done) return; free = m; if (closing) { closing = false; leaving = new Set(); }  const ids = new Set(m.items.map(i => i.id)); picked = new Set([...picked].filter(id => ids.has(id))); renderMemory(); if (freeing) renderFree(); return; }
     if (m.type !== 'tasks.list') return;
     data = m;
     for (const t of m.items) if (t.info) details.set(t.id, t.info);

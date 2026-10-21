@@ -284,13 +284,13 @@ namespace Bramble
             lock (closing) { DateTime since; return closing.TryGetValue(id, out since) && DateTime.UtcNow - since < TimeSpan.FromSeconds(30); }
         }
 
-        static object FreeList()
+        static object FreeList(bool done = false)
         {
             var status = new MEMORYSTATUSEX { dwLength = (uint)Marshal.SizeOf(typeof(MEMORYSTATUSEX)) };
             GlobalMemoryStatusEx(ref status);
             return new
             {
-                type = "tasks.free", total = (long)status.ullTotalPhys, available = (long)status.ullAvailPhys,
+                type = "tasks.free", done = done, total = (long)status.ullTotalPhys, available = (long)status.ullAvailPhys,
                 items = Candidates().Select(g => new { id = g.Id, name = g.Name, memory = g.Memory, kind = Kind(g), count = g.Count }).ToArray(),
             };
         }
@@ -563,7 +563,7 @@ namespace Bramble
                     object list;
                     if (!m.TryGetValue("ids", out list) || !(list is System.Collections.ArrayList)) return false;
                     var ids = ((System.Collections.ArrayList)list).Cast<object>().Select(x => x.ToString()).ToList();
-                    Task.Run(() => { Free(ids); return FreeList(); }).ContinueWith(t => Program.OnInterface(() =>
+                    Task.Run(() => { Free(ids); return FreeList(true); }).ContinueWith(t => Program.OnInterface(() =>
                     {
                         if (t.IsFaulted) { Program.Log(t.Exception); return; }
                         Program.Send(t.Result);

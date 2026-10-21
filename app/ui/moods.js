@@ -170,7 +170,7 @@
     const art = cover({ wallpaper: state.current, light: state.light, speed: state.speed, blur: state.blur, saturation: state.saturation, dim: state.dim }, tile);
     art.insertAdjacentHTML('beforeend', `<span class="mood__plus" aria-hidden="true">${svg('<path d="M12 5.5v13M5.5 12h13"/>')}</span>`);
     const head = el('div', 'mood__head');
-    head.append(el('h3', 'mood__name', tr('New mode')));
+    head.append(el('h3', 'mood__name', tr('New theme')));
     const help = el('p', 'mood__help', tr('Saves the wallpaper, cursors and sounds'));
     tile.append(art, head, help);
     const ask = () => {
@@ -178,8 +178,8 @@
       const form = el('form', 'mood__form');
       form.innerHTML = '<input maxlength="40" autocomplete="off"><button class="button button--accent" type="submit"></button>';
       const input = form.querySelector('input');
-      input.placeholder = tr('Name this mode');
-      input.setAttribute('aria-label', tr('Mode name'));
+      input.placeholder = tr('Name this theme');
+      input.setAttribute('aria-label', tr('Theme name'));
       form.querySelector('button').textContent = tr('Save');
       form.addEventListener('submit', e => { e.preventDefault(); naming = false; send('moods.save', { name: input.value }); });
       const cancel = () => { naming = false; keyGrid = ''; render(); };
@@ -195,7 +195,7 @@
     else {
       tile.tabIndex = 0;
       tile.setAttribute('role', 'button');
-      tile.title = tr('Saves the current wallpaper, cursors and sounds as a mode');
+      tile.title = tr('Saves the current wallpaper, cursors and sounds as a theme');
       tile.addEventListener('click', () => { if (!naming) ask(); });
       tile.addEventListener('keydown', e => { if (!naming && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); ask(); } });
     }
@@ -211,7 +211,7 @@
       const [name, help, symbol] = MODELS[m.kind];
       const b = el('button', 'starter');
       b.type = 'button';
-      b.title = tr('Adds a mode built from the current setup');
+      b.title = tr('Adds a theme built from the current setup');
       const art = cover(m, b);
       art.insertAdjacentHTML('beforeend', `<span class="mood__badge-icon">${icon(symbol)}</span>`);
       b.append(art, el('span', 'starter__name', tr(name)), el('span', 'starter__help', tr(help)));
@@ -276,7 +276,7 @@
     const title = head.querySelector('.title');
     if (!title) return;
     const input = Object.assign(el('input', 'm-sheet__rename'), { maxLength: 40, value: m.name });
-    input.setAttribute('aria-label', tr('Mode name'));
+    input.setAttribute('aria-label', tr('Theme name'));
     title.replaceWith(input);
     input.focus();
     input.select();
@@ -405,7 +405,7 @@
       add.addEventListener('click', () => send('moods.openAdd', { id: m.id }));
       list.append(add);
     }
-    opens.append(stacked(ICONS.opens, tr('Apps or files'), tr('Opened each time the mode is applied'), list));
+    opens.append(stacked(ICONS.opens, tr('Apps or files'), tr('Opened each time the theme is applied'), list));
 
     const more = el('div', 'group');
     const action = (icon, title, help, run, cls) => {
@@ -435,7 +435,7 @@
     const notes = el('ul', 'mood-preview__warnings');
     for (const w of warnings) notes.append(el('li', '', w));
     const actions = el('div', 'm-sheet__actions');
-    const add = el('button', 'button button--accent', tr('Add this mode'));
+    const add = el('button', 'button button--accent', tr('Add this theme'));
     const cancel = el('button', 'button', tr('Cancel'));
     add.addEventListener('click', () => { box.hidden = true; send('moods.add'); });
     cancel.addEventListener('click', () => { box.hidden = true; send('moods.cancel'); });
@@ -447,7 +447,7 @@
 
   const STEPS = [
     ['<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>', 'Set up a wallpaper, cursors and sounds'],
-    ['<path d="M5.5 4.5h10l3 3v12h-13z"/><path d="M8.5 4.5v5h6v-5M8.5 19.5v-5h7v5"/>', 'Save them as a mode'],
+    ['<path d="M5.5 4.5h10l3 3v12h-13z"/><path d="M8.5 4.5v5h6v-5M8.5 19.5v-5h7v5"/>', 'Save them as a theme'],
     ['<path d="M8.5 5.8v12.4a.8.8 0 0 0 1.2.7l9.6-6.2a.8.8 0 0 0 0-1.4L9.7 5.1a.8.8 0 0 0-1.2.7z"/>', 'Bring them back in one click, or at the right moment'],
   ];
   function renderSteps() {
