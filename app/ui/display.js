@@ -112,6 +112,28 @@ const Quick = (() => {
   }
 
   const SUN = '<circle cx="12" cy="12" r="3.5"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/>';
+  const MONITOR = '<rect x="3.5" y="4.5" width="17" height="11.5" rx="1.8"/><path d="M9 20h6M12 16v4"/>';
+  function brightnessRow(p, id) {
+    const row = document.createElement('div');
+    row.className = 'setting';
+    row.innerHTML = `<label for="${id}"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${SUN}</svg><span><span class="d-bright__name" translate="no"></span><small></small></span></span><output></output></label><input type="range" id="${id}" min="5" max="100" step="1">`;
+    row.querySelector('.d-bright__name').textContent = p.builtin ? tr('Built-in screen') : p.name || tr('External screen');
+    row.querySelector('small').textContent = tr('How bright this screen is');
+    const input = row.querySelector('input'), output = row.querySelector('output');
+    const send_ = throttle(() => send('display.setBrightness', { key: p.key, value: Number(input.value) }), 120);
+    input.addEventListener('input', () => { output.textContent = input.value + ' %'; fill(input); send_(); });
+    return row;
+  }
+  function showBrightness(prefix) {
+    (panels || []).forEach((p, i) => {
+      const input = $(prefix + i);
+      if (!input) return;
+      if (document.activeElement !== input) input.value = p.value;
+      input.parentNode.querySelector('output').textContent = input.value + ' %';
+      fill(input);
+    });
+  }
+
   function renderBrightness() {
     const zone = $('d-bright'), list = panels || [];
     $('d-bright-title').hidden = zone.hidden = !list.length;
@@ -119,32 +141,49 @@ const Quick = (() => {
     const key = list.map(p => p.key).join('|') + LANGUAGE;
     if (zone.dataset.key !== key) {
       zone.dataset.key = key;
-      zone.replaceChildren(...list.map((p, i) => {
-        const row = document.createElement('div');
-        row.className = 'setting';
-        row.innerHTML = `<label for="d-bright-${i}"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${SUN}</svg><span><span class="d-bright__name" translate="no"></span><small></small></span></span><output></output></label><input type="range" id="d-bright-${i}" min="5" max="100" step="1">`;
-        row.querySelector('.d-bright__name').textContent = p.builtin ? tr('Built-in screen') : p.name || tr('External screen');
-        row.querySelector('small').textContent = tr('How bright this screen is');
-        const input = row.querySelector('input'), output = row.querySelector('output');
-        const send_ = throttle(() => send('display.setBrightness', { key: p.key, value: Number(input.value) }), 120);
-        input.addEventListener('input', () => { output.textContent = input.value + ' %'; fill(input); send_(); });
-        return row;
-      }));
+      zone.replaceChildren(...list.map((p, i) => brightnessRow(p, 'd-bright-' + i)));
     }
-    list.forEach((p, i) => {
-      const input = $('d-bright-' + i);
-      if (document.activeElement !== input) input.value = p.value;
-      input.parentNode.querySelector('output').textContent = input.value + ' %';
-      fill(input);
-    });
+    showBrightness('d-bright-');
+  }
+
+  function renderDock() {
+    const pick = $('dock-pick'), list = panels || [], all = screens || [];
+    if (document.body.dataset.dock !== 'display') return;
+    const key = JSON.stringify([list.map(p => p.key), all.map(s => [s.key, s.primary, s.name]), LANGUAGE]);
+    if (pick.dataset.key !== key || !pick.firstChild) {
+      pick.dataset.key = key;
+      const heading = text => Object.assign(document.createElement('h2'), { textContent: tr(text) });
+      const group = rows => { const g = document.createElement('div'); g.className = 'group'; g.append(...rows); return g; };
+      const nodes = [];
+      if (list.length) nodes.push(heading('Brightness'), group(list.map((p, i) => brightnessRow(p, 'dock-bright-' + i))));
+      if (all.length) nodes.push(heading('Screens'), group(all.map(s => {
+        const row = document.createElement('div');
+        row.className = 'row';
+        row.innerHTML = `<span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${MONITOR}</svg><span><span translate="no"></span><small></small></span></span>`;
+        row.querySelector('[translate]').textContent = name(s);
+        row.querySelector('small').textContent = `${s.w} × ${s.h} · ${s.scale} %`;
+        if (s.primary) row.append(Object.assign(document.createElement('span'), { className: 'd-badge', textContent: tr('Main screen') }));
+        else if (all.length > 1) {
+          const b = Object.assign(document.createElement('button'), { className: 'button', textContent: tr('Make main screen'), title: tr('The Start menu and new windows will open on this screen') });
+          b.addEventListener('click', () => { send('display.primary', { key: s.key }); clearTimeout(later); later = setTimeout(() => send('display.screens'), 1500); });
+          row.append(b);
+        }
+        return row;
+      })));
+      if (!nodes.length) nodes.push(Object.assign(document.createElement('div'), { className: 'row loading', textContent: tr('Reading the screens') }));
+      pick.replaceChildren(...nodes);
+      foldSections(pick, 'dock-display');
+    }
+    showBrightness('dock-bright-');
   }
 
   function event(m) {
-    if (m.type === 'display.brightness') { panels = m.screens; renderBrightness(); return; }
+    if (m.type === 'display.brightness') { panels = m.screens; renderBrightness(); renderDock(); return; }
     if (m.type !== 'display.screens') return;
     screens = m.screens;
     renderMap();
     renderChosen();
+    renderDock();
   }
 
   function visible(yes) {
@@ -156,5 +195,5 @@ const Quick = (() => {
   }
 
   addEventListener('resize', () => { if (shown) renderMap(); });
-  Bramble.display = { state, event, visible };
+  Bramble.display = { state, event, visible, renderDock };
 })();

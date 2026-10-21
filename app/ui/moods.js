@@ -474,6 +474,35 @@
     for (const c of zone.querySelectorAll('.mood[data-id]')) c.classList.toggle('open', c.dataset.id === chosen);
     renderModels();
     renderSheet();
+    renderDock();
+  }
+
+  function renderDock() {
+    const pick = $('dock-pick');
+    if (document.body.dataset.dock !== 'modes') return;
+    const key = JSON.stringify(moods.map(m => [m.id, m.name, m.icon, !!m.current])) + LANGUAGE;
+    if (pick.dataset.key === key && pick.firstChild) return;
+    pick.dataset.key = key;
+    const group = el('div', 'group dock-modes');
+    group.append(...moods.map(m => {
+      const b = el('button', 'row action');
+      b.type = 'button';
+      b.setAttribute('aria-pressed', String(!!m.current));
+      b.innerHTML = '<span class="caption">' + icon(m.icon) + '<span translate="no"></span></span>';
+      b.querySelector('[translate]').textContent = m.name;
+      if (m.current) b.append(el('span', 'value', tr('Active')));
+      else b.insertAdjacentHTML('beforeend', svg(ICONS.play, 'dock-modes__play'));
+      b.title = m.current ? tr('Active') : tr('Apply');
+      b.addEventListener('click', () => { if (!m.current) send('moods.apply', { id: m.id }); });
+      return b;
+    }));
+    if (!moods.length) group.append(el('div', 'row empty', tr('No theme yet')));
+    const actions = el('div', 'dock-actions');
+    const add = el('button', 'button', tr('New theme'));
+    add.addEventListener('click', () => startNew());
+    actions.append(add);
+    pick.replaceChildren(el('h2', null, tr('My themes')), group, actions);
+    foldSections(pick, 'dock-modes');
   }
 
   function state(list) {
@@ -496,5 +525,5 @@
   $('mood-import').addEventListener('click', () => send('moods.import'));
   addEventListener('keydown', e => { if (e.key === 'Escape' && chosen && document.body.dataset.view === 'modes' && !(e.target.matches && e.target.matches('input:not([type="checkbox"]), select'))) close(); });
 
-  Bramble.moods = { state, event, startNew, icon };
+  Bramble.moods = { state, event, startNew, icon, renderDock, visible() { } };
 })();

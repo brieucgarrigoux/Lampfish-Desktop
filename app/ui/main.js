@@ -50,20 +50,22 @@ const VIEWS = ['home', 'modes', 'wallpaper', 'create', 'icons', 'mouse', 'statio
 
 const scrolls = {}, narrowLayout = matchMedia('(max-width: 900px)');
 const scrollZones = () => narrowLayout.matches ? [document.scrollingElement] : [document.querySelector('.contents'), document.querySelector('.panel')];
-const DOCKS = { icons: 'Icons', arrange: 'Arrange', mouse: 'Mouse', station: 'Sounds', tasks: 'Tasks' };
+const DOCKS = { wallpaper: 'Wallpaper', modes: 'Themes', display: 'Display', icons: 'Icons', arrange: 'Arrange', mouse: 'Mouse', station: 'Sounds', tasks: 'Tasks' };
+const dockModule = view => Bramble[view === 'modes' ? 'moods' : view];
 function setDock(view) {
   const old = document.body.dataset.dock;
   if (old === view) return;
   const pick = $('dock-pick');
   pick.replaceChildren();
   delete pick.dataset.key;
-  if (old) { if (old === 'tasks') { if (Bramble.tasks) Bramble.tasks.dock(false); } else if (Bramble[old]) Bramble[old].visible(false); }
+  if (old) { if (old === 'tasks') { if (Bramble.tasks) Bramble.tasks.dock(false); } else if (dockModule(old)) dockModule(old).visible(false); }
   if (view) document.body.dataset.dock = view; else delete document.body.dataset.dock;
   if (view) {
     $('dock-title').textContent = tr(DOCKS[view]);
-    if (view === 'tasks') { if (Bramble.tasks) Bramble.tasks.dock(true); } else if (Bramble[view]) { Bramble[view].visible(true); if (Bramble[view].renderDock) Bramble[view].renderDock(); }
+    const module = dockModule(view);
+    if (view === 'tasks') { if (Bramble.tasks) Bramble.tasks.dock(true); } else if (module) { module.visible(true); if (module.renderDock) module.renderDock(); }
   }
-  for (const t of document.querySelectorAll('.h-tile')) t.setAttribute('aria-pressed', String(t.dataset.view === view));
+  for (const t of document.querySelectorAll('.h-tile, [data-dock-to]')) t.setAttribute('aria-pressed', String((t.dataset.view || t.dataset.dockTo) === view));
   dispatchEvent(new Event('resize'));
 }
 function dockTo(view) { setDock(document.body.dataset.dock === view ? null : view); }
@@ -417,6 +419,7 @@ function renderWallpaper(state, before) {
 
   const key = state.wallpapers.map(f => f.name + '@' + f.stamp).join('|');
   if (key !== keyGrid) { keyGrid = key; buildGrid(); }
+  if (document.body.dataset.dock === 'wallpaper') renderWallpaperDock();
   const list = state.displays || [], split = list.length > 1 && list.some(d => d.wallpaper);
   for (const card of document.querySelectorAll('.card')) {
     card.classList.toggle('current', !!wallpaper && card.dataset.name === wallpaper.name);
@@ -543,6 +546,34 @@ function buildGrid() {
   add.addEventListener('click', () => send('add'));
   grid.append(add);
 }
+
+function renderWallpaperDock() {
+  const zone = $('dock-pick'), state = Bramble.state;
+  if (document.body.dataset.dock !== 'wallpaper' || !state || !state.wallpapers) return;
+  const key = state.wallpapers.map(f => f.name + '@' + f.stamp).join('|') + '#' + LANGUAGE;
+  if (zone.dataset.key !== key || !zone.firstChild) {
+    zone.dataset.key = key;
+    const grid = document.createElement('div');
+    grid.className = 'dock-wallpapers';
+    grid.append(...state.wallpapers.map(wallpaper => {
+      const b = document.createElement('button');
+      b.className = 'dock-wallpaper';
+      b.dataset.name = wallpaper.name;
+      b.innerHTML = '<span class="preview"></span><span class="dock-wallpaper__name"></span>';
+      b.firstChild.append(preview(wallpaper, b));
+      b.lastChild.textContent = withoutExtension(wallpaper.name);
+      b.lastChild.translate = false;
+      b.title = wallpaper.name;
+      b.addEventListener('click', () => send('choose', { name: wallpaper.name }));
+      return b;
+    }));
+    zone.replaceChildren(Object.assign(document.createElement('h2'), { textContent: tr('Wallpapers') }), grid);
+    foldSections(zone, 'dock-wallpaper');
+  }
+  const current = shownWallpaper();
+  for (const b of zone.querySelectorAll('.dock-wallpaper')) b.setAttribute('aria-pressed', String(!!current && b.dataset.name === current.name));
+}
+Bramble.wallpaper = { visible() { }, renderDock: renderWallpaperDock };
 
 function livePreview(wallpaper, card) {
   if (wallpaper.type !== 'html') return preview(wallpaper, card);

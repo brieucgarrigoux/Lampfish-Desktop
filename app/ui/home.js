@@ -60,7 +60,10 @@
   const bar = part => `<span class="h-bar"><i style="width:${Math.max(0, Math.min(100, part)).toFixed(1)}%"></i></span>`;
   const urlIcon = a => `/app/icon-cache/${encodeURIComponent(a.key)}-${a.retro ? 32 : 64}.png`;
   const urlCursor = a => `/app/cursor-cache/${encodeURIComponent(a.key)}-${a.retro ? 32 : 64}.png`;
-  $('h-wallpaper').addEventListener('click', () => showView('wallpaper'));
+  $('h-wallpaper').dataset.dockTo = 'wallpaper';
+  $('h-wallpaper').addEventListener('click', () => dockTo('wallpaper'));
+  $('h-display').addEventListener('click', () => dockTo('display'));
+  const CHEVRON = '<svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>';
   $('h-previous').addEventListener('click', () => send('previous'));
   $('h-pause').addEventListener('click', () => send('pause'));
   $('h-next').addEventListener('click', () => send('next'));
@@ -194,13 +197,18 @@
     const key = moods.map(m => m.id + (m.current ? '*' : '') + m.name + m.icon).join('|');
     if (zone.dataset.key === key && zone.children.length) return;
     zone.dataset.key = key;
-    const title = document.createElement('span');
-    title.className = 'h-modes__title';
-    title.textContent = tr('Themes');
+    const title = document.createElement('button');
+    title.className = 'h-title-link h-modes__title';
+    title.dataset.dockTo = 'modes';
+    title.setAttribute('aria-pressed', String(document.body.dataset.dock === 'modes'));
+    title.innerHTML = CHEVRON;
+    title.prepend(tr('Themes'));
+    title.addEventListener('click', () => dockTo('modes'));
     const more = document.createElement('button');
     more.className = 'link h-modes__more';
-    more.textContent = moods.length ? tr('All themes') : tr('Save the current setup as a theme');
-    more.addEventListener('click', () => { if (moods.length || !Bramble.moods) showView('modes'); else Bramble.moods.startNew(); });
+    more.textContent = tr('Save the current setup as a theme');
+    more.hidden = moods.length > 0;
+    more.addEventListener('click', () => { if (Bramble.moods) Bramble.moods.startNew(); });
     zone.replaceChildren(title, ...moods.slice(0, 4).map(m => {
       const b = document.createElement('button');
       b.className = 'tool-chip';
