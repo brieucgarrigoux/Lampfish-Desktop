@@ -41,8 +41,10 @@ The interface is in English, with a French translation (automatic, following the
 
 ## Install
 
-<img src="brand/app-icon/app-icon-violet.png" alt="Bramble icon" width="56" align="left" hspace="12">Download `Bramble-<version>.zip` from the [latest release](../../releases/latest), unzip it anywhere and run `Bramble.exe`.
-The executable is not signed yet: Windows SmartScreen may ask for confirmation the first time ("More info", then "Run anyway").
+<img src="brand/app-icon/app-icon-violet.png" alt="Bramble icon" width="56" align="left" hspace="12">Download `Bramble-Setup-<version>.exe` from the [latest release](../../releases/latest) and run it. It installs Bramble for your account only, without administrator rights, in `%LOCALAPPDATA%\Programs\Bramble`.
+The installer is not signed yet: Windows SmartScreen may ask for confirmation the first time ("More info", then "Run anyway").
+
+New versions install from Settings > Updates, keeping your settings. To uninstall, use Settings > Apps > Installed apps in Windows: Bramble first puts back the cursors, folder icons and right-click menu it changed, then asks whether to keep your settings and files.
 
 <br clear="left">
 
@@ -54,7 +56,7 @@ powershell -ExecutionPolicy Bypass -File src\build.ps1
 
 The script uses the C# compiler that ships with Windows (no Visual Studio needed). On first run it downloads the official WebView2 SDK from NuGet into `app\lib\`.
 
-`src\publish.ps1` builds and zips a release into `dist\`. Other generators, in Python 3: `src\icon.py` (app icon), `src\app_icon.py` (icon variants), `src\cursors.py` and `src\cursors_modern.py` (cursor themes), `src\sounds.py` (sound packs), `src\wallpapers.py` (the logo wallpapers).
+`src\publish.ps1` builds the installer into `dist\` with [Inno Setup 6](https://jrsoftware.org/isinfo.php) (`winget install JRSoftware.InnoSetup`), from `src\installer.iss`. GitHub Actions runs the same script on every push and tag. Other generators, in Python 3: `src\icon.py` (app icon), `src\app_icon.py` (icon variants), `src\cursors.py` and `src\cursors_modern.py` (cursor themes), `src\sounds.py` (sound packs), `src\wallpapers.py` (the logo wallpapers).
 
 ## Project layout
 
@@ -78,5 +80,7 @@ Bramble follows [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`.
 ## License
 
 [MIT](LICENSE)
+
+Bramble ships the [WebView2 SDK](https://www.nuget.org/packages/Microsoft.Web.WebView2) of Microsoft (BSD 3-Clause), whose license and notices are installed next to its DLLs in `app\lib\`. Everything else is part of this project: the sound packs and cursor themes come from the generators in `src\`.
 
 <p align="center"><img src="brand/badge/powered-by-bramble-pill.png" alt="Powered by Bramble" width="200"></p>
