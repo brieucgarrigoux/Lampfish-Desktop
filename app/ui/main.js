@@ -257,7 +257,7 @@ function wallpaperFor(key) {
   return state.wallpapers.find(f => f.name === (d && d.wallpaper ? d.wallpaper : state.current));
 }
 
-const fill = cursor => cursor.style.setProperty('--pct', cursor.value + '%');
+const fill = cursor => { const min = Number(cursor.min || 0), max = Number(cursor.max || 100); cursor.style.setProperty('--pct', (cursor.value - min) / (max - min) * 100 + '%'); };
 
 // Rows that depend on an option open and close smoothly: a row that pops in or out makes everything under it jump.
 const calm = matchMedia('(prefers-reduced-motion: reduce)'), loadedAt = performance.now();

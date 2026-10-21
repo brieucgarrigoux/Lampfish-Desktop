@@ -952,7 +952,6 @@
  "Saves the wallpaper, cursors and sounds": "Enregistre le fond, les curseurs et les sons",
  "Previous": "Précédent",
  "Warm screen": "Écran chaud",
- "Warmth": "Chaleur",
  "Night light": "Veilleuse",
  "Opens the Night light settings of Windows": "Ouvre le réglage Veilleuse de Windows",
  "Energy saver": "Économiseur d'énergie",
@@ -1024,5 +1023,6 @@
  "Nothing to free right now: the programs using a lot of memory are in use or needed": "Rien à libérer pour l'instant : les programmes gourmands en mémoire sont utilisés ou nécessaires",
  "These can be closed without risk. Windows, security, drivers, file sync, programs playing sound and the app you were using are never listed.": "Ces programmes peuvent être fermés sans risque. Windows, la sécurité, les pilotes, la synchronisation de fichiers, les programmes qui jouent du son et l'appli utilisée ne sont jamais proposés.",
  "Tick all": "Tout cocher",
- "Untick all": "Tout décocher"
+ "Untick all": "Tout décocher",
+ "Strength": "Intensité"
 }
