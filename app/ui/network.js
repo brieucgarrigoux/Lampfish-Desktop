@@ -398,7 +398,7 @@
   };
   const ENC_TEXT = { none: 'Traffic sent in the clear', weak: 'Outdated protection', good: 'Shared Wi-Fi password', unknown: 'Not reported by Windows',
     wired: 'Cable, no radio to listen to', strong: 'Latest Wi-Fi protection' };
-  const CIPHERS = { ccmp: 'AES', gcmp: 'AES-GCMP', 'gcmp-256': 'AES-GCMP-256', tkip: 'TKIP', wep: 'WEP' };
+  const CIPHERS = { ccmp: 'AES', 'ccmp-256': 'AES-256', gcmp: 'AES-GCMP', 'gcmp-256': 'AES-GCMP-256', tkip: 'TKIP', wep: 'WEP' };
   const PROFILES = { public: ['Public', 'Your PC is hidden from other devices'], private: ['Private', 'Your PC is visible on this network'], domain: ['Work', 'Managed by your organization'] };
 
   function securityChecks(t) {

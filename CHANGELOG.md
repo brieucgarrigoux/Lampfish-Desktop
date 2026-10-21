@@ -11,6 +11,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Settings: when a new version is out and Bramble was installed with the installer, Install it downloads it, checks that the file is exactly the one published on GitHub, installs it and restarts Bramble, with the settings kept.
 
 ### Changed
+- Network: the Wi-Fi details (network, band, channel, standard, protection, speed) are read from the Wi-Fi API of Windows instead of the text of a command, whose wording changes with the language and the version of Windows.
 - Mouse: Bramble Glass comes first among the Bramble cursor themes, in the library and in the Home panel.
 
 ## [0.3.0] - 2026-10-21

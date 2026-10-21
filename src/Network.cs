@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -104,54 +105,100 @@ namespace Bramble
             };
         }
 
+        static readonly Dictionary<int, string> Auths = new Dictionary<int, string>
+        {
+            { 1, "Open" }, { 2, "WEP" }, { 3, "WPA-Enterprise" }, { 4, "WPA-Personal" }, { 6, "WPA2-Enterprise" }, { 7, "WPA2-Personal" },
+            { 8, "WPA3-Enterprise" }, { 9, "WPA3-Personal" }, { 10, "OWE" }, { 11, "WPA3-Enterprise" },
+        };
+        static readonly Dictionary<int, string> Ciphers = new Dictionary<int, string>
+        {
+            { 0, "None" }, { 1, "WEP" }, { 2, "TKIP" }, { 4, "CCMP" }, { 5, "WEP" }, { 8, "GCMP" }, { 9, "GCMP-256" }, { 10, "CCMP-256" }, { 0x101, "WEP" },
+        };
+        static readonly Dictionary<int, string> Radios = new Dictionary<int, string> { { 7, "Wi-Fi 4" }, { 8, "Wi-Fi 5" }, { 10, "Wi-Fi 6" }, { 11, "Wi-Fi 7" } };
+
+        // Offsets of WLAN_CONNECTION_ATTRIBUTES and WLAN_BSS_ENTRY (wlanapi.h), read by hand to avoid nested marshaled structs.
         static Wifi ReadWifi()
         {
             var w = new Wifi();
+            IntPtr handle = IntPtr.Zero, list = IntPtr.Zero;
             try
             {
-                var p = new ProcessStartInfo("netsh", "wlan show interfaces")
+                uint negotiated;
+                if (WlanOpenHandle(2, IntPtr.Zero, out negotiated, out handle) != 0) return w;
+                if (WlanEnumInterfaces(handle, IntPtr.Zero, out list) != 0) return w;
+                int count = Marshal.ReadInt32(list);
+                for (int k = 0; k < count; k++)
                 {
-                    RedirectStandardOutput = true, UseShellExecute = false, CreateNoWindow = true,
-                    StandardOutputEncoding = System.Text.Encoding.GetEncoding(System.Globalization.CultureInfo.CurrentCulture.TextInfo.OEMCodePage),
-                };
-                using (var proc = Process.Start(p))
-                {
-                    string output = proc.StandardOutput.ReadToEnd();
-                    proc.WaitForExit(3000);
+                    IntPtr item = list + 8 + k * 532;
+                    if (Marshal.ReadInt32(item + 528) != 1) continue;
+                    var id = (Guid)Marshal.PtrToStructure(item, typeof(Guid));
 
-                    Func<string, string> field = pattern =>
+                    IntPtr data; uint size; int kind;
+                    if (WlanQueryInterface(handle, ref id, 7, IntPtr.Zero, out size, out data, out kind) != 0) continue;
+                    var bssid = new byte[6];
+                    try
                     {
-                        var m = Regex.Match(output, @"^\s*(?:" + pattern + @")[^:\r\n]*:\s*(.+?)\s*$", RegexOptions.Multiline | RegexOptions.IgnoreCase);
+                        int length = Math.Min(32, Marshal.ReadInt32(data + 520));
+                        var ssid = new byte[length];
+                        Marshal.Copy(data + 524, ssid, 0, length);
+                        w.Network = System.Text.Encoding.UTF8.GetString(ssid);
+                        Marshal.Copy(data + 560, bssid, 0, 6);
+                        int phy = Marshal.ReadInt32(data + 568);
+                        string radio;
+                        w.Standard = Radios.TryGetValue(phy, out radio) ? radio : null;
+                        w.Signal = Marshal.ReadInt32(data + 576);
+                        w.Received = (uint)Marshal.ReadInt32(data + 580) / 1000.0;
+                        w.Sent = (uint)Marshal.ReadInt32(data + 584) / 1000.0;
+                        string name;
+                        w.Security = Auths.TryGetValue(Marshal.ReadInt32(data + 596), out name) ? name : null;
+                        w.Cipher = Ciphers.TryGetValue(Marshal.ReadInt32(data + 600), out name) ? name : null;
+                    }
+                    finally { WlanFreeMemory(data); }
 
-                        return m.Success ? m.Groups[1].Value.Replace("\u252C\u00E1", " ").Replace('\u00A0', ' ').Trim() : null;
-                    };
-                    w.Network = field("SSID");
-                    int i;
-                    if (int.TryParse(Regex.Match(field("Signal") ?? "", @"\d+").Value, out i)) w.Signal = i;
-                    if (int.TryParse(Regex.Match(field("Canal|Channel") ?? "", @"\d+").Value, out i)) w.Channel = i;
-                    string strip = Regex.Match(field("Bande|Band") ?? "", @"\d+([.,]\d+)?").Value;
-                    if (strip.Length > 0) w.Strip = strip.Replace(',', '.') + " GHz";
-                    w.Security = field("Authentification|Authentication");
-                    w.Cipher = field(@"(?:Chiffrement|Cipher)(?=\s*:)");
-                    w.Received = Number(field(@"D.bit de r.ception|Vitesse de r.ception|Receive rate"));
-                    w.Sent = Number(field(@"D.bit de transmission|Vitesse de transmission|Transmit rate"));
-                    string radio = field("Type de radio|Radio type") ?? "";
-                    bool six = (w.Strip ?? "").StartsWith("6");
-                    w.Standard = radio.Contains("802.11be") ? "Wi-Fi 7" : radio.Contains("802.11ax") ? (six ? "Wi-Fi 6E" : "Wi-Fi 6")
-                        : radio.Contains("802.11ac") ? "Wi-Fi 5" : radio.Contains("802.11n") ? "Wi-Fi 4" : radio.Length > 0 ? radio : null;
+                    if (WlanQueryInterface(handle, ref id, 8, IntPtr.Zero, out size, out data, out kind) == 0)
+                    {
+                        w.Channel = Marshal.ReadInt32(data);
+                        WlanFreeMemory(data);
+                    }
+
+                    IntPtr bss;
+                    if (WlanGetNetworkBssList(handle, ref id, IntPtr.Zero, 3, false, IntPtr.Zero, out bss) == 0)
+                        try
+                        {
+                            int entries = Marshal.ReadInt32(bss + 4);
+                            for (int b = 0; b < entries; b++)
+                            {
+                                IntPtr entry = bss + 8 + b * 360;
+                                var mac = new byte[6];
+                                Marshal.Copy(entry + 40, mac, 0, 6);
+                                if (!mac.SequenceEqual(bssid)) continue;
+                                int khz = Marshal.ReadInt32(entry + 92);
+                                w.Strip = khz >= 5925000 ? "6 GHz" : khz >= 4900000 ? "5 GHz" : khz > 0 ? "2.4 GHz" : null;
+                                break;
+                            }
+                        }
+                        finally { WlanFreeMemory(bss); }
 
                     if (w.Strip == null && w.Channel > 0) w.Strip = w.Channel <= 14 ? "2.4 GHz" : "5 GHz";
+                    if (w.Standard == "Wi-Fi 6" && w.Strip == "6 GHz") w.Standard = "Wi-Fi 6E";
+                    break;
                 }
             }
             catch (Exception ex) { Program.Log(ex); }
+            finally
+            {
+                if (list != IntPtr.Zero) WlanFreeMemory(list);
+                if (handle != IntPtr.Zero) WlanCloseHandle(handle, IntPtr.Zero);
+            }
             return w;
         }
 
-        static double Number(string t)
-        {
-            double v;
-            return t != null && double.TryParse(Regex.Match(t, @"[\d]+([.,]\d+)?").Value.Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out v) ? v : 0;
-        }
+        [DllImport("wlanapi.dll")] static extern int WlanOpenHandle(uint version, IntPtr reserved, out uint negotiated, out IntPtr handle);
+        [DllImport("wlanapi.dll")] static extern int WlanCloseHandle(IntPtr handle, IntPtr reserved);
+        [DllImport("wlanapi.dll")] static extern int WlanEnumInterfaces(IntPtr handle, IntPtr reserved, out IntPtr list);
+        [DllImport("wlanapi.dll")] static extern int WlanQueryInterface(IntPtr handle, ref Guid id, int opcode, IntPtr reserved, out uint size, out IntPtr data, out int kind);
+        [DllImport("wlanapi.dll")] static extern int WlanGetNetworkBssList(IntPtr handle, ref Guid id, IntPtr ssid, int type, bool secure, IntPtr reserved, out IntPtr list);
+        [DllImport("wlanapi.dll")] static extern void WlanFreeMemory(IntPtr memory);
 
         static object Traffic()
         {
