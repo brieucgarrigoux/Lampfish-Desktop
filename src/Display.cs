@@ -56,23 +56,29 @@ namespace Bramble
             return m;
         }
 
+        // The main screen is the one whose desktop starts at 0,0. The display configuration API moves every screen in one atomic change;
+        // ChangeDisplaySettingsEx moved them one by one and Windows refused the first step with a laptop at 125 % and a screen at 100 %.
         static bool SetPrimary(string device)
         {
-            var screens = Screen.AllScreens;
-            var target = screens.FirstOrDefault(s => s.DeviceName == device);
-            if (target == null || target.Primary) return false;
-            Point offset = target.Bounds.Location;
-            foreach (var s in screens)
+            uint pathCount, modeCount;
+            if (GetDisplayConfigBufferSizes(QDC_ONLY_ACTIVE_PATHS, out pathCount, out modeCount) != 0) return false;
+            var paths = new DISPLAYCONFIG_PATH_INFO[pathCount];
+            var modes = new DISPLAYCONFIG_MODE_INFO[modeCount];
+            if (QueryDisplayConfig(QDC_ONLY_ACTIVE_PATHS, ref pathCount, paths, ref modeCount, modes, IntPtr.Zero) != 0) return false;
+            int target = -1;
+            for (int i = 0; i < pathCount && target < 0; i++)
             {
-                var mode = new DEVMODE { dmSize = (short)Marshal.SizeOf(typeof(DEVMODE)) };
-                if (!EnumDisplaySettingsEx(s.DeviceName, ENUM_CURRENT_SETTINGS, ref mode, 0)) return false;
-                mode.dmPositionX = s.Bounds.X - offset.X;
-                mode.dmPositionY = s.Bounds.Y - offset.Y;
-                mode.dmFields = DM_POSITION;
-                int flags = CDS_UPDATEREGISTRY | CDS_NORESET | (s == target ? CDS_SET_PRIMARY : 0);
-                if (ChangeDisplaySettingsEx(s.DeviceName, ref mode, IntPtr.Zero, flags, IntPtr.Zero) != 0) return false;
+                var name = new DISPLAYCONFIG_SOURCE_DEVICE_NAME { type = DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME, size = (uint)Marshal.SizeOf(typeof(DISPLAYCONFIG_SOURCE_DEVICE_NAME)), adapterLow = paths[i].sourceAdapterLow, adapterHigh = paths[i].sourceAdapterHigh, id = paths[i].sourceId };
+                if (DisplayConfigGetDeviceInfo(ref name) == 0 && name.viewGdiDeviceName == device) target = (int)paths[i].sourceModeInfoIdx;
             }
-            return ChangeDisplaySettingsEx(null, IntPtr.Zero, IntPtr.Zero, 0, IntPtr.Zero) == 0;
+            if (target < 0 || target >= modeCount || modes[target].infoType != DISPLAYCONFIG_MODE_INFO_TYPE_SOURCE) return false;
+            int dx = modes[target].positionX, dy = modes[target].positionY;
+            if (dx == 0 && dy == 0) return true;
+            for (int i = 0; i < modeCount; i++)
+                if (modes[i].infoType == DISPLAYCONFIG_MODE_INFO_TYPE_SOURCE) { modes[i].positionX -= dx; modes[i].positionY -= dy; }
+            if (SetDisplayConfig(pathCount, paths, modeCount, modes, SDC_APPLY | SDC_USE_SUPPLIED_DISPLAY_CONFIG | SDC_SAVE_TO_DATABASE | SDC_ALLOW_CHANGES) != 0) return false;
+            Program.ScreensMoved(-dx, -dy);
+            return true;
         }
 
         class Panel { public string Key; public bool Builtin; public string Name; public int Value; }
@@ -260,24 +266,39 @@ namespace Bramble
 
         public static object State() { return new { warm = R.Warm, warmOn = R.WarmOn }; }
 
-        const int ENUM_CURRENT_SETTINGS = -1, DM_POSITION = 0x20, CDS_UPDATEREGISTRY = 0x1, CDS_SET_PRIMARY = 0x10, CDS_NORESET = 0x10000000;
+        const uint QDC_ONLY_ACTIVE_PATHS = 2, SDC_APPLY = 0x80, SDC_USE_SUPPLIED_DISPLAY_CONFIG = 0x20, SDC_SAVE_TO_DATABASE = 0x200, SDC_ALLOW_CHANGES = 0x400;
+        const uint DISPLAYCONFIG_MODE_INFO_TYPE_SOURCE = 1, DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME = 1;
 
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-        struct DEVMODE
+        [StructLayout(LayoutKind.Explicit, Size = 72)]
+        struct DISPLAYCONFIG_PATH_INFO
         {
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)] public string dmDeviceName;
-            public short dmSpecVersion, dmDriverVersion, dmSize, dmDriverExtra;
-            public int dmFields, dmPositionX, dmPositionY, dmDisplayOrientation, dmDisplayFixedOutput;
-            public short dmColor, dmDuplex, dmYResolution, dmTTOption, dmCollate;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)] public string dmFormName;
-            public short dmLogPixels;
-            public int dmBitsPerPel, dmPelsWidth, dmPelsHeight, dmDisplayFlags, dmDisplayFrequency;
-            public int dmICMMethod, dmICMIntent, dmMediaType, dmDitherType, dmReserved1, dmReserved2, dmPanningWidth, dmPanningHeight;
+            [FieldOffset(0)] public uint sourceAdapterLow;
+            [FieldOffset(4)] public int sourceAdapterHigh;
+            [FieldOffset(8)] public uint sourceId;
+            [FieldOffset(12)] public uint sourceModeInfoIdx;
         }
 
-        [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern bool EnumDisplaySettingsEx(string device, int mode, ref DEVMODE devmode, int flags);
-        [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern int ChangeDisplaySettingsEx(string device, ref DEVMODE devmode, IntPtr window, int flags, IntPtr param);
-        [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern int ChangeDisplaySettingsEx(string device, IntPtr devmode, IntPtr window, int flags, IntPtr param);
+        [StructLayout(LayoutKind.Explicit, Size = 64)]
+        struct DISPLAYCONFIG_MODE_INFO
+        {
+            [FieldOffset(0)] public uint infoType;
+            [FieldOffset(28)] public int positionX;
+            [FieldOffset(32)] public int positionY;
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        struct DISPLAYCONFIG_SOURCE_DEVICE_NAME
+        {
+            public uint type, size, adapterLow;
+            public int adapterHigh;
+            public uint id;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)] public string viewGdiDeviceName;
+        }
+
+        [DllImport("user32.dll")] static extern int GetDisplayConfigBufferSizes(uint flags, out uint paths, out uint modes);
+        [DllImport("user32.dll")] static extern int QueryDisplayConfig(uint flags, ref uint pathCount, [In, Out] DISPLAYCONFIG_PATH_INFO[] paths, ref uint modeCount, [In, Out] DISPLAYCONFIG_MODE_INFO[] modes, IntPtr topology);
+        [DllImport("user32.dll")] static extern int SetDisplayConfig(uint pathCount, [In] DISPLAYCONFIG_PATH_INFO[] paths, uint modeCount, [In] DISPLAYCONFIG_MODE_INFO[] modes, uint flags);
+        [DllImport("user32.dll")] static extern int DisplayConfigGetDeviceInfo(ref DISPLAYCONFIG_SOURCE_DEVICE_NAME info);
         [StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Unicode)]
         struct PHYSICAL_MONITOR
         {

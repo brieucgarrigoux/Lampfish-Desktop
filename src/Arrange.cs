@@ -140,7 +140,7 @@ namespace Bramble
             readonly Size cell;
             // Windows draws the icon 5 px below the item position (measured at 100 and 125 %).
             const int lead = 5;
-            readonly int icon, line;
+            readonly int icon, line, frame;
             readonly Font font;
             double originX, originY, stepX, stepY;
             readonly Dictionary<int, double> shift = new Dictionary<int, double>();
@@ -150,12 +150,13 @@ namespace Bramble
                 Zone = zone;
                 cell = c;
                 icon = (int)Math.Round(iconSize * scale);
+                frame = Frame(c, scale);
                 var title = SystemFonts.IconTitleFont;
                 font = new Font(title.FontFamily, (float)(title.SizeInPoints * 96 / 72 * scale), title.Style, GraphicsUnit.Pixel);
                 line = font.Height;
-                Columns = Math.Max(1, zone.Width / c.Width);
+                Columns = Math.Max(1, (zone.Width - frame) / c.Width + 1);
                 Rows = Math.Max(1, (zone.Height - line) / c.Height);
-                originX = zone.X + Math.Max(0, (c.Width - icon) / 2);
+                originX = zone.X + Math.Max(0, (frame - icon) / 2);
                 stepX = c.Width;
                 Spread(Visual(1));
             }
@@ -173,7 +174,7 @@ namespace Bramble
             {
                 if (string.IsNullOrEmpty(name)) return 1;
                 var size = TextRenderer.MeasureText(name, font, new Size(int.MaxValue, int.MaxValue), TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
-                return size.Width > cell.Width - lead * 2 ? 2 : 1;
+                return size.Width > frame - 2 ? 2 : 1;
             }
 
             public void Fit(List<KeyValuePair<PointF, DesktopIcons.Element>> used, string arrangement)
@@ -191,7 +192,7 @@ namespace Bramble
                         shift[row.Key] = (w - row.Count()) * cell.Width / 2.0;
                     return;
                 }
-                if (maxX >= Columns - 1 && Columns > 1) stepX = (Zone.Width - cell.Width) / (double)(Columns - 1);
+                if (maxX >= Columns - 1 && Columns > 1) stepX = (Zone.Width - frame) / (double)(Columns - 1);
                 if (maxY >= Rows - 1) Spread(Visual(bottom));
             }
 
@@ -544,6 +545,18 @@ namespace Bramble
         [System.Runtime.InteropServices.DllImport("user32.dll")] static extern IntPtr MonitorFromPoint(Point pt, int flags);
         [System.Runtime.InteropServices.DllImport("shcore.dll")] static extern int GetDpiForMonitor(IntPtr monitor, int type, out uint x, out uint y);
 
+        [System.Runtime.InteropServices.DllImport("user32.dll")] static extern int GetSystemMetricsForDpi(int index, uint dpi);
+
+        // The icon and its name are drawn in a frame as wide as the icon spacing of Windows, centered on the icon, which can be wider than a cell:
+        // measured at 125 %, a 96 px cell and a 120 px frame, so a first column at the cell margin spilled 12 px onto the next screen.
+        public static int Frame(Size cell, double scale)
+        {
+            int spacing = 0;
+            try { spacing = GetSystemMetricsForDpi(38, (uint)Math.Round(scale * 96)) + 2; }
+            catch { }
+            return Math.Max(cell.Width, spacing);
+        }
+
         public static double Scale(Screen s)
         {
             uint x, y;
@@ -644,6 +657,21 @@ namespace Bramble
             Program.UndoableRemoval(d.Name, () => R.Layouts.Insert(Math.Min(index, R.Layouts.Count), d));
         }
 
+        // Saved positions are desktop coordinates, which all move when the main screen changes.
+        public static void Moved(int dx, int dy)
+        {
+            Action<List<IconPosition>> shift = list => { if (list != null) foreach (var p in list) { p.X += dx; p.Y += dy; } };
+            Func<string, string> sign = s => s == null ? null : string.Join("|", s.Split('|').Select(part =>
+            {
+                var m = System.Text.RegularExpressions.Regex.Match(part, @"^(\d+x\d+)@(-?\d+),(-?\d+)$");
+                return m.Success ? m.Groups[1].Value + "@" + (int.Parse(m.Groups[2].Value) + dx) + "," + (int.Parse(m.Groups[3].Value) + dy) : part;
+            }));
+            foreach (var d in R.Layouts) { shift(d.Positions); d.Screens = sign(d.Screens); }
+            shift(R.BeforeAuto); shift(R.Original); shift(R.Placed);
+            foreach (var h in R.History) shift(h);
+            R.BeforeAutoScreens = sign(R.BeforeAutoScreens);
+        }
+
         public static void ScreensChanged()
         {
             if (R.RestoreAuto && restoreTimer != null) { restoreTimer.Stop(); restoreTimer.Start(); }
@@ -681,6 +709,7 @@ namespace Bramble
                     tx = s.WorkingArea.X, ty = s.WorkingArea.Y, tw = s.WorkingArea.Width, th = s.WorkingArea.Height,
                     primary = s.Primary,
                     scale = Scale(s),
+                    frame = Frame(c, Scale(s)),
                 }).ToArray(),
                 elements = elements.Select(e =>
                 {

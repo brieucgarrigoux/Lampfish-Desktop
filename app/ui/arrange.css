@@ -49,6 +49,7 @@
 .arrangement[aria-checked="true"] .name-ag { color: var(--text); }
 .arrangement[aria-checked="true"] rect.t0, .arrangement[aria-checked="true"] rect.t2 { fill: var(--accent); }
 .arrangement[aria-checked="true"] rect.t1, .arrangement[aria-checked="true"] rect.t3 { fill: var(--accent-strong); }
+.screen-label .screen-main { margin-left: 10px; font: 600 11.5px/1 var(--numbers); pointer-events: auto; }
 .screen-label { position: absolute; margin-top: 6px; font: 600 11.5px/1 var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); white-space: nowrap; pointer-events: none; }
 .screen-label.primary { color: var(--accent); }
 .point { position: absolute; z-index: 2; cursor: grab; touch-action: none; transition: opacity .2s; }

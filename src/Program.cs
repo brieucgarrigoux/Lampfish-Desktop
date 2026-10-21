@@ -448,6 +448,24 @@ namespace Bramble
 
         public static string ScreenKey(Rectangle b) { return b.Width + "x" + b.Height + "@" + b.X + "," + b.Y; }
 
+        // A wallpaper chosen for one screen is known by the screen's place, and changing the main screen moves every screen.
+        public static void ScreensMoved(int dx, int dy)
+        {
+            Action<List<ScreenWallpaper>> shift = list =>
+            {
+                if (list == null) return;
+                foreach (var w in list)
+                {
+                    var m = System.Text.RegularExpressions.Regex.Match(w.Key ?? "", @"^(\d+x\d+)@(-?\d+),(-?\d+)$");
+                    if (m.Success) w.Key = m.Groups[1].Value + "@" + (int.Parse(m.Groups[2].Value) + dx) + "," + (int.Parse(m.Groups[3].Value) + dy);
+                }
+            };
+            shift(R.ScreenWallpapers);
+            foreach (var mood in R.Moods) shift(mood.ScreenWallpapers);
+            Arrange.Moved(dx, dy);
+            Save();
+        }
+
         public static List<Screen> OrderedScreens() { return Screen.AllScreens.OrderBy(s => s.Bounds.X).ThenBy(s => s.Bounds.Y).ToList(); }
 
         static bool Exists(string name)
@@ -483,6 +501,22 @@ namespace Bramble
         static void Adjust(bool reloadOtherwise) { ForEachWallpaper(f => f.Adjust(R, reloadOtherwise)); }
 
         static void Effects() { ForEachWallpaper(f => f.Effects(R)); }
+
+        // The look of the wallpaper goes back to default; the slideshow and the sound reaction are choices, not a look, so they stay.
+        static void ResetEffects()
+        {
+            int light = R.Light, speed = R.Speed, blur = R.Blur, saturation = R.Saturation, dim = R.Dim;
+            string fit = R.Fit;
+            var defaults = new Settings();
+            Action set = () => { Adjust(true); Effects(); Apply(false); };
+            R.Light = defaults.Light; R.Speed = defaults.Speed; R.Blur = defaults.Blur; R.Saturation = defaults.Saturation; R.Dim = defaults.Dim; R.Fit = defaults.Fit;
+            set();
+            Undoable(Language.T("Wallpaper settings reset"), () =>
+            {
+                R.Light = light; R.Speed = speed; R.Blur = blur; R.Saturation = saturation; R.Dim = dim; R.Fit = fit;
+                set();
+            });
+        }
 
         static void RestartSlideshow()
         {
@@ -781,6 +815,7 @@ namespace Bramble
                 case "light": R.Light = Convert.ToInt32(m["value"]); Adjust(!live); if (live) return; break;
                 case "speed": R.Speed = Convert.ToInt32(m["value"]); Adjust(!live); if (live) return; break;
                 case "pauseAuto": R.PauseAuto = (bool)m["value"]; UpdateVisibility(); break;
+                case "resetEffects": ResetEffects(); break;
                 case "pause": TogglePause(); return;
                 case "next": NextWallpaper(); return;
                 case "previous": PreviousWallpaper(); return;

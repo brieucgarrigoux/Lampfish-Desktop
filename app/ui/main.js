@@ -50,7 +50,7 @@ const VIEWS = ['home', 'modes', 'wallpaper', 'create', 'icons', 'mouse', 'statio
 
 const scrolls = {}, narrowLayout = matchMedia('(max-width: 900px)');
 const scrollZones = () => narrowLayout.matches ? [document.scrollingElement] : [document.querySelector('.contents'), document.querySelector('.panel')];
-const DOCKS = { wallpaper: 'Wallpaper', modes: 'Themes', display: 'Display', icons: 'Icons', arrange: 'Arrange', mouse: 'Mouse', station: 'Sounds', tasks: 'Tasks' };
+const DOCKS = { wallpaper: 'Wallpaper', modes: 'Themes', display: 'Display', icons: 'Icons', arrange: 'Arrange', mouse: 'Mouse', station: 'Sounds', tasks: 'Tasks', hardware: 'Hardware', network: 'Network' };
 const dockModule = view => Bramble[view === 'modes' ? 'moods' : view];
 function setDock(view) {
   const old = document.body.dataset.dock;
@@ -211,9 +211,11 @@ function renderUpdates(u) {
   document.querySelector('.service--settings').classList.toggle('has-update', ready);
 }
 
-let toastTimer = 0;
-function toast(text, undoable, duration) {
+let toastTimer = 0, toastUndo = null;
+// A change made in the page alone, like the settings of Create, brings its own undo; the others ask the program.
+function toast(text, undoable, duration, undo) {
   const t = $('toast');
+  toastUndo = undo || null;
   $('toast-text').textContent = text;
   $('undo').hidden = !undoable;
   t.style.setProperty('--duration', duration + 'ms');
@@ -223,7 +225,12 @@ function toast(text, undoable, duration) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('visible'), duration);
 }
-$('undo').addEventListener('click', () => { $('toast').classList.remove('visible'); send('undo'); });
+$('undo').addEventListener('click', () => {
+  $('toast').classList.remove('visible');
+  if (toastUndo) { const undo = toastUndo; toastUndo = null; undo(); }
+  else send('undo');
+});
+$('w-reset').addEventListener('click', () => send('resetEffects'));
 
 let depth = 0;
 const carriesFiles = e => [...e.dataTransfer.types].includes('Files');
@@ -408,6 +415,7 @@ function renderWallpaper(state, before) {
   }
   heroEffects(state.blur, state.saturation, state.dim);
   check('fit', state.fit);
+  $('w-reset').disabled = Object.keys(CURSORS).every(id => state[id] === CURSORS[id].normal) && state.fit === 'fill';
   check('slideshow', String(state.slideshow));
   check('frameRate', String(state.frameRate || 60));
   $('shuffle').checked = !!state.shuffle;

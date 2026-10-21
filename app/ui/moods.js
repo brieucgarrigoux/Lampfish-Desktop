@@ -154,6 +154,13 @@
       play.addEventListener('click', e => { e.stopPropagation(); send('moods.apply', { id: m.id }); });
       art.append(play);
     }
+    const remove = el('button', 'mood__remove');
+    remove.type = 'button';
+    remove.title = tr('Remove, with Undo');
+    remove.setAttribute('aria-label', tr('Remove {0}', m.name));
+    remove.innerHTML = svg('<path d="m7 7 10 10M17 7 7 17"/>');
+    remove.addEventListener('click', e => { e.stopPropagation(); send('moods.remove', { id: m.id }); });
+    art.append(remove);
     const head = el('div', 'mood__head');
     head.append(Object.assign(el('h3', 'mood__name', m.name), { translate: false }));
     if (m.current) head.append(el('span', 'mood__badge', tr('Active')));

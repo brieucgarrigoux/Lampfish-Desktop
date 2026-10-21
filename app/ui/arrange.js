@@ -189,6 +189,11 @@
         const name = document.createElement('span');
         name.className = 'screen-label' + (e.primary ? ' primary' : '');
         name.textContent = e.n + (e.primary ? tr(' · main') : '');
+        if (!e.primary && map.screens.length > 1) {
+          const main = Object.assign(document.createElement('button'), { type: 'button', className: 'link screen-main', textContent: tr('Make main screen'), title: tr('The Start menu and new windows will open on this screen') });
+          main.addEventListener('click', () => send('display.primary', { key: `${e.w}x${e.h}@${e.x},${e.y}` }));
+          name.append(main);
+        }
         Object.assign(name.style, { left: (e.x - left) * k + GAP + 'px', top: (e.y - up + e.h) * k + 'px' });
         screen.append(...taskbars(e));
         wallpaperBehind(screen, e);
@@ -227,7 +232,7 @@
       p.style.width = p.style.height = Math.max(8, Math.round(map.iconSize * dpi * k)) + 'px';
       const name = names.get(el.id);
       name.textContent = el.name;
-      name.style.width = map.caseW * k + 'px';
+      name.style.width = (screen.frame || map.caseW) * k + 'px';
       name.style.fontSize = Math.max(7, 12 * dpi * k).toFixed(1) + 'px';
       p.dataset.gap = (3 * dpi * k).toFixed(1);
       if (drag && drag.point === p) continue;

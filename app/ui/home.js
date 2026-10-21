@@ -33,7 +33,9 @@
     b.className = 'h-row';
     b.innerHTML = `${glyph(icon)}<span class="h-row__what"><span class="h-row__name"></span><span class="h-detail"></span></span><span class="h-visual"></span><span class="h-value"></span>`;
     b.querySelector('.h-row__name').textContent = tr(name);
-    b.addEventListener('click', () => key === 'memory' && tiles.memory.high ? dockTo('tasks') : showView(view));
+    b.dataset.row = key;
+    b.setAttribute('aria-pressed', 'false');
+    b.addEventListener('click', () => openRow(key));
     $('h-rows').append(b);
     tiles[key] = { el: b, name: b.querySelector('.h-row__name'), value: b.querySelector('.h-value'), detail: b.querySelector('.h-detail'), visual: b.querySelector('.h-visual') };
   }
@@ -48,6 +50,24 @@
     $('h-tiles').append(b);
     tiles[view] = { el: b, value: b.querySelector('.h-value'), detail: null, visual: b.querySelector('.h-visual') };
   }
+  // This PC opens its details in the side panel, like the tiles, so Home stays in view.
+  const PARTS = { processor: 'processor', memory: 'memory', disk: 'disk', power: 'battery' };
+  let rowShown = null;
+  function openRow(key) {
+    const dock = key === 'memory' && tiles.memory.high ? 'tasks' : key === 'network' ? 'network' : 'hardware';
+    if (document.body.dataset.dock === dock && rowShown === key) { setDock(null); return; }
+    rowShown = key;
+    setDock(dock);
+    if (dock === 'hardware' && Bramble.hardware) Bramble.hardware.focus(PARTS[key]);
+    markRows();
+  }
+  function markRows() {
+    const dock = document.body.dataset.dock;
+    if (!dock) rowShown = null;
+    for (const r of $('h-rows').children) r.setAttribute('aria-pressed', String(!!dock && r.dataset.row === rowShown && ['hardware', 'network', 'tasks'].includes(dock)));
+  }
+  new MutationObserver(markRows).observe(document.body, { attributes: true, attributeFilter: ['data-dock'] });
+
   const set = (key, value, detail, alert) => {
     const t = tiles[key];
     t.value.textContent = value || '–';
@@ -198,11 +218,12 @@
     if (zone.dataset.key === key && zone.children.length) return;
     zone.dataset.key = key;
     const title = document.createElement('button');
-    title.className = 'h-title-link h-modes__title';
+    title.className = 'button h-modes__open';
     title.dataset.dockTo = 'modes';
     title.setAttribute('aria-pressed', String(document.body.dataset.dock === 'modes'));
-    title.innerHTML = CHEVRON;
-    title.prepend(tr('Themes'));
+    title.title = tr('See and edit the themes');
+    title.innerHTML = '<svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 14.6A7.6 7.6 0 0 1 9.4 4.5a7.6 7.6 0 1 0 10.1 10.1z"/><path d="M17 3.5v4M15 5.5h4"/></svg><span></span>' + CHEVRON;
+    title.querySelector('span').textContent = moods.length ? tr('Themes') + ' · ' + moods.length : tr('Themes');
     title.addEventListener('click', () => dockTo('modes'));
     const more = document.createElement('button');
     more.className = 'link h-modes__more';
@@ -281,9 +302,10 @@
     screenSize = { w: e.w / (e.scale || 1), h: e.h / (e.scale || 1) };
     fitPreview();
 
-    const width = (map.caseW / e.w * 100).toFixed(3) + '%', height = (map.caseH / e.h * 100).toFixed(3) + '%';
-    const dpi = e.scale || 1, iconPx = (map.iconSize || 48) * dpi, lead = 5, shift = Math.max(0, (map.caseW - iconPx) / 2);
-    const image = Math.min(100, iconPx / map.caseW * 100).toFixed(1) + '%';
+    const frame = e.frame || map.caseW;
+    const width = (frame / e.w * 100).toFixed(3) + '%', height = (map.caseH / e.h * 100).toFixed(3) + '%';
+    const dpi = e.scale || 1, iconPx = (map.iconSize || 48) * dpi, lead = 5, shift = Math.max(0, (frame - iconPx) / 2);
+    const image = Math.min(100, iconPx / frame * 100).toFixed(1) + '%';
     const seen = new Set();
     for (const el of map.elements) {
       if (el.icon) images.set(el.id, el.icon);

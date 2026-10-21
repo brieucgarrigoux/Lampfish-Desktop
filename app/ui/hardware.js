@@ -327,7 +327,32 @@
     choice = key;
     mark();
     renderPanel();
+    renderDock();
     if (key === 'devices') send('hardware.devices');
+  }
+
+  // Home opens a part of the PC in its side panel; the inventory may not be read yet, so the wish waits for it.
+  let wanted = null;
+  function resolve(key) {
+    if (key === 'disk') {
+      const d = inv.disks.find(x => x.volumes.some(v => /^c/i.test(v.letter || ''))) || inv.disks[0];
+      return d ? 'disk-' + d.number : 'processor';
+    }
+    if (key === 'battery') return inv.battery ? 'battery' : 'processor';
+    return key;
+  }
+  function focus(key) {
+    wanted = key;
+    if (inv) { wanted = null; choose(resolve(key)); }
+  }
+
+  function renderDock() {
+    const pick = $('dock-pick');
+    if (document.body.dataset.dock !== 'hardware') return;
+    if (!choice.startsWith('disk-')) { pick.replaceChildren(); return; }
+    const b = Object.assign(document.createElement('button'), { className: 'button', textContent: tr('See what takes space') });
+    b.addEventListener('click', () => showView('files'));
+    pick.replaceChildren(b);
   }
 
   function mark() {
@@ -420,7 +445,9 @@
   function renderPanel() {
     const s = inv.system, sections = [];
     const lit = s.startup ? (Date.now() - new Date(s.startup)) / 1000 : 0;
-    sections.push(...group('System', [
+    // In the side panel of Home, only the part that was clicked is shown.
+    const docked = document.body.dataset.view === 'home' && document.body.dataset.dock === 'hardware';
+    if (!docked) sections.push(...group('System', [
       ['Model', [s.manufacturer, s.model].filter(Boolean).join(' ')],
       ['Windows', (s.windows || '').replace(/^Microsoft\s+/, '')],
       ['Version', s.version],
@@ -431,7 +458,7 @@
     copy.className = 'group';
     copy.innerHTML = '<button class="row action"><span class="caption"><svg class="glyph glyph--small" viewBox="0 0 24 24" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6.5a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"/></svg><span>Copy summary<small>Main specs, ready to paste</small></span></span></button>';
     copy.firstChild.addEventListener('click', () => navigator.clipboard.writeText(summary()).then(() => toast(tr('Summary copied'), false, 2200)));
-    sections.push(copy);
+    if (!docked) sections.push(copy);
 
     const p = inv.processor || {};
     if (choice === 'processor') sections.push(...group('Processor', [
@@ -526,6 +553,7 @@
         || (key.startsWith('graphics-') && Number(key.slice('graphics-'.length)) < inv.graphics.length)
         || inv.disks.some(d => 'disk-' + d.number === key) || inv.networks.some(r => 'network-' + r.id === key);
       if (!exists(choice)) choice = 'processor';
+      if (wanted) { choice = resolve(wanted); wanted = null; renderDock(); }
       build();
       renderPanel();
     } else if (m.type === 'hardware.devices') {
@@ -553,5 +581,5 @@
     }, 1000);
   }
 
-  Bramble.hardware = { event, visible };
+  Bramble.hardware = { event, visible, focus, renderDock };
 })();

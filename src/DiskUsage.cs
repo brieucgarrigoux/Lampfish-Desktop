@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualBasic.FileIO;
 
 namespace Bramble
 {
@@ -390,17 +389,36 @@ namespace Bramble
             return new { path, name = Path.GetFileName(path), folder = Path.GetDirectoryName(path), size };
         }
 
+        static List<string> Largest()
+        {
+            return bigFiles.Where(p => !pending.Contains(p.Key)).OrderByDescending(p => p.Value).Take(50).Select(p => p.Key).ToList();
+        }
+
+        static DateTime Created(string path)
+        {
+            try { return File.GetCreationTimeUtc(path); }
+            catch { return DateTime.MaxValue; }
+        }
+
+        // Every copy but the oldest, which is most likely the original: a copy gets a new creation date.
+        static List<string> ExtraCopies()
+        {
+            if (duplicates == null) return new List<string>();
+            return duplicates.Select(g => g.Where(p => !pending.Contains(p) && bigFiles.ContainsKey(p)).OrderBy(Created).ToList())
+                .Where(g => g.Count > 1).SelectMany(g => g.Skip(1)).ToList();
+        }
+
         static object Examine()
         {
             var groups = duplicates == null ? null : duplicates
                 .Select(g => g.Where(p => !pending.Contains(p) && bigFiles.ContainsKey(p)).ToList())
                 .Where(g => g.Count > 1)
-                .Select(g => new { size = bigFiles[g[0]], files = g.Select(Describe).ToArray() }).ToArray();
+                .Select(g => new { size = bigFiles[g[0]], files = g.OrderBy(Created).Select(Describe).ToArray() }).ToArray();
             return new
             {
                 type = "files.examine",
                 ready = root != null,
-                largest = bigFiles.Where(p => !pending.Contains(p.Key)).OrderByDescending(p => p.Value).Take(50).Select(p => Describe(p.Key)).ToArray(),
+                largest = Largest().Select(Describe).ToArray(),
                 duplicates = new { state = duplicatesState, done = compared, total = toCompare, groups },
             };
         }
@@ -483,29 +501,65 @@ namespace Bramble
             return (File.GetAttributes(path) & FileAttributes.System) != 0;
         }
 
-        // Only a file Bramble listed can go, and only to the Recycle Bin, once the 8 s of Undo are over.
-        static void Recycle(string path)
+        // Only files Bramble listed can go, and only to the Recycle Bin, once the 8 s of Undo are over.
+        static void Recycle(List<string> paths)
         {
-            if (path == null || !bigFiles.ContainsKey(path) || pending.Contains(path) || !File.Exists(path) || Protected(path)) return;
-            pending.Add(path);
-            long size = bigFiles[path];
-            Program.UndoableRemoval(Path.GetFileName(path), () => { pending.Remove(path); Program.Send(Examine()); }, () =>
+            paths = paths.Where(p => p != null && bigFiles.ContainsKey(p) && !pending.Contains(p) && File.Exists(p) && !Protected(p)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            if (paths.Count == 0) return;
+            foreach (var p in paths) pending.Add(p);
+            string title = paths.Count == 1 ? Path.GetFileName(paths[0]) : Language.T("{0} files", paths.Count);
+            Program.UndoableRemoval(title, () => { foreach (var p in paths) pending.Remove(p); Program.Send(Examine()); }, () =>
             {
-                pending.Remove(path);
-                bigFiles.Remove(path);
-                Task.Run(() => FileSystem.DeleteFile(path, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin)).ContinueWith(t => Program.OnInterface(() =>
+                foreach (var p in paths) pending.Remove(p);
+                var sizes = paths.ToDictionary(p => p, p => bigFiles[p], StringComparer.OrdinalIgnoreCase);
+                foreach (var p in paths) bigFiles.Remove(p);
+                ToRecycleBin(paths).ContinueWith(t => Program.OnInterface(() =>
                 {
-                    if (t.IsFaulted)
-                    {
-                        Program.Log(t.Exception);
-                        if (File.Exists(path)) bigFiles[path] = size;
-                        Program.Announce("The file could not go to the Recycle Bin");
-                    }
+                    if (t.IsFaulted) Program.Log(t.Exception);
+                    int left = 0;
+                    foreach (var p in paths) if (File.Exists(p)) { bigFiles[p] = sizes[p]; left++; }
+                    if (left == 1 && paths.Count == 1) Program.Announce("The file could not go to the Recycle Bin");
+                    else if (left > 0) Program.Announce("{0} files could not go to the Recycle Bin", left);
                     Program.Send(Examine());
                 }));
             });
             Program.Send(Examine());
         }
+
+        // FOF_ALLOWUNDO sends to the Recycle Bin. FOF_WANTNUKEWARNING makes Windows ask before deleting for good a file too large for the bin,
+        // which FOF_NOCONFIRMATION alone would do without a word. The shell wants a thread of its own for its dialogs.
+        static Task ToRecycleBin(List<string> paths)
+        {
+            var done = new TaskCompletionSource<bool>();
+            var thread = new Thread(() =>
+            {
+                try
+                {
+                    var op = new SHFILEOPSTRUCT { wFunc = 3, pFrom = string.Join("\0", paths) + "\0", fFlags = 0x4 | 0x10 | 0x40 | 0x4000 };
+                    SHFileOperation(ref op);
+                    done.SetResult(true);
+                }
+                catch (Exception ex) { done.SetException(ex); }
+            });
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.IsBackground = true;
+            thread.Start();
+            return done.Task;
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        struct SHFILEOPSTRUCT
+        {
+            public IntPtr hwnd;
+            public uint wFunc;
+            public string pFrom, pTo;
+            public ushort fFlags;
+            public bool fAnyOperationsAborted;
+            public IntPtr hNameMappings;
+            public string lpszProgressTitle;
+        }
+
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode)] static extern int SHFileOperation(ref SHFILEOPSTRUCT op);
 
         public static bool Receive(string action, Dictionary<string, object> m)
         {
@@ -513,7 +567,8 @@ namespace Bramble
             {
                 case "examine": Program.Send(Examine()); return false;
                 case "duplicates": FindDuplicates(); return false;
-                case "recycle": Recycle(Text(m, "path")); return true;
+                case "recycle": Recycle(new List<string> { Text(m, "path") }); return true;
+                case "recycleAll": Recycle(Text(m, "kind") == "duplicates" ? ExtraCopies() : Largest()); return true;
                 case "visible":
                     if (Convert.ToBoolean(m["value"]))
                     {

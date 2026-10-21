@@ -76,9 +76,25 @@ button.element:hover:not(:disabled) i, .element.hover i { background: var(--acce
 .languages__share { min-width: 54px; text-align: right; font-variant-numeric: tabular-nums; color: var(--text-soft); }
 .languages__size { min-width: 58px; text-align: right; font-variant-numeric: tabular-nums; color: var(--text-pale); }
 .languages__note { margin: 12px 0 0; font-size: 12px; color: var(--text-pale); }
-.f-examine { margin-top: 22px; }
-.f-examine__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.f-modes { max-width: 460px; margin: 0 0 14px; }
+.f-modes button { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.f-modes small { font: 11.5px var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); }
+.view--files[data-mode="largest"] .skeleton, .view--files[data-mode="duplicates"] .skeleton,
+.view--files[data-mode="largest"] .footer-files, .view--files[data-mode="duplicates"] .footer-files { display: none; }
 .f-examine .help-section { margin: 0 2px 10px; }
+.f-total { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 14px 16px; border-radius: var(--radius-card); background: var(--group); }
+.f-total__what { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.f-total__value { font: 600 22px/1.1 var(--display); font-variant-numeric: tabular-nums; }
+.f-total__detail { font-size: 12.5px; color: var(--text-soft); }
+.f-total .button { display: flex; align-items: center; gap: 7px; flex: none; }
+.f-total .button svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.f-total .button[hidden] { display: none; }
+.f-all:hover { color: var(--danger); }
+.f-all.armed, .f-all.armed:hover { background: var(--danger-dim); box-shadow: inset 0 0 0 1px var(--danger); color: var(--danger); }
+.f-warning { display: flex; gap: 8px; align-items: flex-start; margin: 0 2px 12px; font-size: 12.5px; line-height: 1.4; color: var(--text-soft); }
+.f-warning[hidden] { display: none; }
+.f-warning svg { flex: none; width: 15px; height: 15px; margin-top: 1px; fill: none; stroke: #f0b955; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.f-pill { flex: none; padding: 2px 8px; border-radius: 99px; background: var(--accent-dim); color: var(--accent); font-size: 11px; font-weight: 600; }
 .f-file { gap: 10px; }
 .f-file__what { flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .f-file__name, .f-file small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

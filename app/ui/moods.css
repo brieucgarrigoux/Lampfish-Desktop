@@ -9,7 +9,7 @@
 .moods { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 16px; }
 .mood { position: relative; display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 6px 6px 12px; border-radius: var(--radius-card); background: var(--group); cursor: pointer; transition: background var(--fast), box-shadow var(--fast), transform var(--fast); }
 .mood:hover { background: var(--group-up); }
-.mood:active:not(:has(.mood__play:active)):not(.naming) { transform: scale(.98); }
+.mood:active:not(:has(.mood__play:active, .mood__remove:active)):not(.naming) { transform: scale(.98); }
 .mood.open { background: var(--group-up); box-shadow: inset 0 0 0 1px var(--accent-ring); }
 
 .mood__cover { aspect-ratio: 16 / 9; border-radius: var(--radius-small); box-shadow: 0 0 0 1px var(--hairline); }
@@ -30,6 +30,11 @@
 .mood__play svg { width: 16px; height: 16px; margin-left: 2px; fill: currentColor; }
 .mood__play:hover { background: var(--accent-strong); }
 .mood__play:active { transform: scale(.94); }
+.mood__remove { position: absolute; top: 8px; right: 8px; z-index: 1; width: 26px; height: 26px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; color: var(--text-soft); background: rgba(10, 11, 15, .72); backdrop-filter: blur(8px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12); opacity: 0; transition: opacity var(--fast), color var(--fast), background var(--fast), transform var(--fast); }
+.mood__remove svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.mood:hover .mood__remove, .mood:focus-within .mood__remove { opacity: 1; }
+.mood__remove:hover { color: var(--danger); background: rgba(58, 21, 25, .92); box-shadow: inset 0 0 0 1px var(--danger); }
+.mood__remove:active { transform: scale(.92); }
 
 .mood__head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; min-width: 0; padding: 4px 6px 0; }
 .mood__name { margin: 0; min-width: 0; font: 600 16px/1.2 var(--display); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

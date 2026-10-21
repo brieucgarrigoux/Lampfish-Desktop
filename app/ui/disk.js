@@ -452,12 +452,12 @@
     renderFooter();
   }
 
-  let exam = null, examTab = 'largest';
+  let exam = null, examTab = 'rings', allArmed = 0;
   const armed = new Map();
   const ICON_SHOW = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>';
   const ICON_BIN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12.5h8L17 7"/></svg>';
 
-  function fileRow(file, canRemove) {
+  function fileRow(file, canRemove, oldest) {
     const r = document.createElement('div');
     r.className = 'row f-file';
     r.innerHTML = glyph('file') + '<span class="f-file__what"><span class="f-file__name" translate="no"></span><small translate="no"></small></span><span class="size"></span>'
@@ -465,6 +465,10 @@
     r.querySelector('.f-file__name').textContent = file.name;
     r.querySelector('small').textContent = file.folder;
     r.querySelector('.size').textContent = size(file.size);
+    if (oldest) {
+      const pill = Object.assign(document.createElement('span'), { className: 'f-pill', textContent: tr('Oldest'), title: tr('Kept by Keep one of each') });
+      r.querySelector('.size').before(pill);
+    }
     r.title = file.path;
     const [show, bin] = r.querySelectorAll('button');
     show.title = tr('Show in File Explorer');
@@ -483,56 +487,125 @@
     return r;
   }
 
-  function renderExam() {
-    const box = $('f-examine');
-    box.hidden = !exam || !exam.ready;
-    if (box.hidden) return;
-    const d = exam.duplicates;
-    $('f-exam-tabs').replaceChildren(...[['largest', 'Largest files'], ['duplicates', 'Duplicates']].map(([key, label]) => {
+  // The rings, the largest files and the duplicates share the place of the rings, so the lists are seen without scrolling.
+  function renderModes() {
+    const largest = exam && exam.ready ? exam.largest : [];
+    const d = exam && exam.ready ? exam.duplicates : null;
+    const extra = d && d.state === 'done' ? (d.groups || []).reduce((t, g) => t + g.size * (g.files.length - 1), 0) : 0;
+    const modes = [['rings', 'Rings', ''], ['largest', 'Largest files', largest.length ? size(largest.reduce((t, x) => t + x.size, 0)) : ''],
+      ['duplicates', 'Duplicates', extra ? size(extra) : '']];
+    const key = JSON.stringify([modes, examTab, LANGUAGE]);
+    const zone = $('f-modes');
+    if (zone.dataset.key === key) return;
+    zone.dataset.key = key;
+    zone.replaceChildren(...modes.map(([mode, label, total]) => {
       const b = document.createElement('button');
       b.setAttribute('role', 'tab');
-      b.setAttribute('aria-checked', String(key === examTab));
-      b.setAttribute('aria-selected', String(key === examTab));
-      b.textContent = tr(label);
-      b.addEventListener('click', () => { examTab = key; renderExam(); });
+      b.setAttribute('aria-selected', String(mode === examTab));
+      b.append(tr(label));
+      if (total) b.append(Object.assign(document.createElement('small'), { textContent: total }));
+      b.addEventListener('click', () => {
+        examTab = mode;
+        disarmAll();
+        document.querySelector('.view--files').dataset.mode = mode;
+        renderModes();
+        renderExam();
+        if (mode === 'rings') requestAnimationFrame(() => { measure(); draw(); });
+      });
       return b;
     }));
-    const run = $('f-dup-run');
+  }
+
+  function disarmAll() {
+    clearTimeout(allArmed);
+    allArmed = 0;
+    $('f-all').classList.remove('armed');
+    $('f-warning').hidden = true;
+  }
+
+  function renderExam() {
+    renderModes();
+    const box = $('f-examine');
+    box.hidden = examTab === 'rings';
+    if (box.hidden) return;
+    const list = $('f-exam-list'), help = $('f-exam-help'), all = $('f-all'), run = $('f-dup-run');
+    const empty = text => Object.assign(document.createElement('div'), { className: 'row empty', textContent: tr(text) });
+    const total = (value, detail) => { $('f-total-value').textContent = value; $('f-total-detail').textContent = detail; };
+    const offer = (count, bytes, label) => {
+      all.hidden = !count;
+      all.dataset.count = count;
+      all.dataset.bytes = bytes;
+      all.querySelector('span').textContent = allArmed ? tr('Confirm: move {0} files', count) : tr(label);
+      if (!count) disarmAll();
+    };
+    if (!exam || !exam.ready) {
+      total('', tr('Waiting for the analysis of the folder'));
+      run.hidden = true;
+      offer(0, 0, '');
+      help.textContent = '';
+      list.replaceChildren(Object.assign(document.createElement('div'), { className: 'row loading', textContent: tr('Analyzing') }));
+      return;
+    }
+    const d = exam.duplicates;
     run.hidden = examTab !== 'duplicates';
     run.disabled = d.state === 'running';
     run.querySelector('span').textContent = tr(d.state === 'done' ? 'Compare again' : 'Find duplicates');
-    const list = $('f-exam-list'), help = $('f-exam-help');
-    const empty = text => Object.assign(document.createElement('div'), { className: 'row empty', textContent: tr(text) });
     if (examTab === 'largest') {
+      const bytes = exam.largest.reduce((t, x) => t + x.size, 0);
+      total(size(bytes), exam.largest.length === 1 ? tr('in the largest file of the folder') : tr('in the {0} largest files of the folder', exam.largest.length));
+      offer(exam.largest.length, bytes, 'Move all to the Recycle Bin');
       help.textContent = tr('Files of 1 MB or more in the analyzed folder, apps and Windows left out. The bin sends one file to the Recycle Bin, with Undo.');
       list.replaceChildren(...(exam.largest.length ? exam.largest.map(file => fileRow(file, true)) : [empty('No file of 1 MB or more here')]));
       return;
     }
     if (d.state === 'running') {
-      help.textContent = tr('Comparing {0} of {1} files, same size first, then same content', d.done, d.total);
+      total('', tr('Comparing {0} of {1} files, same size first, then same content', d.done, d.total));
+      offer(0, 0, '');
+      help.textContent = '';
       list.replaceChildren(Object.assign(document.createElement('div'), { className: 'row loading', textContent: tr('Comparing') }));
       return;
     }
     if (d.state !== 'done') {
+      total('', tr(d.state === 'failed' ? 'The comparison stopped, try again' : 'Not compared yet'));
+      offer(0, 0, '');
       help.textContent = tr('Bramble compares the content of files of the same size, without changing anything. It can take a few minutes on a whole drive.');
-      list.replaceChildren(empty(d.state === 'failed' ? 'The comparison stopped, try again' : 'Not compared yet'));
+      list.replaceChildren();
       return;
     }
     const groups = d.groups || [];
+    const copies = groups.reduce((t, g) => t + g.files.length - 1, 0);
     const wasted = groups.reduce((t, g) => t + g.size * (g.files.length - 1), 0);
-    help.textContent = groups.length ? tr('{0} could be freed by keeping one copy of each. Identical content, checked byte for byte.', size(wasted)) : '';
-    if (!groups.length) { list.replaceChildren(empty('No duplicate found')); return; }
+    total(groups.length ? size(wasted) : '', groups.length ? (copies === 1 ? tr('to free in 1 extra copy') : tr('to free in {0} extra copies', copies)) : tr('No duplicate found'));
+    offer(copies, wasted, 'Keep one copy of each');
+    help.textContent = groups.length ? tr('Identical content, checked byte for byte. Keep one copy of each leaves the oldest copy, most likely the original.') : '';
+    if (!groups.length) { list.replaceChildren(); return; }
     const nodes = [];
     for (const g of groups) {
       const head = document.createElement('div');
       head.className = 'row f-group';
       head.textContent = tr('{0} copies of {1}', g.files.length, size(g.size));
-      nodes.push(head, ...g.files.map(file => fileRow(file, g.files.length > 1)));
+      nodes.push(head, ...g.files.map((file, i) => fileRow(file, g.files.length > 1, i === 0)));
     }
     list.replaceChildren(...nodes);
   }
 
   $('f-dup-run').addEventListener('click', () => send('files.duplicates'));
+  $('f-all').addEventListener('click', () => {
+    const all = $('f-all'), count = Number(all.dataset.count), bytes = Number(all.dataset.bytes);
+    if (allArmed) {
+      disarmAll();
+      send('files.recycleAll', { kind: examTab });
+      return;
+    }
+    all.classList.add('armed');
+    const warning = $('f-warning');
+    warning.querySelector('span').textContent = examTab === 'duplicates'
+      ? tr('{0} extra copies, {1}, go to the Recycle Bin. The oldest copy of each file stays. Undo is offered for 8 seconds.', count, size(bytes))
+      : tr('{0} files, {1}, go to the Recycle Bin, whatever they are: check the list first. Undo is offered for 8 seconds, then they stay in the Recycle Bin.', count, size(bytes));
+    warning.hidden = false;
+    allArmed = setTimeout(() => { disarmAll(); renderExam(); }, 6000);
+    renderExam();
+  });
 
   function event(m) {
     if (m.type === 'files.tree') receiveTree(m);
@@ -544,7 +617,7 @@
     if (yes === shown) return;
     shown = yes;
     send('files.visible', { value: yes, path: view ? view.path : null });
-    if (yes) requestAnimationFrame(() => { measure(); draw(); });
+    if (yes) { renderExam(); requestAnimationFrame(() => { measure(); draw(); }); }
   }
 
   new ResizeObserver(() => { if (shown) { measure(); draw(); } }).observe(zone);

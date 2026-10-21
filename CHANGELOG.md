@@ -7,9 +7,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 - Settings: What Bramble reads and changes lists, for every service, what it reads, what it changes in Windows and how to undo it.
-- Folders: under the rings, Largest files lists the files of 1 MB or more of the analyzed folder (apps, app data and Windows left out), and Duplicates finds identical files, compared byte for byte. Each file can be shown in File Explorer or sent to the Recycle Bin after a confirming click, with 8 seconds to undo; the last copy of a duplicate always stays.
+- Folders: tabs at the top switch between the rings, Largest files and Duplicates, each with its total. Largest files lists the files of 1 MB or more of the analyzed folder (apps, app data and Windows left out), and Duplicates finds identical files, compared byte for byte. Each file can be shown in File Explorer or sent to the Recycle Bin after a confirming click, with 8 seconds to undo; the last copy of a duplicate always stays. Move all to the Recycle Bin and Keep one copy of each (the oldest copy stays) act on the whole list after a warning and a confirming click, with the same 8 seconds to undo.
+- Wallpaper and Create: Reset settings, at the top of the side panel, puts every setting back to default, with Undo. Create keeps the logo, the text and the picture added.
+- Themes: a cross on the cover of a theme removes it, with Undo.
+- Arrange: Make main screen under each screen of the map that is not the main one.
+- Home: Processor, Memory, Disk, Battery and Network open their details in the side panel instead of leaving Home; Disk leads to the analysis of what takes space.
 - Health, a new service at the head of the PC family. Why is my PC slow? turns what Bramble measures (processor, memory, disk, days since the last restart, programs at startup, free space, energy saver, temperature) into plain findings, each with the button that helps. The Radar checks antivirus, firewall, Windows updates, a pending restart, disk encryption, Secure Boot, account control, disk space and startup programs, without administrator rights and without changing anything: each button opens the right place in Windows.
-- Home: the desktop preview opens the wallpapers in the side panel (pick one, light, speed, effects, sound), the Themes title opens every theme with a click to apply it, and the Display title, which replaces Quick settings, opens the brightness of each screen and the choice of the main screen.
+- Home: the desktop preview opens the wallpapers in the side panel (pick one, light, speed, effects, sound), a Themes button under the wallpaper opens every theme with a click to apply it, and the Display title, which replaces Quick settings, opens the brightness of each screen and the choice of the main screen.
 - Settings: Weather location picks the city of the weather by name (searched with Open-Meteo), for when the IP address gives a wrong place. Automatic goes back to the IP address.
 - Bramble comes as an installer, Bramble-Setup-<version>.exe, instead of a zip: it installs for the current user without administrator rights, with a desktop shortcut and Start with Windows as options, checks that .NET Framework 4.8 and the WebView2 Runtime are there, and appears in the installed apps of Windows. Installing a new version over the old one keeps the settings and files.
 - Uninstalling puts back what would break without Bramble: cursors and cursor schemes that use its files, folder icons taken from its own icons, the right-click menu, Start with Windows and its shortcuts. It asks whether to keep the settings and files for a later install.
@@ -19,6 +23,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Home: when Cloudflare cannot give the approximate location for the weather, country.is (free and open source) takes over, and Settings lists it with the other connections.
 - Network: the Wi-Fi details (network, band, channel, standard, protection, speed) are read from the Wi-Fi API of Windows instead of the text of a command, whose wording changes with the language and the version of Windows.
 - Mouse: Bramble Glass comes first among the Bramble cursor themes, in the library and in the Home panel.
+
+### Fixed
+- Display: making another screen the main one failed with a laptop and an external screen at different scales; the screens now move together in one change. Wallpapers chosen for one screen, in themes too, and saved icon arrangements follow the move.
+- Arrange: the names of the icons in the first column spilled a few pixels onto the next screen, and those of the last column were cut: Windows draws an icon and its name wider than its cell, and the margins now take that width into account. The map of Arrange and the Home preview use the same width.
+- Folders: a file too large for the Recycle Bin is no longer deleted for good without a word; Windows now asks first.
 
 ## [0.3.0] - 2026-10-21
 

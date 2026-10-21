@@ -32,7 +32,7 @@
   const st = fresh();
   const ctl = {};
   let theme = 'midnight', hovered = null, guides = true;
-  let editing = null, frame = null, ready = false, queued = 0;
+  let editing = null, frame = null, ready = false, queued = 0, resetReady = false;
 
   function config(forPreview) {
     const b = Object.assign({}, st.bg), l = Object.assign({}, st.logo);
@@ -56,6 +56,7 @@
 
   function push() {
     keep();
+    if (resetReady) paintReset();
     layout();
     if (queued || !frame) return;
     queued = requestAnimationFrame(() => {
@@ -673,8 +674,35 @@
   nameInput.setAttribute('aria-label', tr('Name this wallpaper'));
   $('create-save').append(nameInput, copy, create);
 
+  // Every setting goes back to its default; the logo, the text and the picture added stay, since they are content and not settings.
+  const resetTop = el('div', 'panel-top');
+  const resetButton = el('button', 'link panel-reset');
+  resetButton.type = 'button';
+  resetButton.title = tr('Every setting back to default, the logo, text and picture stay');
+  resetButton.innerHTML = RESET + '<span></span>';
+  resetButton.querySelector('span').textContent = tr('Reset settings');
+  resetTop.append(resetButton);
+  const looks = s => JSON.stringify(Object.assign({}, s, { files: null, aspect: 0, title: Object.assign({}, s.title, { text: '' }) }));
+  function defaults() {
+    const f = fresh();
+    f.files = st.files;
+    f.aspect = st.aspect;
+    f.title.text = st.title.text;
+    if (st.bg.type === 'image' && st.files.background) f.bg.type = 'image';
+    return f;
+  }
+  function paintReset() { resetButton.disabled = looks(st) === looks(defaults()); }
+  resetReady = true;
+  resetButton.addEventListener('click', () => {
+    const before = JSON.parse(JSON.stringify(st)), beforeTheme = theme;
+    Object.assign(st, defaults());
+    theme = 'midnight';
+    syncAll();
+    toast(tr('Create settings reset'), true, 8000, () => { Object.assign(st, before); theme = beforeTheme; syncAll(); });
+  });
+
   zone.append(banner, stage, tools, hint, themeTitle, themes, input);
-  panel.append(soundCard, logoCard, textCard, backgroundCard, particlesCard, glowCard);
+  panel.append(resetTop, soundCard, logoCard, textCard, backgroundCard, particlesCard, glowCard);
   function editMode(name) {
     editing = name;
     nameInput.value = name;

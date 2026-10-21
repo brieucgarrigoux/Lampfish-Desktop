@@ -365,16 +365,19 @@
         <button class="link" id="f-show" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Show in File Explorer</button>
       </div>
     </div>
+    <div class="segments tabs f-modes" id="f-modes" role="tablist" aria-label="What to show"></div>
     <div class="skeleton" id="f-zone">
       <canvas id="f-canvas" role="img" aria-label="The folder's contents as rings, detailed in the Contents list of the panel"></canvas>
       <div class="center" id="f-center"><span class="name-center"></span><span class="value-center"></span><span class="detail-center"></span></div>
     </div>
     <p class="footer-files" id="f-footer"></p>
     <div class="f-examine" id="f-examine" hidden>
-      <div class="f-examine__head">
-        <div class="segments tabs" id="f-exam-tabs" role="tablist" aria-label="Files to review"></div>
-        <button class="link" id="f-dup-run" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="7.5" width="10" height="12.5" rx="2"/><path d="M8 7.5V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-4"/></svg><span>Find duplicates</span></button>
+      <div class="f-total" id="f-total">
+        <div class="f-total__what"><span class="f-total__value" id="f-total-value"></span><span class="f-total__detail" id="f-total-detail"></span></div>
+        <button class="button" id="f-dup-run" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="7.5" width="10" height="12.5" rx="2"/><path d="M8 7.5V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-4"/></svg><span>Find duplicates</span></button>
+        <button class="button f-all" id="f-all" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12.5h8L17 7"/></svg><span></span></button>
       </div>
+      <p class="f-warning" id="f-warning" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 21 19.5H3z"/><path d="M12 10v4.5M12 17h.01"/></svg><span></span></p>
       <p class="help-section" id="f-exam-help"></p>
       <div class="group f-exam-list" id="f-exam-list"></div>
     </div>
@@ -624,6 +627,7 @@
   <div class="dock-head" id="dock-head"><span class="dock-head__title" id="dock-title"></span><button class="link" id="dock-open"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 5h6v6M19 5l-8 8M10 6H6.5A1.5 1.5 0 0 0 5 7.5v10A1.5 1.5 0 0 0 6.5 19h10a1.5 1.5 0 0 0 1.5-1.5V14"/></svg>Open page</button><button class="t-close" id="dock-close" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg></button></div>
   <div class="dock-pick" id="dock-pick"></div>
   <div class="only-wallpaper">
+    <div class="panel-top"><button class="link panel-reset" id="w-reset" title="Light, speed, blur, saturation, dim and framing back to default"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4v4h4"/></svg><span>Reset settings</span></button></div>
     <h2>Animation</h2>
     <div class="group">
       <div class="setting">
