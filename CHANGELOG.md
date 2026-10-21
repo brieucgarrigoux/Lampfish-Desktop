@@ -42,6 +42,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - The window remembers its size, position and maximized state.
 
 ### Changed
+- Home: the Icons panel no longer shows the preview size and the subfolders options, which only mean something next to the icon library of the Icons page.
 - The bar on the left is grouped in families: Personalization (Themes, Wallpaper, Create, Icons, Mouse, Sounds), Desktop (Display, Arrange) and PC (Tasks, Folders, Hardware, Network). Ctrl 1 to 9 follow this order.
 - The wallpapers that come with Bramble can no longer be removed.
 - A web page wallpaper is called Live instead of HTML, on Home and on its card.

@@ -121,6 +121,8 @@ body[data-view="home"][data-dock="icons"] .panel .only-icons, body[data-view="ho
 body[data-view="home"][data-dock="station"] .panel .only-station, body[data-view="home"][data-dock="tasks"] .panel .only-tasks { display: flex !important; }
 .panel > .dock-head { display: none; }
 body[data-view="home"][data-dock] .panel > .dock-head { display: flex; flex-direction: row; align-items: center; gap: 8px; padding-bottom: 4px; }
+/* Settings that only act inside their own page (the icon library) stay out of the Home panel. */
+body[data-view="home"][data-dock] .fold:has(> .dock-hide) { display: none; }
 .panel > .dock-pick, .panel > .dock-pick:empty { display: none; }
 body[data-view="home"][data-dock] .panel > .dock-pick:not(:empty) { display: flex; flex-direction: column; gap: 10px; }
 .dock-actions { display: flex; flex-wrap: wrap; gap: 8px; }
