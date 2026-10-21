@@ -456,38 +456,86 @@ namespace Bramble
             return a.All(p => map.TryGetValue(p.Id, out q) && Math.Abs(p.X - q.X) <= 2 && Math.Abs(p.Y - q.Y) <= 2);
         }
 
-        static void Later(int ms, Action run)
+        class Resize { public List<IconPosition> Before; public Size Cell; public bool Arranged; }
+        static Resize pending;
+        static bool resizing;
+        static Timer resizeTimer;
+
+        // Windows moves the icons by itself when their size changes, so the layout from before the first click of a series is kept until the series ends.
+        static void ChangeIconSize(int size)
         {
-            var t = new Timer { Interval = ms };
-            t.Tick += (s, e) => { t.Stop(); t.Dispose(); run(); };
-            t.Start();
+            if (pending == null)
+            {
+                var before = Capture();
+                pending = new Resize { Before = before, Cell = DesktopIcons.Case(), Arranged = Same(before, R.Placed) };
+            }
+            DesktopIcons.SetIconSize(size);
+            Program.Send(Map(false));
+            if (resizeTimer != null) { resizeTimer.Stop(); resizeTimer.Dispose(); }
+            resizeTimer = new Timer { Interval = 450 };
+            resizeTimer.Tick += (s, e) => { resizeTimer.Stop(); resizeTimer.Dispose(); resizeTimer = null; var done = pending; pending = null; Reflow(done); };
+            resizeTimer.Start();
         }
 
-        // Windows keeps free-placed icons where they were when their size changes, so bigger icons pile up.
-        static void Reflow(List<IconPosition> before, Size cell, bool arranged)
+        static void Reflow(Resize r)
         {
             try
             {
                 Size now = DesktopIcons.Case();
-                if (now == cell || now.Width <= 0 || cell.Width <= 0 || (DesktopIcons.Flags() & DesktopIcons.FWF_AUTOARRANGE) != 0) return;
-                if (arranged) Sort(R.LastSort);
+                if ((DesktopIcons.Flags() & DesktopIcons.FWF_AUTOARRANGE) != 0) return;
+                if (now.Width <= 0 || r.Cell.Width <= 0) return;
+                Remember(r.Before);
+                resizing = true;
+                if (r.Arranged) Sort(R.LastSort);
+                else if (now == r.Cell) Place(r.Before.ToDictionary(p => p.Id, p => new Point(p.X, p.Y)), false);
                 else
                 {
-                    var screens = Screens();
-                    var positions = new Dictionary<string, Point>();
-                    foreach (var p in before)
-                    {
-                        var area = (screens.FirstOrDefault(s => s.Bounds.Contains(p.X, p.Y)) ?? screens[0]).WorkingArea;
-                        int x = area.X + (int)Math.Round((p.X - area.X) * (double)now.Width / cell.Width);
-                        int y = area.Y + (int)Math.Round((p.Y - area.Y) * (double)now.Height / cell.Height);
-                        positions[p.Id] = new Point(Math.Max(area.X, Math.Min(x, area.Right - now.Width)), Math.Max(area.Y, Math.Min(y, area.Bottom - now.Height)));
-                    }
-                    Place(positions);
+                    int iconSize = DesktopIcons.IconSize();
+                    var grids = Screen.AllScreens.Select(s => new Grid(s.WorkingArea, now, Scale(s), iconSize)).ToList();
+                    Place(Keep(r.Before, r.Cell, grids));
                 }
                 Program.Send(Map(false));
                 Program.SendState();
             }
             catch (Exception ex) { Program.Log(ex); }
+            finally { resizing = false; }
+        }
+
+        // Each icon keeps its cell number in the new grid; one that no longer fits, or lands on another, takes the nearest free cell.
+        static Dictionary<string, Point> Keep(List<IconPosition> before, Size old, List<Grid> grids)
+        {
+            var screens = Screen.AllScreens;
+            var wanted = new List<KeyValuePair<IconPosition, Point>>();
+            foreach (var p in before)
+            {
+                var screen = screens.FirstOrDefault(s => s.Bounds.Contains(p.X, p.Y)) ?? screens[0];
+                var area = screen.WorkingArea;
+                wanted.Add(new KeyValuePair<IconPosition, Point>(p, new Point((int)Math.Round((p.X - area.X) / (double)old.Width), (int)Math.Round((p.Y - area.Y) / (double)old.Height))));
+            }
+            var result = new Dictionary<string, Point>();
+            foreach (var w in wanted.OrderBy(w => w.Value.X).ThenBy(w => w.Value.Y))
+            {
+                var screen = screens.FirstOrDefault(s => s.Bounds.Contains(w.Key.X, w.Key.Y)) ?? screens[0];
+                var g = grids[Array.IndexOf(screens, screen)];
+                var cell = Free(g, new Point(Math.Max(0, Math.Min(g.Columns - 1, w.Value.X)), Math.Max(0, Math.Min(g.Rows - 1, w.Value.Y))));
+                g.Taken.Add(cell);
+                result[w.Key.Id] = g.Pixel(cell);
+            }
+            return result;
+        }
+
+        static Point Free(Grid g, Point cell)
+        {
+            if (!g.Taken.Contains(cell)) return cell;
+            Point best = cell;
+            double distance = double.MaxValue;
+            foreach (var c in g.InColumns())
+            {
+                if (g.Taken.Contains(c)) continue;
+                double d = Math.Pow(c.X - cell.X, 2) * 1.5 + Math.Pow(c.Y - cell.Y, 2);
+                if (d < distance) { distance = d; best = c; }
+            }
+            return best;
         }
 
         [System.Runtime.InteropServices.DllImport("user32.dll")] static extern IntPtr MonitorFromPoint(Point pt, int flags);
@@ -506,9 +554,9 @@ namespace Bramble
             return DesktopIcons.List(false).Select(e => new IconPosition { Id = e.Id, X = e.Position.X, Y = e.Position.Y }).ToList();
         }
 
-        static void Remember()
+        static void Remember(List<IconPosition> now = null)
         {
-            var now = Capture();
+            now = now ?? Capture();
             if (now.Count == 0) return;
             if (R.Original == null) R.Original = now;
             R.History.Add(now);
@@ -533,7 +581,7 @@ namespace Bramble
         // Auto arrange and the grid would both pull the icons back to Windows' own layout.
         static void Place(Dictionary<string, Point> positions, bool remember = true)
         {
-            if (remember) Remember();
+            if (remember && !resizing) Remember();
             uint flags = DesktopIcons.Flags();
             if ((flags & DesktopIcons.FWF_AUTOARRANGE) != 0) DesktopIcons.Flag(DesktopIcons.FWF_AUTOARRANGE, false);
             if ((flags & DesktopIcons.FWF_SNAPTOGRID) != 0) DesktopIcons.Flag(DesktopIcons.FWF_SNAPTOGRID, false);
@@ -700,16 +748,7 @@ namespace Bramble
                         Program.Send(Map(false));
                         return true;
                     }
-                    case "iconSize":
-                    {
-                        var before = Capture();
-                        Size cell = DesktopIcons.Case();
-                        bool arranged = Same(before, R.Placed);
-                        DesktopIcons.SetIconSize(Convert.ToInt32(m["value"]));
-                        Program.Send(Map(false));
-                        Later(350, () => Reflow(before, cell, arranged));
-                        return false;
-                    }
+                    case "iconSize": ChangeIconSize(Convert.ToInt32(m["value"])); return false;
                     case "grid": DesktopIcons.Flag(DesktopIcons.FWF_SNAPTOGRID, Convert.ToBoolean(m["value"])); Program.Send(Map(false)); return false;
                     case "hide": DesktopIcons.Flag(DesktopIcons.FWF_NOICONS, Convert.ToBoolean(m["value"])); Program.Send(Map(false)); return false;
                     case "category":
