@@ -76,6 +76,7 @@ namespace Bramble
         static List<List<string>> duplicates;
         static string duplicatesState = "idle";
         static int compared, toCompare;
+        static long bytesCompared, bytesToCompare;
         static CancellationTokenSource duplicatesCancel;
 
         static DiskUsageSettings R { get { return Program.R.DiskUsage; } }
@@ -419,7 +420,7 @@ namespace Bramble
                 type = "files.examine",
                 ready = root != null,
                 largest = Largest().Select(Describe).ToArray(),
-                duplicates = new { state = duplicatesState, done = compared, total = toCompare, groups },
+                duplicates = new { state = duplicatesState, done = compared, total = toCompare, bytesDone = Interlocked.Read(ref bytesCompared), bytesTotal = bytesToCompare, groups },
             };
         }
 
@@ -430,50 +431,86 @@ namespace Bramble
             duplicates = null;
             duplicatesState = "idle";
             compared = toCompare = 0;
+            bytesCompared = bytesToCompare = 0;
             if (comparing != null) comparing.Stop();
         }
 
-        static string Hash(string path, int head)
+        static string Sample(string path, long offset, int length)
         {
             try
             {
                 using (var sha = SHA256.Create())
                 using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 1 << 16))
                 {
-                    if (head < 0) return Convert.ToBase64String(sha.ComputeHash(stream));
-                    var buffer = new byte[head];
+                    stream.Position = Math.Max(0, Math.Min(offset, stream.Length));
+                    var buffer = new byte[length];
                     int read = 0, n;
-                    while (read < head && (n = stream.Read(buffer, read, head - read)) > 0) read += n;
+                    while (read < length && (n = stream.Read(buffer, read, length - read)) > 0) read += n;
                     return Convert.ToBase64String(sha.ComputeHash(buffer, 0, read));
                 }
             }
             catch { return null; }
         }
 
-        // Same size first, then the same first 64 KB, and only then the whole file: most candidates drop out before a full read.
+        static string Whole(string path)
+        {
+            try
+            {
+                using (var sha = SHA256.Create())
+                using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 1 << 20, FileOptions.SequentialScan))
+                    return Convert.ToBase64String(sha.ComputeHash(stream));
+            }
+            catch { return null; }
+        }
+
+        static List<List<string>> Split(IEnumerable<List<string>> groups, Func<string, string> key)
+        {
+            return groups.SelectMany(g => g.GroupBy(key).Where(h => h.Key != null && h.Count() > 1).Select(h => h.ToList())).ToList();
+        }
+
+        // Same size first, then the same first 64 KB and the same last 64 KB, and only then the whole file: most candidates drop out
+        // before a full read. A few groups are compared at once, below normal priority, so the PC stays responsive.
         static void FindDuplicates()
         {
             if (root == null || duplicatesState == "running") return;
             StopDuplicates();
             var token = new CancellationTokenSource();
             duplicatesCancel = token;
-            var candidates = bigFiles.Where(p => !pending.Contains(p.Key)).GroupBy(p => p.Value).Where(g => g.Count() > 1).Select(g => g.Select(p => p.Key).ToList()).ToList();
+            var candidates = bigFiles.Where(p => !pending.Contains(p.Key)).GroupBy(p => p.Value).Where(g => g.Count() > 1)
+                .OrderBy(g => g.Key).Select(g => g.Select(p => p.Key).ToList()).ToList();
+            var sizes = candidates.SelectMany(g => g).ToDictionary(p => p, p => bigFiles[p], StringComparer.OrdinalIgnoreCase);
             toCompare = candidates.Sum(g => g.Count);
+            bytesToCompare = sizes.Values.Sum();
             duplicatesState = "running";
             comparing.Start();
             Program.Send(Examine());
             Task.Run(() =>
             {
-                var result = new List<List<string>>();
-                foreach (var group in candidates)
+                var result = new System.Collections.Concurrent.ConcurrentBag<List<string>>();
+                var options = new ParallelOptions { MaxDegreeOfParallelism = 3, CancellationToken = token.Token };
+                try
                 {
-                    if (token.IsCancellationRequested) return null;
-                    foreach (var same in group.GroupBy(p => Hash(p, 65536)).Where(h => h.Key != null && h.Count() > 1))
-                        foreach (var copies in same.GroupBy(p => Hash(p, -1)).Where(h => h.Key != null && h.Count() > 1))
-                            result.Add(copies.ToList());
-                    Interlocked.Add(ref compared, group.Count);
+                    Parallel.ForEach(candidates, options, group =>
+                    {
+                        var priority = Thread.CurrentThread.Priority;
+                        Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
+                        try
+                        {
+                            long size = sizes[group[0]];
+                            var stage = Split(new[] { group }, f => Sample(f, 0, 65536));
+                            if (size > 131072) stage = Split(stage, f => Sample(f, size - 65536, 65536));
+                            foreach (var copies in Split(stage, Whole)) result.Add(copies);
+                        }
+                        finally
+                        {
+                            Thread.CurrentThread.Priority = priority;
+                            Interlocked.Add(ref compared, group.Count);
+                            Interlocked.Add(ref bytesCompared, sizes[group[0]] * group.Count);
+                        }
+                    });
                 }
-                return result;
+                catch (OperationCanceledException) { return null; }
+                return result.ToList();
             }).ContinueWith(t => Program.OnInterface(() =>
             {
                 if (token != duplicatesCancel) return;
@@ -482,7 +519,7 @@ namespace Bramble
                 else if (t.Result == null) duplicatesState = "idle";
                 else
                 {
-                    duplicates = t.Result.OrderByDescending(g => bigFiles[g[0]] * (g.Count - 1)).Take(40).ToList();
+                    duplicates = t.Result.Where(g => bigFiles.ContainsKey(g[0])).OrderByDescending(g => bigFiles[g[0]] * (g.Count - 1)).Take(40).ToList();
                     duplicatesState = "done";
                 }
                 Program.Send(Examine());

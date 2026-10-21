@@ -81,6 +81,23 @@ namespace Bramble
             return true;
         }
 
+        // The desktop icons are read before the switch and moved once Windows has resized the desktop.
+        static bool Switch(string from, string to)
+        {
+            var follow = Arrange.FollowPrimary(from, to);
+            if (!SetPrimary(to)) return false;
+            if (follow == null) return true;
+            var timer = new System.Windows.Forms.Timer { Interval = 1500 };
+            timer.Tick += (s, e) =>
+            {
+                timer.Dispose();
+                try { follow(); Program.SendState(); }
+                catch (Exception ex) { Program.Log(ex); }
+            };
+            timer.Start();
+            return true;
+        }
+
         class Panel { public string Key; public bool Builtin; public string Name; public int Value; }
 
         static readonly object brightnessLock = new object();
@@ -255,8 +272,8 @@ namespace Bramble
                     var target = Screen.AllScreens.FirstOrDefault(s => Program.ScreenKey(s.Bounds) == key);
                     var before = Screen.PrimaryScreen;
                     if (target == null || target.Primary) return false;
-                    string back = before.DeviceName;
-                    if (SetPrimary(target.DeviceName)) Program.Undoable(Language.T("Main screen changed"), () => SetPrimary(back));
+                    string back = before.DeviceName, next = target.DeviceName;
+                    if (Switch(back, next)) Program.Undoable(Language.T("Main screen changed"), () => Switch(next, back));
                     else Program.Announce("Windows refused to change the main screen");
                     return true;
                 }

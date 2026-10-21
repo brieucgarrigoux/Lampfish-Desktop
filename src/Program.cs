@@ -502,20 +502,26 @@ namespace Bramble
 
         static void Effects() { ForEachWallpaper(f => f.Effects(R)); }
 
-        // The look of the wallpaper goes back to default; the slideshow and the sound reaction are choices, not a look, so they stay.
-        static void ResetEffects()
+        // Every setting of the Wallpaper panel goes back to default; the wallpaper itself stays.
+        static void ResetWallpaper()
         {
-            int light = R.Light, speed = R.Speed, blur = R.Blur, saturation = R.Saturation, dim = R.Dim;
-            string fit = R.Fit;
-            var defaults = new Settings();
-            Action set = () => { Adjust(true); Effects(); Apply(false); };
-            R.Light = defaults.Light; R.Speed = defaults.Speed; R.Blur = defaults.Blur; R.Saturation = defaults.Saturation; R.Dim = defaults.Dim; R.Fit = defaults.Fit;
-            set();
-            Undoable(Language.T("Wallpaper settings reset"), () =>
+            var before = new Settings
             {
-                R.Light = light; R.Speed = speed; R.Blur = blur; R.Saturation = saturation; R.Dim = dim; R.Fit = fit;
-                set();
-            });
+                Light = R.Light, Speed = R.Speed, Blur = R.Blur, Saturation = R.Saturation, Dim = R.Dim, Fit = R.Fit, Slideshow = R.Slideshow, Shuffle = R.Shuffle,
+                FrameRate = R.FrameRate, PauseAuto = R.PauseAuto, PauseOnBattery = R.PauseOnBattery, Reactive = R.Reactive,
+            };
+            Action<Settings> put = v =>
+            {
+                R.Light = v.Light; R.Speed = v.Speed; R.Blur = v.Blur; R.Saturation = v.Saturation; R.Dim = v.Dim; R.Fit = v.Fit; R.Slideshow = v.Slideshow; R.Shuffle = v.Shuffle;
+                R.FrameRate = v.FrameRate; R.PauseAuto = v.PauseAuto; R.PauseOnBattery = v.PauseOnBattery; R.Reactive = v.Reactive;
+                Adjust(true); Effects(); Apply(false);
+                ForEachWallpaper(f => f.FrameRate(R.FrameRate));
+                RestartSlideshow();
+                UpdateVisibility();
+                AudioMeter.Set(R.Reactive);
+            };
+            put(new Settings());
+            Undoable(Language.T("Wallpaper settings reset"), () => put(before));
         }
 
         static void RestartSlideshow()
@@ -815,7 +821,7 @@ namespace Bramble
                 case "light": R.Light = Convert.ToInt32(m["value"]); Adjust(!live); if (live) return; break;
                 case "speed": R.Speed = Convert.ToInt32(m["value"]); Adjust(!live); if (live) return; break;
                 case "pauseAuto": R.PauseAuto = (bool)m["value"]; UpdateVisibility(); break;
-                case "resetEffects": ResetEffects(); break;
+                case "resetWallpaper": ResetWallpaper(); break;
                 case "pause": TogglePause(); return;
                 case "next": NextWallpaper(); return;
                 case "previous": PreviousWallpaper(); return;

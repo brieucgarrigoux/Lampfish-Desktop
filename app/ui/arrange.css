@@ -49,7 +49,9 @@
 .arrangement[aria-checked="true"] .name-ag { color: var(--text); }
 .arrangement[aria-checked="true"] rect.t0, .arrangement[aria-checked="true"] rect.t2 { fill: var(--accent); }
 .arrangement[aria-checked="true"] rect.t1, .arrangement[aria-checked="true"] rect.t3 { fill: var(--accent-strong); }
-.screen-label .screen-main { margin-left: 10px; font: 600 11.5px/1 var(--numbers); pointer-events: auto; }
+.screen-map .wallpaper-map { pointer-events: none; }
+.screen-map.can-main { cursor: pointer; transition: box-shadow var(--fast); }
+.screen-map.can-main:hover { box-shadow: 0 0 0 2px var(--accent-ring); }
 .screen-label { position: absolute; margin-top: 6px; font: 600 11.5px/1 var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); white-space: nowrap; pointer-events: none; }
 .screen-label.primary { color: var(--accent); }
 .point { position: absolute; z-index: 2; cursor: grab; touch-action: none; transition: opacity .2s; }

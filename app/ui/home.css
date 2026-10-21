@@ -15,12 +15,14 @@
 .h-now__name { min-width: 0; font: 600 16px/1.2 var(--display); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .h-now__type { flex: none; font-size: 12px; color: var(--text-pale); }
 .h-now .button { flex: none; }
-.h-modes { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 -10px -12px; padding: 10px 14px 12px; border-top: 1px solid var(--hairline); border-radius: 0 0 var(--radius-card) var(--radius-card); background: rgba(149, 97, 243, .045); }
-.h-modes__open { display: inline-flex; align-items: center; gap: 7px; margin-right: 4px; padding: 7px 10px 7px 11px; background: var(--accent-dim); color: var(--text); }
-.h-modes__open:hover { background: rgba(149, 97, 243, .26); }
-.h-modes__open[aria-pressed="true"] { box-shadow: var(--pressed); color: var(--accent); }
-.h-modes__open .glyph { width: 16px; height: 16px; fill: none; stroke: var(--accent); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-.h-modes__open .chevron { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; opacity: .7; }
+.h-modes { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 -10px -12px; padding: 10px 12px 12px 10px; border-top: 1px solid var(--hairline); }
+.h-modes__open { display: flex; align-items: center; gap: 10px; min-width: 150px; margin-right: 6px; padding: 6px 10px 6px 6px; border: 0; border-radius: var(--radius-group); background: var(--group-up); text-align: left; transition: background var(--fast), box-shadow var(--fast); }
+.h-modes__open:hover { background: var(--hover); }
+.h-modes__open:active { transform: scale(.98); }
+.h-modes__open[aria-pressed="true"] { background: var(--accent-tint); box-shadow: var(--chosen); }
+.h-modes__open .glyph { stroke: var(--accent); }
+.h-modes__what { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.h-modes__what .h-value { max-width: 160px; font: 600 13px/1.3 var(--display); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .h-modes .tool-chip { color: var(--text-soft); }
 .h-modes .tool-chip .mode-icon { width: 14px; height: 14px; stroke: currentColor; }
 .h-modes__more { margin-left: auto; font-size: 12.5px; }

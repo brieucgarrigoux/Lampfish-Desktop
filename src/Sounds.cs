@@ -446,6 +446,17 @@ namespace Bramble
                     if (!R.Active) Player.Stop();
                     WriteLog(R.Active ? "Sounds on" : "Sounds off");
                     return true;
+                case "resetAll":
+                {
+                    var events = R.Events.Select(e => new EventSetting { Id = e.Id, Sound = e.Sound, Active = e.Active }).ToList();
+                    int volume = R.Volume;
+                    bool active = R.Active, silence = R.Silence;
+                    R.Events = null;
+                    Complete();
+                    R.Volume = 100; R.Active = true; R.Silence = false;
+                    Program.Undoable(Language.T("Sounds reset"), () => { R.Events = events; R.Volume = volume; R.Active = active; R.Silence = silence; });
+                    return true;
+                }
                 case "silence":
                     R.Silence = Convert.ToBoolean(m["value"]);
                     if (R.Silence) Player.Stop();

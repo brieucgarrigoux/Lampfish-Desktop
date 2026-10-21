@@ -243,7 +243,7 @@
   });
   $('icons-refresh').addEventListener('click', () => send('icons.refresh'));
 
-  $('icons-reset-all').addEventListener('click', () => send('icons.resetAll'));
+  confirmReset($('icons-reset-all'), 'Every customized folder gets its own icon back.', () => send('icons.resetAll'));
 
   function renderDock() {
     const zone = $('dock-pick');

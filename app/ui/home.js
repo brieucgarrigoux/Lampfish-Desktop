@@ -222,8 +222,10 @@
     title.dataset.dockTo = 'modes';
     title.setAttribute('aria-pressed', String(document.body.dataset.dock === 'modes'));
     title.title = tr('See and edit the themes');
-    title.innerHTML = '<svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 14.6A7.6 7.6 0 0 1 9.4 4.5a7.6 7.6 0 1 0 10.1 10.1z"/><path d="M17 3.5v4M15 5.5h4"/></svg><span></span>' + CHEVRON;
-    title.querySelector('span').textContent = moods.length ? tr('Themes') + ' · ' + moods.length : tr('Themes');
+    title.innerHTML = '<svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 14.6A7.6 7.6 0 0 1 9.4 4.5a7.6 7.6 0 1 0 10.1 10.1z"/><path d="M17 3.5v4M15 5.5h4"/></svg><span class="h-modes__what"><span class="h-name"></span><span class="h-value"></span></span>' + CHEVRON;
+    const active = moods.find(m => m.current);
+    title.querySelector('.h-name').textContent = tr('Themes');
+    title.querySelector('.h-value').textContent = active ? active.name : moods.length === 1 ? tr('1 theme') : moods.length ? tr('{0} themes', moods.length) : tr('None yet');
     title.addEventListener('click', () => dockTo('modes'));
     const more = document.createElement('button');
     more.className = 'link h-modes__more';

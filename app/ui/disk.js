@@ -492,16 +492,18 @@
     const largest = exam && exam.ready ? exam.largest : [];
     const d = exam && exam.ready ? exam.duplicates : null;
     const extra = d && d.state === 'done' ? (d.groups || []).reduce((t, g) => t + g.size * (g.files.length - 1), 0) : 0;
-    const modes = [['rings', 'Rings', ''], ['largest', 'Largest files', largest.length ? size(largest.reduce((t, x) => t + x.size, 0)) : ''],
-      ['duplicates', 'Duplicates', extra ? size(extra) : '']];
+    const modes = [['rings', 'Rings', '', '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.5"/><path d="M12 3.5v5"/>'],
+      ['largest', 'Largest files', largest.length ? size(largest.reduce((t, x) => t + x.size, 0)) : '', '<path d="M5 20V10M10 20V4M15 20v-7M20 20v-4"/>'],
+      ['duplicates', 'Duplicates', extra ? size(extra) : '', '<rect x="4" y="7.5" width="10" height="12.5" rx="2"/><path d="M8 7.5V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-4"/>']];
     const key = JSON.stringify([modes, examTab, LANGUAGE]);
     const zone = $('f-modes');
     if (zone.dataset.key === key) return;
     zone.dataset.key = key;
-    zone.replaceChildren(...modes.map(([mode, label, total]) => {
+    zone.replaceChildren(...modes.map(([mode, label, total, icon]) => {
       const b = document.createElement('button');
       b.setAttribute('role', 'tab');
       b.setAttribute('aria-selected', String(mode === examTab));
+      b.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${icon}</svg>`;
       b.append(tr(label));
       if (total) b.append(Object.assign(document.createElement('small'), { textContent: total }));
       b.addEventListener('click', () => {
@@ -528,7 +530,8 @@
     const box = $('f-examine');
     box.hidden = examTab === 'rings';
     if (box.hidden) return;
-    const list = $('f-exam-list'), help = $('f-exam-help'), all = $('f-all'), run = $('f-dup-run');
+    const list = $('f-exam-list'), help = $('f-exam-help'), all = $('f-all'), run = $('f-dup-run'), bar = $('f-progress');
+    bar.hidden = true;
     const empty = text => Object.assign(document.createElement('div'), { className: 'row empty', textContent: tr(text) });
     const total = (value, detail) => { $('f-total-value').textContent = value; $('f-total-detail').textContent = detail; };
     const offer = (count, bytes, label) => {
@@ -551,24 +554,28 @@
     run.disabled = d.state === 'running';
     run.querySelector('span').textContent = tr(d.state === 'done' ? 'Compare again' : 'Find duplicates');
     if (examTab === 'largest') {
+      // Largest files is for seeing where the space goes, not for emptying: a big file is often one to keep, so it goes one by one.
       const bytes = exam.largest.reduce((t, x) => t + x.size, 0);
       total(size(bytes), exam.largest.length === 1 ? tr('in the largest file of the folder') : tr('in the {0} largest files of the folder', exam.largest.length));
-      offer(exam.largest.length, bytes, 'Move all to the Recycle Bin');
-      help.textContent = tr('Files of 1 MB or more in the analyzed folder, apps and Windows left out. The bin sends one file to the Recycle Bin, with Undo.');
+      offer(0, 0, '');
+      help.textContent = tr('Where the space goes: the biggest files of the analyzed folder, apps and Windows left out. Most are worth keeping; one that is no longer needed, like an old installer or a video already saved elsewhere, can go to the Recycle Bin, with Undo.');
       list.replaceChildren(...(exam.largest.length ? exam.largest.map(file => fileRow(file, true)) : [empty('No file of 1 MB or more here')]));
       return;
     }
     if (d.state === 'running') {
-      total('', tr('Comparing {0} of {1} files, same size first, then same content', d.done, d.total));
+      const part = d.bytesTotal ? Math.min(100, Math.round(d.bytesDone / d.bytesTotal * 100)) : 0;
+      total(part + ' %', tr('Comparing {0} of {1} files, same size first, then same content', d.done, d.total));
       offer(0, 0, '');
-      help.textContent = '';
+      bar.hidden = false;
+      bar.firstElementChild.style.width = part + '%';
+      help.textContent = tr('This can take a few minutes on a whole drive, mostly for big videos and archives. Bramble keeps working if this page is left.');
       list.replaceChildren(Object.assign(document.createElement('div'), { className: 'row loading', textContent: tr('Comparing') }));
       return;
     }
     if (d.state !== 'done') {
       total('', tr(d.state === 'failed' ? 'The comparison stopped, try again' : 'Not compared yet'));
       offer(0, 0, '');
-      help.textContent = tr('Bramble compares the content of files of the same size, without changing anything. It can take a few minutes on a whole drive.');
+      help.textContent = tr('Bramble compares the content of files of the same size, without changing anything. It can take a few minutes on a whole drive: it can be left running.');
       list.replaceChildren();
       return;
     }

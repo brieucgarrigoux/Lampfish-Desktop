@@ -196,6 +196,12 @@ namespace Bramble
                 if (maxY >= Rows - 1) Spread(Visual(bottom));
             }
 
+            public Point Cell(Point pixel)
+            {
+                int x = (int)Math.Round((pixel.X - originX) / stepX), y = (int)Math.Round((pixel.Y - originY) / stepY);
+                return new Point(Math.Max(0, Math.Min(Columns - 1, x)), Math.Max(0, Math.Min(Rows - 1, y)));
+            }
+
             public Point Pixel(PointF p)
             {
                 double extra;
@@ -286,13 +292,24 @@ namespace Bramble
             if (columns > 2 * down) { rows += columns - 2 * down; columns = 2 * down; }
             int top = (rows + 1) / 2, bottom = rows / 2, right = (columns + 1) / 2, left = columns / 2;
             var list = new List<PointF> { corners[0] };
-            for (int i = 0; i < top; i++) list.Add(new PointF((i + 1) * (C - 1f) / (top + 1), 0));
+            foreach (float x in Along(top, bottom, C)) list.Add(new PointF(x, 0));
             list.Add(corners[1]);
-            for (int i = 0; i < right; i++) list.Add(new PointF(C - 1, (i + 1) * (L - 1f) / (right + 1)));
+            foreach (float y in Along(right, left, L)) list.Add(new PointF(C - 1, y));
             list.Add(corners[2]);
-            for (int i = 0; i < bottom; i++) list.Add(new PointF(C - 1 - (i + 1) * (C - 1f) / (bottom + 1), L - 1));
+            foreach (float x in Along(bottom, top, C)) list.Add(new PointF(C - 1 - x, L - 1));
             list.Add(corners[3]);
-            for (int i = 0; i < left; i++) list.Add(new PointF(0, L - 1 - (i + 1) * (L - 1f) / (left + 1)));
+            foreach (float y in Along(left, right, L)) list.Add(new PointF(0, L - 1 - y));
+            return list;
+        }
+
+        // Positions between two corners. Facing sides with as many icons share an even spacing, so they line up;
+        // otherwise each side keeps to the cells of the grid, its gap in the middle, so the rows of both sides still match.
+        static List<float> Along(int count, int facing, int length)
+        {
+            var list = new List<float>();
+            int inside = length - 2;
+            for (int i = 0; i < count; i++)
+                list.Add(count == facing || inside <= 0 ? (i + 1) * (length - 1f) / (count + 1) : 1 + (float)Math.Round((i + .5) * inside / count - .5, MidpointRounding.AwayFromZero));
             return list;
         }
 
@@ -411,15 +428,14 @@ namespace Bramble
             }
             else
             {
-                var sizes = groups.Select(x => x.Count).ToList();
-                bool apart = true;
-                if (arrangement == "center") CenterWidth(grids[0], sizes, out apart);
+                // Categories follow each other, in their order, as in the small pictures: one line per category left lines of a single icon.
+                int total = groups.Sum(x => x.Count), done = 0;
+                var sizes = new List<int> { total };
                 int e = 0, li = 0, k = 0;
                 var rows = Rows(arrangement, grids[0], sizes);
                 for (int gi = 0; gi < groups.Count; gi++)
                 {
                     var group = groups[gi];
-                    if (k > 0 && apart) { li++; k = 0; }
                     for (int i = 0; i < group.Count; i++)
                     {
                         bool placed = false;
@@ -428,7 +444,7 @@ namespace Bramble
                             if (li >= rows.Count)
                             {
                                 e++; li = 0; k = 0;
-                                if (e < grids.Count) rows = Rows(arrangement, grids[e], new[] { group.Count - i }.Concat(sizes.Skip(gi + 1)).ToList());
+                                if (e < grids.Count) rows = Rows(arrangement, grids[e], new List<int> { total - done });
                                 continue;
                             }
                             if (k >= rows[li].Count) { li++; k = 0; continue; }
@@ -436,6 +452,7 @@ namespace Bramble
                             if (grids[e].Taken.Contains(p)) continue;
                             set(grids[e], p, group[i]);
                             placed = true;
+                            done++;
                         }
                         if (!placed) rest.Add(group[i]);
                     }
@@ -657,6 +674,43 @@ namespace Bramble
             Program.UndoableRemoval(d.Name, () => R.Layouts.Insert(Math.Min(index, R.Layouts.Count), d));
         }
 
+        // The desktop icons follow the main screen: read before the change, the returned action puts the icons of the old main screen
+        // on the new one cell for cell, and the reverse. An arrangement made by Bramble is simply made again on the new main screen.
+        public static Action FollowPrimary(string from, string to)
+        {
+            try
+            {
+                var now = Capture();
+                if (now.Count == 0) return null;
+                bool placed = Same(now, R.Placed);
+                Size c = DesktopIcons.Case();
+                int iconSize = DesktopIcons.IconSize();
+                var cells = new List<Tuple<string, string, Point>>();
+                foreach (var p in now)
+                {
+                    var s = Screen.AllScreens.FirstOrDefault(x => x.Bounds.Contains(p.X, p.Y)) ?? Screen.PrimaryScreen;
+                    cells.Add(Tuple.Create(p.Id, s.DeviceName, new Grid(s.WorkingArea, c, Scale(s), iconSize).Cell(new Point(p.X, p.Y))));
+                }
+                return () =>
+                {
+                    if (placed) { Sort(R.LastSort); return; }
+                    var grids = Screen.AllScreens.ToDictionary(s => s.DeviceName, s => new Grid(s.WorkingArea, DesktopIcons.Case(), Scale(s), DesktopIcons.IconSize()));
+                    var positions = new Dictionary<string, Point>();
+                    foreach (var t in cells)
+                    {
+                        string device = t.Item2 == from ? to : t.Item2 == to ? from : t.Item2;
+                        Grid g;
+                        if (!grids.TryGetValue(device, out g)) continue;
+                        var cell = Free(g, new Point(Math.Min(g.Columns - 1, t.Item3.X), Math.Min(g.Rows - 1, t.Item3.Y)));
+                        g.Taken.Add(cell);
+                        positions[t.Item1] = g.Pixel(cell);
+                    }
+                    Place(positions);
+                };
+            }
+            catch (Exception ex) { Program.Log(ex); return null; }
+        }
+
         // Saved positions are desktop coordinates, which all move when the main screen changes.
         public static void Moved(int dx, int dy)
         {
@@ -819,6 +873,23 @@ namespace Bramble
                         Program.Send(Map(false));
                         return true;
                     case "erase": Erase(Convert.ToInt32(m["index"])); return true;
+                    case "resetAll":
+                    {
+                        var defaults = new ArrangeSettings();
+                        var categories = R.Categories.ToList();
+                        string screen = R.Screen, arrangement = R.Arrangement, sort = R.LastSort;
+                        bool moved = R.Original != null;
+                        if (moved) { Remember(); Apply(R.Original); }
+                        R.Categories = defaults.Categories; R.Screen = defaults.Screen; R.Arrangement = defaults.Arrangement; R.LastSort = defaults.LastSort;
+                        Program.Undoable(Language.T("Arrange reset"), () =>
+                        {
+                            R.Categories = categories; R.Screen = screen; R.Arrangement = arrangement; R.LastSort = sort;
+                            if (moved) Undo();
+                            Program.Send(Map(false));
+                        });
+                        Program.Send(Map(false));
+                        return true;
+                    }
                     case "restoreAuto": R.RestoreAuto = Convert.ToBoolean(m["value"]); return true;
                 }
             }

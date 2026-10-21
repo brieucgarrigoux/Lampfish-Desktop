@@ -115,12 +115,14 @@ namespace Bramble
                 }),
             };
 
+            var measures = new List<object>();
             return new
             {
                 type = "health.report",
                 when = DateTime.Now.ToString("HH:mm"),
                 checks = checks.Select(c => new { id = c.Id, level = c.Level, value = c.Value, detail = c.Detail, action = c.Action }).ToArray(),
-                slow = Slow(startup.Count, free).Select(f => new { level = f.Level, title = f.Title, detail = f.Detail, action = f.Action }).ToArray(),
+                slow = Slow(startup.Count, free, measures).Select(f => new { level = f.Level, title = f.Title, detail = f.Detail, action = f.Action }).ToArray(),
+                measures = measures.ToArray(),
             };
         }
 
@@ -324,7 +326,9 @@ namespace Bramble
             return names.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         }
 
-        static List<Finding> Slow(int startup, double free)
+        static string Level(double value, double warn, double bad) { return value >= bad ? "bad" : value >= warn ? "warn" : "ok"; }
+
+        static List<Finding> Slow(int startup, double free, List<object> measures)
         {
             var list = new List<Finding>();
             var cpu = new PerformanceCounter("Processor Information", "% Processor Utility", "_Total");
@@ -349,10 +353,17 @@ namespace Bramble
             if (memory >= 75)
                 list.Add(new Finding { Level = memory >= 85 ? "bad" : "warn", Title = Language.T("Memory {0} % in use", Math.Round(memory)), Detail = Language.T("Windows moves memory to the disk, which is much slower"), Action = "free" });
 
+            double days = GetTickCount64() / 86400000.0;
+            measures.Add(new { id = "processor", value = Math.Round(processor) + " %", level = Level(processor, 80, 95) });
+            measures.Add(new { id = "memory", value = Math.Round(memory) + " %", level = Level(memory, 75, 85) });
+            measures.Add(new { id = "disk", value = Math.Round(disk) + " %", level = Level(disk, 90, 101) });
+            measures.Add(new { id = "uptime", value = days >= 1 ? Language.T("{0} d", (int)days) : Language.T("{0} h", (int)(days * 24)), level = Level(days, 7, double.MaxValue) });
+            measures.Add(new { id = "startup", value = startup.ToString(), level = startup > 10 ? "warn" : "ok" });
+            measures.Add(new { id = "free", value = Math.Round(free) + " %", level = free < 5 ? "bad" : free < 10 ? "warn" : "ok" });
+
             if (disk >= 90)
                 list.Add(new Finding { Level = "warn", Title = Language.T("Disk {0} % busy", Math.Round(disk)), Detail = Language.T("Programs wait for the disk"), Action = "view:hardware" });
 
-            double days = GetTickCount64() / 86400000.0;
             if (days >= 7)
                 list.Add(new Finding { Level = "warn", Title = Language.T("Not restarted for {0} days", (int)days), Detail = Language.T("Shutting down does not count when Fast startup is on: a restart clears memory and finishes updates") });
 
@@ -372,14 +383,13 @@ namespace Bramble
                 {
                     var zones = new PerformanceCounterCategory("Thermal Zone Information");
                     double hottest = zones.GetInstanceNames().Select(n => { using (var c = new PerformanceCounter("Thermal Zone Information", "Temperature", n)) return (double)c.NextValue(); }).Where(k => k > 200).DefaultIfEmpty(0).Max() - 273.15;
+                    if (hottest > 0) measures.Add(new { id = "heat", value = Math.Round(hottest) + " °C", level = Level(hottest, 90, 95) });
                     if (hottest >= 90)
                         list.Add(new Finding { Level = hottest >= 95 ? "bad" : "warn", Title = Language.T("{0} °C inside the PC", Math.Round(hottest)), Detail = Language.T("The processor slows down to cool off, check the vents") });
                 }
             }
             catch (Exception ex) { Program.Log(ex); }
 
-            if (list.Count == 0)
-                list.Add(new Finding { Level = "ok", Title = Language.T("Nothing slows this PC right now"), Detail = Language.T("Processor, memory, disk, restarts and startup are fine") });
             return list;
         }
 

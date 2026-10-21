@@ -675,13 +675,15 @@
   $('create-save').append(nameInput, copy, create);
 
   // Every setting goes back to its default; the logo, the text and the picture added stay, since they are content and not settings.
-  const resetTop = el('div', 'panel-top');
-  const resetButton = el('button', 'link panel-reset');
+  const resetBlock = el('div', 'cr-block');
+  const resetGroup = el('section', 'cr-card group');
+  const resetButton = el('button', 'row action stop');
   resetButton.type = 'button';
-  resetButton.title = tr('Every setting back to default, the logo, text and picture stay');
-  resetButton.innerHTML = RESET + '<span></span>';
-  resetButton.querySelector('span').textContent = tr('Reset settings');
-  resetTop.append(resetButton);
+  resetButton.innerHTML = '<span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4v4h4"/></svg><span><small></small></span></span>';
+  resetButton.querySelector('small').before(tr('Reset everything'));
+  resetButton.querySelector('small').textContent = tr('Every setting, the logo, text and picture stay');
+  resetGroup.append(resetButton);
+  resetBlock.append(el('h2', '', tr('Maintenance')), resetGroup);
   const looks = s => JSON.stringify(Object.assign({}, s, { files: null, aspect: 0, title: Object.assign({}, s.title, { text: '' }) }));
   function defaults() {
     const f = fresh();
@@ -693,7 +695,7 @@
   }
   function paintReset() { resetButton.disabled = looks(st) === looks(defaults()); }
   resetReady = true;
-  resetButton.addEventListener('click', () => {
+  confirmReset(resetButton, 'Every setting of the wallpaper being made goes back to default. The logo, the text and the picture added stay.', () => {
     const before = JSON.parse(JSON.stringify(st)), beforeTheme = theme;
     Object.assign(st, defaults());
     theme = 'midnight';
@@ -702,7 +704,7 @@
   });
 
   zone.append(banner, stage, tools, hint, themeTitle, themes, input);
-  panel.append(resetTop, soundCard, logoCard, textCard, backgroundCard, particlesCard, glowCard);
+  panel.append(soundCard, logoCard, textCard, backgroundCard, particlesCard, glowCard, resetBlock);
   function editMode(name) {
     editing = name;
     nameInput.value = name;

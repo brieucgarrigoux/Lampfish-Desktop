@@ -190,9 +190,9 @@
         name.className = 'screen-label' + (e.primary ? ' primary' : '');
         name.textContent = e.n + (e.primary ? tr(' · main') : '');
         if (!e.primary && map.screens.length > 1) {
-          const main = Object.assign(document.createElement('button'), { type: 'button', className: 'link screen-main', textContent: tr('Make main screen'), title: tr('The Start menu and new windows will open on this screen') });
-          main.addEventListener('click', () => send('display.primary', { key: `${e.w}x${e.h}@${e.x},${e.y}` }));
-          name.append(main);
+          screen.classList.add('can-main');
+          screen.title = tr('Click to make it the main screen, the icons follow');
+          screen.addEventListener('click', () => send('display.primary', { key: `${e.w}x${e.h}@${e.x},${e.y}` }));
         }
         Object.assign(name.style, { left: (e.x - left) * k + GAP + 'px', top: (e.y - up + e.h) * k + 'px' });
         screen.append(...taskbars(e));

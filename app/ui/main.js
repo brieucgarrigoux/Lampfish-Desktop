@@ -168,6 +168,10 @@ function render(state) {
   $('place-auto').hidden = !state.weatherPlace;
   check('language', state.language || 'auto');
   check('zoom', String(state.zoom || 100));
+  const zoom = state.zoom || 100;
+  $('zoom-value').textContent = zoom + ' %';
+  $('zoom-out').disabled = zoom <= ZOOMS[0];
+  $('zoom-in').disabled = zoom >= ZOOMS[ZOOMS.length - 1];
   renderUpdates(state.updates);
   if (state.about) {
     $('about-version').textContent = tr('Version {0} · built on {1}', state.about.version, new Date(state.about.compile).toLocaleDateString(LOCALE, { day: 'numeric', month: 'long', year: 'numeric' }));
@@ -230,7 +234,33 @@ $('undo').addEventListener('click', () => {
   if (toastUndo) { const undo = toastUndo; toastUndo = null; undo(); }
   else send('undo');
 });
-$('w-reset').addEventListener('click', () => send('resetEffects'));
+// Reset everything, in every service: a first click arms the row and says what will happen, a second one within 6 s confirms.
+const WARNING = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 21 19.5H3z"/><path d="M12 10v4.5M12 17h.01"/></svg>';
+function confirmReset(button, warning, run) {
+  let timer = 0, note = null;
+  const disarm = () => {
+    clearTimeout(timer);
+    timer = 0;
+    button.classList.remove('armed');
+    if (note) { note.remove(); note = null; }
+  };
+  button.addEventListener('click', () => {
+    if (timer) { disarm(); run(); return; }
+    button.dataset.confirm = tr('Click again');
+    button.classList.add('armed');
+    note = document.createElement('p');
+    note.className = 'warning-note';
+    note.setAttribute('role', 'alert');
+    note.innerHTML = WARNING + '<span></span>';
+    note.querySelector('span').textContent = tr(typeof warning === 'function' ? warning() : warning) + ' ' + tr('Undo is offered for 8 seconds.');
+    (button.closest('.group') || button).after(note);
+    timer = setTimeout(disarm, 6000);
+  });
+  button.addEventListener('blur', () => setTimeout(() => { if (timer && document.activeElement !== button) disarm(); }, 150));
+}
+confirmReset($('w-reset'), 'Light, speed, blur, saturation, dim, framing, slideshow, frame rate, pauses and sound reaction go back to default. The wallpaper stays.', () => send('resetWallpaper'));
+confirmReset($('s-reset'), 'Every event gets its first sound back, only the events on by default stay on, and the volume goes back to 100 %.', () => send('station.resetAll'));
+confirmReset($('r-reset'), 'The icons go back to where they were before Bramble first moved them, and the screen, arrangement, sort and category order go back to default.', () => send('arrange.resetAll'));
 
 let depth = 0;
 const carriesFiles = e => [...e.dataTransfer.types].includes('Files');
@@ -415,7 +445,8 @@ function renderWallpaper(state, before) {
   }
   heroEffects(state.blur, state.saturation, state.dim);
   check('fit', state.fit);
-  $('w-reset').disabled = Object.keys(CURSORS).every(id => state[id] === CURSORS[id].normal) && state.fit === 'fill';
+  $('w-reset').disabled = Object.keys(CURSORS).every(id => state[id] === CURSORS[id].normal) && state.fit === 'fill' && !state.slideshow && !state.shuffle
+    && (state.frameRate || 60) === 60 && state.pauseAuto && !state.pauseOnBattery && !state.reactive;
   check('slideshow', String(state.slideshow));
   check('frameRate', String(state.frameRate || 60));
   $('shuffle').checked = !!state.shuffle;
@@ -720,6 +751,9 @@ function zoomBy(step) {
   send('zoom', { value: ZOOMS[i] });
 }
 for (const b of $('zoom').children) b.addEventListener('click', () => send('zoom', { value: Number(b.dataset.value) }));
+$('zoom-out').addEventListener('click', () => zoomBy(-1));
+$('zoom-in').addEventListener('click', () => zoomBy(1));
+$('zoom-value').addEventListener('click', () => send('zoom', { value: 100 }));
 addEventListener('keydown', e => {
   if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
   if (e.key === '+' || e.key === '=') { e.preventDefault(); zoomBy(1); }
