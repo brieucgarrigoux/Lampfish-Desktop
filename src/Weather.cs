@@ -13,13 +13,38 @@ namespace Bramble
         static readonly JavaScriptSerializer json = new JavaScriptSerializer();
         static object last;
         static DateTime when = DateTime.MinValue;
-        static bool running;
+        static bool running, stale;
         static double lat, lon;
         static string city;
+        static int searches;
 
-        public static void Receive(string action)
+        public static void Receive(string action, Dictionary<string, object> m)
         {
-            if (action != "weather") return;
+            switch (action)
+            {
+                case "weather": Fetch(); return;
+                case "search": Search(m.ContainsKey("query") ? (m["query"] as string ?? "").Trim() : ""); return;
+                case "place":
+                    double a = Number(m, "latitude"), b = Number(m, "longitude");
+                    string name = m.ContainsKey("name") ? m["name"] as string : null, label = m.ContainsKey("label") ? m["label"] as string : null;
+                    if (double.IsNaN(a) || double.IsNaN(b) || Math.Abs(a) > 90 || Math.Abs(b) > 180 || string.IsNullOrWhiteSpace(name)) return;
+                    Program.R.WeatherPlace = new WeatherPlace { Name = Cut(name, 80), Label = Cut(label ?? name, 160), Latitude = a, Longitude = b };
+                    break;
+                case "automatic": Program.R.WeatherPlace = null; break;
+                default: return;
+            }
+            last = null;
+            city = null;
+            if (running) stale = true;
+            Program.Save();
+            Program.SendState();
+            Fetch();
+        }
+
+        static string Cut(string s, int max) { s = s.Trim(); return s.Length > max ? s.Substring(0, max) : s; }
+
+        static void Fetch()
+        {
             if (!Program.R.Weather) { Program.Send(new { type = "home.weather", ok = false }); return; }
             if (last != null && (DateTime.Now - when).TotalMinutes < 15) { Program.Send(last); return; }
             if (running) return;
@@ -27,10 +52,39 @@ namespace Bramble
             Task.Run(() => Read()).ContinueWith(t => Program.OnInterface(() =>
             {
                 running = false;
+                if (stale) { stale = false; city = null; Fetch(); return; }
                 if (t.IsFaulted) { Program.Log(t.Exception); Program.Send(new { type = "home.weather", ok = false }); return; }
                 last = t.Result;
                 when = DateTime.Now;
                 Program.Send(last);
+            }));
+        }
+
+        static void Search(string query)
+        {
+            int ticket = ++searches;
+            if (query.Length < 2) { Program.Send(new { type = "home.places", places = new object[0] }); return; }
+            string url = "https://geocoding-api.open-meteo.com/v1/search?count=6&format=json&language=" + Language.Code + "&name=" + Uri.EscapeDataString(Cut(query, 80));
+            Task.Run(() =>
+            {
+                var r = json.Deserialize<Dictionary<string, object>>(Download(url, null));
+                var list = r.ContainsKey("results") ? r["results"] as System.Collections.ArrayList : null;
+                var places = new List<object>();
+                if (list != null)
+                    foreach (Dictionary<string, object> p in list)
+                    {
+                        Func<string, string> text = key => p.ContainsKey(key) && p[key] != null ? p[key].ToString() : "";
+                        var parts = new List<string> { text("name") };
+                        foreach (string part in new[] { text("admin1"), text("country") })
+                            if (part.Length > 0 && !parts.Contains(part)) parts.Add(part);
+                        places.Add(new { name = text("name"), label = string.Join(", ", parts), latitude = Number(p, "latitude"), longitude = Number(p, "longitude") });
+                    }
+                return places;
+            }).ContinueWith(t => Program.OnInterface(() =>
+            {
+                if (ticket != searches) return;
+                if (t.IsFaulted) { Program.Log(t.Exception); Program.Send(new { type = "home.places", failed = true, places = new object[0] }); return; }
+                Program.Send(new { type = "home.places", places = t.Result });
             }));
         }
 
@@ -54,6 +108,8 @@ namespace Bramble
         // The Cloudflare endpoint is undocumented, so country.is (open source, free, no key) takes over when it fails.
         static void Locate()
         {
+            var chosen = Program.R.WeatherPlace;
+            if (chosen != null) { lat = chosen.Latitude; lon = chosen.Longitude; city = chosen.Name; return; }
             try
             {
                 var m = json.Deserialize<Dictionary<string, object>>(Download("https://speed.cloudflare.com/meta", "https://speed.cloudflare.com/"));

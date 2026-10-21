@@ -233,6 +233,16 @@ body[data-view="tasks"]:not(.sheet-open) .panel, body[data-view="modes"]:not(.mo
 .row .value { flex: 0 4 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-soft); }
 .row .time { font: 12px var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); }
 .row.empty { position: relative; inset: auto; justify-content: flex-start; color: var(--text-pale); font-size: 13px; }
+.search { flex: 1 1 180px; max-width: 280px; display: flex; align-items: center; gap: 8px; padding: 0 10px; border-radius: var(--radius-control); background: var(--sunken); box-shadow: inset 0 0 0 1px transparent; transition: box-shadow var(--fast); }
+.search:focus-within { box-shadow: inset 0 0 0 1px var(--accent); }
+.search svg { flex: none; width: 15px; height: 15px; fill: none; stroke: var(--text-pale); stroke-width: 1.8; stroke-linecap: round; }
+.search input { flex: 1; min-width: 0; height: 32px; border: 0; padding: 0; background: none; color: var(--text); font: inherit; font-size: 13px; outline: none; }
+.search input::placeholder { color: var(--text-pale); }
+.search input::-webkit-search-cancel-button { filter: grayscale(1) brightness(1.4); cursor: pointer; }
+.place-row .search { flex: 0 1 220px; }
+.places > .row { position: relative; }
+.places > .row::before { content: ""; position: absolute; top: 0; left: 14px; right: 0; height: 1px; background: var(--hairline); }
+.places .caption small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .caption { display: flex; align-items: center; gap: 12px; min-width: 0; text-align: left; }
 .caption > span { display: block; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

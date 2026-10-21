@@ -492,6 +492,12 @@
         <input type="checkbox" id="weather">
         <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a4 4 0 0 1-.5-8 5.5 5.5 0 0 1 10.6 1.2A3.4 3.4 0 0 1 17 18z"/></svg><span>Weather on Home<small>Cloudflare or country.is finds your approximate location from your IP address, Open-Meteo sends the forecast</small></span></span>
       </label>
+      <div class="row place-row" id="place-row">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-6.5-5.6-6.5-10.5a6.5 6.5 0 0 1 13 0c0 4.9-6.5 10.5-6.5 10.5z"/><circle cx="12" cy="10" r="2.3"/></svg><span>Weather location<small id="place-state">Automatic, from the IP address</small></span></span>
+        <button class="link" type="button" id="place-auto" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4v4h-4"/></svg>Automatic</button>
+        <label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg><input type="search" id="place-search" placeholder="Search a city" aria-label="Search a city" autocomplete="off" spellcheck="false"></label>
+      </div>
+      <div class="places" id="place-results" hidden></div>
       <label class="toggle">
         <input type="checkbox" id="updates-auto">
         <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19.5h14"/></svg><span>Check for updates<small>Asks GitHub once a day for the number of the latest version</small></span></span>

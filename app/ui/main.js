@@ -132,6 +132,7 @@ webview.addEventListener('message', e => {
   }
 
   if (Bramble.home && m.type && (m.type.startsWith('network.') || m.type.startsWith('hardware.') || m.type === 'arrange.map' || m.type === 'tasks.list')) Bramble.home.event(m);
+  if (m.type === 'home.places') { renderPlaces(m); return; }
   if (m.type && m.type.startsWith('home.')) { if (Bramble.home) Bramble.home.event(m); return; }
   if (m.type && m.type.startsWith('station.')) { if (Bramble.station) Bramble.station.event(m); return; }
   if (m.type && m.type.startsWith('icons.')) { if (Bramble.icons) Bramble.icons.event(m); return; }
@@ -156,6 +157,11 @@ function render(state) {
   Bramble.state = state;
   $('startup').checked = state.startup;
   $('weather').checked = state.weather;
+  $('place-row').hidden = !state.weather;
+  if (!state.weather) $('place-results').hidden = true;
+  $('place-state').textContent = state.weatherPlace || tr('Automatic, from the IP address');
+  $('place-state').translate = !state.weatherPlace;
+  $('place-auto').hidden = !state.weatherPlace;
   check('language', state.language || 'auto');
   check('zoom', String(state.zoom || 100));
   renderUpdates(state.updates);
@@ -246,6 +252,42 @@ addEventListener('drop', e => {
 
 $('startup').addEventListener('change', () => send('startup'));
 $('weather').addEventListener('change', () => { send('weather'); send('home.weather'); });
+
+const PIN = '<svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-6.5-5.6-6.5-10.5a6.5 6.5 0 0 1 13 0c0 4.9-6.5 10.5-6.5 10.5z"/><circle cx="12" cy="10" r="2.3"/></svg>';
+let placeTimer = 0;
+$('place-search').addEventListener('input', e => {
+  clearTimeout(placeTimer);
+  const query = e.target.value.trim();
+  placeTimer = setTimeout(() => send('home.search', { query }), query.length < 2 ? 0 : 350);
+});
+$('place-auto').addEventListener('click', () => send('home.automatic'));
+
+function renderPlaces(m) {
+  const zone = $('place-results'), query = $('place-search').value.trim();
+  const rows = m.places.map(p => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'row action';
+    b.translate = false;
+    b.innerHTML = '<span class="caption">' + PIN + '<span><small></small></span></span>';
+    b.querySelector('small').textContent = p.label;
+    b.querySelector('small').before(p.name);
+    b.addEventListener('click', () => {
+      send('home.place', p);
+      $('place-search').value = '';
+      zone.hidden = true;
+    });
+    return b;
+  });
+  if (!rows.length && query.length >= 2) {
+    const e = document.createElement('div');
+    e.className = 'row empty';
+    e.textContent = tr(m.failed ? 'Open-Meteo could not be reached, try again later' : 'No city found');
+    rows.push(e);
+  }
+  zone.replaceChildren(...rows);
+  zone.hidden = !rows.length;
+}
 $('updates-auto').addEventListener('change', e => send('updates.auto', { value: e.target.checked }));
 $('update-check').addEventListener('click', () => {
   const u = (Bramble.state && Bramble.state.updates) || {};

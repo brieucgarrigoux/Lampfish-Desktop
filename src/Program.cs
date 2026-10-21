@@ -22,11 +22,13 @@ namespace Bramble
     class ScreenWallpaper { public string Key, Wallpaper; }
 
     class WindowPlace { public int X, Y, Width, Height; public bool Maximized; }
+    class WeatherPlace { public string Name, Label; public double Latitude, Longitude; }
 
     class Settings
     {
         public string Language = "auto";
         public bool Weather = true;
+        public WeatherPlace WeatherPlace;
         public List<Dictionary<string, object>> NetworkTests = new List<Dictionary<string, object>>();
         public string Wallpaper = "bramble-logo.html";
         public List<ScreenWallpaper> ScreenWallpapers = new List<ScreenWallpaper>();
@@ -713,7 +715,7 @@ namespace Bramble
                 return;
             }
 
-            if (action.StartsWith("home.")) { Weather.Receive(action.Substring(action.IndexOf('.') + 1)); return; }
+            if (action.StartsWith("home.")) { Weather.Receive(action.Substring(action.IndexOf('.') + 1), m); return; }
 
             if (action.StartsWith("display.") || action.StartsWith("power."))
             {
@@ -857,6 +859,7 @@ namespace Bramble
                 paused = paused,
                 startup = StartupEnabled(),
                 weather = R.Weather,
+                weatherPlace = R.WeatherPlace == null ? null : R.WeatherPlace.Label,
                 reactive = R.Reactive,
                 zoom = R.Zoom,
                 moods = Moods.State(),
