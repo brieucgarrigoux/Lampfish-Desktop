@@ -36,6 +36,30 @@ namespace Bramble
 
         static Node root;
         static string rootPath;
+        static readonly string[][] LanguageFamilies =
+        {
+            new[] { "JavaScript", "js", "mjs", "cjs", "jsx" }, new[] { "TypeScript", "ts", "tsx", "mts", "cts" }, new[] { "Python", "py", "pyw" },
+            new[] { "C#", "cs" }, new[] { "Java", "java" }, new[] { "Kotlin", "kt", "kts" }, new[] { "Swift", "swift" }, new[] { "C", "c", "h" },
+            new[] { "C++", "cpp", "cc", "cxx", "hpp", "hh" }, new[] { "Go", "go" }, new[] { "Rust", "rs" }, new[] { "Ruby", "rb" }, new[] { "PHP", "php" },
+            new[] { "Lua", "lua" }, new[] { "Dart", "dart" }, new[] { "HTML", "html", "htm" }, new[] { "CSS", "css", "scss", "sass", "less" },
+            new[] { "Astro", "astro" }, new[] { "Vue", "vue" }, new[] { "Svelte", "svelte" }, new[] { "Shell", "sh", "bash", "zsh" },
+            new[] { "PowerShell", "ps1", "psm1" }, new[] { "Batchfile", "bat", "cmd" }, new[] { "SQL", "sql" }, new[] { "Jupyter Notebook", "ipynb" },
+            new[] { "R", "r" }, new[] { "Scala", "scala" }, new[] { "Perl", "pl", "pm" }, new[] { "Haskell", "hs" }, new[] { "Elixir", "ex", "exs" },
+            new[] { "GDScript", "gd" }, new[] { "GLSL", "glsl", "vert", "frag" },
+        };
+        // Like on GitHub, what other people wrote is left out: dependencies, caches, app data and the folders of Windows.
+        static readonly HashSet<string> Vendored = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "node_modules", ".git", ".svn", ".hg", "site-packages", "venv", ".venv", "__pycache__", "bower_components", "AppData", ".cache", ".npm",
+            ".nuget", ".cargo", ".rustup", ".gradle", ".m2", ".vscode", ".cursor", ".pyenv", ".conda", "anaconda3", "miniconda3",
+        };
+        static readonly HashSet<string> SystemRoots = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Windows", "Program Files", "Program Files (x86)", "ProgramData", "$Recycle.Bin", "System Volume Information",
+        };
+        static readonly Dictionary<string, int> LanguageOf = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        static readonly long[] languageBytes = new long[LanguageFamilies.Length];
+        static readonly long[] languageFiles = new long[LanguageFamilies.Length];
         static readonly long[] typesBytes = new long[9];
         static readonly long[] typesNumber = new long[9];
         static long fileCount, byteCount;
@@ -64,6 +88,8 @@ namespace Bramble
             };
             for (int i = 0; i < families.Length; i++)
                 foreach (string e in families[i]) Extensions["." + e] = i;
+            for (int i = 0; i < LanguageFamilies.Length; i++)
+                foreach (string e in LanguageFamilies[i].Skip(1)) LanguageOf["." + e] = i;
 
             progress = new System.Windows.Forms.Timer { Interval = 200 };
             progress.Tick += (s, e) => Program.Send(Progress());
@@ -118,6 +144,8 @@ namespace Bramble
             rootPath = source;
             Array.Clear(typesBytes, 0, 9);
             Array.Clear(typesNumber, 0, 9);
+            Array.Clear(languageBytes, 0, languageBytes.Length);
+            Array.Clear(languageFiles, 0, languageFiles.Length);
             fileCount = byteCount = 0;
             currentFolder = source;
             progress.Start();
@@ -125,7 +153,7 @@ namespace Bramble
             Task.Run(() =>
             {
                 var n = new Node { Name = NameOf(source), Folder = true };
-                Browse(source.TrimEnd('\\'), n, token.Token);
+                Browse(source.TrimEnd('\\'), n, token.Token, false);
                 return n;
             }).ContinueWith(t => Program.OnInterface(() =>
             {
@@ -145,7 +173,7 @@ namespace Bramble
             }));
         }
 
-        static void Browse(string folder, Node n, CancellationToken token)
+        static void Browse(string folder, Node n, CancellationToken token, bool left)
         {
             if (token.IsCancellationRequested) return;
             currentFolder = folder;
@@ -154,6 +182,8 @@ namespace Bramble
             if (h == new IntPtr(-1)) return;
             var under = new List<Node>();
             var paths = new List<string>();
+            var leftOut = new List<bool>();
+            bool atRoot = folder.Length == 2 && folder[1] == ':';
             long bytes = 0;
             int number = 0;
             try
@@ -166,12 +196,19 @@ namespace Bramble
                         if ((d.Attributes & ATTR_REPARSE) != 0) continue;
                         under.Add(new Node { Name = d.Name, Folder = true });
                         paths.Add(folder + "\\" + d.Name);
+                        leftOut.Add(left || Vendored.Contains(d.Name) || (atRoot && SystemRoots.Contains(d.Name)));
                         continue;
                     }
                     if ((d.Attributes & (ATTR_RECALL_ON_DATA_ACCESS | ATTR_OFFLINE)) != 0) continue;
                     long size = ((long)d.SizeHigh << 32) | d.SizeLow;
                     int type, point = d.Name.LastIndexOf('.');
                     if (point < 0 || !Extensions.TryGetValue(d.Name.Substring(point), out type)) type = 8;
+                    int language;
+                    if (!left && point >= 0 && LanguageOf.TryGetValue(d.Name.Substring(point), out language) && !d.Name.EndsWith(".min.js", StringComparison.OrdinalIgnoreCase) && !d.Name.EndsWith(".min.css", StringComparison.OrdinalIgnoreCase))
+                    {
+                        Interlocked.Add(ref languageBytes[language], size);
+                        Interlocked.Increment(ref languageFiles[language]);
+                    }
                     Interlocked.Add(ref typesBytes[type], size);
                     Interlocked.Increment(ref typesNumber[type]);
                     bytes += size;
@@ -189,7 +226,7 @@ namespace Bramble
             Interlocked.Add(ref fileCount, number);
             Interlocked.Add(ref byteCount, bytes);
 
-            Parallel.For(0, under.Count, i => Browse(paths[i], under[i], token));
+            Parallel.For(0, under.Count, i => Browse(paths[i], under[i], token, leftOut[i]));
             if (under.Count > 0)
             {
                 if (n.Children == null) n.Children = new List<Node>();
@@ -296,6 +333,12 @@ namespace Bramble
                 .Where(t => t.bytes > 0).OrderByDescending(t => t.bytes).ToArray();
         }
 
+        static object ListLanguages()
+        {
+            return LanguageFamilies.Select((l, i) => new { name = l[0], bytes = languageBytes[i], files = languageFiles[i] })
+                .Where(l => l.bytes > 0).OrderByDescending(l => l.bytes).ToArray();
+        }
+
         static void Choose()
         {
             string path = Icons.AskFolder(Language.T("Folder to analyze"));
@@ -373,6 +416,7 @@ namespace Bramble
                 duration = analysisDuration,
                 date = root != null ? analysisDate.ToString("s") : null,
                 types = root != null ? ListTypes() : null,
+                languages = root != null ? ListLanguages() : null,
             };
         }
 

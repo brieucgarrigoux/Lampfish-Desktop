@@ -355,6 +355,52 @@
     $('f-restart').querySelector('.glyph').innerHTML = f.running ? '<rect x="7" y="7" width="10" height="10" rx="1.5"/>' : '<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4v4h-4"/>';
   }
 
+  const LANGUAGE_COLORS = {
+    JavaScript: '#f1e05a', TypeScript: '#3178c6', Python: '#3572a5', 'C#': '#178600', Java: '#b07219', Kotlin: '#a97bff', Swift: '#f05138', C: '#555555',
+    'C++': '#f34b7d', Go: '#00add8', Rust: '#dea584', Ruby: '#701516', PHP: '#4f5d95', Lua: '#000080', Dart: '#00b4ab', HTML: '#e34c26', CSS: '#663399',
+    Astro: '#ff5a03', Vue: '#41b883', Svelte: '#ff3e00', Shell: '#89e051', PowerShell: '#012456', Batchfile: '#c1f12e', SQL: '#e38c00',
+    'Jupyter Notebook': '#da5b0b', R: '#198ce7', Scala: '#c22d40', Perl: '#0298c3', Haskell: '#5e5086', Elixir: '#6e4a7e', GDScript: '#355570', GLSL: '#5686a5',
+  };
+  function renderLanguages() {
+    const list = $('f-languages');
+    const all = f.languages || [];
+    $('f-languages-title').hidden = list.hidden = !all.length;
+    if (!all.length) return;
+    const total = all.reduce((s, l) => s + l.bytes, 0);
+    const shown = all.slice(0, 6), rest = all.slice(6);
+    if (rest.length) shown.push({ name: 'Other', bytes: rest.reduce((s, l) => s + l.bytes, 0), files: rest.reduce((s, l) => s + l.files, 0), other: true });
+    const percent = l => l.bytes / total * 100;
+    const text = l => percent(l) < 0.1 ? '< 0.1 %' : (Math.round(percent(l) * 10) / 10).toLocaleString(LOCALE) + ' %';
+    const bar = document.createElement('div');
+    bar.className = 'languages__bar';
+    bar.setAttribute('role', 'img');
+    bar.setAttribute('aria-label', shown.map(l => (l.other ? tr('Other') : l.name) + ' ' + text(l)).join(', '));
+    for (const l of shown) {
+      const part = document.createElement('i');
+      part.style.flexGrow = percent(l).toFixed(3);
+      part.style.background = l.other ? 'var(--text-pale)' : LANGUAGE_COLORS[l.name] || 'var(--text-pale)';
+      bar.append(part);
+    }
+    const items = document.createElement('ul');
+    items.className = 'languages__list';
+    for (const l of shown) {
+      const li = document.createElement('li');
+      li.innerHTML = '<span class="languages__dot"></span><span class="languages__name"></span><span class="languages__share"></span><span class="languages__size"></span>';
+      li.querySelector('.languages__dot').style.background = l.other ? 'var(--text-pale)' : LANGUAGE_COLORS[l.name] || 'var(--text-pale)';
+      const name = li.querySelector('.languages__name');
+      name.textContent = l.other ? tr('Other') : l.name;
+      if (!l.other) name.translate = false;
+      li.querySelector('.languages__share').textContent = text(l);
+      li.querySelector('.languages__size').textContent = size(l.bytes);
+      li.title = plural(l.files, 'file');
+      items.append(li);
+    }
+    const note = document.createElement('p');
+    note.className = 'languages__note';
+    note.textContent = tr('Dependencies, app data and system folders are left out');
+    list.replaceChildren(bar, items, note);
+  }
+
   function renderTypes() {
     const list = $('f-types');
     const types = f.types || [];
@@ -397,6 +443,7 @@
     const before = f;
     f = s;
     renderSources();
+    renderLanguages();
     renderTypes();
     if (!before || before.running !== f.running) renderAnalysis();
     renderCenter();
