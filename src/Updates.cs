@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using System.Windows.Forms;
+using Microsoft.Win32;
 
 namespace Bramble
 {
@@ -14,8 +17,10 @@ namespace Bramble
     {
         const string Latest = "https://api.github.com/repos/brieucgarrigoux/Bramble-Desktop/releases/latest";
         static readonly JavaScriptSerializer json = new JavaScriptSerializer();
-        static string status = "never", version, page;
+        const string UninstallKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\{982DBBF8-9DA8-4E70-8C9D-514A38FD61C4}_is1";
+        static string status = "never", version, page, setup, digest;
         static bool running;
+        static int progress;
 
         public static void Start()
         {
@@ -58,6 +63,8 @@ namespace Bramble
                 {
                     version = t.Result[0];
                     page = t.Result[1];
+                    setup = t.Result[2];
+                    digest = t.Result[3];
                     status = Newer(version, Program.Version) ? "available" : "latest";
                 }
                 Program.Save();
@@ -75,11 +82,77 @@ namespace Bramble
             using (var reader = new StreamReader(response.GetResponseStream()))
             {
                 var m = json.Deserialize<Dictionary<string, object>>(reader.ReadToEnd());
-                object tag, url;
+                object tag, url, assets, download = null, hash = null;
                 m.TryGetValue("tag_name", out tag);
                 m.TryGetValue("html_url", out url);
-                return new[] { ((tag as string) ?? "").TrimStart('v', 'V'), url as string };
+                m.TryGetValue("assets", out assets);
+                var asset = (assets as System.Collections.ArrayList ?? new System.Collections.ArrayList()).OfType<Dictionary<string, object>>().FirstOrDefault(a =>
+                {
+                    string name = a.ContainsKey("name") ? a["name"] as string ?? "" : "";
+                    return name.StartsWith("Bramble-Setup-", StringComparison.OrdinalIgnoreCase) && name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase);
+                });
+                if (asset != null) { asset.TryGetValue("browser_download_url", out download); asset.TryGetValue("digest", out hash); }
+                return new[] { ((tag as string) ?? "").TrimStart('v', 'V'), url as string, download as string, hash as string };
             }
+        }
+
+        static bool Installed()
+        {
+            using (var key = Registry.CurrentUser.OpenSubKey(UninstallKey))
+            {
+                string place = key == null ? null : key.GetValue("InstallLocation") as string;
+                return place != null && place.TrimEnd('\\').Equals(Program.Root, StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        static bool CanInstall()
+        {
+            return setup != null && setup.StartsWith("https://github.com/", StringComparison.OrdinalIgnoreCase)
+                && digest != null && digest.StartsWith("sha256:", StringComparison.OrdinalIgnoreCase) && Installed();
+        }
+
+        // GitHub computes the digest when the file is uploaded, so a file altered on the way never matches it.
+        static void Install()
+        {
+            if (running || status != "available" || !CanInstall()) return;
+            running = true;
+            status = "downloading";
+            progress = 0;
+            Program.SendState();
+            string file = Path.Combine(Path.GetTempPath(), "Bramble-Setup-" + version + ".exe");
+            string expected = digest.Substring("sha256:".Length).ToLowerInvariant();
+            Task.Run(() =>
+            {
+                using (var web = new WebClient())
+                {
+                    web.Headers[HttpRequestHeader.UserAgent] = "Bramble/" + Program.Version;
+                    web.DownloadProgressChanged += (s, e) =>
+                    {
+                        if (e.ProgressPercentage < progress + 5) return;
+                        progress = e.ProgressPercentage;
+                        Program.OnInterface(() => Program.SendState());
+                    };
+                    web.DownloadFileTaskAsync(setup, file).Wait();
+                }
+                using (var sha = SHA256.Create())
+                using (var stream = File.OpenRead(file))
+                    return string.Concat(sha.ComputeHash(stream).Select(b => b.ToString("x2"))) == expected;
+            }).ContinueWith(t => Program.OnInterface(() =>
+            {
+                running = false;
+                if (t.IsFaulted || !t.Result)
+                {
+                    if (t.IsFaulted) Program.Log(t.Exception.InnerException ?? t.Exception);
+                    try { File.Delete(file); } catch { }
+                    status = t.IsFaulted ? "downloadFailed" : "damaged";
+                    Program.SendState();
+                    return;
+                }
+                status = "installing";
+                Program.SendState();
+                Process.Start(new ProcessStartInfo(file, "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART") { UseShellExecute = true });
+                Program.Quit();
+            }));
         }
 
         static bool Newer(string candidate, string current)
@@ -104,6 +177,7 @@ namespace Bramble
                     Program.R.UpdatesAuto = Convert.ToBoolean(m["value"]);
                     if (Program.R.UpdatesAuto) Auto();
                     return true;
+                case "install": Install(); return false;
                 case "open":
                     if (page != null && page.StartsWith("https://github.com/", StringComparison.OrdinalIgnoreCase)) Process.Start(page);
                     return false;
@@ -113,7 +187,7 @@ namespace Bramble
 
         public static object State()
         {
-            return new { auto = Program.R.UpdatesAuto, status = status, version = version, last = Program.R.UpdatesLast };
+            return new { auto = Program.R.UpdatesAuto, status = status, version = version, last = Program.R.UpdatesLast, installable = status == "available" && CanInstall(), progress = progress };
         }
     }
 }

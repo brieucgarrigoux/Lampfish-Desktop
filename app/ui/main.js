@@ -184,15 +184,20 @@ function render(state) {
   if (state.announcement) toast(state.announcement, false, 4000);
 }
 
-const UPDATE_STATES = { never: 'Not checked yet', checking: 'Checking…', latest: 'Bramble is up to date', none: 'No published version found yet', failed: 'GitHub could not be reached, try again later' };
+const UPDATE_STATES = {
+  never: 'Not checked yet', checking: 'Checking…', latest: 'Bramble is up to date', none: 'No published version found yet', failed: 'GitHub could not be reached, try again later',
+  installing: 'Installing, Bramble restarts by itself', damaged: 'The download was damaged, nothing was installed', downloadFailed: 'The download failed, try again later',
+};
 function renderUpdates(u) {
   if (!u) return;
   $('updates-auto').checked = u.auto;
   const ready = u.status === 'available';
-  $('update-state').textContent = ready ? tr('Version {0} is available', u.version) : tr(UPDATE_STATES[u.status] || UPDATE_STATES.never);
-  $('update-check').textContent = tr(ready ? 'Download it' : 'Check now');
+  $('update-state').textContent = ready ? tr('Version {0} is available', u.version)
+    : u.status === 'downloading' ? tr('Downloading version {0}, {1} %', u.version, u.progress)
+    : tr(UPDATE_STATES[u.status] || UPDATE_STATES.never);
+  $('update-check').textContent = tr(ready ? (u.installable ? 'Install it' : 'Download it') : 'Check now');
   $('update-check').classList.toggle('update-ready', ready);
-  $('update-check').disabled = u.status === 'checking';
+  $('update-check').disabled = ['checking', 'downloading', 'installing'].includes(u.status);
   document.querySelector('.service--settings').classList.toggle('has-update', ready);
 }
 
@@ -242,7 +247,10 @@ addEventListener('drop', e => {
 $('startup').addEventListener('change', () => send('startup'));
 $('weather').addEventListener('change', () => { send('weather'); send('home.weather'); });
 $('updates-auto').addEventListener('change', e => send('updates.auto', { value: e.target.checked }));
-$('update-check').addEventListener('click', () => send(Bramble.state && Bramble.state.updates && Bramble.state.updates.status === 'available' ? 'updates.open' : 'updates.check'));
+$('update-check').addEventListener('click', () => {
+  const u = (Bramble.state && Bramble.state.updates) || {};
+  send(u.status !== 'available' ? 'updates.check' : u.installable ? 'updates.install' : 'updates.open');
+});
 $('folder-bramble').addEventListener('click', () => send('folderBramble'));
 $('log-errors').addEventListener('click', () => send('log'));
 
