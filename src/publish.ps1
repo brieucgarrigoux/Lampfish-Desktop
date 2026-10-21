@@ -1,4 +1,4 @@
-# Builds the release zip attached to a GitHub release: dist\Bramble-<version>.zip
+# Builds the installer attached to a GitHub release: dist\Bramble-Setup-<version>.exe
 # Ships only what the app needs to run: never settings, logs, caches, or the user's own icons, cursors and sounds.
 $ErrorActionPreference = 'Stop'
 $src = $PSScriptRoot
@@ -27,8 +27,10 @@ Get-ChildItem (Join-Path $root 'sounds') -Directory | Where-Object { $_.Name -ne
     Copy-Item $_.FullName (Join-Path $target "sounds\$($_.Name)") -Recurse
 }
 
-$zip = Join-Path $dist "Bramble-$version.zip"
-if (Test-Path $zip) { Remove-Item $zip -Force }
-Compress-Archive -Path $target -DestinationPath $zip
+$iscc = @((Get-Command ISCC.exe -ErrorAction SilentlyContinue).Source, "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe", "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe") | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
+if (-not $iscc) { throw "Inno Setup 6 is missing: winget install JRSoftware.InnoSetup" }
+& $iscc /Q "/DVersion=$version" "/DSource=$target" "/O$dist" (Join-Path $src 'installer.iss')
+if ($LASTEXITCODE -ne 0) { throw "Installer build failed" }
 Remove-Item $tmp -Recurse -Force
-Write-Host "OK: $zip ($([math]::Round((Get-Item $zip).Length / 1MB, 1)) MB)"
+$setup = Join-Path $dist "Bramble-Setup-$version.exe"
+Write-Host "OK: $setup ($([math]::Round((Get-Item $setup).Length / 1MB, 1)) MB)"
