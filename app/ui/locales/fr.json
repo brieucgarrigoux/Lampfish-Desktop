@@ -272,7 +272,6 @@
  "Local IP": "IP locale",
  "Public IP": "IP publique",
  "Router": "Box",
- "Size of the local network": "Taille du réseau local",
  "IPv6": "IPv6",
  "MAC address": "Adresse MAC",
  "Network adapter": "Carte réseau",
@@ -425,7 +424,6 @@
  "Adapter ID": "Identifiant de la carte",
  "Online gaming": "Jeu en ligne",
  "Up to the router": "Jusqu’à la box",
- "Address on the network": "L'adresse sur le réseau",
  "Memory is almost full": "La mémoire est presque pleine",
  "The gateway": "La passerelle",
  "Latency": "Latence",
@@ -435,7 +433,6 @@
  "Busy line": "Ligne pleine",
  "Moderate": "Modéré",
  "Wi-Fi name": "Nom du Wi-Fi",
- "Site names → addresses": "Noms de sites → adresses",
  "Standard": "Norme",
  "Next generation": "Nouvelle génération",
  "Computer": "Ordinateur",
@@ -847,7 +844,6 @@
  "{0} threads": "{0} fils d'exécution",
  "Close": "Fermer",
  "30 uses less energy": "30 consomme moins d'énergie",
- "The main specs, ready to paste in a message": "Les caractéristiques principales, prêtes à coller dans un message",
  "Add this theme": "Ajouter ce thème",
  "All themes": "Tous les thèmes",
  "Apps or files to open with this theme": "Applis ou fichiers à ouvrir avec ce thème",
@@ -1051,5 +1047,9 @@
  "Saved with other screens": "Enregistré avec d'autres écrans",
  "Pick a folder below to change its icon": "Choisir un dossier ci-dessous pour changer son icône",
  "For the slideshow, not for Next": "Pour le diaporama, pas pour Suivant",
- "Whole drive, Windows included": "Tout le disque, Windows compris"
+ "Whole drive, Windows included": "Tout le disque, Windows compris",
+ "On this network": "Sur ce réseau",
+ "Names → addresses": "Noms → adresses",
+ "Local network size": "Taille du réseau",
+ "Main specs, ready to paste": "Caractéristiques à coller"
 }

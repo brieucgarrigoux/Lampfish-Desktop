@@ -493,11 +493,11 @@
     } else if (publicIp === 'waiting') publicIpNode = document.createTextNode('…');
     else if (publicIp === 'missing') publicIpNode = document.createTextNode('Not found');
     a.replaceChildren(
-      row('ip', 'Local IP', "Address on the network", cx.ipv4),
+      row('ip', 'Local IP', 'On this network', cx.ipv4),
       row('world', 'Public IP', 'Seen from the Internet', publicIpNode),
       row('box', 'Router', 'The gateway', cx.gateway),
-      row('dns', 'DNS', 'Site names → addresses', cx.dns && cx.dns.join(', ')),
-      row('mask', 'Subnet mask', 'Size of the local network', cx.mask),
+      row('dns', 'DNS', 'Names → addresses', cx.dns && cx.dns.join(', ')),
+      row('mask', 'Subnet mask', 'Local network size', cx.mask),
       row('ip', 'IPv6', 'Next generation', cx.ipv6),
     );
     $('r-wifi-title').hidden = w.hidden = !cx.wifi;

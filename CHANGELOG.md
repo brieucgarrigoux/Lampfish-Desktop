@@ -57,7 +57,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Create: React to sound comes first in the panel.
 - Arrange: the first row keeps the same space from the top of the screen as the longest name of the last row from the taskbar, instead of touching the top edge.
 - Home: the desktop preview draws the icons at their real size and place.
-- Explanation lines that did not fit are shorter (Wallpaper, Create, Arrange), and the French texts no longer address the reader.
+- Explanation lines that did not fit are shorter (Wallpaper, Create, Arrange, Network, Hardware), and the French texts no longer address the reader.
 - Moods are now called Themes and have their own place at the top of the bar.
 - Create: the name and the Create button sit next to the title instead of covering the themes, every setting of the panel has its icon, Click to type and Add your logo stay on one line however small the box, and the editor starts fresh after the window is closed.
 - Arrange: the icon size is one of five sizes (Very small to Very large) instead of a slider, and icons are laid out again after a size change so they never overlap.
