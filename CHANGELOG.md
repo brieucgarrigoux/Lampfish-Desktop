@@ -6,6 +6,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- The titled sections of the side panel fold and unfold with a click on their title, in every service and in the Home panel, and stay as they were left.
 - Home: the side panel also changes things, not only shows them. Arrange offers the arrangements and your saved ones, Mouse the cursor themes, Sounds the volume and every event, Icons its folders.
 - Arrange: My arrangements keeps the icons as they are now under a name, with a small picture of each, so they can be put back later. Save current sits next to Undo and Back to original, and the same tiles are in the Home panel.
 - Home is a control center: a click on Icons, Arrange, Mouse, Sounds or Tasks opens the settings of that service in the side panel, with a link to the full page, instead of leaving Home.
@@ -85,7 +86,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Starting with Windows uses the --background option (--discret still works).
 
 ### Fixed
-- Home: Previous skipped the wallpaper shown at launch, because Bramble did not remember it, and Next after Previous picked a new wallpaper instead of going forward. Both now follow one history, back and forward.
+- Home: Previous and Next showed the wallpapers in a random order. They now follow the order of the Wallpaper page, and only the slideshow shuffles.
 - Arrange: the violet ring stayed on the last arrangement after restoring one of your own. It now sits on the saved arrangement that matches the desktop, and goes back to the arrangement in use as soon as the icons change.
 - Create: changing the size or the amount of particles reshuffled all of them on the screen, and embers lost their size when they came back. The size now applies while drawing and the amount only adds or removes particles.
 - Arrange: changing the icon size several times in a row, or on a layout Bramble did not make, piled the icons on the same rows. The layout from before the first click is now kept until the last one, and every icon keeps its cell or takes the nearest free one.

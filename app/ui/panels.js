@@ -86,9 +86,13 @@
 
 // Every titled section of the side panel folds, and stays folded the way it was left.
 function foldSections(container, key) {
-  let saved = {};
-  try { saved = JSON.parse(localStorage.getItem('folds') || '{}'); } catch (e) { }
-  const remember = () => { try { localStorage.setItem('folds', JSON.stringify(saved)); } catch (e) { } };
+  const read = () => { try { return JSON.parse(localStorage.getItem('folds') || '{}'); } catch (e) { return {}; } };
+  const saved = read();
+  const remember = (id, folded) => {
+    const all = read();
+    if (folded) all[id] = 1; else delete all[id];
+    try { localStorage.setItem('folds', JSON.stringify(all)); } catch (e) { }
+  };
   const headerOf = el => el.tagName === 'H2' ? el : el.classList.contains('title-panel') ? el.querySelector('h2') : null;
   let fold = null, inner = null, count = 0;
   for (const el of [...container.children]) {
@@ -114,8 +118,7 @@ function foldSections(container, key) {
         const open = mine.classList.contains('collapsed');
         mine.classList.toggle('collapsed', !open);
         title.setAttribute('aria-expanded', String(open));
-        if (open) delete saved[id]; else saved[id] = 1;
-        remember();
+        remember(id, !open);
       });
       title.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); title.click(); } });
     } else if (inner) inner.append(el);
