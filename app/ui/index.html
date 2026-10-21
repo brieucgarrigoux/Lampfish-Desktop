@@ -21,6 +21,7 @@
 <link rel="stylesheet" href="home.css">
 <link rel="stylesheet" href="display.css">
 <link rel="stylesheet" href="health.css">
+<link rel="stylesheet" href="duplicates.css">
 <link rel="stylesheet" href="panels.css">
 <link rel="stylesheet" href="shell.css">
 </head>
@@ -75,6 +76,10 @@
     <svg viewBox="0 0 24 24"><path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/></svg>
     Folders
   </button>
+  <button class="service" data-view="duplicates">
+    <svg viewBox="0 0 24 24"><rect x="4" y="7.5" width="10" height="12.5" rx="2"/><path d="M8 7.5V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-4"/></svg>
+    Duplicates
+  </button>
   <button class="service" data-view="hardware">
     <svg viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/><rect x="9.5" y="9.5" width="5" height="5" rx=".8"/><path d="M9.5 3.5v3M14.5 3.5v3M9.5 17.5v3M14.5 17.5v3M3.5 9.5h3M3.5 14.5h3M17.5 9.5h3M17.5 14.5h3"/></svg>
     Hardware
@@ -115,7 +120,7 @@
         <div class="h-modes" id="h-moods"></div>
       </div>
       <div class="h-pc">
-        <h2>This PC</h2>
+        <div class="h-pc__head"><h2>This PC</h2><button class="mood-badge mood-badge--small security--high" id="h-health" title="Open Health" hidden><span class="mood-badge__face"></span><span class="mood-badge__text"></span></button></div>
         <div class="group h-rows" id="h-rows"></div>
         <h2><button class="h-title-link" id="h-display" data-dock-to="display" aria-pressed="false">Display<svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button></h2>
         <div class="group h-quick" id="h-quick">
@@ -161,7 +166,7 @@
     <h1>Themes</h1>
     <div class="mode-steps" id="mood-help"></div>
     <div class="mood-preview" id="mood-preview" hidden></div>
-    <div class="title-section title-section--first"><h2>My themes<span class="count" id="mood-count"></span></h2><button class="link" id="mood-import"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19.5h14"/></svg>Import</button></div>
+    <div class="title-section title-section--first"><h2>My themes<span class="count" id="mood-count"></span></h2><button class="button mood-import" id="mood-import"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19.5h14"/></svg>Import</button></div>
     <div class="moods" id="moods"></div>
     <div class="title-section"><h2>Start from a model</h2><span class="config">Built from your current setup</span></div>
     <div class="starters" id="mood-starters"></div>
@@ -365,23 +370,18 @@
         <button class="link" id="f-show" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Show in File Explorer</button>
       </div>
     </div>
-    <div class="segments tabs f-modes" id="f-modes" role="tablist" aria-label="What to show"></div>
     <div class="skeleton" id="f-zone">
       <canvas id="f-canvas" role="img" aria-label="The folder's contents as rings, detailed in the Contents list of the panel"></canvas>
       <div class="center" id="f-center"><span class="name-center"></span><span class="value-center"></span><span class="detail-center"></span></div>
     </div>
     <p class="footer-files"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span id="f-footer"></span></p>
-    <div class="f-examine" id="f-examine" hidden>
-      <div class="f-total" id="f-total">
-        <div class="f-total__what"><span class="f-total__value" id="f-total-value"></span><span class="f-total__detail" id="f-total-detail"></span></div>
-        <button class="button" id="f-dup-run" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="7.5" width="10" height="12.5" rx="2"/><path d="M8 7.5V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-4"/></svg><span>Find duplicates</span></button>
-        <button class="button f-all" id="f-all" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12.5h8L17 7"/></svg><span></span></button>
-      </div>
-      <p class="f-warning" id="f-warning" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 21 19.5H3z"/><path d="M12 10v4.5M12 17h.01"/></svg><span></span></p>
-      <div class="f-progress" id="f-progress" hidden><i></i></div>
-      <p class="help-section" id="f-exam-help"></p>
-      <div class="group f-exam-list" id="f-exam-list"></div>
-    </div>
+  </section>
+
+  <section class="view view--duplicates only-duplicates" aria-label="Duplicates">
+    <h1>Duplicates</h1>
+    <div class="security dup-card security--high" id="dup-card"></div>
+    <h2 class="settings-title" id="dup-list-title" hidden>Copies, oldest first</h2>
+    <div id="dup-list"></div>
   </section>
 
   <section class="view view--network only-network" aria-label="Network">
@@ -466,6 +466,8 @@
     <div class="security health-card security--high" id="health-slow"><div class="row loading">Checking</div></div>
     <h2 class="settings-title">Radar</h2>
     <div class="security health-card security--high" id="health-radar"></div>
+    <h2 class="settings-title">Startup</h2>
+    <div class="group" id="health-startup"></div>
   </section>
 
   <section class="view view--tasks only-tasks" aria-label="Tasks">
@@ -521,14 +523,20 @@
         <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-6.5-5.6-6.5-10.5a6.5 6.5 0 0 1 13 0c0 4.9-6.5 10.5-6.5 10.5z"/><circle cx="12" cy="10" r="2.3"/></svg><span>Weather location<small id="place-state">Automatic, from the IP address</small></span></span>
         <button class="link" type="button" id="place-auto" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4v4h-4"/></svg>Automatic</button>
         <label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg><input type="search" id="place-search" placeholder="Search a city" aria-label="Search a city" autocomplete="off" spellcheck="false"></label>
+        <div class="places" id="place-results" hidden></div>
       </div>
-      <div class="places" id="place-results" hidden></div>
       <label class="toggle">
         <input type="checkbox" id="updates-auto">
         <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19.5h14"/></svg><span>Check for updates<small>Asks GitHub once a day for the number of the latest version</small></span></span>
       </label>
-      <div class="row"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.8 16.5a8.2 8.2 0 1 1 16.4 0"/><path d="m12 16.5 4-5"/></svg><span>Connection test<small>Cloudflare measures the speed, OVH takes over when Cloudflare limits the test</small></span></span><span class="value">When you run it</span></div>
-      <div class="row"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 3.5 5.4 3.5 8.5s-1 5.9-3.5 8.5c-2.5-2.6-3.5-5.4-3.5-8.5s1-5.9 3.5-8.5z"/></svg><span>Public IP<small>ipify shows the address the Internet sees, in Network</small></span></span><span class="value">When you ask</span></div>
+      <label class="toggle">
+        <input type="checkbox" id="allow-test">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.8 16.5a8.2 8.2 0 1 1 16.4 0"/><path d="m12 16.5 4-5"/></svg><span>Connection test<small>Cloudflare measures the speed, OVH takes over when Cloudflare limits the test</small></span></span>
+      </label>
+      <label class="toggle">
+        <input type="checkbox" id="allow-ip">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 3.5 5.4 3.5 8.5s-1 5.9-3.5 8.5c-2.5-2.6-3.5-5.4-3.5-8.5s1-5.9 3.5-8.5z"/></svg><span>Public IP<small>ipify shows the address the Internet sees, in Network</small></span></span>
+      </label>
     </div>
     <p class="help-section">Nothing else leaves this PC: no account, no analytics, nothing collected.</p>
 
@@ -536,63 +544,67 @@
     <details class="tr-fold">
       <summary class="group"><span class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 19 6v5.5c0 4.3-3 7.6-7 9-4-1.4-7-4.7-7-9V6z"/><path d="m9 12 2 2 4-4"/></svg><span>Each service, one by one<small>Nothing leaves the PC except the connections above, and every change can be undone</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></span></summary>
     <div class="group transparency">
-      <details class="tr-row">
+      <details class="tr-row" data-view="home">
         <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/></svg><span>Home<small>Changes nothing by itself</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
         <dl class="tr-body"><dt>Reads</dt><dd>The time, the weather and what This PC shows</dd><dt>Changes</dt><dd>Nothing: its shortcuts use the other services</dd><dt>To undo</dt><dd>Nothing to undo</dd></dl>
       </details>
-      <details class="tr-row">
+      <details class="tr-row" data-view="modes">
         <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 14.6A7.6 7.6 0 0 1 9.4 4.5a7.6 7.6 0 1 0 10.1 10.1z"/><path d="M17 3.5v4M15 5.5h4"/></svg><span>Themes<small>Applies a saved setup when asked</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
         <dl class="tr-body"><dt>Reads</dt><dd>The current wallpaper, effects, cursors and sounds, to save them</dd><dt>Changes</dt><dd>What a theme holds, when you apply it or when its trigger starts it, and the apps it opens</dd><dt>To undo</dt><dd>Undo in the toast after applying</dd></dl>
       </details>
-      <details class="tr-row">
+      <details class="tr-row" data-view="wallpaper">
         <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="m3.5 16 5-5 4 4 2.5-2.5 5.5 5.5"/><circle cx="15.5" cy="9.5" r="1.3"/></svg><span>Wallpaper<small>A window behind the desktop icons</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
         <dl class="tr-body"><dt>Reads</dt><dd>The files of the wallpapers folder</dd><dt>Changes</dt><dd>Nothing in Windows: the Windows wallpaper stays as it is</dd><dt>To undo</dt><dd>Quit Bramble to see the Windows wallpaper again</dd></dl>
       </details>
-      <details class="tr-row">
+      <details class="tr-row" data-view="create">
         <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="m21.6 3.6-1.3-1.3a1.2 1.2 0 0 0-1.7 0L2.4 18.6a1.2 1.2 0 0 0 0 1.7l1.3 1.3a1.2 1.2 0 0 0 1.7 0L21.6 5.4a1.2 1.2 0 0 0 0-1.8z"/><path d="m14 7 3 3"/><path d="M5 6v4M3 8h4"/><path d="M19 14v4M17 16h4"/><path d="M10 2v2M9 3h2"/></svg><span>Create<small>Makes wallpapers in its own folder</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
         <dl class="tr-body"><dt>Reads</dt><dd>The images and logo you add</dd><dt>Changes</dt><dd>A new folder in the wallpapers of Bramble</dd><dt>To undo</dt><dd>Remove the wallpaper, with Undo</dd></dl>
       </details>
-      <details class="tr-row">
+      <details class="tr-row" data-view="icons">
         <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="m12 7.8 1.2 2.6 2.8.3-2.1 1.9.6 2.8-2.5-1.4-2.5 1.4.6-2.8-2.1-1.9 2.8-.3z"/></svg><span>Icons<small>Folder icons and a right-click menu</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
         <dl class="tr-body"><dt>Reads</dt><dd>The icons of Windows, read in place and never copied</dd><dt>Changes</dt><dd>The desktop.ini file of the folders you choose, and the right-click menu if it is on</dd><dt>To undo</dt><dd>Back to original, Reset everything, or uninstalling Bramble</dd></dl>
       </details>
-      <details class="tr-row">
+      <details class="tr-row" data-view="mouse">
         <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5 18 12.3l-5.6.8-3.2 4.9z"/><path d="m12.4 13.1 3.6 6.4"/></svg><span>Mouse<small>Cursors and pointer settings</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
         <dl class="tr-body"><dt>Reads</dt><dd>The cursor settings of Windows</dd><dt>Changes</dt><dd>The cursors, the cursor size and the pointer settings of Windows</dd><dt>To undo</dt><dd>Back to original, or uninstalling Bramble for the cursors</dd></dl>
       </details>
-      <details class="tr-row">
+      <details class="tr-row" data-view="station">
         <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/></svg><span>Sounds<small>Plays sounds, changes nothing</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
         <dl class="tr-body"><dt>Reads</dt><dd>Windows events: lock, sleep, power, USB devices</dd><dt>Changes</dt><dd>Nothing: the Windows volume is never touched</dd><dt>To undo</dt><dd>Nothing to undo</dd></dl>
       </details>
-      <details class="tr-row">
+      <details class="tr-row" data-view="display">
         <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="12" rx="1.5"/><path d="M9 20h6M12 16.5V20"/></svg><span>Display<small>Screen, brightness and power</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
         <dl class="tr-body"><dt>Reads</dt><dd>The screens, their brightness and the power settings</dd><dt>Changes</dt><dd>Warm screen through the accessibility color filter, which goes away with Bramble, brightness, the main screen, sleep delays and energy saver</dd><dt>To undo</dt><dd>Undo in the toast after each change</dd></dl>
       </details>
-      <details class="tr-row">
+      <details class="tr-row" data-view="arrange">
         <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><rect x="14" y="14" width="6" height="6" rx="1.2"/></svg><span>Arrange<small>Moves the desktop icons</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
         <dl class="tr-body"><dt>Reads</dt><dd>The position and size of the desktop icons</dd><dt>Changes</dt><dd>Where the icons are, their size, and auto arrange and align to grid</dd><dt>To undo</dt><dd>Undo, Back to original or a saved arrangement</dd></dl>
       </details>
-      <details class="tr-row">
+      <details class="tr-row" data-view="health">
         <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19.5s-7.5-4.3-7.5-10A4.2 4.2 0 0 1 12 7a4.2 4.2 0 0 1 7.5 2.5c0 5.7-7.5 10-7.5 10z"/><path d="M7 12.5h2.5l1.5-2.5 2 4 1.5-1.5H17"/></svg><span>Health<small>Reads, changes nothing</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
         <dl class="tr-body"><dt>Reads</dt><dd>Antivirus, firewall, Windows Update history, BitLocker, Secure Boot, account control, startup programs and load</dd><dt>Changes</dt><dd>Nothing: each button opens the right place in Windows</dd><dt>To undo</dt><dd>Nothing to undo</dd></dl>
       </details>
-      <details class="tr-row">
+      <details class="tr-row" data-view="tasks">
         <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M6.5 13h2.5l1.5-4 3 7 1.5-3h2.5"/></svg><span>Tasks<small>Closes programs only when asked</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
         <dl class="tr-body"><dt>Reads</dt><dd>The running programs, their files, startup entries and connections</dd><dt>Changes</dt><dd>Closes a program when you click Close or Free up memory, after a warning</dd><dt>To undo</dt><dd>An app can be opened again</dd></dl>
       </details>
-      <details class="tr-row">
-        <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/></svg><span>Folders<small>Sends a file to the Recycle Bin only when asked</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
-        <dl class="tr-body"><dt>Reads</dt><dd>The names and sizes of the files in the analyzed folder, and their content to find duplicates</dd><dt>Changes</dt><dd>Moves a file to the Recycle Bin after a confirming click</dd><dt>To undo</dt><dd>Undo for 8 seconds, then the Recycle Bin of Windows</dd></dl>
+      <details class="tr-row" data-view="files">
+        <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/></svg><span>Folders<small>Reads, changes nothing</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
+        <dl class="tr-body"><dt>Reads</dt><dd>The names and sizes of the files in the analyzed folder</dd><dt>Changes</dt><dd>Nothing</dd><dt>To undo</dt><dd>Nothing to undo</dd></dl>
       </details>
-      <details class="tr-row">
+      <details class="tr-row" data-view="duplicates">
+        <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="7.5" width="10" height="12.5" rx="2"/><path d="M8 7.5V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-4"/></svg><span>Duplicates<small>Sends copies to the Recycle Bin only when asked</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
+        <dl class="tr-body"><dt>Reads</dt><dd>The names, sizes and content of the files of 1 MB or more in the chosen folder</dd><dt>Changes</dt><dd>Moves extra copies to the Recycle Bin after a confirming click, never the last copy</dd><dt>To undo</dt><dd>Undo for 8 seconds, then the Recycle Bin of Windows</dd></dl>
+      </details>
+      <details class="tr-row" data-view="hardware">
         <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/><rect x="9.5" y="9.5" width="5" height="5" rx=".8"/><path d="M9.5 3.5v3M14.5 3.5v3M9.5 17.5v3M14.5 17.5v3M3.5 9.5h3M3.5 14.5h3M17.5 9.5h3M17.5 14.5h3"/></svg><span>Hardware<small>Reads, changes nothing</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
         <dl class="tr-body"><dt>Reads</dt><dd>The parts of the PC and their load, without a driver</dd><dt>Changes</dt><dd>Nothing</dd><dt>To undo</dt><dd>Nothing to undo</dd></dl>
       </details>
-      <details class="tr-row">
+      <details class="tr-row" data-view="network">
         <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.2" r="1.1"/></svg><span>Network<small>Reads, tests only when asked</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
         <dl class="tr-body"><dt>Reads</dt><dd>The network adapter, the Wi-Fi and the addresses</dd><dt>Changes</dt><dd>Nothing: the speed test reaches Cloudflare or OVH only when you run it</dd><dt>To undo</dt><dd>Nothing to undo</dd></dl>
       </details>
-      <details class="tr-row">
+      <details class="tr-row" data-view="settings">
         <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.2M12 18.3v2.2M20.5 12h-2.2M5.7 12H3.5M18 6l-1.6 1.6M7.6 16.4 6 18M18 18l-1.6-1.6M7.6 7.6 6 6"/><circle cx="12" cy="12" r="6.3"/></svg><span>Settings<small>Start with Windows and the window</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
         <dl class="tr-body"><dt>Reads</dt><dd>Its own settings file</dd><dt>Changes</dt><dd>Start with Windows when it is on, and the right-click menu of Icons</dd><dt>To undo</dt><dd>Turn the option off, or uninstall Bramble</dd></dl>
       </details>
@@ -723,11 +735,6 @@
   </div>
 
   <div class="only-icons">
-    <h2>Maintenance</h2>
-    <div class="group">
-      <button class="row action" id="icons-refresh"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4v4h-4"/></svg><span>Refresh icons<small>If File Explorer keeps the old one</small></span></span><svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
-      <button class="row action stop" id="icons-reset-all"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4v4h4"/></svg><span id="reset-all-title">Reset everything<small id="reset-all-help">Every folder gets its own icon back</small></span></span></button>
-    </div>
     <h2 id="title-custom">Customized folders</h2>
     <div class="group" id="list-custom"></div>
     <h2>Desktop folders</h2>
@@ -752,6 +759,11 @@
         <input type="checkbox" id="menu-click">
         <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3.5" width="10" height="17" rx="5"/><path d="M12 3.5v6M12 9.5h5"/></svg><span>Right-click menu<small>Adds “Change icon”</small></span></span>
       </label>
+    </div>
+    <h2>Maintenance</h2>
+    <div class="group">
+      <button class="row action" id="icons-refresh"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4v4h-4"/></svg><span>Refresh icons<small>If File Explorer keeps the old one</small></span></span><svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+      <button class="row action stop" id="icons-reset-all"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4v4h4"/></svg><span id="reset-all-title">Reset everything<small id="reset-all-help">Every folder gets its own icon back</small></span></span></button>
     </div>
   </div>
 
@@ -909,6 +921,11 @@
 
   <div class="only-create" id="create-panel"></div>
 
+  <div class="only-duplicates">
+    <h2>Where to search</h2>
+    <div class="group" id="dup-places"></div>
+  </div>
+
 </aside>
 
 <div class="drop" aria-hidden="true"><div class="drop__frame"><svg viewBox="0 0 24 24"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5"/><path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg><p>Drop to add</p><small id="drop-hint"></small></div></div>
@@ -933,6 +950,7 @@
 <script src="creator.js"></script>
 <script src="display.js"></script>
 <script src="health.js"></script>
+<script src="duplicates.js"></script>
 <script src="home.js"></script>
 <script src="panels.js"></script>
 <script src="scrollbars.js"></script>

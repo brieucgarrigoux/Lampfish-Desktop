@@ -145,7 +145,7 @@
   }
   let r = null;
   let map = null;
-  let shown = false, timer = 0, drag = null, keyScreens = '';
+  let shown = false, timer = 0, drag = null, keyScreens = '', switching = 0;
   const images = new Map();
   const points = new Map(), names = new Map();
   let scale = 1, origin = { x: 0, y: 0 };
@@ -192,7 +192,13 @@
         if (!e.primary && map.screens.length > 1) {
           screen.classList.add('can-main');
           screen.title = tr('Click to make it the main screen, the icons follow');
-          screen.addEventListener('click', () => send('display.primary', { key: `${e.w}x${e.h}@${e.x},${e.y}` }));
+          screen.addEventListener('click', () => {
+            // Windows moves the screens, then Bramble moves the icons: the map waits for both instead of showing each step.
+            zone.classList.add('switching');
+            clearTimeout(switching);
+            switching = setTimeout(() => zone.classList.remove('switching'), 3200);
+            send('display.primary', { key: `${e.w}x${e.h}@${e.x},${e.y}` });
+          });
         }
         Object.assign(name.style, { left: (e.x - left) * k + GAP + 'px', top: (e.y - up + e.h) * k + 'px' });
         screen.append(...taskbars(e));

@@ -232,8 +232,8 @@ namespace Bramble
                     }));
                     break;
                 case "traffic": Program.Send(Traffic()); break;
-                case "publicip": PublicIp(); break;
-                case "test": Test(); break;
+                case "publicip": if (Program.R.PublicIp) PublicIp(); break;
+                case "test": if (Program.R.SpeedTest) Test(); break;
                 case "settings":
                     try { System.Diagnostics.Process.Start("ms-settings:network-status"); } catch (Exception ex) { Program.Log(ex); }
                     break;

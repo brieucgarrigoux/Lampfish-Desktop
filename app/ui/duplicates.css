@@ -1,0 +1,27 @@
+.view--duplicates { max-width: 900px; margin-inline: auto; container: duplicates / inline-size; }
+.dup-card { margin-bottom: 4px; }
+.dup-seal .seal__ring { position: absolute; inset: 9px; z-index: 1; border-radius: 50%; background: conic-gradient(from 0deg, var(--lamp) calc(var(--part, 0) * 1%), rgba(255, 255, 255, .1) 0);
+  -webkit-mask: radial-gradient(circle, transparent 62%, #000 63%); mask: radial-gradient(circle, transparent 62%, #000 63%); }
+.dup-seal .seal__text { position: relative; z-index: 2; font: 700 14px var(--display); font-variant-numeric: tabular-nums; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, .7); }
+.dup-freed { flex: none; align-self: center; margin-top: 0; font: 12px var(--numbers); font-variant-numeric: tabular-nums; color: #cdb8ff; }
+.dup-progress { height: 4px; margin: 0 24px 14px; border-radius: 2px; background: var(--meter); overflow: hidden; }
+.dup-progress i { display: block; height: 100%; border-radius: 2px; background: var(--accent); transition: width .5s; }
+.dup-keys { flex: none; display: flex; align-items: center; gap: 10px; }
+.dup-keep { display: flex; align-items: center; gap: 7px; }
+.dup-keep svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.dup-keep:hover { color: var(--danger); }
+.dup-keep.armed, .dup-keep.armed:hover { background: var(--danger-dim); box-shadow: inset 0 0 0 1px var(--danger); color: var(--danger); }
+.dup-card .warning-note { margin: 0 24px 12px; }
+.dup-group { margin-bottom: 10px; }
+.dup-group__head { font-size: 12px; color: var(--text-soft); }
+.dup-file { gap: 10px; }
+.dup-file__what { flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.dup-file__name, .dup-file small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dup-file small { font-size: 12px; color: var(--text-pale); }
+.dup-file .size { flex: none; font: 12.5px var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-soft); }
+.dup-pill { flex: none; padding: 2px 8px; border-radius: 99px; background: var(--accent-dim); color: var(--accent); font-size: 11.5px; font-weight: 600; }
+.dup-tool { flex: none; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: var(--radius-small); background: none; color: var(--text-pale); transition: color var(--fast), background var(--fast), box-shadow var(--fast); }
+.dup-tool svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.dup-tool:hover:not(:disabled) { color: var(--text); background: var(--hover); }
+.dup-bin.armed { color: var(--danger); background: var(--danger-dim); box-shadow: inset 0 0 0 1px var(--danger); }
+@container duplicates (max-width: 640px) { .dup-card .security__checks { grid-template-columns: 1fr; } .dup-freed { display: none; } }

@@ -1,9 +1,12 @@
 .view--modes { max-width: 1120px; margin-inline: auto; }
-.mode-steps { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: -6px 2px 0; }
-.mode-step { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-soft); }
-.mode-step + .mode-step::before { content: ""; width: 18px; height: 1px; margin-right: 6px; background: var(--hairline-strong); }
-.mode-step b { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--raised); color: var(--text-soft); font: 600 11.5px/1 var(--numbers); }
-.mode-step svg { width: 16px; height: 16px; fill: none; stroke: var(--text-pale); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.mode-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: -4px 0 0; counter-reset: step; }
+.mode-step { position: relative; display: flex; align-items: center; gap: 14px; min-width: 0; padding: 16px 18px; border-radius: var(--radius-shell); background: var(--shell); box-shadow: var(--shell-edge), var(--shell-lift); font-size: 13px; line-height: 1.35; color: var(--text); }
+.mode-step + .mode-step::before { content: ""; position: absolute; left: -12px; top: 50%; width: 10px; height: 10px; margin-top: -5px; border-top: 2px solid var(--accent); border-right: 2px solid var(--accent); transform: rotate(45deg); opacity: .7; }
+.mode-step b { position: absolute; top: -9px; left: 14px; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(180deg, #a77cff, var(--accent-strong)); box-shadow: 0 0 0 2px var(--wallpaper), 0 0 12px rgba(149, 97, 243, .6); color: #fff; font: 700 11.5px/1 var(--numbers); }
+.mode-step svg { flex: none; width: 44px; height: 44px; padding: 11px; box-sizing: border-box; border-radius: var(--radius-control); background: var(--accent-dim); fill: none; stroke: var(--accent); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06); }
+@media (max-width: 900px) { .mode-steps { grid-template-columns: 1fr; } .mode-step + .mode-step::before { display: none; } }
+.mood-import { display: flex; align-items: center; gap: 7px; }
+.mood-import svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .view--modes .title-section--first { margin-top: 22px; }
 
 .moods { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 16px; }

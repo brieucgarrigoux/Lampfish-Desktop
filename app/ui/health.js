@@ -6,13 +6,35 @@
     antivirus: 'Antivirus', firewall: 'Firewall', updates: 'Windows updates', restart: 'Restart', encryption: 'Disk encryption',
     secureBoot: 'Secure Boot', uac: 'Account control', space: 'Disk space', startup: 'Startup',
   };
+  const ICONS = {
+    antivirus: '<path d="M12 3.5 19 6v5.5c0 4.3-3 7.6-7 9-4-1.4-7-4.7-7-9V6z"/><path d="m9 12 2 2 4-4"/>',
+    firewall: '<rect x="4" y="5.5" width="16" height="13" rx="1.5"/><path d="M4 9.8h16M4 14.2h16M9.5 5.5v4.3M14.5 9.8v4.4M9.5 14.2v4.3"/>',
+    updates: '<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4v4h-4"/>',
+    restart: '<path d="M12 3.5v8"/><path d="M7 6.3a7 7 0 1 0 10 0"/>',
+    encryption: '<rect x="5.5" y="10.5" width="13" height="10" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5M12 14.5v2.5"/>',
+    secureBoot: '<rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/><path d="m9.5 12 1.8 1.8 3.2-3.6M9.5 3.5v3M14.5 3.5v3M9.5 17.5v3M14.5 17.5v3M3.5 9.5h3M3.5 14.5h3M17.5 9.5h3M17.5 14.5h3"/>',
+    uac: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/>',
+    space: '<rect x="3.5" y="6.5" width="17" height="11" rx="2"/><path d="M6.5 12h6"/><circle cx="16.5" cy="12" r="1.2"/>',
+    startup: '<path d="M12 3.5c3 2 4.5 5 4.5 9l-2 3h-5l-2-3c0-4 1.5-7 4.5-9z"/><path d="M9.5 15.5 8 20.5l4-2 4 2-1.5-5"/><circle cx="12" cy="9.5" r="1.5"/>',
+    processor: '<rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/><rect x="9.5" y="9.5" width="5" height="5" rx=".8"/><path d="M9.5 3.5v3M14.5 3.5v3M9.5 17.5v3M14.5 17.5v3M3.5 9.5h3M3.5 14.5h3M17.5 9.5h3M17.5 14.5h3"/>',
+    memory: '<rect x="3.5" y="7" width="17" height="9.5" rx="1.5"/><path d="M7.5 10.5v2.5M11 10.5v2.5M14.5 10.5v2.5M6 16.5v2.5M18 16.5v2.5"/>',
+    disk: '<rect x="3.5" y="6.5" width="17" height="11" rx="2"/><path d="M6.5 12h6"/><circle cx="16.5" cy="12" r="1.2"/>',
+    uptime: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+    free: '<path d="M4 15.5a8 8 0 1 1 16 0"/><path d="M12 15.5 15.5 10"/><path d="M4 19.5h16"/>',
+    heat: '<path d="M10 14.5V5a2 2 0 0 1 4 0v9.5a4 4 0 1 1-4 0z"/><path d="M12 11v5"/>',
+  };
   const MEASURES = { processor: 'Processor', memory: 'Memory', disk: 'Disk activity', uptime: 'Since restart', startup: 'At startup', free: 'Free space', heat: 'Heat' };
-  const ACTIONS = { 'view:files': 'Open Folders', 'view:tasks': 'Open Tasks', 'view:hardware': 'Open Hardware', free: 'Free up memory' };
+  const ACTIONS = { 'view:files': 'Open Folders', 'view:tasks': 'Open Tasks', 'view:hardware': 'Open Hardware', free: 'Free up memory', startup: 'Open the startup apps' };
   const STATES = { ok: 'Fine', warn: 'Be careful', bad: 'Risky', neutral: 'Not reported' };
   const LAMPS = { ok: 'high', warn: 'medium', bad: 'low' };
-  const COLORS = { ok: ['#e2d0ff', '#9461f3'], warn: ['#ffe9b8', '#f0b955'], bad: ['#ffc2c8', '#ff5566'] };
   const worst = list => list.some(x => x.level === 'bad') ? 'bad' : list.some(x => x.level === 'warn') ? 'warn' : 'ok';
   const state = level => level === 'unknown' ? 'neutral' : level;
+  const svg = path => `<svg viewBox="0 0 24 24" aria-hidden="true">${path}</svg>`;
+  const FACES = {
+    ok: '<circle cx="12" cy="12" r="8.5"/><path d="M8.3 13.6c1 1.6 2.2 2.4 3.7 2.4s2.7-.8 3.7-2.4"/><circle cx="9" cy="9.8" r=".9"/><circle cx="15" cy="9.8" r=".9"/>',
+    warn: '<circle cx="12" cy="12" r="8.5"/><path d="M8.5 15h7"/><circle cx="9" cy="9.8" r=".9"/><circle cx="15" cy="9.8" r=".9"/>',
+    bad: '<circle cx="12" cy="12" r="8.5"/><path d="M8.3 16.2c1-1.6 2.2-2.4 3.7-2.4s2.7.8 3.7 2.4"/><circle cx="9" cy="9.8" r=".9"/><circle cx="15" cy="9.8" r=".9"/>',
+  };
 
   // The gradients of an inline SVG resolve their colors where they are defined, so each seal needs its own ids.
   function shield(id) {
@@ -27,7 +49,6 @@
       + `<path d="M23 31.5 29.6 38 42 24.5" fill="none" stroke="#000" stroke-opacity=".5" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 1.3)"/><path d="M23 31.5 29.6 38 42 24.5" fill="none" stroke="#fff" stroke-opacity=".95" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>`
       + `<path d="M32 11.5 49 17.6V28c-6 3-11 4.4-17 4.4S21 31 15 28V17.6z" fill="url(#${id}-gloss)" opacity=".7"/></g></svg>`;
   }
-  const GAUGE = '<svg class="seal__gauge" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.2 16.5a8.2 8.2 0 1 1 15.6 0"/><path d="m12 15.8 4.2-5.2"/><circle cx="12" cy="15.8" r="1.5"/></svg>';
 
   function act(action) {
     if (action.startsWith('view:')) showView(action.slice(5));
@@ -35,20 +56,22 @@
     else send('health.open', { target: action });
   }
 
-  function check(level, title, detail, value, action) {
+  function link(action) {
+    const b = Object.assign(document.createElement('button'), { className: 'link check__open', textContent: tr(ACTIONS[action] || 'Open') });
+    b.addEventListener('click', () => act(action));
+    return b;
+  }
+
+  function check(level, icon, title, detail, value, action) {
     const el = document.createElement('div');
-    el.className = 'check check--' + state(level);
-    el.innerHTML = '<span class="jewel" role="img"></span><div class="check__what"><span class="check__title"></span><span class="check__detail"></span></div>';
-    el.querySelector('.jewel').setAttribute('aria-label', tr(STATES[state(level)]));
+    el.className = 'check health-check check--' + state(level);
+    el.innerHTML = `<span class="health-icon" role="img">${svg(icon || ICONS.antivirus)}</span><div class="check__what"><span class="check__title"></span><span class="check__detail"></span></div>`;
+    el.firstChild.setAttribute('aria-label', tr(STATES[state(level)]));
     el.querySelector('.check__title').textContent = title;
     el.querySelector('.check__detail').textContent = el.querySelector('.check__detail').title = detail || '';
     const shown = value ? Object.assign(document.createElement('span'), { className: 'check__value' }) : null;
     if (shown) { shown.append(Object.assign(document.createElement('span'), { textContent: value })); el.append(shown); }
-    if (action) {
-      const b = Object.assign(document.createElement('button'), { className: 'link check__open', textContent: tr(ACTIONS[action] || 'Open') });
-      b.addEventListener('click', () => act(action));
-      (shown || el).append(b);
-    }
+    if (action) (shown || el).append(link(action));
     return el;
   }
 
@@ -61,19 +84,40 @@
     return h;
   }
 
+  // The state of the whole PC, from the findings and the checks: also shown on Home.
+  function overall(r) {
+    const all = r.slow.concat(r.checks);
+    return worst(all);
+  }
+
+  function verdict(r) {
+    const bad = r.slow.filter(f => f.level !== 'ok');
+    return bad.length ? tr(bad.length === 1 ? '1 thing slows this PC' : '{0} things slow this PC', bad.length) : tr('Nothing slows this PC');
+  }
+
+  function badge(r) {
+    const level = r ? overall(r) : 'ok';
+    const b = document.createElement('span');
+    b.className = 'mood-badge security--' + LAMPS[level];
+    b.innerHTML = `<span class="mood-badge__face">${svg(FACES[level])}</span><span class="mood-badge__text"></span>`;
+    b.lastChild.textContent = r ? verdict(r) : tr('Checking');
+    return b;
+  }
+
   function renderSlow() {
     const card = $('health-slow');
-    const slow = report.slow, bad = slow.filter(f => f.level !== 'ok');
-    card.className = 'security health-card security--' + LAMPS[worst(slow)];
-    const top = head(GAUGE, bad.length ? tr(bad.length === 1 ? '1 thing slows this PC' : '{0} things slow this PC', bad.length) : tr('Nothing slows this PC'),
-      tr('Processor, memory, disk, restarts, startup, space, energy and heat'));
+    const bad = report.slow.filter(f => f.level !== 'ok');
+    card.className = 'security health-card security--' + LAMPS[worst(report.slow)];
+    const top = document.createElement('div');
+    top.className = 'security__head';
+    const why = Object.assign(document.createElement('span'), { className: 'security__why health-why', textContent: tr('Processor, memory, disk, restarts, startup, space, energy and heat') });
     const screen = Object.assign(document.createElement('span'), { className: 't-memory__screen health-time', textContent: checking ? tr('Checking…') : tr('Checked at {0}', report.when) });
-    top.append(screen);
+    top.append(badge(report), why, screen);
     const parts = [top];
     if (bad.length) {
       const list = document.createElement('div');
       list.className = 'security__checks health-findings';
-      list.append(...bad.map(f => check(f.level, f.title, f.detail, null, f.action)));
+      list.append(...bad.map(f => check(f.level, ICONS[f.icon] || ICONS.processor, f.title, f.detail, null, f.action)));
       parts.push(list);
     }
     const measures = document.createElement('div');
@@ -81,8 +125,8 @@
     for (const m of report.measures || []) {
       const el = document.createElement('div');
       el.className = 'health-measure check--' + state(m.level);
-      el.innerHTML = '<span class="jewel" role="img"></span><span class="health-measure__name"></span><b></b>';
-      el.querySelector('.jewel').setAttribute('aria-label', tr(STATES[state(m.level)]));
+      el.innerHTML = `<span class="health-measure__icon" role="img">${svg(ICONS[m.id] || ICONS.processor)}</span><span class="health-measure__name"></span><b></b>`;
+      el.firstChild.setAttribute('aria-label', tr(STATES[state(m.level)]));
       el.querySelector('.health-measure__name').textContent = tr(MEASURES[m.id] || m.id);
       el.querySelector('b').textContent = m.value;
       measures.append(el);
@@ -93,26 +137,32 @@
 
   function renderRadar() {
     const card = $('health-radar');
-    const checks = report.checks, bad = checks.filter(c => c.level === 'warn' || c.level === 'bad');
+    const checks = report.checks.filter(c => c.id !== 'startup'), bad = checks.filter(c => c.level === 'warn' || c.level === 'bad');
     card.className = 'security health-card security--' + LAMPS[worst(checks)];
     const top = head(shield('health-shield'), bad.length ? tr(bad.length === 1 ? '1 point to look at' : '{0} points to look at', bad.length) : tr('Every check is fine'),
       tr('{0} checks read without administrator rights', checks.length));
-    // One light per check, in its own color, instead of a score.
-    const meter = document.createElement('div');
-    meter.className = 'security__meter health-lights';
-    meter.setAttribute('aria-hidden', 'true');
-    for (const c of checks) {
-      const i = document.createElement('i');
-      if (COLORS[c.level]) { i.className = 'on'; i.style.setProperty('--lamp-hi', COLORS[c.level][0]); i.style.setProperty('--lamp', COLORS[c.level][1]); }
-      i.title = tr(TITLES[c.id] || c.id);
-      meter.append(i);
-    }
-    top.append(meter);
     const list = document.createElement('div');
     list.className = 'security__checks';
-    list.append(...checks.map(c => check(c.level, tr(TITLES[c.id] || c.id), c.detail, c.value, c.level === 'ok' && c.id !== 'startup' ? null : c.action)));
+    list.append(...checks.map(c => check(c.level, ICONS[c.id], tr(TITLES[c.id] || c.id), c.detail, c.value, c.level === 'ok' ? null : c.action)));
     const first = checks.find(c => c.level === 'bad') || checks.find(c => c.level === 'warn');
     card.replaceChildren(top, list, next(first ? tr('Start with {0}: {1}', tr(TITLES[first.id] || first.id), first.detail) : tr('Read only: each button opens the right place in Windows'), false));
+    renderStartup(report.checks.find(c => c.id === 'startup'));
+  }
+
+  // Startup is a list to tidy rather than a yes or no check, so it has its own card with what it means and where to change it.
+  function renderStartup(c) {
+    const zone = $('health-startup');
+    if (!c) { zone.replaceChildren(); return; }
+    const row = document.createElement('div');
+    row.className = 'health-startup check--' + state(c.level);
+    row.innerHTML = `<span class="health-icon" role="img">${svg(ICONS.startup)}</span><div class="health-startup__what"><span class="health-startup__title"></span><span class="health-startup__names"></span><span class="health-startup__help"></span></div>`;
+    row.querySelector('.health-startup__title').textContent = c.value;
+    row.querySelector('.health-startup__names').textContent = c.detail;
+    row.querySelector('.health-startup__help').textContent = tr('Each one starts with Windows and stays in memory. They can be turned off in the startup apps of Windows, without uninstalling them.');
+    const open = Object.assign(document.createElement('button'), { className: 'button', textContent: tr('Open the startup apps') });
+    open.addEventListener('click', () => act('startup'));
+    row.append(open);
+    zone.replaceChildren(row);
   }
 
   function next(tip, again) {
@@ -134,14 +184,17 @@
   }
 
   function render() {
+    if (Bramble.home && Bramble.home.health) Bramble.home.health(report && !report.failed ? { level: overall(report), text: verdict(report) } : null);
+    if (!shown) return;
     if (checking && !report) {
       $('health-slow').replaceChildren(Object.assign(document.createElement('div'), { className: 'row loading', textContent: tr('Checking') }));
       return;
     }
     if (!report || report.failed) {
       $('health-slow').className = 'security health-card security--medium';
-      $('health-slow').replaceChildren(head(GAUGE, tr('Windows could not be read'), tr('Check again in a moment')), next('', true));
+      $('health-slow').replaceChildren(head(svg(FACES.warn), tr('Windows could not be read'), tr('Check again in a moment')), next('', true));
       $('health-radar').replaceChildren();
+      $('health-startup').replaceChildren();
       return;
     }
     renderSlow();
@@ -158,8 +211,8 @@
 
   function visible(yes) {
     shown = yes;
-    if (yes) send('health.scan', { again: false });
+    if (yes) { render(); send('health.scan', { again: false }); }
   }
 
-  Bramble.health = { event, visible };
+  Bramble.health = { event, visible, faces: FACES };
 })();

@@ -13,7 +13,7 @@ namespace Bramble
     static class Health
     {
         class Check { public string Id, Level = "unknown", Value, Detail, Action; }
-        class Finding { public string Level, Title, Detail, Action; }
+        class Finding { public string Level, Title, Detail, Action, Icon; }
 
         static bool running;
         static object last;
@@ -121,7 +121,7 @@ namespace Bramble
                 type = "health.report",
                 when = DateTime.Now.ToString("HH:mm"),
                 checks = checks.Select(c => new { id = c.Id, level = c.Level, value = c.Value, detail = c.Detail, action = c.Action }).ToArray(),
-                slow = Slow(startup.Count, free, measures).Select(f => new { level = f.Level, title = f.Title, detail = f.Detail, action = f.Action }).ToArray(),
+                slow = Slow(startup.Count, free, measures).Select(f => new { level = f.Level, title = f.Title, detail = f.Detail, action = f.Action, icon = f.Icon }).ToArray(),
                 measures = measures.ToArray(),
             };
         }
@@ -345,13 +345,13 @@ namespace Bramble
             if (processor >= 80)
             {
                 string top = after.Where(p => before.ContainsKey(p.Key)).OrderByDescending(p => p.Value.Item2 - before[p.Key].Item2).Select(p => p.Value.Item1).FirstOrDefault();
-                list.Add(new Finding { Level = processor >= 95 ? "bad" : "warn", Title = Language.T("Processor {0} % busy", Math.Round(processor)), Detail = top == null ? Language.T("Something is working hard") : Language.T("Mostly {0}", top), Action = "view:tasks" });
+                list.Add(new Finding { Icon = "processor", Level = processor >= 95 ? "bad" : "warn", Title = Language.T("Processor {0} % busy", Math.Round(processor)), Detail = top == null ? Language.T("Something is working hard") : Language.T("Mostly {0}", top), Action = "view:tasks" });
             }
 
             var info = new Microsoft.VisualBasic.Devices.ComputerInfo();
             double memory = 100.0 * (info.TotalPhysicalMemory - info.AvailablePhysicalMemory) / info.TotalPhysicalMemory;
             if (memory >= 75)
-                list.Add(new Finding { Level = memory >= 85 ? "bad" : "warn", Title = Language.T("Memory {0} % in use", Math.Round(memory)), Detail = Language.T("Windows moves memory to the disk, which is much slower"), Action = "free" });
+                list.Add(new Finding { Icon = "memory", Level = memory >= 85 ? "bad" : "warn", Title = Language.T("Memory {0} % in use", Math.Round(memory)), Detail = Language.T("Windows moves memory to the disk, which is much slower"), Action = "free" });
 
             double days = GetTickCount64() / 86400000.0;
             measures.Add(new { id = "processor", value = Math.Round(processor) + " %", level = Level(processor, 80, 95) });
@@ -362,20 +362,20 @@ namespace Bramble
             measures.Add(new { id = "free", value = Math.Round(free) + " %", level = free < 5 ? "bad" : free < 10 ? "warn" : "ok" });
 
             if (disk >= 90)
-                list.Add(new Finding { Level = "warn", Title = Language.T("Disk {0} % busy", Math.Round(disk)), Detail = Language.T("Programs wait for the disk"), Action = "view:hardware" });
+                list.Add(new Finding { Icon = "disk", Level = "warn", Title = Language.T("Disk {0} % busy", Math.Round(disk)), Detail = Language.T("Programs wait for the disk"), Action = "view:hardware" });
 
             if (days >= 7)
-                list.Add(new Finding { Level = "warn", Title = Language.T("Not restarted for {0} days", (int)days), Detail = Language.T("Shutting down does not count when Fast startup is on: a restart clears memory and finishes updates") });
+                list.Add(new Finding { Icon = "uptime", Level = "warn", Title = Language.T("Not restarted for {0} days", (int)days), Detail = Language.T("Shutting down does not count when Fast startup is on: a restart clears memory and finishes updates") });
 
             if (startup > 10)
-                list.Add(new Finding { Level = "warn", Title = Language.T("{0} programs start with Windows", startup), Detail = Language.T("Each one slows the start and stays in memory"), Action = "startup" });
+                list.Add(new Finding { Icon = "startup", Level = "warn", Title = Language.T("{0} programs start with Windows", startup), Detail = Language.T("Each one slows the start and stays in memory"), Action = "startup" });
 
             if (free < 10)
-                list.Add(new Finding { Level = free < 5 ? "bad" : "warn", Title = Language.T("Only {0} % of the system drive free", Math.Round(free)), Detail = Language.T("Windows needs room for updates and memory"), Action = "view:files" });
+                list.Add(new Finding { Icon = "free", Level = free < 5 ? "bad" : "warn", Title = Language.T("Only {0} % of the system drive free", Math.Round(free)), Detail = Language.T("Windows needs room for updates and memory"), Action = "view:files" });
 
             SYSTEM_POWER_STATUS power;
             if (GetSystemPowerStatus(out power) && power.SystemStatusFlag == 1)
-                list.Add(new Finding { Level = "warn", Title = Language.T("Energy saver is on"), Detail = Language.T("Windows slows the processor to save the battery"), Action = "saver" });
+                list.Add(new Finding { Icon = "free", Level = "warn", Title = Language.T("Energy saver is on"), Detail = Language.T("Windows slows the processor to save the battery"), Action = "saver" });
 
             try
             {
@@ -385,7 +385,7 @@ namespace Bramble
                     double hottest = zones.GetInstanceNames().Select(n => { using (var c = new PerformanceCounter("Thermal Zone Information", "Temperature", n)) return (double)c.NextValue(); }).Where(k => k > 200).DefaultIfEmpty(0).Max() - 273.15;
                     if (hottest > 0) measures.Add(new { id = "heat", value = Math.Round(hottest) + " °C", level = Level(hottest, 90, 95) });
                     if (hottest >= 90)
-                        list.Add(new Finding { Level = hottest >= 95 ? "bad" : "warn", Title = Language.T("{0} °C inside the PC", Math.Round(hottest)), Detail = Language.T("The processor slows down to cool off, check the vents") });
+                        list.Add(new Finding { Icon = "heat", Level = hottest >= 95 ? "bad" : "warn", Title = Language.T("{0} °C inside the PC", Math.Round(hottest)), Detail = Language.T("The processor slows down to cool off, check the vents") });
                 }
             }
             catch (Exception ex) { Program.Log(ex); }

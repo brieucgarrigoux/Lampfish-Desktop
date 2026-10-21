@@ -49,12 +49,12 @@ namespace Bramble
             new[] { "GDScript", "gd" }, new[] { "GLSL", "glsl", "vert", "frag" },
         };
         // Like on GitHub, what other people wrote is left out: dependencies, caches, app data and the folders of Windows.
-        static readonly HashSet<string> Vendored = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        internal static readonly HashSet<string> Vendored = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "node_modules", ".git", ".svn", ".hg", "site-packages", "venv", ".venv", "__pycache__", "bower_components", "AppData", ".cache", ".npm",
             ".nuget", ".cargo", ".rustup", ".gradle", ".m2", ".vscode", ".cursor", ".pyenv", ".conda", "anaconda3", "miniconda3",
         };
-        static readonly HashSet<string> SystemRoots = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        internal static readonly HashSet<string> SystemRoots = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "Windows", "Program Files", "Program Files (x86)", "ProgramData", "$Recycle.Bin", "System Volume Information",
         };
@@ -69,15 +69,7 @@ namespace Bramble
         static DateTime analysisDate;
         static double analysisDuration;
         static bool running;
-        static System.Windows.Forms.Timer progress, forget, comparing;
-        static System.Collections.Concurrent.ConcurrentBag<KeyValuePair<string, long>> found = new System.Collections.Concurrent.ConcurrentBag<KeyValuePair<string, long>>();
-        static Dictionary<string, long> bigFiles = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
-        static readonly HashSet<string> pending = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        static List<List<string>> duplicates;
-        static string duplicatesState = "idle";
-        static int compared, toCompare;
-        static long bytesCompared, bytesToCompare;
-        static CancellationTokenSource duplicatesCancel;
+        static System.Windows.Forms.Timer progress, forget;
 
         static DiskUsageSettings R { get { return Program.R.DiskUsage; } }
 
@@ -106,15 +98,11 @@ namespace Bramble
             forget.Tick += (s, e) =>
             {
                 forget.Stop();
-                if (running || pending.Count > 0) return;
+                if (running) return;
                 root = null;
                 rootPath = null;
-                bigFiles = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
-                StopDuplicates();
                 GC.Collect();
             };
-            comparing = new System.Windows.Forms.Timer { Interval = 400 };
-            comparing.Tick += (s, e) => Program.Send(Examine());
         }
 
         static string DefaultSource()
@@ -168,9 +156,6 @@ namespace Bramble
             Array.Clear(languageFiles, 0, languageFiles.Length);
             fileCount = byteCount = 0;
             currentFolder = source;
-            found = new System.Collections.Concurrent.ConcurrentBag<KeyValuePair<string, long>>();
-            bigFiles = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
-            StopDuplicates();
             progress.Start();
             var chrono = Stopwatch.StartNew();
             Task.Run(() =>
@@ -190,10 +175,7 @@ namespace Bramble
                     root = t.Result;
                     analysisDate = DateTime.Now;
                     analysisDuration = chrono.Elapsed.TotalSeconds;
-                    foreach (var p in found) bigFiles[p.Key] = p.Value;
-                    found = new System.Collections.Concurrent.ConcurrentBag<KeyValuePair<string, long>>();
                     Program.Send(Tree(rootPath, null));
-                    Program.Send(Examine());
                 }
                 Program.SendState();
             }));
@@ -243,7 +225,6 @@ namespace Bramble
                     {
                         if (n.Children == null) n.Children = new List<Node>();
                         n.Children.Add(new Node { Name = d.Name, Size = size, NbFiles = 1 });
-                        if (!left) found.Add(new KeyValuePair<string, long>(folder + "\\" + d.Name, size));
                     }
                     else { n.Small += size; n.NbSmall++; }
                 }
@@ -383,236 +364,17 @@ namespace Bramble
                 Process.Start("explorer.exe", "\"" + path + "\"");
         }
 
-        static object Describe(string path)
-        {
-            long size;
-            bigFiles.TryGetValue(path, out size);
-            return new { path, name = Path.GetFileName(path), folder = Path.GetDirectoryName(path), size };
-        }
-
-        static List<string> Largest()
-        {
-            return bigFiles.Where(p => !pending.Contains(p.Key)).OrderByDescending(p => p.Value).Take(50).Select(p => p.Key).ToList();
-        }
-
-        static DateTime Created(string path)
-        {
-            try { return File.GetCreationTimeUtc(path); }
-            catch { return DateTime.MaxValue; }
-        }
-
-        // Every copy but the oldest, which is most likely the original: a copy gets a new creation date.
-        static List<string> ExtraCopies()
-        {
-            if (duplicates == null) return new List<string>();
-            return duplicates.Select(g => g.Where(p => !pending.Contains(p) && bigFiles.ContainsKey(p)).OrderBy(Created).ToList())
-                .Where(g => g.Count > 1).SelectMany(g => g.Skip(1)).ToList();
-        }
-
-        static object Examine()
-        {
-            var groups = duplicates == null ? null : duplicates
-                .Select(g => g.Where(p => !pending.Contains(p) && bigFiles.ContainsKey(p)).ToList())
-                .Where(g => g.Count > 1)
-                .Select(g => new { size = bigFiles[g[0]], files = g.OrderBy(Created).Select(Describe).ToArray() }).ToArray();
-            return new
-            {
-                type = "files.examine",
-                ready = root != null,
-                largest = Largest().Select(Describe).ToArray(),
-                duplicates = new { state = duplicatesState, done = compared, total = toCompare, bytesDone = Interlocked.Read(ref bytesCompared), bytesTotal = bytesToCompare, groups },
-            };
-        }
-
-        static void StopDuplicates()
-        {
-            if (duplicatesCancel != null) duplicatesCancel.Cancel();
-            duplicatesCancel = null;
-            duplicates = null;
-            duplicatesState = "idle";
-            compared = toCompare = 0;
-            bytesCompared = bytesToCompare = 0;
-            if (comparing != null) comparing.Stop();
-        }
-
-        static string Sample(string path, long offset, int length)
-        {
-            try
-            {
-                using (var sha = SHA256.Create())
-                using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 1 << 16))
-                {
-                    stream.Position = Math.Max(0, Math.Min(offset, stream.Length));
-                    var buffer = new byte[length];
-                    int read = 0, n;
-                    while (read < length && (n = stream.Read(buffer, read, length - read)) > 0) read += n;
-                    return Convert.ToBase64String(sha.ComputeHash(buffer, 0, read));
-                }
-            }
-            catch { return null; }
-        }
-
-        static string Whole(string path)
-        {
-            try
-            {
-                using (var sha = SHA256.Create())
-                using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 1 << 20, FileOptions.SequentialScan))
-                    return Convert.ToBase64String(sha.ComputeHash(stream));
-            }
-            catch { return null; }
-        }
-
-        static List<List<string>> Split(IEnumerable<List<string>> groups, Func<string, string> key)
-        {
-            return groups.SelectMany(g => g.GroupBy(key).Where(h => h.Key != null && h.Count() > 1).Select(h => h.ToList())).ToList();
-        }
-
-        // Same size first, then the same first 64 KB and the same last 64 KB, and only then the whole file: most candidates drop out
-        // before a full read. A few groups are compared at once, below normal priority, so the PC stays responsive.
-        static void FindDuplicates()
-        {
-            if (root == null || duplicatesState == "running") return;
-            StopDuplicates();
-            var token = new CancellationTokenSource();
-            duplicatesCancel = token;
-            var candidates = bigFiles.Where(p => !pending.Contains(p.Key)).GroupBy(p => p.Value).Where(g => g.Count() > 1)
-                .OrderBy(g => g.Key).Select(g => g.Select(p => p.Key).ToList()).ToList();
-            var sizes = candidates.SelectMany(g => g).ToDictionary(p => p, p => bigFiles[p], StringComparer.OrdinalIgnoreCase);
-            toCompare = candidates.Sum(g => g.Count);
-            bytesToCompare = sizes.Values.Sum();
-            duplicatesState = "running";
-            comparing.Start();
-            Program.Send(Examine());
-            Task.Run(() =>
-            {
-                var result = new System.Collections.Concurrent.ConcurrentBag<List<string>>();
-                var options = new ParallelOptions { MaxDegreeOfParallelism = 3, CancellationToken = token.Token };
-                try
-                {
-                    Parallel.ForEach(candidates, options, group =>
-                    {
-                        var priority = Thread.CurrentThread.Priority;
-                        Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
-                        try
-                        {
-                            long size = sizes[group[0]];
-                            var stage = Split(new[] { group }, f => Sample(f, 0, 65536));
-                            if (size > 131072) stage = Split(stage, f => Sample(f, size - 65536, 65536));
-                            foreach (var copies in Split(stage, Whole)) result.Add(copies);
-                        }
-                        finally
-                        {
-                            Thread.CurrentThread.Priority = priority;
-                            Interlocked.Add(ref compared, group.Count);
-                            Interlocked.Add(ref bytesCompared, sizes[group[0]] * group.Count);
-                        }
-                    });
-                }
-                catch (OperationCanceledException) { return null; }
-                return result.ToList();
-            }).ContinueWith(t => Program.OnInterface(() =>
-            {
-                if (token != duplicatesCancel) return;
-                comparing.Stop();
-                if (t.IsFaulted) { Program.Log(t.Exception); duplicatesState = "failed"; }
-                else if (t.Result == null) duplicatesState = "idle";
-                else
-                {
-                    duplicates = t.Result.Where(g => bigFiles.ContainsKey(g[0])).OrderByDescending(g => bigFiles[g[0]] * (g.Count - 1)).Take(40).ToList();
-                    duplicatesState = "done";
-                }
-                Program.Send(Examine());
-            }));
-        }
-
-        static bool Protected(string path)
-        {
-            var places = new[]
-            {
-                Environment.GetFolderPath(Environment.SpecialFolder.Windows), Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
-                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Program.Root,
-            };
-            if (places.Any(p => !string.IsNullOrEmpty(p) && path.StartsWith(p.TrimEnd('\\') + "\\", StringComparison.OrdinalIgnoreCase))) return true;
-            return (File.GetAttributes(path) & FileAttributes.System) != 0;
-        }
-
-        // Only files Bramble listed can go, and only to the Recycle Bin, once the 8 s of Undo are over.
-        static void Recycle(List<string> paths)
-        {
-            paths = paths.Where(p => p != null && bigFiles.ContainsKey(p) && !pending.Contains(p) && File.Exists(p) && !Protected(p)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-            if (paths.Count == 0) return;
-            foreach (var p in paths) pending.Add(p);
-            string title = paths.Count == 1 ? Path.GetFileName(paths[0]) : Language.T("{0} files", paths.Count);
-            Program.UndoableRemoval(title, () => { foreach (var p in paths) pending.Remove(p); Program.Send(Examine()); }, () =>
-            {
-                foreach (var p in paths) pending.Remove(p);
-                var sizes = paths.ToDictionary(p => p, p => bigFiles[p], StringComparer.OrdinalIgnoreCase);
-                foreach (var p in paths) bigFiles.Remove(p);
-                ToRecycleBin(paths).ContinueWith(t => Program.OnInterface(() =>
-                {
-                    if (t.IsFaulted) Program.Log(t.Exception);
-                    int left = 0;
-                    foreach (var p in paths) if (File.Exists(p)) { bigFiles[p] = sizes[p]; left++; }
-                    if (left == 1 && paths.Count == 1) Program.Announce("The file could not go to the Recycle Bin");
-                    else if (left > 0) Program.Announce("{0} files could not go to the Recycle Bin", left);
-                    Program.Send(Examine());
-                }));
-            });
-            Program.Send(Examine());
-        }
-
-        // FOF_ALLOWUNDO sends to the Recycle Bin. FOF_WANTNUKEWARNING makes Windows ask before deleting for good a file too large for the bin,
-        // which FOF_NOCONFIRMATION alone would do without a word. The shell wants a thread of its own for its dialogs.
-        static Task ToRecycleBin(List<string> paths)
-        {
-            var done = new TaskCompletionSource<bool>();
-            var thread = new Thread(() =>
-            {
-                try
-                {
-                    var op = new SHFILEOPSTRUCT { wFunc = 3, pFrom = string.Join("\0", paths) + "\0", fFlags = 0x4 | 0x10 | 0x40 | 0x4000 };
-                    SHFileOperation(ref op);
-                    done.SetResult(true);
-                }
-                catch (Exception ex) { done.SetException(ex); }
-            });
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.IsBackground = true;
-            thread.Start();
-            return done.Task;
-        }
-
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-        struct SHFILEOPSTRUCT
-        {
-            public IntPtr hwnd;
-            public uint wFunc;
-            public string pFrom, pTo;
-            public ushort fFlags;
-            public bool fAnyOperationsAborted;
-            public IntPtr hNameMappings;
-            public string lpszProgressTitle;
-        }
-
-        [DllImport("shell32.dll", CharSet = CharSet.Unicode)] static extern int SHFileOperation(ref SHFILEOPSTRUCT op);
-
         public static bool Receive(string action, Dictionary<string, object> m)
         {
             switch (action)
             {
-                case "examine": Program.Send(Examine()); return false;
-                case "duplicates": FindDuplicates(); return false;
-                case "recycle": Recycle(new List<string> { Text(m, "path") }); return true;
-                case "recycleAll": Recycle(Text(m, "kind") == "duplicates" ? ExtraCopies() : Largest()); return true;
                 case "visible":
                     if (Convert.ToBoolean(m["value"]))
                     {
                         forget.Stop();
 
                         if (root == null && !running) { Analyze(Source()); return true; }
-                        if (root != null) { Program.Send(Tree(Text(m, "path") ?? rootPath, null)); Program.Send(Examine()); }
+                        if (root != null) Program.Send(Tree(Text(m, "path") ?? rootPath, null));
                     }
                     else forget.Start();
                     return false;

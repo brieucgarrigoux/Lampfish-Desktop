@@ -52,6 +52,12 @@
 .screen-map .wallpaper-map { pointer-events: none; }
 .screen-map.can-main { cursor: pointer; transition: box-shadow var(--fast); }
 .screen-map.can-main:hover { box-shadow: 0 0 0 2px var(--accent-ring); }
+.map { position: relative; }
+.map .scene { transition: opacity .25s; }
+.map.switching .scene { opacity: .25; pointer-events: none; }
+.map.switching .point { transition: none !important; }
+.map.switching::after { content: ""; position: absolute; left: 50%; top: 50%; width: 28px; height: 28px; margin: -14px 0 0 -14px; border-radius: 50%;
+  border: 2px solid rgba(190, 200, 255, .12); border-top-color: var(--accent); animation: turning 1s linear infinite; }
 .screen-label { position: absolute; margin-top: 6px; font: 600 11.5px/1 var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); white-space: nowrap; pointer-events: none; }
 .screen-label.primary { color: var(--accent); }
 .point { position: absolute; z-index: 2; cursor: grab; touch-action: none; transition: opacity .2s; }

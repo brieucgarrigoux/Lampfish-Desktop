@@ -340,6 +340,18 @@
     zone.classList.toggle('hidden', !!map.hidden);
   }
 
+  const LAMPS = { ok: 'high', warn: 'medium', bad: 'low' };
+  function health(h) {
+    const b = $('h-health');
+    b.hidden = !h;
+    if (!h) return;
+    b.className = 'mood-badge mood-badge--small security--' + LAMPS[h.level];
+    const face = `<svg viewBox="0 0 24 24" aria-hidden="true">${Bramble.health.faces[h.level]}</svg>`;
+    if (b.firstElementChild.innerHTML !== face) b.firstElementChild.innerHTML = face;
+    b.lastElementChild.textContent = h.text;
+  }
+  $('h-health').addEventListener('click', () => showView('health'));
+
   function event(m) {
     if (m.type === 'home.weather') { weather = m; renderWeather(); return; }
     if (m.type === 'arrange.map') { map = m; if (shown) renderDesktop(); return; }
@@ -362,6 +374,7 @@
     send('home.weather');
     send('arrange.map', { full: images.size === 0 });
     send('tasks.list', { fresh: appIcons.size === 0 });
+    send('health.scan', { again: false });
     let turn = 0;
     timer = setInterval(() => {
       if (!shown || document.visibilityState !== 'visible') return;
@@ -372,5 +385,5 @@
     }, 2000);
   }
 
-  Bramble.home = { state: () => { if (shown) render(); }, event, visible };
+  Bramble.home = { state: () => { if (shown) render(); }, event, visible, health };
 })();

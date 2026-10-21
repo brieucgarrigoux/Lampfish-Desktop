@@ -46,7 +46,7 @@ if (LANGUAGE !== 'en') {
   }).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRIBUTES_TRANSLATED });
 }
 const Bramble = { state: null, station: null, icons: null, arrange: null, mouse: null, network: null, files: null, hardware: null, tasks: null, moods: null, creator: null };
-const VIEWS = ['home', 'modes', 'wallpaper', 'create', 'icons', 'mouse', 'station', 'display', 'arrange', 'health', 'tasks', 'files', 'hardware', 'network', 'settings'];
+const VIEWS = ['home', 'modes', 'wallpaper', 'create', 'icons', 'mouse', 'station', 'display', 'arrange', 'health', 'tasks', 'files', 'duplicates', 'hardware', 'network', 'settings'];
 
 const scrolls = {}, narrowLayout = matchMedia('(max-width: 900px)');
 const scrollZones = () => narrowLayout.matches ? [document.scrollingElement] : [document.querySelector('.contents'), document.querySelector('.panel')];
@@ -95,6 +95,7 @@ function showView(view) {
   if (Bramble.creator) Bramble.creator.visible(view === 'create');
   if (Bramble.display) Bramble.display.visible(view === 'display');
   if (Bramble.health) Bramble.health.visible(view === 'health');
+  if (Bramble.duplicates) Bramble.duplicates.visible(view === 'duplicates');
   send('audioPreview', { value: view === 'create' });
   if (Bramble.home) Bramble.home.visible(view === 'home');
 }
@@ -149,6 +150,7 @@ webview.addEventListener('message', e => {
   if (m.type && m.type.startsWith('moods.')) { if (Bramble.moods) Bramble.moods.event(m); return; }
   if (m.type && m.type.startsWith('display.')) { if (Bramble.display) Bramble.display.event(m); return; }
   if (m.type && m.type.startsWith('health.')) { if (Bramble.health) Bramble.health.event(m); return; }
+  if (m.type && m.type.startsWith('duplicates.')) { if (Bramble.duplicates) Bramble.duplicates.event(m); return; }
   if (m.type === 'window.closed') { if (Bramble.creator) Bramble.creator.reset(); return; }
   render(m);
 });
@@ -161,6 +163,9 @@ function render(state) {
   Bramble.state = state;
   $('startup').checked = state.startup;
   $('weather').checked = state.weather;
+  $('allow-test').checked = state.speedTest !== false;
+  showViews(state.hiddenViews || []);
+  $('allow-ip').checked = state.publicIp !== false;
   $('place-row').hidden = !state.weather;
   if (!state.weather) $('place-results').hidden = true;
   $('place-state').textContent = state.weatherPlace || tr('Automatic, from the IP address');
@@ -170,6 +175,7 @@ function render(state) {
   check('zoom', String(state.zoom || 100));
   const zoom = state.zoom || 100;
   $('zoom-value').textContent = zoom + ' %';
+  document.documentElement.style.setProperty('--zoom', zoom / 100);
   $('zoom-out').disabled = zoom <= ZOOMS[0];
   $('zoom-in').disabled = zoom >= ZOOMS[ZOOMS.length - 1];
   renderUpdates(state.updates);
@@ -185,6 +191,7 @@ function render(state) {
   if (Bramble.mouse && state.mouse) Bramble.mouse.state(state.mouse);
   if (Bramble.arrange && state.arrange) Bramble.arrange.state(state.arrange);
   if (Bramble.files && state.files) Bramble.files.state(state.files);
+  if (Bramble.duplicates && state.duplicates) Bramble.duplicates.state(state.duplicates);
   if (Bramble.moods && state.moods) Bramble.moods.state(state.moods);
   if (Bramble.home) Bramble.home.state();
   if (Bramble.display) Bramble.display.state();
@@ -217,9 +224,10 @@ function renderUpdates(u) {
 
 let toastTimer = 0, toastUndo = null;
 // A change made in the page alone, like the settings of Create, brings its own undo; the others ask the program.
-function toast(text, undoable, duration, undo) {
+function toast(text, undoable, duration, undo, label) {
   const t = $('toast');
   toastUndo = undo || null;
+  $('undo').textContent = label || tr('Undo');
   $('toast-text').textContent = text;
   $('undo').hidden = !undoable;
   t.style.setProperty('--duration', duration + 'ms');
@@ -253,7 +261,7 @@ function confirmReset(button, warning, run) {
     note.setAttribute('role', 'alert');
     note.innerHTML = WARNING + '<span></span>';
     note.querySelector('span').textContent = tr(typeof warning === 'function' ? warning() : warning) + ' ' + tr('Undo is offered for 8 seconds.');
-    (button.closest('.group') || button).after(note);
+    (button.closest('.group, .security__next') || button).after(note);
     timer = setTimeout(disarm, 6000);
   });
   button.addEventListener('blur', () => setTimeout(() => { if (timer && document.activeElement !== button) disarm(); }, 150));
@@ -293,6 +301,30 @@ addEventListener('drop', e => {
 
 $('startup').addEventListener('change', () => send('startup'));
 $('weather').addEventListener('change', () => { send('weather'); send('home.weather'); });
+$('allow-test').addEventListener('change', () => send('speedTest', { value: $('allow-test').checked }));
+
+// A service can leave the bar and the shortcuts of Home; it keeps working, and Settings brings it back.
+let hiddenViews = [];
+function showViews(list) {
+  hiddenViews = list;
+  for (const b of document.querySelectorAll('.rail .service[data-view], .h-tile[data-view]')) b.hidden = list.includes(b.dataset.view);
+  for (const input of document.querySelectorAll('.tr-row [data-show]')) input.checked = !list.includes(input.dataset.show);
+}
+for (const row of document.querySelectorAll('.tr-row[data-view]')) {
+  const view = row.dataset.view;
+  if (view === 'home' || view === 'settings') continue;
+  const box = document.createElement('span');
+  box.className = 'toggler tr-show';
+  box.title = tr('Shown in the bar');
+  box.innerHTML = '<input type="checkbox" checked>';
+  const input = box.firstChild;
+  input.dataset.show = view;
+  input.setAttribute('aria-label', tr('Shown in the bar'));
+  box.addEventListener('click', e => e.stopPropagation());
+  input.addEventListener('change', () => send('hideView', { view, hidden: !input.checked }));
+  row.querySelector('summary .chevron').before(box);
+}
+$('allow-ip').addEventListener('change', () => send('publicIp', { value: $('allow-ip').checked }));
 
 const PIN = '<svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-6.5-5.6-6.5-10.5a6.5 6.5 0 0 1 13 0c0 4.9-6.5 10.5-6.5 10.5z"/><circle cx="12" cy="10" r="2.3"/></svg>';
 let placeTimer = 0;

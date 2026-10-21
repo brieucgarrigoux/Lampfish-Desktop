@@ -333,6 +333,20 @@ namespace Bramble
         }
 
         // The smaller categories are sized first so the biggest one takes what is left; two blocks keep an empty row or column between them.
+        static List<List<DesktopIcons.Element>> Balance(List<List<DesktopIcons.Element>> groups, int count)
+        {
+            var all = groups.SelectMany(x => x).ToList();
+            count = Math.Max(1, Math.Min(count, all.Count));
+            var result = new List<List<DesktopIcons.Element>>();
+            for (int i = 0, start = 0; i < count; i++)
+            {
+                int size = all.Count / count + (i < all.Count % count ? 1 : 0);
+                result.Add(all.GetRange(start, size));
+                start += size;
+            }
+            return result;
+        }
+
         static Size[] Corners(List<int> sizes, int C, int L)
         {
             int count = Math.Min(4, sizes.Count);
@@ -373,6 +387,11 @@ namespace Bramble
                 g.Taken.Add(Point.Round(p));
                 slots[el.Id] = new KeyValuePair<Grid, KeyValuePair<PointF, DesktopIcons.Element>>(g, new KeyValuePair<PointF, DesktopIcons.Element>(p, el));
             };
+
+            // A desktop holds one big category and a few small ones (35 apps, 2 system icons): one block per category gave a huge block
+            // and lone icons. The blocks share the icons evenly, in category order, as in the small pictures.
+            if (arrangement == "corners" || arrangement == "blocks")
+                groups = Balance(groups, arrangement == "corners" ? 4 : Math.Max(2, Math.Min(4, groups.Count)));
 
             if (arrangement == "corners")
             {

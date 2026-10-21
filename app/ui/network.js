@@ -182,9 +182,10 @@
     const running = !!(test && test.running);
     $('r-tester').classList.toggle('testing', running);
 
-    const keycap = $('r-test');
-    keycap.disabled = running;
-    keycap.querySelector(':scope > span:last-child').textContent = tr(running ? 'Testing…' : test ? 'Test again' : 'Run the test');
+    const keycap = $('r-test'), off = !!Bramble.state && Bramble.state.speedTest === false;
+    keycap.disabled = running || off;
+    keycap.title = off ? tr('Turned off in Settings, Connections') : '';
+    keycap.querySelector(':scope > span:last-child').textContent = tr(off ? 'Test turned off' : running ? 'Testing…' : test ? 'Test again' : 'Run the test');
     keycap.dataset.state = running ? 'progress' : test ? 'done' : 'ready';
 
     const direct = test && test.direct;
@@ -485,7 +486,8 @@
       return;
     }
     let publicIpNode = publicIp;
-    if (publicIp === null) {
+    if (Bramble.state && Bramble.state.publicIp === false) publicIpNode = document.createTextNode(tr('Off in Settings'));
+    else if (publicIp === null) {
       publicIpNode = document.createElement('button');
       publicIpNode.className = 'link';
       publicIpNode.textContent = 'Show';

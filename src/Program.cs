@@ -28,6 +28,9 @@ namespace Bramble
     {
         public string Language = "auto";
         public bool Weather = true;
+        public bool SpeedTest = true;
+        public bool PublicIp = true;
+        public List<string> HiddenViews = new List<string>();
         public WeatherPlace WeatherPlace;
         public List<Dictionary<string, object>> NetworkTests = new List<Dictionary<string, object>>();
         public string Wallpaper = "bramble-logo.html";
@@ -52,6 +55,7 @@ namespace Bramble
         public IconsSettings Folders;
         public ArrangeSettings Arrange = new ArrangeSettings();
         public DiskUsageSettings DiskUsage = new DiskUsageSettings();
+        public DuplicatesSettings Duplicates = new DuplicatesSettings();
         public Mouse.Snapshot CursorsOriginal;
         public WindowPlace Window;
         public bool UpdatesAuto;
@@ -141,6 +145,7 @@ namespace Bramble
                 Mouse.Start();
                 Arrange.Start();
                 DiskUsage.Start();
+                Duplicates.Start();
                 Hardware.Start();
                 AudioMeter.Set(R.Reactive);
                 Display.Start();
@@ -762,6 +767,7 @@ namespace Bramble
             }
 
             if (action.StartsWith("health.")) { Health.Receive(action.Substring(action.IndexOf('.') + 1), m); return; }
+            if (action.StartsWith("duplicates.")) { if (Duplicates.Receive(action.Substring(action.IndexOf('.') + 1), m)) { Save(); SendState(); } return; }
 
             if (action.StartsWith("home.")) { Weather.Receive(action.Substring(action.IndexOf('.') + 1), m); return; }
 
@@ -827,6 +833,16 @@ namespace Bramble
                 case "previous": PreviousWallpaper(); return;
                 case "startup": ToggleStartup(); break;
                 case "weather": R.Weather = !R.Weather; break;
+                case "speedTest": R.SpeedTest = Convert.ToBoolean(m["value"]); break;
+                case "publicIp": R.PublicIp = Convert.ToBoolean(m["value"]); break;
+                case "hideView":
+                {
+                    string view = (string)m["view"];
+                    if (view == "home" || view == "settings" || string.IsNullOrEmpty(view)) break;
+                    R.HiddenViews.Remove(view);
+                    if (Convert.ToBoolean(m["hidden"])) R.HiddenViews.Add(view);
+                    break;
+                }
                 case "zoom": R.Zoom = Math.Max(70, Math.Min(200, Convert.ToInt32(m["value"]))); if (settingsWindow != null) settingsWindow.SetZoom(R.Zoom); break;
                 case "reactive": R.Reactive = (bool)m["value"]; AudioMeter.Set(R.Reactive); break;
                 case "audioPreview": AudioMeter.Preview((bool)m["value"]); return;
@@ -908,6 +924,9 @@ namespace Bramble
                 paused = paused,
                 startup = StartupEnabled(),
                 weather = R.Weather,
+                speedTest = R.SpeedTest,
+                publicIp = R.PublicIp,
+                hiddenViews = R.HiddenViews,
                 weatherPlace = R.WeatherPlace == null ? null : R.WeatherPlace.Label,
                 reactive = R.Reactive,
                 zoom = R.Zoom,
@@ -933,6 +952,7 @@ namespace Bramble
                 mouse = Mouse.State(),
                 arrange = Arrange.State(),
                 files = DiskUsage.State(),
+                duplicates = Duplicates.State(),
                 view = requestedView,
             };
             announcement = null;
