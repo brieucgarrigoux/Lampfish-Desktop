@@ -452,9 +452,92 @@
     renderFooter();
   }
 
+  let exam = null, examTab = 'largest';
+  const armed = new Map();
+  const ICON_SHOW = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>';
+  const ICON_BIN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12.5h8L17 7"/></svg>';
+
+  function fileRow(file, canRemove) {
+    const r = document.createElement('div');
+    r.className = 'row f-file';
+    r.innerHTML = glyph('file') + '<span class="f-file__what"><span class="f-file__name" translate="no"></span><small translate="no"></small></span><span class="size"></span>'
+      + '<button class="f-file__tool" type="button">' + ICON_SHOW + '</button><button class="f-file__tool f-file__bin" type="button">' + ICON_BIN + '</button>';
+    r.querySelector('.f-file__name').textContent = file.name;
+    r.querySelector('small').textContent = file.folder;
+    r.querySelector('.size').textContent = size(file.size);
+    r.title = file.path;
+    const [show, bin] = r.querySelectorAll('button');
+    show.title = tr('Show in File Explorer');
+    show.addEventListener('click', () => send('files.show', { path: file.path }));
+    const disarm = () => { clearTimeout(armed.get(file.path)); armed.delete(file.path); bin.classList.remove('armed'); bin.title = tr('Move to the Recycle Bin'); };
+    disarm();
+    bin.disabled = !canRemove;
+    if (!canRemove) bin.title = tr('The last copy stays');
+    bin.addEventListener('click', () => {
+      if (armed.has(file.path)) { disarm(); send('files.recycle', { path: file.path }); return; }
+      bin.classList.add('armed');
+      bin.title = tr('Click again to confirm');
+      armed.set(file.path, setTimeout(disarm, 3000));
+    });
+    r.addEventListener('mouseleave', disarm);
+    return r;
+  }
+
+  function renderExam() {
+    const box = $('f-examine');
+    box.hidden = !exam || !exam.ready;
+    if (box.hidden) return;
+    const d = exam.duplicates;
+    $('f-exam-tabs').replaceChildren(...[['largest', 'Largest files'], ['duplicates', 'Duplicates']].map(([key, label]) => {
+      const b = document.createElement('button');
+      b.setAttribute('role', 'tab');
+      b.setAttribute('aria-checked', String(key === examTab));
+      b.setAttribute('aria-selected', String(key === examTab));
+      b.textContent = tr(label);
+      b.addEventListener('click', () => { examTab = key; renderExam(); });
+      return b;
+    }));
+    const run = $('f-dup-run');
+    run.hidden = examTab !== 'duplicates';
+    run.disabled = d.state === 'running';
+    run.querySelector('span').textContent = tr(d.state === 'done' ? 'Compare again' : 'Find duplicates');
+    const list = $('f-exam-list'), help = $('f-exam-help');
+    const empty = text => Object.assign(document.createElement('div'), { className: 'row empty', textContent: tr(text) });
+    if (examTab === 'largest') {
+      help.textContent = tr('Files of 1 MB or more in the analyzed folder, apps and Windows left out. The bin sends one file to the Recycle Bin, with Undo.');
+      list.replaceChildren(...(exam.largest.length ? exam.largest.map(file => fileRow(file, true)) : [empty('No file of 1 MB or more here')]));
+      return;
+    }
+    if (d.state === 'running') {
+      help.textContent = tr('Comparing {0} of {1} files, same size first, then same content', d.done, d.total);
+      list.replaceChildren(Object.assign(document.createElement('div'), { className: 'row loading', textContent: tr('Comparing') }));
+      return;
+    }
+    if (d.state !== 'done') {
+      help.textContent = tr('Bramble compares the content of files of the same size, without changing anything. It can take a few minutes on a whole drive.');
+      list.replaceChildren(empty(d.state === 'failed' ? 'The comparison stopped, try again' : 'Not compared yet'));
+      return;
+    }
+    const groups = d.groups || [];
+    const wasted = groups.reduce((t, g) => t + g.size * (g.files.length - 1), 0);
+    help.textContent = groups.length ? tr('{0} could be freed by keeping one copy of each. Identical content, checked byte for byte.', size(wasted)) : '';
+    if (!groups.length) { list.replaceChildren(empty('No duplicate found')); return; }
+    const nodes = [];
+    for (const g of groups) {
+      const head = document.createElement('div');
+      head.className = 'row f-group';
+      head.textContent = tr('{0} copies of {1}', g.files.length, size(g.size));
+      nodes.push(head, ...g.files.map(file => fileRow(file, g.files.length > 1)));
+    }
+    list.replaceChildren(...nodes);
+  }
+
+  $('f-dup-run').addEventListener('click', () => send('files.duplicates'));
+
   function event(m) {
     if (m.type === 'files.tree') receiveTree(m);
     else if (m.type === 'files.progress') progress(m);
+    else if (m.type === 'files.examine') { exam = m; renderExam(); }
   }
 
   function visible(yes) {

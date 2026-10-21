@@ -6,6 +6,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Folders: under the rings, Largest files lists the files of 1 MB or more of the analyzed folder (apps, app data and Windows left out), and Duplicates finds identical files, compared byte for byte. Each file can be shown in File Explorer or sent to the Recycle Bin after a confirming click, with 8 seconds to undo; the last copy of a duplicate always stays.
 - Health, a new service at the head of the PC family. Why is my PC slow? turns what Bramble measures (processor, memory, disk, days since the last restart, programs at startup, free space, energy saver, temperature) into plain findings, each with the button that helps. The Radar checks antivirus, firewall, Windows updates, a pending restart, disk encryption, Secure Boot, account control, disk space and startup programs, without administrator rights and without changing anything: each button opens the right place in Windows.
 - Home: the desktop preview opens the wallpapers in the side panel (pick one, light, speed, effects, sound), the Themes title opens every theme with a click to apply it, and the Display title, which replaces Quick settings, opens the brightness of each screen and the choice of the main screen.
 - Settings: Weather location picks the city of the weather by name (searched with Open-Meteo), for when the IP address gives a wrong place. Automatic goes back to the IP address.

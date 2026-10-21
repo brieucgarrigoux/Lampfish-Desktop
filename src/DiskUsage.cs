@@ -4,8 +4,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualBasic.FileIO;
 
 namespace Bramble
 {
@@ -68,7 +70,14 @@ namespace Bramble
         static DateTime analysisDate;
         static double analysisDuration;
         static bool running;
-        static System.Windows.Forms.Timer progress, forget;
+        static System.Windows.Forms.Timer progress, forget, comparing;
+        static System.Collections.Concurrent.ConcurrentBag<KeyValuePair<string, long>> found = new System.Collections.Concurrent.ConcurrentBag<KeyValuePair<string, long>>();
+        static Dictionary<string, long> bigFiles = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+        static readonly HashSet<string> pending = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        static List<List<string>> duplicates;
+        static string duplicatesState = "idle";
+        static int compared, toCompare;
+        static CancellationTokenSource duplicatesCancel;
 
         static DiskUsageSettings R { get { return Program.R.DiskUsage; } }
 
@@ -94,7 +103,18 @@ namespace Bramble
             progress = new System.Windows.Forms.Timer { Interval = 200 };
             progress.Tick += (s, e) => Program.Send(Progress());
             forget = new System.Windows.Forms.Timer { Interval = 5 * 60 * 1000 };
-            forget.Tick += (s, e) => { forget.Stop(); if (!running) { root = null; rootPath = null; GC.Collect(); } };
+            forget.Tick += (s, e) =>
+            {
+                forget.Stop();
+                if (running || pending.Count > 0) return;
+                root = null;
+                rootPath = null;
+                bigFiles = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+                StopDuplicates();
+                GC.Collect();
+            };
+            comparing = new System.Windows.Forms.Timer { Interval = 400 };
+            comparing.Tick += (s, e) => Program.Send(Examine());
         }
 
         static string DefaultSource()
@@ -148,6 +168,9 @@ namespace Bramble
             Array.Clear(languageFiles, 0, languageFiles.Length);
             fileCount = byteCount = 0;
             currentFolder = source;
+            found = new System.Collections.Concurrent.ConcurrentBag<KeyValuePair<string, long>>();
+            bigFiles = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+            StopDuplicates();
             progress.Start();
             var chrono = Stopwatch.StartNew();
             Task.Run(() =>
@@ -167,7 +190,10 @@ namespace Bramble
                     root = t.Result;
                     analysisDate = DateTime.Now;
                     analysisDuration = chrono.Elapsed.TotalSeconds;
+                    foreach (var p in found) bigFiles[p.Key] = p.Value;
+                    found = new System.Collections.Concurrent.ConcurrentBag<KeyValuePair<string, long>>();
                     Program.Send(Tree(rootPath, null));
+                    Program.Send(Examine());
                 }
                 Program.SendState();
             }));
@@ -217,6 +243,7 @@ namespace Bramble
                     {
                         if (n.Children == null) n.Children = new List<Node>();
                         n.Children.Add(new Node { Name = d.Name, Size = size, NbFiles = 1 });
+                        if (!left) found.Add(new KeyValuePair<string, long>(folder + "\\" + d.Name, size));
                     }
                     else { n.Small += size; n.NbSmall++; }
                 }
@@ -356,17 +383,144 @@ namespace Bramble
                 Process.Start("explorer.exe", "\"" + path + "\"");
         }
 
+        static object Describe(string path)
+        {
+            long size;
+            bigFiles.TryGetValue(path, out size);
+            return new { path, name = Path.GetFileName(path), folder = Path.GetDirectoryName(path), size };
+        }
+
+        static object Examine()
+        {
+            var groups = duplicates == null ? null : duplicates
+                .Select(g => g.Where(p => !pending.Contains(p) && bigFiles.ContainsKey(p)).ToList())
+                .Where(g => g.Count > 1)
+                .Select(g => new { size = bigFiles[g[0]], files = g.Select(Describe).ToArray() }).ToArray();
+            return new
+            {
+                type = "files.examine",
+                ready = root != null,
+                largest = bigFiles.Where(p => !pending.Contains(p.Key)).OrderByDescending(p => p.Value).Take(50).Select(p => Describe(p.Key)).ToArray(),
+                duplicates = new { state = duplicatesState, done = compared, total = toCompare, groups },
+            };
+        }
+
+        static void StopDuplicates()
+        {
+            if (duplicatesCancel != null) duplicatesCancel.Cancel();
+            duplicatesCancel = null;
+            duplicates = null;
+            duplicatesState = "idle";
+            compared = toCompare = 0;
+            if (comparing != null) comparing.Stop();
+        }
+
+        static string Hash(string path, int head)
+        {
+            try
+            {
+                using (var sha = SHA256.Create())
+                using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 1 << 16))
+                {
+                    if (head < 0) return Convert.ToBase64String(sha.ComputeHash(stream));
+                    var buffer = new byte[head];
+                    int read = 0, n;
+                    while (read < head && (n = stream.Read(buffer, read, head - read)) > 0) read += n;
+                    return Convert.ToBase64String(sha.ComputeHash(buffer, 0, read));
+                }
+            }
+            catch { return null; }
+        }
+
+        // Same size first, then the same first 64 KB, and only then the whole file: most candidates drop out before a full read.
+        static void FindDuplicates()
+        {
+            if (root == null || duplicatesState == "running") return;
+            StopDuplicates();
+            var token = new CancellationTokenSource();
+            duplicatesCancel = token;
+            var candidates = bigFiles.Where(p => !pending.Contains(p.Key)).GroupBy(p => p.Value).Where(g => g.Count() > 1).Select(g => g.Select(p => p.Key).ToList()).ToList();
+            toCompare = candidates.Sum(g => g.Count);
+            duplicatesState = "running";
+            comparing.Start();
+            Program.Send(Examine());
+            Task.Run(() =>
+            {
+                var result = new List<List<string>>();
+                foreach (var group in candidates)
+                {
+                    if (token.IsCancellationRequested) return null;
+                    foreach (var same in group.GroupBy(p => Hash(p, 65536)).Where(h => h.Key != null && h.Count() > 1))
+                        foreach (var copies in same.GroupBy(p => Hash(p, -1)).Where(h => h.Key != null && h.Count() > 1))
+                            result.Add(copies.ToList());
+                    Interlocked.Add(ref compared, group.Count);
+                }
+                return result;
+            }).ContinueWith(t => Program.OnInterface(() =>
+            {
+                if (token != duplicatesCancel) return;
+                comparing.Stop();
+                if (t.IsFaulted) { Program.Log(t.Exception); duplicatesState = "failed"; }
+                else if (t.Result == null) duplicatesState = "idle";
+                else
+                {
+                    duplicates = t.Result.OrderByDescending(g => bigFiles[g[0]] * (g.Count - 1)).Take(40).ToList();
+                    duplicatesState = "done";
+                }
+                Program.Send(Examine());
+            }));
+        }
+
+        static bool Protected(string path)
+        {
+            var places = new[]
+            {
+                Environment.GetFolderPath(Environment.SpecialFolder.Windows), Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Program.Root,
+            };
+            if (places.Any(p => !string.IsNullOrEmpty(p) && path.StartsWith(p.TrimEnd('\\') + "\\", StringComparison.OrdinalIgnoreCase))) return true;
+            return (File.GetAttributes(path) & FileAttributes.System) != 0;
+        }
+
+        // Only a file Bramble listed can go, and only to the Recycle Bin, once the 8 s of Undo are over.
+        static void Recycle(string path)
+        {
+            if (path == null || !bigFiles.ContainsKey(path) || pending.Contains(path) || !File.Exists(path) || Protected(path)) return;
+            pending.Add(path);
+            long size = bigFiles[path];
+            Program.UndoableRemoval(Path.GetFileName(path), () => { pending.Remove(path); Program.Send(Examine()); }, () =>
+            {
+                pending.Remove(path);
+                bigFiles.Remove(path);
+                Task.Run(() => FileSystem.DeleteFile(path, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin)).ContinueWith(t => Program.OnInterface(() =>
+                {
+                    if (t.IsFaulted)
+                    {
+                        Program.Log(t.Exception);
+                        if (File.Exists(path)) bigFiles[path] = size;
+                        Program.Announce("The file could not go to the Recycle Bin");
+                    }
+                    Program.Send(Examine());
+                }));
+            });
+            Program.Send(Examine());
+        }
+
         public static bool Receive(string action, Dictionary<string, object> m)
         {
             switch (action)
             {
+                case "examine": Program.Send(Examine()); return false;
+                case "duplicates": FindDuplicates(); return false;
+                case "recycle": Recycle(Text(m, "path")); return true;
                 case "visible":
                     if (Convert.ToBoolean(m["value"]))
                     {
                         forget.Stop();
 
                         if (root == null && !running) { Analyze(Source()); return true; }
-                        if (root != null) Program.Send(Tree(Text(m, "path") ?? rootPath, null));
+                        if (root != null) { Program.Send(Tree(Text(m, "path") ?? rootPath, null)); Program.Send(Examine()); }
                     }
                     else forget.Start();
                     return false;

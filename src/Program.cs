@@ -91,7 +91,7 @@ namespace Bramble
         static string removed, undoText, removalPath, announcement, requestedView;
         static DateTime nextSlideshow = DateTime.MaxValue;
         static bool onBattery;
-        static Action removalUndo;
+        static Action removalUndo, removalCommit;
         static SynchronizationContext context;
         static readonly Random random = new Random();
         static int missing;
@@ -617,12 +617,14 @@ namespace Bramble
             }
         }
 
-        public static void UndoableRemoval(string title, Action undo)
+        // commit runs when the toast closes without Undo, or when Bramble quits.
+        public static void UndoableRemoval(string title, Action undo, Action commit = null)
         {
             Discard();
             removed = title;
             removalPath = null;
             removalUndo = undo;
+            removalCommit = commit;
             removalDelay.Start();
         }
 
@@ -646,6 +648,7 @@ namespace Bramble
                 else if (File.Exists(source)) File.Move(source, removalPath);
             }
             var undo = removalUndo;
+            removalCommit = null;
             removed = null;
             undoText = null;
             removalUndo = null;
@@ -655,6 +658,9 @@ namespace Bramble
         static void Discard()
         {
             if (removalDelay != null) removalDelay.Stop();
+            var commit = removalCommit;
+            removalCommit = null;
+            if (commit != null) try { commit(); } catch (Exception ex) { Log(ex); }
             removed = null;
             undoText = null;
             removalUndo = null;
