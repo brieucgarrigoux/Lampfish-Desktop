@@ -28,7 +28,7 @@ namespace Bramble
         {
             "realtek", "intel", "nvidia", "advanced micro devices", "synaptics", "elan microelectronics", "logitech", "razer", "corsair", "dolby", "waves",
             "conexant", "qualcomm", "broadcom", "avast", "avg", "norton", "symantec", "mcafee", "kaspersky", "bitdefender", "eset", "malwarebytes", "sophos",
-            "trend micro", "avira", "nordvpn", "proton", "openvpn", "wireguard", "cisco", "teamviewer", "anydesk",
+            "trend micro", "avira", "nordvpn", "proton", "openvpn", "wireguard", "cisco", "teamviewer", "anydesk", "steelseries",
         };
         static readonly HashSet<string> SparedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -274,9 +274,14 @@ namespace Bramble
                     try { g.Memory += p.WorkingSet64; if (p.SessionId != session) g.Locked = true; }
                     catch { g.Locked = true; }
                 }
-            return groups.Values.Where(g => !g.Locked && !g.Playing && g.Id != used && g.Memory >= 100L * 1024 * 1024 && !SparedNames.Contains(g.Name)
+            return groups.Values.Where(g => !g.Locked && !g.Playing && g.Id != used && g.Memory >= 60L * 1024 * 1024 && !IsClosing(g.Id) && !SparedNames.Contains(g.Name)
                     && (Kind(g) == "app" || Kind(g) == "background") && !SparedCompanies.Any(c => Company(g.Path).Contains(c)))
                 .OrderByDescending(g => g.Memory).Take(12).ToList();
+        }
+
+        static bool IsClosing(string id)
+        {
+            lock (closing) { DateTime since; return closing.TryGetValue(id, out since) && DateTime.UtcNow - since < TimeSpan.FromSeconds(30); }
         }
 
         static object FreeList()
@@ -290,14 +295,18 @@ namespace Bramble
             };
         }
 
+        static readonly Dictionary<string, DateTime> closing = new Dictionary<string, DateTime>(StringComparer.OrdinalIgnoreCase);
+
         // Windows are asked to close like with their X, so an app can still ask to save; only programs without any window are stopped.
+        // The programs are watched until they are gone: an app can take seconds to quit, or hide in the tray instead.
         static void Free(IEnumerable<string> ids)
         {
             var wanted = new HashSet<string>(ids, StringComparer.OrdinalIgnoreCase);
             var safe = Candidates().Where(g => wanted.Contains(g.Id)).ToDictionary(g => g.Id, g => g, StringComparer.OrdinalIgnoreCase);
-            if (safe.Count == 0) return;
+            if (safe.Count == 0) { Program.OnInterface(() => { Program.Announce("Nothing could be closed"); Program.SendState(); }); return; }
             int session = Process.GetCurrentProcess().SessionId;
-            var touched = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var asked = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var pids = new Dictionary<int, string>();
             foreach (var p in Process.GetProcesses())
                 using (p)
                 {
@@ -305,15 +314,58 @@ namespace Bramble
                     {
                         Group g;
                         if (!safe.TryGetValue(Identify(p.ProcessName, PathOf(p.Id)), out g) || p.SessionId != session || Locked.Contains(p.ProcessName)) continue;
-                        if (g.Window) { if (p.MainWindowHandle != IntPtr.Zero && p.CloseMainWindow()) touched.Add(g.Id); }
-                        else { p.Kill(); touched.Add(g.Id); }
+                        if (g.Window) pids[p.Id] = g.Id;
+                        else { p.Kill(); asked.Add(g.Id); }
                     }
                     catch { }
                 }
-            long freed = safe.Values.Where(g => touched.Contains(g.Id)).Sum(g => g.Memory);
+            lock (closing) foreach (var g in safe.Values) closing[g.Id] = DateTime.UtcNow;
+            EnumWindows((h, l) =>
+            {
+                if (!IsWindowVisible(h) || GetWindow(h, 4) != IntPtr.Zero || GetWindowTextLength(h) == 0) return true;
+                uint id;
+                GetWindowThreadProcessId(h, out id);
+                string group;
+                if (pids.TryGetValue((int)id, out group)) { PostMessage(h, 0x10, IntPtr.Zero, IntPtr.Zero); asked.Add(group); }
+                return true;
+            }, IntPtr.Zero);
+
+            var deadline = DateTime.UtcNow.AddSeconds(8);
+            var left = new HashSet<string>(asked, StringComparer.OrdinalIgnoreCase);
+            while (left.Count > 0 && DateTime.UtcNow < deadline)
+            {
+                System.Threading.Thread.Sleep(300);
+                left = Alive(left);
+            }
+            lock (closing) foreach (var id in safe.Keys) closing.Remove(id);
+            var gone = asked.Where(id => !left.Contains(id)).ToList();
+            long freed = gone.Sum(id => safe[id].Memory);
             string size = freed >= 1L << 30 ? (freed / (double)(1L << 30)).ToString("0.0") + " " + Language.T("GB") : (freed >> 20) + " " + Language.T("MB");
-            if (touched.Count == 0) Program.Announce("Nothing could be closed");
-            else Program.Announce(touched.Count == 1 ? "1 program closed, about {1} freed" : "{0} programs closed, about {1} freed", touched.Count, size);
+            string stayed = string.Join(", ", left.Select(id => safe[id].Name));
+            Program.OnInterface(() =>
+            {
+                if (gone.Count == 0 && left.Count == 0) Program.Announce("Nothing could be closed");
+                else if (left.Count == 0) Program.Announce(gone.Count == 1 ? "1 program closed, about {1} freed" : "{0} programs closed, about {1} freed", gone.Count, size);
+                else if (gone.Count == 0) Program.Announce("{0} is still open: it may be waiting for you or staying in the notification area", stayed);
+                else Program.Announce("{0} closed, about {2} freed. Still open: {1}", gone.Count, stayed, size);
+                Program.SendState();
+            });
+        }
+
+        static HashSet<string> Alive(HashSet<string> groups)
+        {
+            var found = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var p in Process.GetProcesses())
+                using (p)
+                {
+                    try
+                    {
+                        string id = Identify(p.ProcessName, PathOf(p.Id));
+                        if (groups.Contains(id) && !p.HasExited) found.Add(id);
+                    }
+                    catch { }
+                }
+            return found;
         }
 
         static object Details(string id)
@@ -510,9 +562,12 @@ namespace Bramble
                 {
                     object list;
                     if (!m.TryGetValue("ids", out list) || !(list is System.Collections.ArrayList)) return false;
-                    Free(((System.Collections.ArrayList)list).Cast<object>().Select(x => x.ToString()));
-                    Program.SendState();
-                    Program.Send(FreeList());
+                    var ids = ((System.Collections.ArrayList)list).Cast<object>().Select(x => x.ToString()).ToList();
+                    Task.Run(() => { Free(ids); return FreeList(); }).ContinueWith(t => Program.OnInterface(() =>
+                    {
+                        if (t.IsFaulted) { Program.Log(t.Exception); return; }
+                        Program.Send(t.Result);
+                    }));
                     return false;
                 }
             }
@@ -522,6 +577,7 @@ namespace Bramble
         delegate bool EnumProc(IntPtr window, IntPtr parameter);
         [DllImport("user32.dll")] static extern bool EnumWindows(EnumProc callback, IntPtr parameter);
         [DllImport("user32.dll")] static extern bool IsWindowVisible(IntPtr window);
+        [DllImport("user32.dll")] static extern bool PostMessage(IntPtr window, uint message, IntPtr w, IntPtr l);
         [DllImport("user32.dll")] static extern IntPtr GetWindow(IntPtr window, uint command);
         [DllImport("user32.dll")] static extern int GetWindowTextLength(IntPtr window);
         [DllImport("user32.dll", EntryPoint = "GetWindowLongW")] static extern int GetWindowLong(IntPtr window, int index);

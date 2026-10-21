@@ -14,7 +14,7 @@
   const KIND_NAMES = { app: 'App', console: 'Command line', background: 'Background', system: 'System' };
   let shown = false, timer = 0, confirming = '', confirmTimer = 0, data = null;
   let filter = 'all', order = { key: 'memory', direction: -1 }, search = '', chosen = null, sheet = null, turn = 0;
-  let freeing = false, free = null, picked = new Set(), armed = 0;
+  let freeing = false, free = null, picked = new Set(), armed = 0, closing = false;
 
   const UNITS = ['bytes', 'KB', 'MB', 'GB', 'TB'].map(u => tr(u));
   function size(o) {
@@ -188,15 +188,38 @@
   $('t-free').addEventListener('click', () => freeing ? close() : startFree());
 
   function renderMemory() {
-    if (!free) { $('t-memory-hint').textContent = tr('Looking for what can be closed'); return; }
+    const card = $('t-memory');
+    if (!free) { $('t-memory-hint').textContent = tr(closing ? 'Closing the programs' : 'Looking for what can be closed'); return; }
     const used = free.total - free.available, part = free.total ? used / free.total * 100 : 0;
     const n = free.items.length, total = free.items.reduce((a, i) => a + i.memory, 0);
+    const level = part >= 85 ? 'low' : part >= 70 ? 'medium' : 'high';
+    card.className = 'security t-memory security--' + level;
     $('t-memory-value').textContent = tr('{0} used · {1} of {2}', pct(part), size(used), size(free.total));
-    $('t-memory-bar').style.width = part.toFixed(1) + '%';
-    $('t-memory').classList.toggle('full', part >= 85);
-    $('t-memory-hint').textContent = n ? tr(n === 1 ? 'About {0} can be freed by closing 1 program not in use' : 'About {0} can be freed by closing {1} programs not in use', size(total), n)
-      : tr('Nothing to free right now: the programs using a lot of memory are in use or needed');
-    $('t-free').disabled = !n && !freeing;
+    const lit = Math.round(part / 10);
+    [...$('t-memory-meter').children].forEach((b, i) => b.classList.toggle('on', i < lit));
+    const checks = [
+      { title: 'In use', detail: 'Held by programs and Windows', value: size(used), state: part >= 85 ? 'bad' : part >= 70 ? 'warn' : 'ok' },
+      { title: 'Available', detail: 'Ready for new programs', value: size(free.available), state: part >= 85 ? 'bad' : part >= 70 ? 'warn' : 'ok' },
+      { title: 'Can be freed', detail: n ? (n === 1 ? '1 program not in use' : tr('{0} programs not in use', n)) : 'Everything big is in use or needed',
+        value: n ? tr('About {0}', size(total)) : tr('Nothing'), state: !n ? 'neutral' : part >= 70 ? 'warn' : 'ok' },
+    ];
+    const key = JSON.stringify([checks, LANGUAGE]);
+    const zone = $('t-memory-checks');
+    if (zone.dataset.key !== key) {
+      zone.dataset.key = key;
+      zone.replaceChildren(...checks.map(c => {
+        const el = document.createElement('div');
+        el.className = 'check check--' + c.state;
+        el.innerHTML = '<span class="jewel" role="img"></span><div class="check__what"><span class="check__title"></span><span class="check__detail"></span></div><span class="check__value"></span>';
+        el.querySelector('.jewel').setAttribute('aria-label', tr({ ok: 'Fine', warn: 'Be careful', bad: 'Risky', neutral: 'Not reported' }[c.state]));
+        el.querySelector('.check__title').textContent = tr(c.title);
+        el.querySelector('.check__detail').textContent = el.querySelector('.check__detail').title = tr(c.detail);
+        el.querySelector('.check__value').textContent = c.value;
+        return el;
+      }));
+    }
+    $('t-memory-hint').textContent = n ? tr('Closing the unused programs frees about {0}', size(total)) : tr('Nothing to free right now: the programs using a lot of memory are in use or needed');
+    $('t-free').disabled = (!n && !freeing) || closing;
   }
 
   function renderFree() {
@@ -211,7 +234,7 @@
     head.querySelector('.t-close').addEventListener('click', close);
     const fresh = [head];
     if (!free) {
-      head.querySelector('.path').textContent = tr('Looking for what can be closed');
+      head.querySelector('.path').textContent = tr(closing ? 'Closing the programs' : 'Looking for what can be closed');
       zone.dataset.key = key;
       zone.replaceChildren(...fresh);
       return;
@@ -273,6 +296,8 @@
         send('tasks.free', { ids: chosenItems.map(i => i.id) });
         picked = new Set();
         free = null;
+        closing = true;
+        renderMemory();
         renderFree();
       });
       fresh.push(go);
@@ -332,7 +357,7 @@
 
   function event(m) {
     if (m.type === 'tasks.details') { if (m.id === chosen) { sheet = m; renderSheet(); } return; }
-    if (m.type === 'tasks.free') { free = m; const ids = new Set(m.items.map(i => i.id)); picked = new Set([...picked].filter(id => ids.has(id))); renderMemory(); if (freeing) renderFree(); return; }
+    if (m.type === 'tasks.free') { free = m; closing = false; const ids = new Set(m.items.map(i => i.id)); picked = new Set([...picked].filter(id => ids.has(id))); renderMemory(); if (freeing) renderFree(); return; }
     if (m.type !== 'tasks.list') return;
     data = m;
     for (const t of m.items) if (t.info) details.set(t.id, t.info);
@@ -350,7 +375,7 @@
       turn++;
       send('tasks.list');
       if (chosen && turn % 3 === 0) send('tasks.details', { id: chosen });
-      if (turn % 5 === 0 && !armed) send('tasks.freeList');
+      if (turn % 5 === 0 && !armed && !closing) send('tasks.freeList');
     }, 2000);
   }
 

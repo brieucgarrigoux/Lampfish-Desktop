@@ -443,14 +443,17 @@
 
   <section class="view view--tasks only-tasks" aria-label="Tasks">
     <h1>Tasks</h1>
-    <div class="t-memory" id="t-memory">
-      <span class="t-memory__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="9.5" width="15.5" height="8.5" rx="1.5"/><path d="M6.25 12.5v2.5M10.25 12.5v2.5M14.25 12.5v2.5M5 18v2.5M15.5 18v2.5"/><path d="M19.75 2.25l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg></span>
-      <span class="t-memory__text">
-        <span class="t-memory__head"><b>Memory</b><span class="number" id="t-memory-value"></span></span>
-        <span class="t-memory__meter"><i id="t-memory-bar"></i></span>
-        <small id="t-memory-hint">Looking for what can be closed</small>
-      </span>
-      <button class="button button--accent t-memory__go" id="t-free"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="9.5" width="15.5" height="8.5" rx="1.5"/><path d="M6.25 12.5v2.5M10.25 12.5v2.5M14.25 12.5v2.5M5 18v2.5M15.5 18v2.5"/><path d="M19.75 2.25l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg><span>Free up memory</span></button>
+    <div class="security t-memory security--high" id="t-memory">
+      <div class="security__head">
+        <span class="seal"><svg class="seal__icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6.5" width="19" height="10" rx="1.6"/><rect x="5.5" y="9.3" width="3.2" height="4.4" rx=".6"/><rect x="10.4" y="9.3" width="3.2" height="4.4" rx=".6"/><rect x="15.3" y="9.3" width="3.2" height="4.4" rx=".6"/><path d="M5.5 16.5v2.8M8.2 16.5v2.8M10.9 16.5v2.8M13.1 16.5v2.8M15.8 16.5v2.8M18.5 16.5v2.8"/></svg></span>
+        <div class="security__verdict"><span class="security__title">Memory</span><span class="security__why" id="t-memory-value"></span></div>
+        <div class="security__meter" id="t-memory-meter" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div class="security__checks" id="t-memory-checks"></div>
+      <div class="security__next">
+        <span class="security__tip" id="t-memory-hint">Looking for what can be closed</span>
+        <button class="security__key t-memory__key" id="t-free"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6.5" width="19" height="10" rx="1.6"/><rect x="5.5" y="9.3" width="3.2" height="4.4" rx=".6"/><rect x="10.4" y="9.3" width="3.2" height="4.4" rx=".6"/><rect x="15.3" y="9.3" width="3.2" height="4.4" rx=".6"/><path d="M5.5 16.5v2.8M8.2 16.5v2.8M10.9 16.5v2.8M13.1 16.5v2.8M15.8 16.5v2.8M18.5 16.5v2.8"/></svg><span>Free up memory</span></button>
+      </div>
     </div>
     <div class="title-section title-section--tabs">
       <div class="segments tabs" id="t-tabs" role="tablist" aria-label="Kind of program"></div>
