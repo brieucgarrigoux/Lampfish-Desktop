@@ -121,5 +121,5 @@
 .h-cell i.low { background: var(--danger); }
 .h-tip { width: 3px; height: 8px; align-self: center; border-radius: 0 2px 2px 0; background: #3a3c47; }
 .h-thumbnail svg { width: 52px; height: 35px; }
-.h-thumbnail .screen-v { fill: #0b0c10; stroke: var(--hairline-strong); }
+.h-thumbnail .screen-v { fill: var(--screen); stroke: var(--hairline-strong); }
 .h-thumbnail rect.t0, .h-thumbnail rect.t2 { fill: var(--accent); } .h-thumbnail rect.t1, .h-thumbnail rect.t3 { fill: var(--accent-strong); }

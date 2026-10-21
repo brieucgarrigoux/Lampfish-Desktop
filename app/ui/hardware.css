@@ -56,7 +56,7 @@
 
 
 .m-screens { display: flex; align-items: flex-end; justify-content: center; gap: 10px; height: 70px; }
-.m-screen { flex: none; display: grid; place-items: center; border-radius: 4px; background: #0b0c10; transition: box-shadow var(--fast), color var(--fast); box-shadow: inset 0 0 0 1px var(--hairline-strong);
+.m-screen { flex: none; display: grid; place-items: center; border-radius: 4px; background: var(--screen); transition: box-shadow var(--fast), color var(--fast); box-shadow: inset 0 0 0 1px var(--hairline-strong);
   font: 600 13px var(--numbers); color: var(--text-pale); }
 .m-screen.primary { box-shadow: inset 0 0 0 1px rgba(149, 97, 243, .6); color: var(--accent); }
 .m-list-screens { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
