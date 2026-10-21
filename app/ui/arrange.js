@@ -24,17 +24,106 @@
     const points = THUMBNAILS[key].map(([x, y, t]) => `<rect x="${4 + x * 9}" y="${4 + y * 9}" width="6" height="6" rx="1.5" class="t${t}"/>`).join('');
     return `<svg viewBox="0 0 78 52" aria-hidden="true"><rect class="screen-v" x=".5" y=".5" width="77" height="51" rx="5"/>${points}</svg>`;
   }
+  let naming = false;
+  const REMOVE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg>';
+
+  function arrangementTile(key, name) {
+    const b = document.createElement('button');
+    b.className = 'arrangement';
+    b.setAttribute('role', 'radio');
+    b.setAttribute('aria-checked', String(r.arrangement === key));
+    b.innerHTML = thumbnail(key) + '<span class="name-ag"></span>';
+    b.querySelector('.name-ag').textContent = tr(name);
+    b.addEventListener('click', () => send('arrange.arrangement', { value: key }));
+    return b;
+  }
+
   function renderArrangements() {
-    $('arrangements').replaceChildren(...ARRANGEMENTS.map(([key, name]) => {
-      const b = document.createElement('button');
-      b.className = 'arrangement';
-      b.setAttribute('role', 'radio');
-      b.setAttribute('aria-checked', String(r.arrangement === key));
-      b.innerHTML = thumbnail(key) + '<span class="name-ag"></span>';
-      b.querySelector('.name-ag').textContent = name;
-      b.addEventListener('click', () => send('arrange.arrangement', { value: key }));
-      return b;
-    }));
+    $('arrangements').replaceChildren(...ARRANGEMENTS.map(([key, name]) => arrangementTile(key, name)));
+  }
+
+  function layoutThumbnail(d) {
+    const boxes = (d.signature || '').split('|').map(x => /^(\d+)x(\d+)@(-?\d+),(-?\d+)$/.exec(x)).filter(Boolean).map(m => ({ w: +m[1], h: +m[2], x: +m[3], y: +m[4] }));
+    if (!boxes.length) boxes.push({ w: 1920, h: 1080, x: 0, y: 0 });
+    const x0 = Math.min(...boxes.map(b => b.x)), y0 = Math.min(...boxes.map(b => b.y));
+    const x1 = Math.max(...boxes.map(b => b.x + b.w)), y1 = Math.max(...boxes.map(b => b.y + b.h));
+    const k = Math.min(72 / (x1 - x0), 46 / (y1 - y0)), ox = (78 - (x1 - x0) * k) / 2, oy = (52 - (y1 - y0) * k) / 2;
+    const screens = boxes.map(b => `<rect class="screen-v" x="${(ox + (b.x - x0) * k).toFixed(1)}" y="${(oy + (b.y - y0) * k).toFixed(1)}" width="${(b.w * k).toFixed(1)}" height="${(b.h * k).toFixed(1)}" rx="3"/>`).join('');
+    const icons = (d.points || []).map(([x, y]) => `<rect class="t0" x="${(ox + (x - x0) * k).toFixed(1)}" y="${(oy + (y - y0) * k).toFixed(1)}" width="4" height="4" rx="1"/>`).join('');
+    return `<svg viewBox="0 0 78 52" aria-hidden="true">${screens}${icons}</svg>`;
+  }
+
+  function addTile() {
+    const tile = document.createElement('button');
+    tile.type = 'button';
+    tile.className = 'arrangement arrangement--add';
+    tile.innerHTML = '<span class="arrangement__plus" aria-hidden="true">+</span><span class="name-ag"></span>';
+    tile.lastChild.textContent = tr('Save current');
+    tile.title = tr('Keeps the icons where they are now, to come back to them later');
+    tile.addEventListener('click', () => {
+      naming = true;
+      const form = document.createElement('form');
+      form.className = 'arrangement arrangement--form';
+      form.innerHTML = '<input maxlength="40" autocomplete="off"><button class="button button--accent" type="submit"></button>';
+      const input = form.querySelector('input');
+      input.placeholder = tr('Name this arrangement');
+      input.setAttribute('aria-label', tr('Arrangement name'));
+      form.querySelector('button').textContent = tr('Save');
+      form.addEventListener('submit', e => { e.preventDefault(); naming = false; send('arrange.save', { name: input.value }); });
+      input.addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); naming = false; form.replaceWith(tile); tile.focus(); } });
+      tile.replaceWith(form);
+      input.focus();
+    });
+    return tile;
+  }
+
+  function mineTile(d, i) {
+    const t = document.createElement('div');
+    t.className = 'arrangement arrangement--mine';
+    t.tabIndex = 0;
+    t.setAttribute('role', 'button');
+    t.setAttribute('aria-disabled', String(!d.current));
+    t.innerHTML = layoutThumbnail(d) + '<span class="name-ag"></span><button type="button" class="arrangement__remove"></button>';
+    const name = t.querySelector('.name-ag');
+    name.textContent = d.name;
+    name.translate = false;
+    t.title = d.name + ' · ' + d.screens + ' · ' + formatDate(d.date) + (d.current ? '' : ' · ' + tr('Saved with other screens'));
+    const remove = t.querySelector('.arrangement__remove');
+    remove.innerHTML = REMOVE;
+    remove.title = tr('Remove');
+    remove.setAttribute('aria-label', tr('Remove'));
+    remove.addEventListener('click', e => { e.stopPropagation(); send('arrange.erase', { index: i }); });
+    const restore = () => { if (d.current) send('arrange.restore', { index: i }); };
+    t.addEventListener('click', restore);
+    t.addEventListener('keydown', e => { if (e.target === t && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); restore(); } });
+    return t;
+  }
+
+  const formatDate = iso => new Date(iso).toLocaleString(LOCALE, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+
+  function renderMine() {
+    if (naming) return;
+    $('layout-count').textContent = r.layouts.length || '';
+    $('config').textContent = r.configuration;
+    $('mine').replaceChildren(...r.layouts.map(mineTile), addTile());
+  }
+
+  function renderDock() {
+    const zone = $('dock-pick');
+    if (document.body.dataset.dock !== 'arrange' || !r || naming) return;
+    const heading = text => Object.assign(document.createElement('h2'), { textContent: tr(text) });
+    const grid = nodes => { const g = document.createElement('div'); g.className = 'arrangements'; g.append(...nodes); return g; };
+    const actions = document.createElement('div');
+    actions.className = 'dock-actions';
+    actions.innerHTML = '<button class="button-sort" id="dock-undo"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4.5 9.5 9 5M5 9.5h9a5.5 5.5 0 0 1 0 11h-3"/></svg><span></span></button><button class="button-sort" id="dock-original"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4v4h4"/></svg><span></span></button>';
+    const [undo, original] = actions.children;
+    undo.lastChild.textContent = tr('Undo');
+    original.lastChild.textContent = tr('Back to original');
+    undo.disabled = !r.canUndo;
+    original.disabled = !r.hasOriginal;
+    undo.addEventListener('click', () => send('arrange.undo'));
+    original.addEventListener('click', () => send('arrange.original'));
+    zone.replaceChildren(heading('Arrangement'), grid(ARRANGEMENTS.map(([key, name]) => arrangementTile(key, name))), heading('My arrangements'), grid([...r.layouts.map(mineTile), addTile()]), actions);
   }
 
   function wallpaperBehind(screen, e) {
@@ -270,35 +359,13 @@
     if (order.join() !== r.categories.join()) send('arrange.order', { categories: order });
   }
 
-  const formatDate = iso => new Date(iso).toLocaleString(LOCALE, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-
-  function renderLayouts() {
-    $('layout-count').textContent = r.layouts.length || '';
-    $('config').textContent = r.configuration;
-    const list = $('layouts');
-    list.hidden = r.layouts.length === 0;
-    list.replaceChildren(...r.layouts.map((d, i) => {
-      const l = document.createElement('div');
-      l.className = 'row layout' + (d.current ? '' : ' other');
-      l.innerHTML = `<div class="what"><span class="name-layout"></span><span class="details"></span></div>
-        <button class="remove">Remove</button><button class="button">Restore</button>`;
-      l.querySelector('.name-layout').textContent = d.name;
-      l.querySelector('.name-layout').translate = false;
-      l.querySelector('.details').textContent = d.screens + ' · ' + formatDate(d.date);
-      const restore = l.querySelector('.button');
-      restore.disabled = !d.current;
-      restore.addEventListener('click', () => send('arrange.restore', { index: i }));
-      l.querySelector('.remove').addEventListener('click', () => send('arrange.erase', { index: i }));
-      return l;
-    }));
-  }
-
   function state(s) {
     r = s;
     renderArrangements();
     renderMap();
     renderPanel();
-    renderLayouts();
+    renderMine();
+    renderDock();
   }
 
   function event(m) {
@@ -340,11 +407,12 @@
   $('arrange-undo').addEventListener('click', () => send('arrange.undo'));
   $('arrange-original').addEventListener('click', () => send('arrange.original'));
   $('r-restore').addEventListener('change', e => send('arrange.restoreAuto', { value: e.target.checked }));
-  $('save').addEventListener('submit', e => {
-    e.preventDefault();
-    send('arrange.save', { name: $('layout-name').value });
-    $('layout-name').value = '';
+  $('arrange-save').addEventListener('click', () => {
+    const tile = $('mine').querySelector('.arrangement--add');
+    if (!tile) return;
+    tile.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    tile.click();
   });
 
-  Bramble.arrange = { state, event, visible, thumbnail };
+  Bramble.arrange = { state, event, visible, thumbnail, renderDock };
 })();

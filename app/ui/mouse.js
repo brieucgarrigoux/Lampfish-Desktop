@@ -312,6 +312,7 @@
     renderRoles();
     renderSettings();
     renderLibrary();
+    renderDock();
   }
 
   function event(m) {
@@ -325,6 +326,7 @@
     library = m;
     keyLibrary = '';
     renderLibrary();
+    renderDock();
   }
 
   function visible(yes) {
@@ -342,5 +344,27 @@
   $('s-update').addEventListener('click', () => send('mouse.update'));
   $('s-discard').addEventListener('click', () => send('mouse.discard'));
 
-  Bramble.mouse = { state, event, visible };
+  function renderDock() {
+    const zone = $('dock-pick');
+    if (document.body.dataset.dock !== 'mouse' || !s || !library) return;
+    const key = library.themes.map(t => t.name + '/' + t.title).join('|') + '#' + LANGUAGE;
+    if (zone.dataset.key === key && zone.firstChild) { mark(); return; }
+    zone.dataset.key = key;
+    const nodes = [];
+    for (const [kind, label] of SECTIONS) {
+      const list = library.themes.filter(t => t.kind === kind);
+      if (!list.length && kind !== 'mine') continue;
+      const head = document.createElement('h2');
+      head.textContent = tr(label);
+      const grid = document.createElement('div');
+      grid.className = 'themes';
+      grid.append(...list.map(themeCard));
+      if (kind === 'mine') grid.append(newTheme());
+      nodes.push(head, grid);
+    }
+    zone.replaceChildren(...nodes);
+    mark();
+  }
+
+  Bramble.mouse = { state, event, visible, renderDock };
 })();

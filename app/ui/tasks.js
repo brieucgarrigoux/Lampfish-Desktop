@@ -196,7 +196,9 @@
     const n = free.items.length, total = free.items.reduce((a, i) => a + i.memory, 0);
     const level = part >= 85 ? 'low' : part >= 70 ? 'medium' : 'high';
     card.className = 'security t-memory security--' + level;
-    $('t-memory-value').textContent = tr('{0} used · {1} of {2}', pct(part), size(used), size(free.total));
+    $('t-memory-value').textContent = tr('{0} of {1} in use', size(used), size(free.total));
+    $('t-memory-percent').textContent = Math.round(part) + '%';
+    $('t-memory-seal').style.setProperty('--part', part.toFixed(1));
     const lit = Math.round(part / 10);
     [...$('t-memory-meter').children].forEach((b, i) => b.classList.toggle('on', i < lit));
     const checks = [

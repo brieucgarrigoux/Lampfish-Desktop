@@ -34,6 +34,15 @@
 .arrangement .screen-v { fill: var(--screen); stroke: var(--hairline-strong); }
 .arrangement rect.t0 { fill: #8b8d9b; } .arrangement rect.t1 { fill: #6b6d7b; } .arrangement rect.t2 { fill: #a5a7b4; } .arrangement rect.t3 { fill: #5a5c69; }
 .arrangement .name-ag { font-size: 12.5px; color: var(--text-soft); }
+.arrangement--add { justify-content: center; background: none; box-shadow: inset 0 0 0 1.5px var(--hairline-strong); cursor: pointer; }
+.arrangement__plus { display: grid; place-items: center; width: 78px; height: 52px; font: 300 30px/1 var(--display); color: var(--text-soft); }
+.arrangement--form { justify-content: center; gap: 8px; cursor: default; }
+.arrangement--form input { width: 100%; min-width: 0; }
+.arrangement--mine[aria-disabled="true"] { opacity: .5; cursor: default; }
+.arrangement__remove { position: absolute; top: 5px; right: 5px; display: grid; place-items: center; width: 22px; height: 22px; border: 0; border-radius: 50%; background: var(--raised); color: var(--text-soft); opacity: 0; transition: opacity var(--fast), color var(--fast); }
+.arrangement:hover .arrangement__remove, .arrangement:focus-within .arrangement__remove { opacity: 1; }
+.arrangement__remove:hover { color: var(--danger); }
+.arrangement__remove svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 .arrangement:hover { background: var(--group-up); }
 .arrangement:hover .name-ag { color: var(--text); }
 .arrangement[aria-checked="true"] { background: var(--group-up); }

@@ -386,6 +386,7 @@
     const keyE = s.events.map(e => e.id).join('|');
     if (keyE !== keyEvents) { keyEvents = keyE; buildEvents(); }
     updateEvents();
+    renderDock();
     const key = s.sounds.map(x => x.id).join('|');
     if (key !== keyList) { keyList = key; buildList(); }
     updateList();
@@ -448,6 +449,46 @@
     }
   }
 
-  Bramble.station = { state, event, ingest, visible(yes) { standby = yes; if (yes && !loop) loop = requestAnimationFrame(animate); } };
+  function renderDock() {
+    const zone = $('dock-pick');
+    if (document.body.dataset.dock !== 'station' || !s) return;
+    const slider = zone.querySelector('input[type="range"]');
+    if (slider) {
+      if (document.activeElement !== slider) slider.value = s.volume;
+      slider.parentNode.querySelector('output').textContent = slider.value + ' %';
+      fill(slider);
+    }
+    const key = JSON.stringify([s.events.map(e => [e.id, e.active, e.sound]), LANGUAGE]);
+    if (zone.dataset.key === key && zone.firstChild) return;
+    zone.dataset.key = key;
+    const heading = text => Object.assign(document.createElement('h2'), { textContent: tr(text) });
+    const volume = document.createElement('div');
+    volume.className = 'group';
+    volume.innerHTML = '<div class="setting"><label for="dock-volume"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3.5l4.5 3.5v-11L7.5 10z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6M18 6.8a7.4 7.4 0 0 1 0 10.4"/></svg><span>Volume<small>Level of the system sounds</small></span></span><output></output></label><input type="range" id="dock-volume" min="0" max="100" step="1"></div>';
+    const range = volume.querySelector('input');
+    range.value = s.volume;
+    volume.querySelector('output').textContent = range.value + ' %';
+    fill(range);
+    range.addEventListener('input', () => { volume.querySelector('output').textContent = range.value + ' %'; fill(range); turn(Number(range.value), false); });
+    range.addEventListener('change', () => turn(Number(range.value), true));
+    const events = document.createElement('div');
+    events.className = 'group';
+    for (const e of s.events) {
+      const row = document.createElement('label');
+      row.className = 'toggle';
+      row.innerHTML = `<input type="checkbox"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${GLYPHS[e.pair] || ''}</svg><span><span class="dock-event"></span><small></small></span></span>`;
+      row.querySelector('.dock-event').textContent = e.label;
+      const sound = row.querySelector('small');
+      sound.textContent = titleOf(e.sound);
+      sound.translate = false;
+      const box = row.querySelector('input');
+      box.checked = e.active;
+      box.addEventListener('change', () => send('station.event', { id: e.id, value: box.checked }));
+      events.append(row);
+    }
+    zone.replaceChildren(heading('Volume'), volume, heading('Events'), events);
+  }
+
+  Bramble.station = { state, event, ingest, renderDock, visible(yes) { standby = yes; if (yes && !loop) loop = requestAnimationFrame(animate); } };
   animate();
 })();

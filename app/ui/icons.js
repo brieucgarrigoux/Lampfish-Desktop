@@ -47,7 +47,7 @@
     name.className = 'name-folder';
     name.textContent = folder.name;
     b.append(name);
-    b.addEventListener('click', () => send('icons.choose', { path: folder.path }));
+    b.addEventListener('click', () => { send('icons.choose', { path: folder.path }); if (document.body.dataset.dock === 'icons') showView('icons'); });
     return b;
   }
 
@@ -210,6 +210,7 @@
     renderTarget();
     renderLists();
     renderLibrary();
+    renderDock();
   }
 
   function event(m) {
@@ -244,5 +245,14 @@
 
   $('icons-reset-all').addEventListener('click', () => send('icons.resetAll'));
 
-  Bramble.icons = { state, event, visible };
+  function renderDock() {
+    const zone = $('dock-pick');
+    if (document.body.dataset.dock !== 'icons' || zone.firstChild) return;
+    const hint = document.createElement('p');
+    hint.className = 'help-section';
+    hint.textContent = tr('Pick a folder below to change its icon');
+    zone.replaceChildren(hint);
+  }
+
+  Bramble.icons = { state, event, visible, renderDock };
 })();

@@ -57,7 +57,8 @@ h2 .count { margin-left: 8px; font: 400 12px var(--numbers); font-variant-numeri
 [hidden] { display: none !important; }
 
 .rail { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 14px 0; border-right: 1px solid var(--hairline); overflow-y: auto; scrollbar-width: none; container: rail / inline-size; }
-.rail-sep { flex: none; width: 36px; height: 1px; margin: 6px 0; border: 0; background: var(--hairline-strong); }
+.rail-sep, .rail-title { flex: none; width: 36px; height: 1px; margin: 6px 0; border: 0; background: var(--hairline-strong); }
+.rail-title { overflow: hidden; font-size: 0; color: transparent; }
 .rail .logo { flex: none; width: 56px; height: 56px; display: block; object-fit: contain; transition: transform var(--fast); }
 .logo-home { padding: 6px 0; margin-bottom: 6px; gap: 0; }
 .logo-home:hover .logo { transform: scale(1.04); }
@@ -92,6 +93,7 @@ h2 .count { margin-left: 8px; font: 400 12px var(--numbers); font-variant-numeri
   .rail .logo { width: 40px; height: 40px; }
   .wordmark { display: block; font: 700 18px/1 var(--display); letter-spacing: -.01em; color: var(--text); }
   .rail-sep { width: calc(100% - 40px); }
+  .rail-title { width: calc(100% - 20px); height: auto; margin: 12px 0 3px; padding-left: 12px; background: none; font: 600 11.5px var(--display); color: var(--text-pale); }
   @media (max-height: 760px) { .service:not(.logo-home) { padding-block: 7px; } }
   @media (max-height: 680px) {
     .service:not(.logo-home) { padding-block: 5px; }
@@ -119,6 +121,9 @@ body[data-view="home"][data-dock="icons"] .panel .only-icons, body[data-view="ho
 body[data-view="home"][data-dock="station"] .panel .only-station, body[data-view="home"][data-dock="tasks"] .panel .only-tasks { display: flex !important; }
 .panel > .dock-head { display: none; }
 body[data-view="home"][data-dock] .panel > .dock-head { display: flex; flex-direction: row; align-items: center; gap: 8px; padding-bottom: 4px; }
+.panel > .dock-pick, .panel > .dock-pick:empty { display: none; }
+body[data-view="home"][data-dock] .panel > .dock-pick:not(:empty) { display: flex; flex-direction: column; gap: 10px; }
+.dock-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .dock-head__title { flex: 1; min-width: 0; font: 600 16px var(--display); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 body[data-view="tasks"]:not(.sheet-open) .panel, body[data-view="modes"]:not(.mode-open) .panel { display: none; }
 

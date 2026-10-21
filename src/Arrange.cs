@@ -803,7 +803,7 @@ namespace Bramble
             if (R.Screen != "all" && !(int.TryParse(R.Screen, out chosen) && chosen >= 1 && chosen <= n)) R.Screen = "all";
             return new
             {
-                layouts = R.Layouts.Select(d => new { name = d.Name, screens = Label(d.Screens), date = d.Date, current = d.Screens == signature }).ToArray(),
+                layouts = R.Layouts.Select(d => new { name = d.Name, screens = Label(d.Screens), signature = d.Screens, date = d.Date, current = d.Screens == signature, points = d.Positions.Select(p => new[] { p.X, p.Y }).ToArray() }).ToArray(),
                 restoreAuto = R.RestoreAuto,
                 canUndo = R.History.Count > 0,
                 hasOriginal = R.Original != null,

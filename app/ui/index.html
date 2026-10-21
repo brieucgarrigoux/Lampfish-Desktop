@@ -27,6 +27,7 @@
 
 <nav class="rail" aria-label="Services" data-resizable="right" data-variable="--width-rail" data-key="rail-width" data-min="76" data-max="230" data-initial="180">
   <button class="logo-home service" data-view="home" title="Home" aria-label="Home"><img class="logo" src="/brand/logo/logo-bramble-192.png" alt=""><span class="wordmark" aria-hidden="true">Bramble</span></button>
+  <div class="rail-title" role="presentation">Personalization</div>
   <button class="service" data-view="modes">
     <svg viewBox="0 0 24 24"><path d="M19.5 14.6A7.6 7.6 0 0 1 9.4 4.5a7.6 7.6 0 1 0 10.1 10.1z"/><path d="M17 3.5v4M15 5.5h4"/></svg>
     Themes
@@ -39,19 +40,10 @@
     <svg viewBox="0 0 24 24"><path d="m21.6 3.6-1.3-1.3a1.2 1.2 0 0 0-1.7 0L2.4 18.6a1.2 1.2 0 0 0 0 1.7l1.3 1.3a1.2 1.2 0 0 0 1.7 0L21.6 5.4a1.2 1.2 0 0 0 0-1.8z"/><path d="m14 7 3 3"/><path d="M5 6v4M3 8h4"/><path d="M19 14v4M17 16h4"/><path d="M10 2v2M9 3h2"/></svg>
     Create
   </button>
-  <button class="service" data-view="display">
-    <svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="12" rx="1.5"/><path d="M9 20h6M12 16.5V20"/></svg>
-    Display
-  </button>
   <button class="service" data-view="icons">
     <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="m12 7.8 1.2 2.6 2.8.3-2.1 1.9.6 2.8-2.5-1.4-2.5 1.4.6-2.8-2.1-1.9 2.8-.3z"/></svg>
     Icons
   </button>
-  <button class="service" data-view="arrange">
-    <svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><rect x="14" y="14" width="6" height="6" rx="1.2"/></svg>
-    Arrange
-  </button>
-  <hr class="rail-sep">
   <button class="service" data-view="mouse">
     <svg viewBox="0 0 24 24"><path d="M6 3.5 18 12.3l-5.6.8-3.2 4.9z"/><path d="m12.4 13.1 3.6 6.4"/></svg>
     Mouse
@@ -60,7 +52,20 @@
     <svg viewBox="0 0 24 24"><path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/></svg>
     Sounds
   </button>
-  <hr class="rail-sep">
+  <div class="rail-title" role="presentation">Desktop</div>
+  <button class="service" data-view="display">
+    <svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="12" rx="1.5"/><path d="M9 20h6M12 16.5V20"/></svg>
+    Display
+  </button>
+  <button class="service" data-view="arrange">
+    <svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><rect x="14" y="14" width="6" height="6" rx="1.2"/></svg>
+    Arrange
+  </button>
+  <div class="rail-title" role="presentation">PC</div>
+  <button class="service" data-view="tasks">
+    <svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M6.5 13h2.5l1.5-4 3 7 1.5-3h2.5"/></svg>
+    Tasks
+  </button>
   <button class="service" data-view="files">
     <svg viewBox="0 0 24 24"><path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/></svg>
     Folders
@@ -68,10 +73,6 @@
   <button class="service" data-view="hardware">
     <svg viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/><rect x="9.5" y="9.5" width="5" height="5" rx=".8"/><path d="M9.5 3.5v3M14.5 3.5v3M9.5 17.5v3M14.5 17.5v3M3.5 9.5h3M3.5 14.5h3M17.5 9.5h3M17.5 14.5h3"/></svg>
     Hardware
-  </button>
-  <button class="service" data-view="tasks">
-    <svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M6.5 13h2.5l1.5-4 3 7 1.5-3h2.5"/></svg>
-    Tasks
   </button>
   <button class="service" data-view="network">
     <svg viewBox="0 0 24 24"><path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.2" r="1.1"/></svg>
@@ -334,6 +335,7 @@
     <div class="map-actions">
       <button class="button-sort" id="arrange-undo"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4.5 9.5 9 5M5 9.5h9a5.5 5.5 0 0 1 0 11h-3"/></svg><span>Undo</span></button>
       <button class="button-sort" id="arrange-original"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4v4h4"/></svg><span>Back to original</span></button>
+      <button class="button-sort" id="arrange-save"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 4.5h10l3 3v12h-13z"/><path d="M8.5 4.5v5h6v-5M8.5 19.5v-5h7v5"/></svg><span>Save current</span></button>
     </div>
 
     <div class="title-section">
@@ -343,14 +345,10 @@
     <div class="arrangements" id="arrangements" role="radiogroup" aria-label="Arrangement"></div>
 
     <div class="title-section">
-      <h2>Layouts<span class="count" id="layout-count"></span></h2>
+      <h2>My arrangements<span class="count" id="layout-count"></span></h2>
       <span class="config" id="config"></span>
     </div>
-    <div class="group layouts" id="layouts"></div>
-    <form class="save" id="save" autocomplete="off">
-      <input id="layout-name" maxlength="40" placeholder="Layout name" aria-label="Layout name">
-      <button class="button button--accent">Save</button>
-    </form>
+    <div class="arrangements arrangements--mine" id="mine"></div>
   </section>
 
   <section class="view view--files only-files" aria-label="Folders">
@@ -449,7 +447,7 @@
     <h1>Tasks</h1>
     <div class="security t-memory security--high" id="t-memory">
       <div class="security__head">
-        <span class="seal"><span class="seal__text">RAM</span></span>
+        <span class="seal" id="t-memory-seal"><span class="seal__ring"></span><span class="seal__text" id="t-memory-percent"></span></span>
         <div class="security__verdict"><span class="security__title">Memory</span><span class="t-memory__screen" id="t-memory-value"></span></div>
         <div class="security__meter" id="t-memory-meter" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
       </div>
@@ -527,6 +525,7 @@
 
 <aside class="panel" data-resizable="left" data-variable="--width-panel" data-min="260" data-max="640" data-initial="340">
   <div class="dock-head" id="dock-head"><span class="dock-head__title" id="dock-title"></span><button class="link" id="dock-open"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 5h6v6M19 5l-8 8M10 6H6.5A1.5 1.5 0 0 0 5 7.5v10A1.5 1.5 0 0 0 6.5 19h10a1.5 1.5 0 0 0 1.5-1.5V14"/></svg>Open page</button><button class="t-close" id="dock-close" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg></button></div>
+  <div class="dock-pick" id="dock-pick"></div>
   <div class="only-wallpaper">
     <h2>Animation</h2>
     <div class="group">

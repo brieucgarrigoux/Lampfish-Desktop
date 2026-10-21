@@ -46,7 +46,7 @@ if (LANGUAGE !== 'en') {
   }).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRIBUTES_TRANSLATED });
 }
 const Bramble = { state: null, station: null, icons: null, arrange: null, mouse: null, network: null, files: null, hardware: null, tasks: null, moods: null, creator: null };
-const VIEWS = ['home', 'modes', 'wallpaper', 'create', 'display', 'icons', 'arrange', 'mouse', 'station', 'files', 'hardware', 'tasks', 'network', 'settings'];
+const VIEWS = ['home', 'modes', 'wallpaper', 'create', 'icons', 'mouse', 'station', 'display', 'arrange', 'tasks', 'files', 'hardware', 'network', 'settings'];
 
 const scrolls = {}, narrowLayout = matchMedia('(max-width: 900px)');
 const scrollZones = () => narrowLayout.matches ? [document.scrollingElement] : [document.querySelector('.contents'), document.querySelector('.panel')];
@@ -54,11 +54,14 @@ const DOCKS = { icons: 'Icons', arrange: 'Arrange', mouse: 'Mouse', station: 'So
 function setDock(view) {
   const old = document.body.dataset.dock;
   if (old === view) return;
+  const pick = $('dock-pick');
+  pick.replaceChildren();
+  delete pick.dataset.key;
   if (old) { if (old === 'tasks') { if (Bramble.tasks) Bramble.tasks.dock(false); } else if (Bramble[old]) Bramble[old].visible(false); }
   if (view) document.body.dataset.dock = view; else delete document.body.dataset.dock;
   if (view) {
     $('dock-title').textContent = tr(DOCKS[view]);
-    if (view === 'tasks') { if (Bramble.tasks) Bramble.tasks.dock(true); } else if (Bramble[view]) Bramble[view].visible(true);
+    if (view === 'tasks') { if (Bramble.tasks) Bramble.tasks.dock(true); } else if (Bramble[view]) { Bramble[view].visible(true); if (Bramble[view].renderDock) Bramble[view].renderDock(); }
   }
   for (const t of document.querySelectorAll('.h-tile')) t.setAttribute('aria-pressed', String(t.dataset.view === view));
   dispatchEvent(new Event('resize'));
@@ -252,7 +255,7 @@ for (const b of $('language').children) b.addEventListener('click', () => {
 });
 $('quit').addEventListener('click', () => send('quit'));
 
-const TYPES = { video: 'Video', gif: 'GIF', image: 'Image', html: 'HTML' };
+const TYPES = { video: 'Video', gif: 'GIF', image: 'Image', html: 'Live' };
 let keyGrid = '', keyHero = null;
 
 let hero = null, heroDirect = false, heroSet = '', reload = 0;
@@ -454,7 +457,7 @@ function buildGrid() {
     card.dataset.name = wallpaper.name;
     card.innerHTML = `<div class="preview"></div>
       <div class="footer"><span class="name"></span><span class="badge-screens"></span><span class="badge">${TYPES[wallpaper.type]}</span></div>
-      <div class="card-actions">${wallpaper.custom ? '<button class="edit" tabindex="-1">Edit</button>' : ''}<button class="remove" tabindex="-1">Remove</button></div>`;
+      <div class="card-actions">${wallpaper.custom ? '<button class="edit" tabindex="-1">Edit</button>' : ''}${wallpaper.bundled ? '' : '<button class="remove" tabindex="-1">Remove</button>'}</div>`;
     card.querySelector('.name').textContent = withoutExtension(wallpaper.name);
     card.querySelector('.name').translate = false;
     card.querySelector('.name').title = wallpaper.name;
@@ -463,8 +466,9 @@ function buildGrid() {
     const choose = () => send('choose', { name: wallpaper.name, screen: heroScreen });
     const button = card.querySelector('.remove');
     let armed = 0;
-    const disarm = () => { clearTimeout(armed); armed = 0; button.textContent = tr('Remove'); button.classList.remove('armed'); };
+    const disarm = () => { clearTimeout(armed); armed = 0; if (!button) return; button.textContent = tr('Remove'); button.classList.remove('armed'); };
     const remove = () => {
+      if (!button) return;
       if (armed) { disarm(); send('remove', { name: wallpaper.name }); return; }
       button.textContent = tr('Confirm');
       button.classList.add('armed');
@@ -479,7 +483,7 @@ function buildGrid() {
       if (e.key === 'Delete') { e.preventDefault(); remove(); }
     });
 
-    card.querySelector('.remove').addEventListener('click', e => { e.stopPropagation(); remove(); });
+    if (button) button.addEventListener('click', e => { e.stopPropagation(); remove(); });
     grid.append(card);
   }
 

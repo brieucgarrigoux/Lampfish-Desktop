@@ -592,6 +592,7 @@ namespace Bramble
 
         static void Remove(string name)
         {
+            if (Featured.Contains(name)) return;
             string path = Path.Combine(WallpapersFolder, name);
             if (!File.Exists(path) && !Directory.Exists(path)) return;
             bool current = name == R.Wallpaper;
@@ -847,7 +848,7 @@ namespace Bramble
             var state = new
             {
                 type = "state",
-                wallpapers = ListWallpapers().Select(n => new { name = n, type = WallpaperType(n), url = UrlMedia(n), custom = File.Exists(Path.Combine(WallpapersFolder, n, "config.json")), stamp = Stamp(n) }).ToArray(),
+                wallpapers = ListWallpapers().Select(n => new { name = n, type = WallpaperType(n), url = UrlMedia(n), custom = File.Exists(Path.Combine(WallpapersFolder, n, "config.json")), bundled = Featured.Contains(n), stamp = Stamp(n) }).ToArray(),
                 current = R.Wallpaper,
                 displays = OrderedScreens().Select((s, i) =>
                 {

@@ -111,7 +111,7 @@
     $('h-wallpaper').classList.toggle('paused', paused);
     $('h-wallpaper').classList.toggle('fit', e.fit === 'fit');
     $('h-now-name').textContent = wallpaper ? wallpaper.name.replace(/\.[^.]+$/, '') : tr('No wallpaper selected');
-    $('h-now-type').textContent = wallpaper ? wallpaper.type.toUpperCase() : '';
+    $('h-now-type').textContent = wallpaper ? TYPES[wallpaper.type] : '';
     $('h-pause').textContent = tr(e.paused ? 'Resume' : 'Pause');
     $('h-pause').setAttribute('aria-pressed', String(!!e.paused));
     $('h-next').disabled = $('h-previous').disabled = !e.wallpapers || e.wallpapers.length < 2;
