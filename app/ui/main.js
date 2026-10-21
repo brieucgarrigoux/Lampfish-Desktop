@@ -50,7 +50,7 @@ const VIEWS = ['home', 'modes', 'wallpaper', 'create', 'display', 'icons', 'arra
 
 const scrolls = {}, narrowLayout = matchMedia('(max-width: 900px)');
 const scrollZones = () => narrowLayout.matches ? [document.scrollingElement] : [document.querySelector('.contents'), document.querySelector('.panel')];
-const DOCKS = { icons: 'Icons', arrange: 'Arrange', mouse: 'Mouse', station: 'Sounds', tasks: 'Free up memory' };
+const DOCKS = { icons: 'Icons', arrange: 'Arrange', mouse: 'Mouse', station: 'Sounds', tasks: 'Tasks' };
 function setDock(view) {
   const old = document.body.dataset.dock;
   if (old === view) return;

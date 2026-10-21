@@ -6,6 +6,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Home is a control center: a click on Icons, Arrange, Mouse, Sounds or Tasks opens the settings of that service in the side panel, with a link to the full page, instead of leaving Home.
 - Display: a Brightness setting for each screen that allows it, the laptop screen and external screens that accept commands from the PC (DDC/CI).
 - Folders: a Languages card shows the share of each programming language in the analyzed folder, like on GitHub, leaving out dependencies, app data and system folders.
 - The services of the left bar can be reached with the up and down arrow keys, Home and End.
@@ -38,7 +39,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - The window remembers its size, position and maximized state.
 
 ### Changed
-- Tasks: the Memory card is rebuilt like the Network security card, with a lamp, a segmented meter, three checks (in use, available, can be freed) and a violet Free up memory key. Programs from 60 MB are now offered, and the icon is a memory module.
+- Folders: the sources say what they cover (the whole drive, Windows included, or the personal folder with its path) and the home folder is called Personal folder.
+- Icons: Maintenance, with Refresh icons and Reset everything, comes first in the side panel.
+- Tasks: the Memory card is rebuilt like the Network security card, with a lamp, a segmented meter, three checks (in use, available, can be freed) and a violet Free up memory key. The usage sits in a small screen, a RAM seal replaces the icon, and the key has the violet style of Network and Sounds. Programs from 60 MB are now offered, never the terminals. The list stays on screen while programs close, each one showing Closing.
 - Sounds: one Sounds on switch instead of Sounds on and Silent, which did the same thing, and the list of events is titled Events.
 - Create: the preview adapts to the height of the window, so the themes stay visible without scrolling.
 - Settings that appear with an option (React to sound in Create and Wallpaper, Screen and sleep on Home, the icons of a theme) open and close smoothly instead of making everything under them jump.
@@ -77,6 +80,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Starting with Windows uses the --background option (--discret still works).
 
 ### Fixed
+- Create: changing the size or the amount of particles reshuffled all of them on the screen, and embers lost their size when they came back. The size now applies while drawing and the amount only adds or removes particles.
 - Arrange: changing the icon size several times in a row, or on a layout Bramble did not make, piled the icons on the same rows. The layout from before the first click is now kept until the last one, and every icon keeps its cell or takes the nearest free one.
 - Tasks: after Free up memory, a program still closing came back in the list for a few seconds. Bramble now waits for the programs to quit, closes every window of an app, and says what really closed and what is still open (an app can hide in the notification area instead of quitting).
 - Arrange: Frame left an empty cell between two categories, which looked like missing icons, and filled a second ring from one side only. The frame now spaces its icons evenly when it is not full and centers the extra icons on its top and bottom rows.

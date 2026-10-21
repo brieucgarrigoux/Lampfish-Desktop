@@ -33,6 +33,7 @@ namespace Bramble
         static readonly HashSet<string> SparedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "OneDrive", "Dropbox", "GoogleDriveFS", "iCloudDrive", "iCloudServices", "Nextcloud", "pCloud", "MEGAsync", "TeamViewer", "AnyDesk",
+            "WindowsTerminal", "OpenConsole", "conhost", "cmd", "powershell", "pwsh",
         };
         static readonly Dictionary<string, string> companies = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
