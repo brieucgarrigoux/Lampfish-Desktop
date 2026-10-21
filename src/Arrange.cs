@@ -44,6 +44,9 @@ namespace Bramble
 
         static ArrangeSettings R { get { return Program.R.Arrange; } }
 
+        // The saved arrangement whose icons are on the desktop right now; any other change of the icons clears it.
+        static string activeLayout;
+
         public static void Start()
         {
             if (Program.R.Arrange == null) Program.R.Arrange = new ArrangeSettings();
@@ -624,6 +627,7 @@ namespace Bramble
             d.Positions = Capture();
             R.Layouts.RemoveAll(x => x.Name == name);
             R.Layouts.Add(d);
+            activeLayout = name;
         }
 
         static void Restore(Layout d)
@@ -709,6 +713,7 @@ namespace Bramble
 
         public static bool Receive(string action, Dictionary<string, object> m)
         {
+            if (action != "map" && action != "restore" && action != "save" && action != "erase") activeLayout = null;
             try
             {
                 switch (action)
@@ -773,8 +778,9 @@ namespace Bramble
                         int i = Convert.ToInt32(m["index"]);
                         if (i < 0 || i >= R.Layouts.Count) return false;
                         Restore(R.Layouts[i]);
+                        activeLayout = R.Layouts[i].Name;
                         Program.Send(Map(false));
-                        return false;
+                        return true;
                     }
                     case "undo": Undo(); Program.Send(Map(false)); return true;
                     case "original":
@@ -801,8 +807,16 @@ namespace Bramble
             string signature = Signature();
             int n = Screens().Count, chosen;
             if (R.Screen != "all" && !(int.TryParse(R.Screen, out chosen) && chosen >= 1 && chosen <= n)) R.Screen = "all";
+            int active = -1;
+            if (activeLayout != null)
+            {
+                active = R.Layouts.FindIndex(d => d.Name == activeLayout && d.Screens == signature);
+                if (active >= 0 && !Same(Capture(), R.Layouts[active].Positions)) active = -1;
+                if (active < 0) activeLayout = null;
+            }
             return new
             {
+                active = active,
                 layouts = R.Layouts.Select(d => new { name = d.Name, screens = Label(d.Screens), signature = d.Screens, date = d.Date, current = d.Screens == signature, points = d.Positions.Select(p => new[] { p.X, p.Y }).ToArray() }).ToArray(),
                 restoreAuto = R.RestoreAuto,
                 canUndo = R.History.Count > 0,

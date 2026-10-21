@@ -31,7 +31,7 @@
     const b = document.createElement('button');
     b.className = 'arrangement';
     b.setAttribute('role', 'radio');
-    b.setAttribute('aria-checked', String(r.arrangement === key));
+    b.setAttribute('aria-checked', String(r.arrangement === key && r.active < 0));
     b.innerHTML = thumbnail(key) + '<span class="name-ag"></span>';
     b.querySelector('.name-ag').textContent = tr(name);
     b.addEventListener('click', () => send('arrange.arrangement', { value: key }));
@@ -81,7 +81,8 @@
     const t = document.createElement('div');
     t.className = 'arrangement arrangement--mine';
     t.tabIndex = 0;
-    t.setAttribute('role', 'button');
+    t.setAttribute('role', 'radio');
+    t.setAttribute('aria-checked', String(i === r.active));
     t.setAttribute('aria-disabled', String(!d.current));
     t.innerHTML = layoutThumbnail(d) + '<span class="name-ag"></span><button type="button" class="arrangement__remove"></button>';
     const name = t.querySelector('.name-ag');

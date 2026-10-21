@@ -423,13 +423,18 @@ namespace Bramble
             if (dead) RebuildSoon();
         }
 
-        static readonly List<string> past = new List<string>();
+        static readonly List<string> past = new List<string>(), future = new List<string>();
         static string shown;
-        static bool goingBack;
+        static bool goingBack, navigating;
 
         static void Apply(bool fade = true)
         {
-            if (shown != null && shown != R.Wallpaper && !goingBack) { past.Add(shown); if (past.Count > 30) past.RemoveAt(0); }
+            if (shown != null && shown != R.Wallpaper && !goingBack)
+            {
+                past.Add(shown);
+                if (past.Count > 30) past.RemoveAt(0);
+                if (!navigating) future.Clear();
+            }
             shown = R.Wallpaper;
             ForEachWallpaper(f => f.Show(R, WallpaperOf(f.Screen), fade));
         }
@@ -437,6 +442,7 @@ namespace Bramble
         public static void PreviousWallpaper()
         {
             var wallpapers = ListWallpapers().ToList();
+            if (shown == null) shown = R.Wallpaper;
             RestartSlideshow();
             string back = null;
             while (back == null && past.Count > 0)
@@ -451,6 +457,8 @@ namespace Bramble
                 int i = wallpapers.IndexOf(R.Wallpaper);
                 back = wallpapers[(i <= 0 ? wallpapers.Count : i) - 1];
             }
+            future.Add(R.Wallpaper);
+            if (future.Count > 30) future.RemoveAt(0);
             R.Wallpaper = back;
             R.ScreenWallpapers.RemoveAll(x => x.Wallpaper == R.Wallpaper);
             goingBack = true;
@@ -506,6 +514,7 @@ namespace Bramble
         public static void NextWallpaper()
         {
             var wallpapers = ListWallpapers().ToList();
+            if (shown == null) shown = R.Wallpaper;
             RestartSlideshow();
             if (wallpapers.Count < 2) return;
             var taken = new List<string>();
@@ -518,10 +527,19 @@ namespace Bramble
                 taken.Add(chosen);
                 return chosen;
             };
-            R.Wallpaper = pick(R.Wallpaper);
+            string forward = null;
+            while (forward == null && future.Count > 0)
+            {
+                string candidate = future[future.Count - 1];
+                future.RemoveAt(future.Count - 1);
+                if (candidate != R.Wallpaper && wallpapers.Contains(candidate)) forward = candidate;
+            }
+            if (forward != null) taken.Add(forward);
+            R.Wallpaper = forward ?? pick(R.Wallpaper);
             foreach (var x in R.ScreenWallpapers) x.Wallpaper = pick(x.Wallpaper);
             R.ScreenWallpapers.RemoveAll(x => x.Wallpaper == R.Wallpaper);
-            Apply();
+            navigating = true;
+            try { Apply(); } finally { navigating = false; }
             Save();
             Tray.Update();
             SendState();

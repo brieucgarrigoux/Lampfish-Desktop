@@ -85,6 +85,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Starting with Windows uses the --background option (--discret still works).
 
 ### Fixed
+- Home: Previous skipped the wallpaper shown at launch, because Bramble did not remember it, and Next after Previous picked a new wallpaper instead of going forward. Both now follow one history, back and forward.
+- Arrange: the violet ring stayed on the last arrangement after restoring one of your own. It now sits on the saved arrangement that matches the desktop, and goes back to the arrangement in use as soon as the icons change.
 - Create: changing the size or the amount of particles reshuffled all of them on the screen, and embers lost their size when they came back. The size now applies while drawing and the amount only adds or removes particles.
 - Arrange: changing the icon size several times in a row, or on a layout Bramble did not make, piled the icons on the same rows. The layout from before the first click is now kept until the last one, and every icon keeps its cell or takes the nearest free one.
 - Tasks: after Free up memory, a program still closing came back in the list for a few seconds. Bramble now waits for the programs to quit, closes every window of an app, and says what really closed and what is still open (an app can hide in the notification area instead of quitting).
