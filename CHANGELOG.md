@@ -5,17 +5,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-21
+
 ### Added
 - The titled sections of the side panel, and the three families of the bar on the left, fold and unfold with a click on their title, including the panels that a service redraws (hardware details, theme settings, Create). They stay folded until Bramble is closed and always start unfolded. A folded family shows a dot when it holds the service being shown, and a bar narrowed to icons shows everything.
-- Home: the side panel also changes things, not only shows them. Arrange offers the arrangements and your saved ones, Mouse the cursor themes, Sounds the volume and every event, Icons its folders.
 - Arrange: My arrangements keeps the icons as they are now under a name, with a small picture of each, so they can be put back later. Save current sits next to Undo and Back to original, and the same tiles are in the Home panel.
-- Home is a control center: a click on Icons, Arrange, Mouse, Sounds or Tasks opens the settings of that service in the side panel, with a link to the full page, instead of leaving Home.
+- Home is a control center: a click on Icons, Arrange, Mouse, Sounds or Tasks opens that service in the side panel, with a link to the full page, instead of leaving Home. Arrange offers the arrangements and your saved ones, Mouse the cursor themes, Sounds the volume and every event, Icons its folders.
 - Display: a Brightness setting for each screen that allows it, the laptop screen and external screens that accept commands from the PC (DDC/CI).
 - Folders: a Languages card shows the share of each programming language in the analyzed folder, like on GitHub, leaving out dependencies, app data and system folders.
 - The services of the left bar can be reached with the up and down arrow keys, Home and End.
 - Display, a new service for the screen: a map of the screens to pick the main one (where the Start menu and new windows open, with undo), Warm screen with its strength for warmer colors in the evening (through the color filter of Windows accessibility, which goes away with Bramble), a link to the Night light of Windows, when the screen turns off and when the PC goes to sleep, plugged in and on battery, and Energy saver kept on whenever the PC runs on battery. Every change can be undone.
 - Home: the same warm screen, energy saver, screen and sleep settings as shortcuts under This PC.
-- Home: Previous goes back to the wallpaper shown before, next to Pause and Next.
+- Home: a Previous button next to Pause and Next, so the wallpapers can be walked in both directions.
 - Tasks: a Memory card at the top shows how full the memory is and how much closing the programs not in use would free, with a Free up memory button. It lists the programs that can be closed without risk, never Windows, security, drivers, file sync, remote access, programs playing sound, Bramble or the app in use. The ticked ones close like with their X, programs without a window stop, after a warning and a confirming click. Above 80 %, the memory row of Home leads there.
 - Mouse: the cursor library is sorted by family. All shows every theme; Bramble, Windows and My cursors show their themes, then each of their cursors, so one cursor of a Bramble theme can replace a single role.
 - Themes: each theme has an icon on its cover, picked among 13 in its settings (Night, Focus and Cinema get a moon, a target and a film), a theme can warm the screen (Night does), and three steps at the top explain how themes work.
@@ -28,7 +29,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Wallpaper per screen: a selector under the large preview picks every screen or one of them, and a badge on each wallpaper shows the screens it covers. Slideshow, themes, removal and Next wallpaper follow it.
 - Wallpapers fade through black when they change.
 - Power saving: a Frame rate choice (30 or 60 images a second) for every HTML wallpaper, and the wallpaper pauses while the session is locked.
-- Shuffle for the slideshow and for Next wallpaper, without repeating the current wallpaper or showing it on two screens when there is a choice.
+- Shuffle for the slideshow, without repeating the current wallpaper or showing it on two screens when there is a choice. Previous and Next follow the order of the Wallpaper page.
 - Videos, GIFs and images pulse lightly with the sound when React to sound is on.
 - A dark tray menu: Open Bramble, Next wallpaper, Pause or resume the wallpaper, Themes, Sounds and Quit.
 - Undo after applying a theme, resetting the cursors, applying an icon to subfolders, resetting every folder icon, loading a sound pair and clearing the test history. Removing a theme can be undone instead of confirmed.
