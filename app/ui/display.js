@@ -48,7 +48,7 @@ const Quick = (() => {
 })();
 
 (function () {
-  let screens = null, chosen = null, shown = false, keyDisplays = '', later = 0;
+  let screens = null, chosen = null, shown = false, keyDisplays = '', later = 0, panels = null;
   const renderQuick = Quick.bind({
     warmOn: 'd-warm-on', warm: 'd-warm', output: 'd-warm-value', night: 'd-night-light', group: 'd-power',
     saver: 'd-saver-on', saverDetail: 'd-saver-detail', saverRow: 'd-saver-row',
@@ -108,10 +108,39 @@ const Quick = (() => {
     if (!e) return;
     renderQuick(e);
     const key = (e.displays || []).map(d => d.key + (d.primary ? '*' : '')).join('|');
-    if (key !== keyDisplays) { keyDisplays = key; if (shown) send('display.screens'); else screens = null; }
+    if (key !== keyDisplays) { keyDisplays = key; if (shown) { send('display.screens'); send('display.brightness'); } else screens = null; }
+  }
+
+  const SUN = '<circle cx="12" cy="12" r="3.5"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/>';
+  function renderBrightness() {
+    const zone = $('d-bright'), list = panels || [];
+    $('d-bright-title').hidden = zone.hidden = !list.length;
+    if (!list.length) return;
+    const key = list.map(p => p.key).join('|') + LANGUAGE;
+    if (zone.dataset.key !== key) {
+      zone.dataset.key = key;
+      zone.replaceChildren(...list.map((p, i) => {
+        const row = document.createElement('div');
+        row.className = 'setting';
+        row.innerHTML = `<label for="d-bright-${i}"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${SUN}</svg><span><span class="d-bright__name" translate="no"></span><small></small></span></span><output></output></label><input type="range" id="d-bright-${i}" min="5" max="100" step="1">`;
+        row.querySelector('.d-bright__name').textContent = p.builtin ? tr('Built-in screen') : p.name || tr('External screen');
+        row.querySelector('small').textContent = tr('How bright this screen is');
+        const input = row.querySelector('input'), output = row.querySelector('output');
+        const send_ = throttle(() => send('display.setBrightness', { key: p.key, value: Number(input.value) }), 120);
+        input.addEventListener('input', () => { output.textContent = input.value + ' %'; fill(input); send_(); });
+        return row;
+      }));
+    }
+    list.forEach((p, i) => {
+      const input = $('d-bright-' + i);
+      if (document.activeElement !== input) input.value = p.value;
+      input.parentNode.querySelector('output').textContent = input.value + ' %';
+      fill(input);
+    });
   }
 
   function event(m) {
+    if (m.type === 'display.brightness') { panels = m.screens; renderBrightness(); return; }
     if (m.type !== 'display.screens') return;
     screens = m.screens;
     renderMap();
@@ -123,6 +152,7 @@ const Quick = (() => {
     if (!yes) return;
     if (screens) { renderMap(); renderChosen(); }
     send('display.screens');
+    send('display.brightness');
   }
 
   addEventListener('resize', () => { if (shown) renderMap(); });
