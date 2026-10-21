@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Home: the side panel also changes things, not only shows them. Arrange offers the arrangements and your saved ones, Mouse the cursor themes, Sounds the volume and every event, Icons its folders.
+- Arrange: My arrangements keeps the icons as they are now under a name, with a small picture of each, so they can be put back later. Save current sits next to Undo and Back to original, and the same tiles are in the Home panel.
 - Home is a control center: a click on Icons, Arrange, Mouse, Sounds or Tasks opens the settings of that service in the side panel, with a link to the full page, instead of leaving Home.
 - Display: a Brightness setting for each screen that allows it, the laptop screen and external screens that accept commands from the PC (DDC/CI).
 - Folders: a Languages card shows the share of each programming language in the analyzed folder, like on GitHub, leaving out dependencies, app data and system folders.
@@ -39,9 +41,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - The window remembers its size, position and maximized state.
 
 ### Changed
+- The bar on the left is grouped in families: Personalization (Themes, Wallpaper, Create, Icons, Mouse, Sounds), Desktop (Display, Arrange) and PC (Tasks, Folders, Hardware, Network). Ctrl 1 to 9 follow this order.
+- The wallpapers that come with Bramble can no longer be removed.
+- A web page wallpaper is called Live instead of HTML, on Home and on its card.
 - Folders: the sources say what they cover (the whole drive, Windows included, or the personal folder with its path) and the home folder is called Personal folder.
 - Icons: Maintenance, with Refresh icons and Reset everything, comes first in the side panel.
-- Tasks: the Memory card is rebuilt like the Network security card, with a lamp, a segmented meter, three checks (in use, available, can be freed) and a violet Free up memory key. The usage sits in a small screen, a RAM seal replaces the icon, and the key has the violet style of Network and Sounds. Programs from 60 MB are now offered, never the terminals. The list stays on screen while programs close, each one showing Closing.
+- Tasks: the Memory card is rebuilt like the Network security card, with a lamp, a segmented meter, three checks (in use, available, can be freed) and a violet Free up memory key. The usage sits in a small screen, a ring gauge with the percentage replaces the icon, and the key has the violet style of Network and Sounds. Programs from 60 MB are now offered, never the terminals. The list stays on screen while programs close, each one showing Closing.
 - Sounds: one Sounds on switch instead of Sounds on and Silent, which did the same thing, and the list of events is titled Events.
 - Create: the preview adapts to the height of the window, so the themes stay visible without scrolling.
 - Settings that appear with an option (React to sound in Create and Wallpaper, Screen and sleep on Home, the icons of a theme) open and close smoothly instead of making everything under them jump.
