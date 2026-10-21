@@ -6,7 +6,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
-- The titled sections of the side panel, and the three families of the bar on the left, fold and unfold with a click on their title and stay as they were left. The service being shown stays visible in a folded family, and a bar narrowed to icons shows everything.
+- The titled sections of the side panel, and the three families of the bar on the left, fold and unfold with a click on their title, including the panels that a service redraws (hardware details, theme settings, Create). They stay folded until Bramble is closed and always start unfolded. A folded family shows a dot when it holds the service being shown, and a bar narrowed to icons shows everything.
 - Home: the side panel also changes things, not only shows them. Arrange offers the arrangements and your saved ones, Mouse the cursor themes, Sounds the volume and every event, Icons its folders.
 - Arrange: My arrangements keeps the icons as they are now under a name, with a small picture of each, so they can be put back later. Save current sits next to Undo and Back to original, and the same tiles are in the Home panel.
 - Home is a control center: a click on Icons, Arrange, Mouse, Sounds or Tasks opens the settings of that service in the side panel, with a link to the full page, instead of leaving Home.

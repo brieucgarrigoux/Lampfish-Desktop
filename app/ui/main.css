@@ -144,7 +144,8 @@ body[data-view="tasks"]:not(.sheet-open) .panel, body[data-view="modes"]:not(.mo
 .rail:not([data-wide="true"]) .rail-title { pointer-events: none; }
 .rail[data-wide="true"] .rail-title { display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; transition: color var(--fast); }
 .rail[data-wide="true"] .rail-title:hover { color: var(--text-soft); }
-.rail[data-wide="true"] .service.is-folded:not([aria-current="page"]) { display: none; }
+.rail[data-wide="true"] .service.is-folded { display: none; }
+.rail[data-wide="true"] .rail-title.folded.has-current::after { content: ""; flex: none; width: 6px; height: 6px; margin-left: 2px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent); }
 .fold__body { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .22s ease; }
 .fold.collapsed > .fold__body { grid-template-rows: 0fr; }
 .fold__inner { display: flex; flex-direction: column; gap: 10px; min-height: 0; overflow: hidden; padding: 3px; margin: -3px; }
