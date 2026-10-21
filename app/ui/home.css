@@ -43,6 +43,7 @@
 .h-shortcuts { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
 .h-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; min-width: 0; padding: 10px 12px 11px; border: 0; border-radius: var(--radius-card); background: var(--group); text-align: left; transition: background var(--fast); }
 .h-tile:hover { background: var(--group-up); }
+.h-tile[aria-pressed="true"] { background: var(--accent-tint); box-shadow: var(--chosen); }
 .h-tile:active { transform: scale(.98); }
 .h-tile header { display: flex; align-items: center; gap: 10px; width: 100%; }
 .h-name { flex: 1; min-width: 0; font-size: 12.5px; color: var(--text-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

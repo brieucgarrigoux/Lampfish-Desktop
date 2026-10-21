@@ -33,7 +33,7 @@
     b.className = 'h-row';
     b.innerHTML = `${glyph(icon)}<span class="h-row__what"><span class="h-row__name"></span><span class="h-detail"></span></span><span class="h-visual"></span><span class="h-value"></span>`;
     b.querySelector('.h-row__name').textContent = tr(name);
-    b.addEventListener('click', () => key === 'memory' && tiles.memory.high ? Bramble.tasks.free() : showView(view));
+    b.addEventListener('click', () => key === 'memory' && tiles.memory.high ? dockTo('tasks') : showView(view));
     $('h-rows').append(b);
     tiles[key] = { el: b, name: b.querySelector('.h-row__name'), value: b.querySelector('.h-value'), detail: b.querySelector('.h-detail'), visual: b.querySelector('.h-visual') };
   }
@@ -42,7 +42,9 @@
     b.className = 'h-tile';
     b.innerHTML = `<header>${glyph(icon)}<span class="h-name"></span></header><span class="h-value"></span><span class="h-visual"></span>`;
     b.querySelector('.h-name').textContent = tr(name);
-    b.addEventListener('click', () => showView(view));
+    b.dataset.view = view;
+    b.setAttribute('aria-pressed', 'false');
+    b.addEventListener('click', () => dockTo(view));
     $('h-tiles').append(b);
     tiles[view] = { el: b, value: b.querySelector('.h-value'), detail: null, visual: b.querySelector('.h-visual') };
   }

@@ -50,8 +50,27 @@ const VIEWS = ['home', 'modes', 'wallpaper', 'create', 'display', 'icons', 'arra
 
 const scrolls = {}, narrowLayout = matchMedia('(max-width: 900px)');
 const scrollZones = () => narrowLayout.matches ? [document.scrollingElement] : [document.querySelector('.contents'), document.querySelector('.panel')];
+const DOCKS = { icons: 'Icons', arrange: 'Arrange', mouse: 'Mouse', station: 'Sounds', tasks: 'Free up memory' };
+function setDock(view) {
+  const old = document.body.dataset.dock;
+  if (old === view) return;
+  if (old) { if (old === 'tasks') { if (Bramble.tasks) Bramble.tasks.dock(false); } else if (Bramble[old]) Bramble[old].visible(false); }
+  if (view) document.body.dataset.dock = view; else delete document.body.dataset.dock;
+  if (view) {
+    $('dock-title').textContent = tr(DOCKS[view]);
+    if (view === 'tasks') { if (Bramble.tasks) Bramble.tasks.dock(true); } else if (Bramble[view]) Bramble[view].visible(true);
+  }
+  for (const t of document.querySelectorAll('.h-tile')) t.setAttribute('aria-pressed', String(t.dataset.view === view));
+  dispatchEvent(new Event('resize'));
+}
+function dockTo(view) { setDock(document.body.dataset.dock === view ? null : view); }
+$('dock-close').addEventListener('click', () => setDock(null));
+$('dock-open').addEventListener('click', () => { const view = document.body.dataset.dock; setDock(null); if (view) showView(view); });
+addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.dataset.dock && !(e.target.matches && e.target.matches('input:not([type="checkbox"]), select, textarea'))) setDock(null); });
+
 function showView(view) {
   const previous = document.body.dataset.view;
+  if (document.body.dataset.dock) setDock(null);
   if (previous && previous !== view) scrolls[previous] = scrollZones().map(z => z.scrollTop);
   document.body.dataset.view = view;
   if (previous !== view) scrollZones().forEach((z, i) => { z.scrollTop = (scrolls[view] || [])[i] || 0; });

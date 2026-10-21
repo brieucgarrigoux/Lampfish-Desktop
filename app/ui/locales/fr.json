@@ -95,7 +95,6 @@
  "Change icon with Bramble": "Changer l'icône avec Bramble",
  "File Explorer": "Explorateur",
  "Desktop folders": "Dossiers du Bureau",
- "Home folder": "Dossier personnel",
  "Screen map": "Plan des écrans",
  "Reading the desktop": "Lecture du Bureau",
  "Desktop unavailable for now": "Bureau indisponible pour l'instant",
@@ -1037,5 +1036,10 @@
  "External screen": "Écran externe",
  "How bright this screen is": "Intensité lumineuse de cet écran",
  "Languages": "Langages",
- "Dependencies, app data and system folders are left out": "Dépendances, données d'applications et dossiers système exclus"
+ "Dependencies, app data and system folders are left out": "Dépendances, données d'applications et dossiers système exclus",
+ "Closing…": "Fermeture…",
+ "Personal folder": "Dossier personnel",
+ "The whole drive, Windows included": "Tout le disque, Windows compris",
+ "Pick any folder": "N'importe quel dossier",
+ "Open page": "Ouvrir la page"
 }

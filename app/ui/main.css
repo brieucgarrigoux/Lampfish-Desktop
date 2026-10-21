@@ -112,6 +112,14 @@ body:not([data-view="modes"]) .only-modes, body:not([data-view="display"]) .only
 body[data-view="settings"], body[data-view="home"], body[data-view="display"] { grid-template-columns: var(--width-rail, 180px) 1fr; }
 body[data-view="settings"] .panel, body[data-view="home"] .panel, body[data-view="display"] .panel { display: none; }
 body[data-view="tasks"]:not(.sheet-open), body[data-view="modes"]:not(.mode-open) { grid-template-columns: var(--width-rail, 180px) 1fr; }
+/* On Home, a shortcut opens the settings of its service in the side panel. */
+body[data-view="home"][data-dock] { grid-template-columns: var(--width-rail, 180px) 1fr var(--width-panel, 300px); }
+body[data-view="home"][data-dock] .panel { display: flex; }
+body[data-view="home"][data-dock="icons"] .panel .only-icons, body[data-view="home"][data-dock="arrange"] .panel .only-arrange, body[data-view="home"][data-dock="mouse"] .panel .only-mouse,
+body[data-view="home"][data-dock="station"] .panel .only-station, body[data-view="home"][data-dock="tasks"] .panel .only-tasks { display: flex !important; }
+.panel > .dock-head { display: none; }
+body[data-view="home"][data-dock] .panel > .dock-head { display: flex; flex-direction: row; align-items: center; gap: 8px; padding-bottom: 4px; }
+.dock-head__title { flex: 1; min-width: 0; font: 600 16px var(--display); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 body[data-view="tasks"]:not(.sheet-open) .panel, body[data-view="modes"]:not(.mode-open) .panel { display: none; }
 
 .panel { border-left: 1px solid var(--hairline); padding: 18px 22px 22px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
