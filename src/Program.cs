@@ -167,7 +167,7 @@ namespace Bramble
                 var watcher = new Watcher(RebuildSoon);
 
                 var slideshow = new System.Windows.Forms.Timer { Interval = 20000 };
-                slideshow.Tick += (s, e) => { if (R.Slideshow > 0 && DateTime.Now >= nextSlideshow) NextWallpaper(); };
+                slideshow.Tick += (s, e) => { if (R.Slideshow > 0 && DateTime.Now >= nextSlideshow) NextWallpaper(true); };
                 slideshow.Start();
                 RestartSlideshow();
 
@@ -423,46 +423,21 @@ namespace Bramble
             if (dead) RebuildSoon();
         }
 
-        static readonly List<string> past = new List<string>(), future = new List<string>();
-        static string shown;
-        static bool goingBack, navigating;
-
         static void Apply(bool fade = true)
         {
-            if (shown != null && shown != R.Wallpaper && !goingBack)
-            {
-                past.Add(shown);
-                if (past.Count > 30) past.RemoveAt(0);
-                if (!navigating) future.Clear();
-            }
-            shown = R.Wallpaper;
             ForEachWallpaper(f => f.Show(R, WallpaperOf(f.Screen), fade));
         }
 
+        // Previous and Next walk the library in the order of the Wallpaper page, so the next one is always the one that comes after in the grid.
         public static void PreviousWallpaper()
         {
             var wallpapers = ListWallpapers().ToList();
-            if (shown == null) shown = R.Wallpaper;
             RestartSlideshow();
-            string back = null;
-            while (back == null && past.Count > 0)
-            {
-                string last = past[past.Count - 1];
-                past.RemoveAt(past.Count - 1);
-                if (last != R.Wallpaper && wallpapers.Contains(last)) back = last;
-            }
-            if (back == null)
-            {
-                if (wallpapers.Count < 2) return;
-                int i = wallpapers.IndexOf(R.Wallpaper);
-                back = wallpapers[(i <= 0 ? wallpapers.Count : i) - 1];
-            }
-            future.Add(R.Wallpaper);
-            if (future.Count > 30) future.RemoveAt(0);
-            R.Wallpaper = back;
+            if (wallpapers.Count < 2) return;
+            int i = wallpapers.IndexOf(R.Wallpaper);
+            R.Wallpaper = wallpapers[(i <= 0 ? wallpapers.Count : i) - 1];
             R.ScreenWallpapers.RemoveAll(x => x.Wallpaper == R.Wallpaper);
-            goingBack = true;
-            try { Apply(); } finally { goingBack = false; }
+            Apply();
             Save();
             Tray.Update();
             SendState();
@@ -511,10 +486,10 @@ namespace Bramble
             nextSlideshow = R.Slideshow > 0 ? DateTime.Now.AddMinutes(R.Slideshow) : DateTime.MaxValue;
         }
 
-        public static void NextWallpaper()
+        // Only the slideshow shuffles: the buttons and the tray menu follow the order of the library.
+        public static void NextWallpaper(bool automatic = false)
         {
             var wallpapers = ListWallpapers().ToList();
-            if (shown == null) shown = R.Wallpaper;
             RestartSlideshow();
             if (wallpapers.Count < 2) return;
             var taken = new List<string>();
@@ -522,24 +497,15 @@ namespace Bramble
             {
                 var free = wallpapers.Where(n => n != now && !taken.Contains(n)).ToList();
                 if (free.Count == 0) free = wallpapers.Where(n => n != now).ToList();
-                string chosen = R.Shuffle ? free[random.Next(free.Count)]
+                string chosen = automatic && R.Shuffle ? free[random.Next(free.Count)]
                     : wallpapers.Skip(wallpapers.IndexOf(now) + 1).Concat(wallpapers).First(n => free.Contains(n));
                 taken.Add(chosen);
                 return chosen;
             };
-            string forward = null;
-            while (forward == null && future.Count > 0)
-            {
-                string candidate = future[future.Count - 1];
-                future.RemoveAt(future.Count - 1);
-                if (candidate != R.Wallpaper && wallpapers.Contains(candidate)) forward = candidate;
-            }
-            if (forward != null) taken.Add(forward);
-            R.Wallpaper = forward ?? pick(R.Wallpaper);
+            R.Wallpaper = pick(R.Wallpaper);
             foreach (var x in R.ScreenWallpapers) x.Wallpaper = pick(x.Wallpaper);
             R.ScreenWallpapers.RemoveAll(x => x.Wallpaper == R.Wallpaper);
-            navigating = true;
-            try { Apply(); } finally { navigating = false; }
+            Apply();
             Save();
             Tray.Update();
             SendState();

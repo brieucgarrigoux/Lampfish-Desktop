@@ -937,7 +937,6 @@
  "With {0} screens": "Avec {0} écrans",
  "Undone when unplugged": "Annulé une fois débranché",
  "Every day, when the PC is on": "Chaque jour, quand le PC est allumé",
- "Picks the next one at random": "Choisit le suivant au hasard",
  "Pulses with what you play": "Pulse avec le son joué",
  "When a window fills the screen": "Fenêtre en plein écran",
  "Size of the desktop icons": "Taille des icônes du Bureau",
@@ -1051,5 +1050,6 @@
  "Name this arrangement": "Nommer ce rangement",
  "Arrangement name": "Nom du rangement",
  "Saved with other screens": "Enregistré avec d'autres écrans",
- "Pick a folder below to change its icon": "Choisir un dossier ci-dessous pour changer son icône"
+ "Pick a folder below to change its icon": "Choisir un dossier ci-dessous pour changer son icône",
+ "For the slideshow, not for Next": "Pour le diaporama, pas pour Suivant"
 }

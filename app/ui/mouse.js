@@ -363,6 +363,7 @@
       nodes.push(head, grid);
     }
     zone.replaceChildren(...nodes);
+    foldSections(zone, 'dock-mouse');
     mark();
   }
 

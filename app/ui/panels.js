@@ -83,3 +83,43 @@
     apply(wanted, false);
   }
 })();
+
+// Every titled section of the side panel folds, and stays folded the way it was left.
+function foldSections(container, key) {
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem('folds') || '{}'); } catch (e) { }
+  const remember = () => { try { localStorage.setItem('folds', JSON.stringify(saved)); } catch (e) { } };
+  const headerOf = el => el.tagName === 'H2' ? el : el.classList.contains('title-panel') ? el.querySelector('h2') : null;
+  let fold = null, inner = null, count = 0;
+  for (const el of [...container.children]) {
+    const title = headerOf(el);
+    if (title) {
+      const id = key + ':' + count++;
+      fold = document.createElement('section');
+      fold.className = 'fold';
+      const body = document.createElement('div');
+      body.className = 'fold__body';
+      inner = document.createElement('div');
+      inner.className = 'fold__inner';
+      body.append(inner);
+      container.insertBefore(fold, el);
+      fold.append(el, body);
+      title.classList.add('fold__title');
+      title.tabIndex = 0;
+      title.setAttribute('role', 'button');
+      const set = open => { fold.classList.toggle('collapsed', !open); title.setAttribute('aria-expanded', String(open)); };
+      const mine = fold;
+      set(!saved[id]);
+      title.addEventListener('click', () => {
+        const open = mine.classList.contains('collapsed');
+        mine.classList.toggle('collapsed', !open);
+        title.setAttribute('aria-expanded', String(open));
+        if (open) delete saved[id]; else saved[id] = 1;
+        remember();
+      });
+      title.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); title.click(); } });
+    } else if (inner) inner.append(el);
+  }
+}
+for (const el of document.querySelectorAll('.panel > div[class^="only-"]'))
+  if (el.querySelector(':scope > h2, :scope > .title-panel')) foldSections(el, el.className);

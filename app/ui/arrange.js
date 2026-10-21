@@ -125,6 +125,7 @@
     undo.addEventListener('click', () => send('arrange.undo'));
     original.addEventListener('click', () => send('arrange.original'));
     zone.replaceChildren(heading('Arrangement'), grid(ARRANGEMENTS.map(([key, name]) => arrangementTile(key, name))), heading('My arrangements'), grid([...r.layouts.map(mineTile), addTile()]), actions);
+    foldSections(zone, 'dock-arrange');
   }
 
   function wallpaperBehind(screen, e) {

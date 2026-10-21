@@ -487,6 +487,7 @@
       events.append(row);
     }
     zone.replaceChildren(heading('Volume'), volume, heading('Events'), events);
+    foldSections(zone, 'dock-station');
   }
 
   Bramble.station = { state, event, ingest, renderDock, visible(yes) { standby = yes; if (yes && !loop) loop = requestAnimationFrame(animate); } };

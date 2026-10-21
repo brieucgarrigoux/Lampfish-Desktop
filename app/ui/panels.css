@@ -9,9 +9,8 @@ body.resizing iframe { pointer-events: none; }
 
 @container panel (min-width: 520px) {
   .panel > .only-wallpaper, .panel > .only-station { display: block; columns: 2; column-gap: 18px; }
-  .panel > div > h2 { break-after: avoid; margin: 8px 0 10px; }
-  .panel > div > .group { break-inside: avoid; margin-bottom: 10px; }
-  .panel > div > h2:first-child { margin-top: 0; }
+  .panel > div > .fold { break-inside: avoid; margin-bottom: 10px; }
+  .panel > div > .fold:first-child > h2 { margin-top: 0; }
 }
 
 @container panel (max-width: 280px) {
