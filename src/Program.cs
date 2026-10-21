@@ -715,6 +715,8 @@ namespace Bramble
                 return;
             }
 
+            if (action.StartsWith("health.")) { Health.Receive(action.Substring(action.IndexOf('.') + 1), m); return; }
+
             if (action.StartsWith("home.")) { Weather.Receive(action.Substring(action.IndexOf('.') + 1), m); return; }
 
             if (action.StartsWith("display.") || action.StartsWith("power."))

@@ -20,6 +20,7 @@
 <link rel="stylesheet" href="creator.css">
 <link rel="stylesheet" href="home.css">
 <link rel="stylesheet" href="display.css">
+<link rel="stylesheet" href="health.css">
 <link rel="stylesheet" href="panels.css">
 <link rel="stylesheet" href="shell.css">
 </head>
@@ -62,6 +63,10 @@
     Arrange
   </button>
   <div class="rail-title" role="presentation">PC</div>
+  <button class="service" data-view="health">
+    <svg viewBox="0 0 24 24"><path d="M12 19.5s-7.5-4.3-7.5-10A4.2 4.2 0 0 1 12 7a4.2 4.2 0 0 1 7.5 2.5c0 5.7-7.5 10-7.5 10z"/><path d="M7 12.5h2.5l1.5-2.5 2 4 1.5-1.5H17"/></svg>
+    Health
+  </button>
   <button class="service" data-view="tasks">
     <svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M6.5 13h2.5l1.5-4 3 7 1.5-3h2.5"/></svg>
     Tasks
@@ -441,6 +446,19 @@
   <section class="view view--create only-create" aria-label="Create">
     <div class="cr-head"><h1>Create</h1><div class="cr-save" id="create-save"></div></div>
     <div id="create-zone"></div>
+  </section>
+
+  <section class="view view--health only-health" aria-label="Health">
+    <div class="health-head">
+      <h1>Health</h1>
+      <span class="health-when" id="health-when"></span>
+      <button class="link" id="health-again"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4v4h-4"/></svg>Check again</button>
+    </div>
+    <h2 class="settings-title">Why is my PC slow?</h2>
+    <div class="group health-list" id="health-slow"><div class="row loading">Checking</div></div>
+    <h2 class="settings-title">Radar</h2>
+    <p class="help-section">Read only: Bramble changes nothing here, each button opens the right place in Windows</p>
+    <div class="group health-list" id="health-radar"></div>
   </section>
 
   <section class="view view--tasks only-tasks" aria-label="Tasks">
@@ -823,6 +841,7 @@
 <script src="moods.js"></script>
 <script src="creator.js"></script>
 <script src="display.js"></script>
+<script src="health.js"></script>
 <script src="home.js"></script>
 <script src="panels.js"></script>
 <script src="scrollbars.js"></script>

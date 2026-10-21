@@ -46,7 +46,7 @@ if (LANGUAGE !== 'en') {
   }).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRIBUTES_TRANSLATED });
 }
 const Bramble = { state: null, station: null, icons: null, arrange: null, mouse: null, network: null, files: null, hardware: null, tasks: null, moods: null, creator: null };
-const VIEWS = ['home', 'modes', 'wallpaper', 'create', 'icons', 'mouse', 'station', 'display', 'arrange', 'tasks', 'files', 'hardware', 'network', 'settings'];
+const VIEWS = ['home', 'modes', 'wallpaper', 'create', 'icons', 'mouse', 'station', 'display', 'arrange', 'health', 'tasks', 'files', 'hardware', 'network', 'settings'];
 
 const scrolls = {}, narrowLayout = matchMedia('(max-width: 900px)');
 const scrollZones = () => narrowLayout.matches ? [document.scrollingElement] : [document.querySelector('.contents'), document.querySelector('.panel')];
@@ -94,6 +94,7 @@ function showView(view) {
   if (Bramble.tasks) Bramble.tasks.visible(view === 'tasks');
   if (Bramble.creator) Bramble.creator.visible(view === 'create');
   if (Bramble.display) Bramble.display.visible(view === 'display');
+  if (Bramble.health) Bramble.health.visible(view === 'health');
   send('audioPreview', { value: view === 'create' });
   if (Bramble.home) Bramble.home.visible(view === 'home');
 }
@@ -147,6 +148,7 @@ webview.addEventListener('message', e => {
   if (m.type && m.type.startsWith('hardware.')) { if (Bramble.hardware) Bramble.hardware.event(m); return; }
   if (m.type && m.type.startsWith('moods.')) { if (Bramble.moods) Bramble.moods.event(m); return; }
   if (m.type && m.type.startsWith('display.')) { if (Bramble.display) Bramble.display.event(m); return; }
+  if (m.type && m.type.startsWith('health.')) { if (Bramble.health) Bramble.health.event(m); return; }
   if (m.type === 'window.closed') { if (Bramble.creator) Bramble.creator.reset(); return; }
   render(m);
 });

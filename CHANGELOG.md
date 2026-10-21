@@ -6,6 +6,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Health, a new service at the head of the PC family. Why is my PC slow? turns what Bramble measures (processor, memory, disk, days since the last restart, programs at startup, free space, energy saver, temperature) into plain findings, each with the button that helps. The Radar checks antivirus, firewall, Windows updates, a pending restart, disk encryption, Secure Boot, account control, disk space and startup programs, without administrator rights and without changing anything: each button opens the right place in Windows.
 - Home: the desktop preview opens the wallpapers in the side panel (pick one, light, speed, effects, sound), the Themes title opens every theme with a click to apply it, and the Display title, which replaces Quick settings, opens the brightness of each screen and the choice of the main screen.
 - Settings: Weather location picks the city of the weather by name (searched with Open-Meteo), for when the IP address gives a wrong place. Automatic goes back to the IP address.
 - Bramble comes as an installer, Bramble-Setup-<version>.exe, instead of a zip: it installs for the current user without administrator rights, with a desktop shortcut and Start with Windows as options, checks that .NET Framework 4.8 and the WebView2 Runtime are there, and appears in the installed apps of Windows. Installing a new version over the old one keeps the settings and files.
