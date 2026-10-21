@@ -126,3 +126,43 @@ function foldSections(container, key) {
 }
 for (const el of document.querySelectorAll('.panel > div[class^="only-"]'))
   if (el.querySelector(':scope > h2, :scope > .title-panel')) foldSections(el, el.className);
+
+// The families of the bar on the left fold like the panel sections, but only while their names are shown: an icon-only bar keeps every service in reach.
+(function () {
+  const rail = document.querySelector('.rail');
+  if (!rail) return;
+  const read = () => { try { return JSON.parse(localStorage.getItem('folds') || '{}'); } catch (e) { return {}; } };
+  const remember = (id, folded) => {
+    const all = read();
+    if (folded) all[id] = 1; else delete all[id];
+    try { localStorage.setItem('folds', JSON.stringify(all)); } catch (e) { }
+  };
+  const saved = read();
+  let items = null, count = 0;
+  for (const el of [...rail.children]) {
+    if (el.classList.contains('rail-title')) {
+      const id = 'rail:' + count++, group = items = [], title = el;
+      const set = folded => {
+        for (const b of group) b.classList.toggle('is-folded', folded);
+        title.classList.toggle('folded', folded);
+        title.setAttribute('aria-expanded', String(!folded));
+      };
+      title.setAttribute('role', 'button');
+      set(!!saved[id]);
+      title.addEventListener('click', () => {
+        const folded = !title.classList.contains('folded');
+        set(folded);
+        remember(id, folded);
+      });
+      title.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); title.click(); } });
+    } else if (el.classList.contains('service--settings')) items = null;
+    else if (items && el.classList.contains('service')) items.push(el);
+  }
+  const wide = () => {
+    const on = rail.clientWidth >= 140;
+    rail.dataset.wide = String(on);
+    for (const t of rail.querySelectorAll('.rail-title')) t.tabIndex = on ? 0 : -1;
+  };
+  new ResizeObserver(wide).observe(rail);
+  wide();
+})();

@@ -136,11 +136,15 @@ body[data-view="tasks"]:not(.sheet-open) .panel, body[data-view="modes"]:not(.mo
 .fold.collapsed { gap: 0; }
 .fold__title { display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; transition: color var(--fast); }
 .fold__title:hover { color: var(--text); }
-.fold__title::before { content: ""; flex: none; width: 12px; height: 12px; background: currentColor; opacity: .55; transition: transform var(--fast), opacity var(--fast);
+.fold__title::before, .rail[data-wide="true"] .rail-title::before { content: ""; flex: none; width: 12px; height: 12px; background: currentColor; opacity: .55; transition: transform var(--fast), opacity var(--fast);
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat; }
-.fold__title:hover::before { opacity: 1; }
-.fold.collapsed .fold__title::before { transform: rotate(-90deg); }
+.fold__title:hover::before, .rail[data-wide="true"] .rail-title:hover::before { opacity: 1; }
+.fold.collapsed .fold__title::before, .rail[data-wide="true"] .rail-title.folded::before { transform: rotate(-90deg); }
+.rail:not([data-wide="true"]) .rail-title { pointer-events: none; }
+.rail[data-wide="true"] .rail-title { display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; transition: color var(--fast); }
+.rail[data-wide="true"] .rail-title:hover { color: var(--text-soft); }
+.rail[data-wide="true"] .service.is-folded:not([aria-current="page"]) { display: none; }
 .fold__body { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .22s ease; }
 .fold.collapsed > .fold__body { grid-template-rows: 0fr; }
 .fold__inner { display: flex; flex-direction: column; gap: 10px; min-height: 0; overflow: hidden; padding: 3px; margin: -3px; }
