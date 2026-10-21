@@ -28,6 +28,7 @@ namespace Bramble
         public string Arrangement = "left";
         public string LastSort = "name";
         public List<IconPosition> BeforeAuto;
+        public string BeforeAutoScreens;
         public List<IconPosition> Original;
         public List<IconPosition> Placed;
         public List<List<IconPosition>> History = new List<List<IconPosition>>();
@@ -126,7 +127,7 @@ namespace Bramble
                 foreach (string c in R.Categories)
                     groups.Add(Order(elements.Where(e => Category(e) == c), mode == "categories" ? "name" : mode));
             else groups.Add(Order(elements, mode));
-            ArrangeIcons(groups, elements, R.Arrangement);
+            ArrangeIcons(groups, R.Arrangement);
         }
 
         class Grid
@@ -172,29 +173,29 @@ namespace Bramble
                 return size.Width > cell.Width - lead * 2 ? 2 : 1;
             }
 
-            public void Fit(List<KeyValuePair<Point, DesktopIcons.Element>> used, string arrangement)
+            public void Fit(List<KeyValuePair<PointF, DesktopIcons.Element>> used, string arrangement)
             {
                 if (used.Count == 0) return;
-                int minX = used.Min(u => u.Key.X), maxX = used.Max(u => u.Key.X), minY = used.Min(u => u.Key.Y), maxY = used.Max(u => u.Key.Y);
+                float minX = used.Min(u => u.Key.X), maxX = used.Max(u => u.Key.X), minY = used.Min(u => u.Key.Y), maxY = used.Max(u => u.Key.Y);
                 int bottom = used.Where(u => u.Key.Y == maxY).Max(u => Lines(u.Value.Name));
                 if (arrangement == "center")
                 {
-                    int w = maxX - minX + 1, h = maxY - minY + 1;
+                    int w = (int)(maxX - minX) + 1, h = (int)(maxY - minY) + 1;
                     stepY = cell.Height;
                     originX = Zone.X + (Zone.Width - w * cell.Width) / 2.0 + Math.Max(0, (cell.Width - icon) / 2) - minX * cell.Width;
                     originY = Zone.Y + (Zone.Height - ((h - 1) * cell.Height + Visual(bottom))) / 2.0 - lead - minY * cell.Height;
-                    foreach (var row in used.GroupBy(u => u.Key.Y))
+                    foreach (var row in used.GroupBy(u => (int)u.Key.Y))
                         shift[row.Key] = (w - row.Count()) * cell.Width / 2.0;
                     return;
                 }
-                if (maxX == Columns - 1 && Columns > 1) stepX = (Zone.Width - cell.Width) / (double)(Columns - 1);
-                if (maxY == Rows - 1) Spread(Visual(bottom));
+                if (maxX >= Columns - 1 && Columns > 1) stepX = (Zone.Width - cell.Width) / (double)(Columns - 1);
+                if (maxY >= Rows - 1) Spread(Visual(bottom));
             }
 
-            public Point Pixel(Point p)
+            public Point Pixel(PointF p)
             {
                 double extra;
-                shift.TryGetValue(p.Y, out extra);
+                shift.TryGetValue((int)p.Y, out extra);
                 return new Point((int)Math.Round(originX + extra + p.X * stepX), (int)Math.Round(originY + p.Y * stepY));
             }
 
@@ -209,7 +210,16 @@ namespace Bramble
             return Enumerable.Range(0, n).Select(i => new Point(x0 + i * dx, y0 + i * dy)).ToList();
         }
 
-        static List<List<Point>> Rows(string arrangement, Grid g, int n)
+        static int CenterWidth(Grid g, List<int> sizes, out bool apart)
+        {
+            int n = sizes.Sum(), w = Math.Max(1, Math.Min(g.Columns, (int)Math.Ceiling(Math.Sqrt(n * 2.2))));
+            Func<int, int> lines = width => sizes.Sum(s => (s + width - 1) / width);
+            while (lines(w) > g.Rows && w < g.Columns) w++;
+            apart = lines(w) <= g.Rows;
+            return w;
+        }
+
+        static List<List<Point>> Rows(string arrangement, Grid g, List<int> sizes)
         {
             int C = g.Columns, L = g.Rows;
             var r = new List<List<Point>>();
@@ -218,23 +228,11 @@ namespace Bramble
                 case "right": for (int x = C - 1; x >= 0; x--) r.Add(Row(x, 0, 0, 1, L)); break;
                 case "top": for (int y = 0; y < L; y++) r.Add(Row(0, y, 1, 0, C)); break;
                 case "bottom": for (int y = L - 1; y >= 0; y--) r.Add(Row(0, y, 1, 0, C)); break;
-                case "frame":
-
-                    for (int k = 0; k < (Math.Min(C, L) + 1) / 2; k++)
-                    {
-                        int x0 = k, y0 = k, x1 = C - 1 - k, y1 = L - 1 - k;
-                        var turn = new List<Point>();
-                        for (int x = x0; x <= x1; x++) turn.Add(new Point(x, y0));
-                        for (int y = y0 + 1; y <= y1; y++) turn.Add(new Point(x1, y));
-                        if (y1 > y0) for (int x = x1 - 1; x >= x0; x--) turn.Add(new Point(x, y1));
-                        if (x1 > x0) for (int y = y1 - 1; y > y0; y--) turn.Add(new Point(x0, y));
-                        r.Add(turn);
-                    }
-                    break;
                 case "center":
                 {
-                    int w = Math.Max(1, Math.Min(C, (int)Math.Ceiling(Math.Sqrt(n * 2.2))));
-                    int h = Math.Min(L, (n + w - 1) / w);
+                    bool apart;
+                    int w = CenterWidth(g, sizes, out apart), n = sizes.Sum();
+                    int h = Math.Min(L, apart ? sizes.Sum(s => (s + w - 1) / w) : (n + w - 1) / w);
                     int x0 = (C - w) / 2, y0 = (L - h) / 2;
                     for (int y = 0; y < h; y++) r.Add(Row(x0, y0 + y, 1, 0, w));
                     break;
@@ -244,67 +242,181 @@ namespace Bramble
             return r;
         }
 
-        static void ArrangeIcons(List<List<DesktopIcons.Element>> groups, List<DesktopIcons.Element> all, string arrangement)
+        static List<PointF> Ring(int C, int L, int k)
+        {
+            int x0 = k, y0 = k, x1 = C - 1 - k, y1 = L - 1 - k;
+            var turn = new List<PointF>();
+            for (int x = x0; x <= x1; x++) turn.Add(new PointF(x, y0));
+            for (int y = y0 + 1; y <= y1; y++) turn.Add(new PointF(x1, y));
+            if (y1 > y0) for (int x = x1 - 1; x >= x0; x--) turn.Add(new PointF(x, y1));
+            if (x1 > x0) for (int y = y1 - 1; y > y0; y--) turn.Add(new PointF(x0, y));
+            return turn;
+        }
+
+        // Full rings from the edges inwards. A ring that is not full never shows holes: the outer one keeps its corners
+        // and spaces the other icons evenly along each side, an inner one centers them on its top and bottom rows, then on its sides.
+        static List<PointF> Frame(int n, int C, int L)
+        {
+            var all = new List<PointF>();
+            for (int k = 0; n > 0 && k <= (Math.Min(C, L) - 1) / 2; k++)
+            {
+                var ring = Ring(C, L, k);
+                if (n >= ring.Count) { all.AddRange(ring); n -= ring.Count; continue; }
+                all.AddRange(k == 0 ? Spread(C, L, n) : Centered(C, L, k, n));
+                n = 0;
+            }
+            return all;
+        }
+
+        static List<PointF> Spread(int C, int L, int r)
+        {
+            if (C < 3 || L < 3) return Ring(C, L, 0).Take(r).ToList();
+            var corners = new[] { new PointF(0, 0), new PointF(C - 1, 0), new PointF(C - 1, L - 1), new PointF(0, L - 1) };
+            if (r <= 4) return corners.Take(r).ToList();
+            int s = r - 4, across = C - 2, down = L - 2;
+            double share = s * across / (double)(across + down);
+            // Top and bottom get the same number of icons, and so do the two sides, whenever the count allows it.
+            int rows = s % 2 == 0 ? 2 * (int)Math.Round(share / 2) : (int)Math.Round(share);
+            rows = Math.Max(0, Math.Min(Math.Min(2 * across, s), rows));
+            int columns = s - rows;
+            if (columns > 2 * down) { rows += columns - 2 * down; columns = 2 * down; }
+            int top = (rows + 1) / 2, bottom = rows / 2, right = (columns + 1) / 2, left = columns / 2;
+            var list = new List<PointF> { corners[0] };
+            for (int i = 0; i < top; i++) list.Add(new PointF((i + 1) * (C - 1f) / (top + 1), 0));
+            list.Add(corners[1]);
+            for (int i = 0; i < right; i++) list.Add(new PointF(C - 1, (i + 1) * (L - 1f) / (right + 1)));
+            list.Add(corners[2]);
+            for (int i = 0; i < bottom; i++) list.Add(new PointF(C - 1 - (i + 1) * (C - 1f) / (bottom + 1), L - 1));
+            list.Add(corners[3]);
+            for (int i = 0; i < left; i++) list.Add(new PointF(0, L - 1 - (i + 1) * (L - 1f) / (left + 1)));
+            return list;
+        }
+
+        static List<PointF> Centered(int C, int L, int k, int r)
+        {
+            int x0 = k, y0 = k, x1 = C - 1 - k, y1 = L - 1 - k, w = x1 - x0 + 1, sides = Math.Max(0, y1 - y0 - 1);
+            var list = new List<PointF>();
+            if (y1 == y0 || x1 == x0)
+            {
+                float start = ((y1 == y0 ? w : y1 - y0 + 1) - r) / 2f;
+                for (int i = 0; i < r; i++) list.Add(y1 == y0 ? new PointF(x0 + start + i, y0) : new PointF(x0, y0 + start + i));
+                return list;
+            }
+            int top = Math.Min(w, (r + 1) / 2), bottom = Math.Min(w, r - top), rest = r - top - bottom;
+            int right = Math.Min(sides, (rest + 1) / 2), left = Math.Min(sides, rest / 2);
+            for (int i = 0; i < top; i++) list.Add(new PointF(x0 + (w - top) / 2f + i, y0));
+            for (int i = 0; i < right; i++) list.Add(new PointF(x1, y0 + 1 + (sides - right) / 2f + i));
+            for (int i = 0; i < bottom; i++) list.Add(new PointF(x1 - (w - bottom) / 2f - i, y1));
+            for (int i = 0; i < left; i++) list.Add(new PointF(x0, y1 - 1 - (sides - left) / 2f - i));
+            return list;
+        }
+
+        // The smaller categories are sized first so the biggest one takes what is left; two blocks keep an empty row or column between them.
+        static Size[] Corners(List<int> sizes, int C, int L)
+        {
+            int count = Math.Min(4, sizes.Count);
+            var blocks = new Size[4];
+            foreach (int i in Enumerable.Range(0, count).OrderBy(i => sizes[i]))
+            {
+                int m = sizes[i], beside = i ^ 1, below = i ^ 2, across = i ^ 3;
+                int maxW = Math.Max(1, C - (blocks[beside].Width > 0 ? blocks[beside].Width + 1 : beside < count ? 2 : 0));
+                int maxH = Math.Max(1, L - (blocks[below].Height > 0 ? blocks[below].Height + 1 : below < count ? 2 : 0));
+                int h = Math.Max(1, Math.Min(maxH, (int)Math.Round(Math.Sqrt(m * (double)L / C))));
+                int w = (m + h - 1) / h;
+                while (w > maxW && h < maxH) { h++; w = (m + h - 1) / h; }
+                Size d = blocks[across];
+                while (d.Width > 0 && w + d.Width > C - 1 && h + d.Height > L - 1 && h > 1 && (m + h - 2) / (h - 1) <= maxW) { h--; w = (m + h - 1) / h; }
+                blocks[i] = new Size(Math.Min(w, maxW), h);
+            }
+            return blocks;
+        }
+
+        static void ArrangeIcons(List<List<DesktopIcons.Element>> groups, string arrangement)
         {
             Size c = DesktopIcons.Case();
             if (c.Width <= 0 || c.Height <= 0) return;
             int iconSize = DesktopIcons.IconSize();
             var grids = TargetScreens().Select(s => new Grid(s.WorkingArea, c, Scale(s), iconSize)).ToList();
-            var slots = new Dictionary<string, KeyValuePair<Grid, KeyValuePair<Point, DesktopIcons.Element>>>();
+            if (grids.Count == 0) return;
+            Place(Positions(groups, grids, arrangement));
+            R.Placed = Capture();
+        }
+
+        static Dictionary<string, Point> Positions(List<List<DesktopIcons.Element>> groups, List<Grid> grids, string arrangement)
+        {
+            var slots = new Dictionary<string, KeyValuePair<Grid, KeyValuePair<PointF, DesktopIcons.Element>>>();
             var rest = new List<DesktopIcons.Element>();
             groups = groups.Where(g => g.Count > 0).ToList();
-            Action<Grid, Point, DesktopIcons.Element> set = (g, p, el) =>
+            Action<Grid, PointF, DesktopIcons.Element> set = (g, p, el) =>
             {
-                g.Taken.Add(p);
-                slots[el.Id] = new KeyValuePair<Grid, KeyValuePair<Point, DesktopIcons.Element>>(g, new KeyValuePair<Point, DesktopIcons.Element>(p, el));
+                g.Taken.Add(Point.Round(p));
+                slots[el.Id] = new KeyValuePair<Grid, KeyValuePair<PointF, DesktopIcons.Element>>(g, new KeyValuePair<PointF, DesktopIcons.Element>(p, el));
             };
 
-            if (arrangement == "corners" || arrangement == "blocks")
+            if (arrangement == "corners")
             {
                 Grid g = grids[0];
                 int C = g.Columns, L = g.Rows;
-                if (arrangement == "corners")
+                var blocks = Corners(groups.Select(x => x.Count).ToList(), C, L);
+                var overflow = new List<KeyValuePair<int, DesktopIcons.Element>>();
+                for (int i = 0; i < groups.Count; i++)
                 {
-                    int qc = Math.Max(1, C / 2), ql = Math.Max(1, L / 2);
-                    for (int i = 0; i < groups.Count; i++)
+                    if (i >= 4) { rest.AddRange(groups[i]); continue; }
+                    bool right = i % 2 == 1, down = i >= 2;
+                    Size b = blocks[i];
+                    for (int k = 0; k < groups[i].Count; k++)
                     {
-                        if (i >= 4) { rest.AddRange(groups[i]); continue; }
-                        bool right = i % 2 == 1, down = i >= 2;
-                        var cases = new List<Point>();
-                        for (int x = 0; x < qc; x++) for (int y = 0; y < ql; y++) cases.Add(new Point(right ? C - 1 - x : x, down ? L - 1 - y : y));
-                        int k = 0;
-                        foreach (var el in groups[i])
-                        {
-                            while (k < cases.Count && g.Taken.Contains(cases[k])) k++;
-                            if (k < cases.Count) set(g, cases[k++], el); else rest.Add(el);
-                        }
+                        if (k >= b.Width * b.Height) { overflow.Add(new KeyValuePair<int, DesktopIcons.Element>(i, groups[i][k])); continue; }
+                        int x = k / b.Height, y = k % b.Height;
+                        set(g, new PointF(right ? C - 1 - x : x, down ? L - 1 - y : y), groups[i][k]);
                     }
                 }
-                else
+                // What a block cannot hold goes to the free cells nearest to its corner, not to the first free column.
+                foreach (var o in overflow)
                 {
-                    int n = groups.Count, h = Math.Min(L, 2);
-                    while (h < L && groups.Sum(gr => (gr.Count + h - 1) / h) + n - 1 > C) h++;
-                    var widths = groups.Select(gr => (gr.Count + h - 1) / h).ToList();
-                    int spare = Math.Max(0, C - widths.Sum()), x = 0;
-                    for (int k = 0; k < n; k++)
-                    {
-                        var group = groups[k];
-                        int w = widths[k];
-                        if (x + w > C) { rest.AddRange(group); continue; }
-                        for (int i = 0; i < group.Count; i++) set(g, new Point(x + i % w, i / w), group[i]);
-                        x += w + (n > 1 ? spare / (n - 1) + (k < spare % (n - 1) ? 1 : 0) : 0);
-                    }
+                    bool right = o.Key % 2 == 1, down = o.Key >= 2;
+                    var free = g.InColumns().Where(q => !g.Taken.Contains(q))
+                        .Select(q => new { q, dx = right ? C - 1 - q.X : q.X, dy = down ? L - 1 - q.Y : q.Y })
+                        .OrderBy(q => Math.Max(q.dx, q.dy)).ThenBy(q => q.dx).ThenBy(q => q.dy).FirstOrDefault();
+                    if (free == null) rest.Add(o.Value); else set(g, free.q, o.Value);
                 }
+            }
+            else if (arrangement == "blocks")
+            {
+                Grid g = grids[0];
+                int C = g.Columns, L = g.Rows, n = groups.Count, h = Math.Min(L, 2);
+                while (h < L && groups.Sum(gr => (gr.Count + h - 1) / h) + n - 1 > C) h++;
+                var widths = groups.Select(gr => (gr.Count + h - 1) / h).ToList();
+                int spare = Math.Max(0, C - widths.Sum()), x = 0;
+                for (int k = 0; k < n; k++)
+                {
+                    var group = groups[k];
+                    int w = widths[k];
+                    if (x + w > C) { rest.AddRange(group); continue; }
+                    for (int i = 0; i < group.Count; i++) set(g, new PointF(x + i % w, i / w), group[i]);
+                    x += w + (n > 1 ? spare / (n - 1) + (k < spare % (n - 1) ? 1 : 0) : 0);
+                }
+            }
+            else if (arrangement == "frame")
+            {
+                // Categories follow each other along the frame: an empty cell between two of them read as a missing icon.
+                var queue = new Queue<DesktopIcons.Element>(groups.SelectMany(x => x));
+                foreach (var g in grids)
+                    foreach (var p in Frame(Math.Min(queue.Count, g.Columns * g.Rows), g.Columns, g.Rows)) set(g, p, queue.Dequeue());
+                rest.AddRange(queue);
             }
             else
             {
-                bool muted = arrangement != "frame" && arrangement != "center";
-                int remaining = groups.Sum(g => g.Count), e = 0, li = 0, k = 0;
-                var rows = grids.Count > 0 ? Rows(arrangement, grids[0], remaining) : new List<List<Point>>();
-                foreach (var group in groups)
+                var sizes = groups.Select(x => x.Count).ToList();
+                bool apart = true;
+                if (arrangement == "center") CenterWidth(grids[0], sizes, out apart);
+                int e = 0, li = 0, k = 0;
+                var rows = Rows(arrangement, grids[0], sizes);
+                for (int gi = 0; gi < groups.Count; gi++)
                 {
-                    if (k > 0) { if (muted) { li++; k = 0; } else if (arrangement == "frame") k++; }
-                    foreach (var el in group)
+                    var group = groups[gi];
+                    if (k > 0 && apart) { li++; k = 0; }
+                    for (int i = 0; i < group.Count; i++)
                     {
                         bool placed = false;
                         while (!placed && e < grids.Count)
@@ -312,17 +424,16 @@ namespace Bramble
                             if (li >= rows.Count)
                             {
                                 e++; li = 0; k = 0;
-                                if (e < grids.Count) rows = Rows(arrangement, grids[e], remaining);
+                                if (e < grids.Count) rows = Rows(arrangement, grids[e], new[] { group.Count - i }.Concat(sizes.Skip(gi + 1)).ToList());
                                 continue;
                             }
                             if (k >= rows[li].Count) { li++; k = 0; continue; }
                             var p = rows[li][k++];
                             if (grids[e].Taken.Contains(p)) continue;
-                            set(grids[e], p, el);
+                            set(grids[e], p, group[i]);
                             placed = true;
                         }
-                        if (!placed) rest.Add(el);
-                        remaining--;
+                        if (!placed) rest.Add(group[i]);
                     }
                 }
             }
@@ -334,8 +445,7 @@ namespace Bramble
                 set(g, free, el);
             }
             foreach (var g in grids) g.Fit(slots.Values.Where(v => v.Key == g).Select(v => v.Value).ToList(), arrangement);
-            Place(slots.ToDictionary(v => v.Key, v => v.Value.Key.Pixel(v.Value.Value.Key)));
-            R.Placed = Capture();
+            return slots.ToDictionary(v => v.Key, v => v.Value.Key.Pixel(v.Value.Value.Key));
         }
 
         static bool Same(List<IconPosition> a, List<IconPosition> b)
@@ -427,7 +537,32 @@ namespace Bramble
             uint flags = DesktopIcons.Flags();
             if ((flags & DesktopIcons.FWF_AUTOARRANGE) != 0) DesktopIcons.Flag(DesktopIcons.FWF_AUTOARRANGE, false);
             if ((flags & DesktopIcons.FWF_SNAPTOGRID) != 0) DesktopIcons.Flag(DesktopIcons.FWF_SNAPTOGRID, false);
-            DesktopIcons.Place(positions);
+            DesktopIcons.Place(Visible(positions));
+        }
+
+        // A position saved with other screens (undo, original layout, before auto arrange) can lie outside every screen.
+        static Dictionary<string, Point> Visible(Dictionary<string, Point> positions)
+        {
+            var screens = Screen.AllScreens;
+            Size cell = DesktopIcons.Case();
+            var visible = new Dictionary<string, Point>();
+            foreach (var item in positions)
+            {
+                Point p = item.Value;
+                if (!screens.Any(x => x.Bounds.Contains(p)))
+                {
+                    var area = screens.Select(x => x.WorkingArea).OrderBy(a => Distance(a, p)).First();
+                    p = new Point(Math.Max(area.Left, Math.Min(p.X, area.Right - Math.Max(1, cell.Width))), Math.Max(area.Top, Math.Min(p.Y, area.Bottom - Math.Max(1, cell.Height))));
+                }
+                visible[item.Key] = p;
+            }
+            return visible;
+        }
+
+        static double Distance(Rectangle a, Point p)
+        {
+            double dx = Math.Max(0, Math.Max(a.Left - p.X, p.X - a.Right)), dy = Math.Max(0, Math.Max(a.Top - p.Y, p.Y - a.Bottom));
+            return dx * dx + dy * dy;
         }
 
         static void Save(string name)
@@ -553,15 +688,15 @@ namespace Bramble
                     case "auto":
                     {
                         bool active = Convert.ToBoolean(m["value"]);
-                        if (active) R.BeforeAuto = Capture();
+                        if (active) { R.BeforeAuto = Capture(); R.BeforeAutoScreens = Signature(); }
                         DesktopIcons.Flag(DesktopIcons.FWF_AUTOARRANGE, active);
-                        if (!active && R.BeforeAuto != null && R.BeforeAuto.Count > 0)
+                        if (!active && R.BeforeAuto != null && R.BeforeAuto.Count > 0 && R.BeforeAutoScreens == Signature())
                         {
                             var positions = new Dictionary<string, Point>();
                             foreach (var p in R.BeforeAuto) positions[p.Id] = new Point(p.X, p.Y);
-                            DesktopIcons.Place(positions);
-                            R.BeforeAuto = null;
+                            DesktopIcons.Place(Visible(positions));
                         }
+                        if (!active) { R.BeforeAuto = null; R.BeforeAutoScreens = null; }
                         Program.Send(Map(false));
                         return true;
                     }

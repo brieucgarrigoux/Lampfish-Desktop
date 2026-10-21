@@ -1,10 +1,11 @@
 'use strict';
 
 (function () {
-  const TABS = [['themes', 'Themes'], ['windows', 'Windows'], ['custom', 'My cursors']];
+  const TABS = [['all', 'All'], ['bramble', 'Bramble'], ['windows', 'Windows'], ['mine', 'My cursors']];
+  const OLD_TABS = { themes: 'all', custom: 'mine' };
   let s = null, library = null;
-  let role = 'Arrow', tab = 'themes', keyLibrary = '';
-  try { const o = localStorage.getItem('mouse.tab'); if (TABS.some(x => x[0] === o)) tab = o; } catch (e) { }
+  let role = 'Arrow', tab = 'all', keyLibrary = '';
+  try { const o = localStorage.getItem('mouse.tab'); const t = OLD_TABS[o] || o; if (TABS.some(x => x[0] === t)) tab = t; } catch (e) { }
 
   const url = (a, size) => `/app/cursor-cache/${encodeURIComponent(a.key)}-${size}.png`;
 
@@ -24,7 +25,7 @@
     const title = $('s-theme');
     title.textContent = s.themeTitle;
     if (s.unsaved && s.based) title.append(Object.assign(document.createElement('span'), { className: 'badge-modified', textContent: tr('Modified') }));
-    $('s-draft').hidden = !s.unsaved;
+    reveal($('s-draft'), s.unsaved);
     $('s-draft-text').textContent = s.based ? tr('Changes not saved in a theme') : tr('These cursors are not saved in a theme');
     $('s-update').hidden = !s.editable;
     $('s-update').textContent = tr('Update “{0}”', s.themeTitle);
@@ -74,13 +75,11 @@
   }
 
   function renderTabs() {
-    const n = { themes: library ? library.themes.length : null, windows: library ? library.windows.length : null, custom: library ? library.custom.length : null };
     $('s-tabs').replaceChildren(...TABS.map(([key, label]) => {
       const b = document.createElement('button');
       b.setAttribute('role', 'tab');
       b.setAttribute('aria-checked', String(key === tab));
-      b.innerHTML = `${label}<span class="count"></span>`;
-      if (n[key] != null) b.querySelector('.count').textContent = n[key];
+      b.textContent = tr(label);
       b.addEventListener('click', () => {
         tab = key;
         try { localStorage.setItem('mouse.tab', key); } catch (e) { }
@@ -88,7 +87,7 @@
       });
       return b;
     }));
-    $('s-folder').hidden = tab !== 'custom';
+    $('s-folder').hidden = tab !== 'mine';
   }
 
   function cursorTile(c) {
@@ -96,6 +95,7 @@
     t.className = 'tile tile--name tile-cursor';
     t.tabIndex = 0;
     t.dataset.path = c.path;
+    if (c.role) c = { ...c, name: tr(c.role) };
     t.title = c.name + (c.animated ? tr(' (animated)') : '');
     const frame = document.createElement('div');
     frame.className = 'tile__case';
@@ -207,37 +207,41 @@
     renderTabs();
     const zone = $('s-library');
     if (!library) return;
-    const key = tab + '#' + library.themes.map(t => t.name).join('|') + '#' + library.custom.map(p => p.path).join('|') + '#' + s.theme;
+    const key = tab + '#' + library.themes.map(t => t.name).join('|') + '#' + library.custom.map(p => p.path).join('|') + '#' + s.theme + '#' + LANGUAGE;
     if (key === keyLibrary) { mark(); return; }
     keyLibrary = key;
     zone.replaceChildren();
-    if (tab === 'themes') {
-      for (const [kind, label] of SECTIONS) {
-        const list = library.themes.filter(t => t.kind === kind);
-        if (!list.length && kind !== 'mine') continue;
-        const head = document.createElement('h3');
-        head.className = 'themes__title';
-        head.innerHTML = '<span></span><span class="count"></span>';
-        head.firstChild.textContent = tr(label);
-        head.lastChild.textContent = list.length || '';
-        const g = document.createElement('div');
-        g.className = 'themes';
-        g.append(...list.map(themeCard));
-        if (kind === 'mine') g.append(newTheme());
-        zone.append(head, g);
-      }
-    } else {
+    const section = (label, count, kind, items, extra) => {
+      const head = document.createElement('h3');
+      head.className = 'themes__title';
+      head.innerHTML = '<span></span><span class="count"></span>';
+      head.firstChild.textContent = label;
+      head.lastChild.textContent = count || '';
       const g = document.createElement('div');
-      g.className = 'tiles tiles--cursors';
-      g.append(...(tab === 'windows' ? library.windows : library.custom).map(cursorTile));
-      if (tab === 'custom') {
-        const add = document.createElement('button');
-        add.className = 'tile-add';
-        add.innerHTML = '<strong>+</strong>Add';
-        add.addEventListener('click', () => send('mouse.add'));
-        g.append(add);
+      g.className = kind === 'themes' ? 'themes' : 'tiles tiles--cursors';
+      g.append(...items.map(kind === 'themes' ? themeCard : cursorTile));
+      if (extra) g.append(extra);
+      zone.append(head, g);
+    };
+    const themes = kind => library.themes.filter(t => t.kind === kind);
+    if (tab === 'all') {
+      for (const [kind, label] of SECTIONS) {
+        const list = themes(kind);
+        if (list.length || kind === 'mine') section(tr(label), list.length, 'themes', list, kind === 'mine' ? newTheme() : null);
       }
-      zone.append(g);
+    } else if (tab === 'bramble') {
+      section(tr('Themes'), themes('bramble').length, 'themes', themes('bramble'));
+      for (const t of library.brambleCursors || []) section(t.title, t.cursors.length, 'cursors', t.cursors);
+    } else if (tab === 'windows') {
+      section(tr('Themes'), themes('system').length, 'themes', themes('system'));
+      section(tr('Cursors'), library.windows.length, 'cursors', library.windows);
+    } else {
+      section(tr('Themes'), themes('mine').length, 'themes', themes('mine'), newTheme());
+      const add = document.createElement('button');
+      add.className = 'tile-add';
+      add.innerHTML = '<strong>+</strong>Add';
+      add.addEventListener('click', () => send('mouse.add'));
+      section(tr('Cursors'), library.custom.length, 'cursors', library.custom, add);
     }
     mark();
   }

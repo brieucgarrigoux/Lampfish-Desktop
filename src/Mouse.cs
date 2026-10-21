@@ -627,6 +627,13 @@ namespace Bramble
                 }).OrderBy(t => t.bramble ? 0 : t.custom ? 2 : 1).ToArray(),
                 windows = List(FolderWindows, false),
                 custom = List(CustomFolder, true),
+                brambleCursors = Themes().Where(t => t.Source == "bramble").Select(t => new
+                {
+                    name = t.Name,
+                    title = NameTheme(t.Name),
+                    cursors = t.Paths.Take(Roles.Length).Select((path, i) => new { path, role = Roles[i][1], animated = path.EndsWith(".ani", StringComparison.OrdinalIgnoreCase), preview = File.Exists(path) ? Preview(path) : null })
+                        .Where(x => x.preview != null).ToArray(),
+                }).ToArray(),
             };
         }
 

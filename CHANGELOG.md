@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Display, a new service for the screen: a map of the screens to pick the main one (where the Start menu and new windows open, with undo), Warm screen with its strength for warmer colors in the evening (through the color filter of Windows accessibility, which goes away with Bramble), a link to the Night light of Windows, when the screen turns off and when the PC goes to sleep, plugged in and on battery, and Energy saver kept on whenever the PC runs on battery. Every change can be undone.
+- Home: the same warm screen, energy saver, screen and sleep settings as shortcuts under This PC.
+- Home: Previous goes back to the wallpaper shown before, next to Pause and Next.
+- Tasks: a Memory card at the top shows how full the memory is and how much closing the programs not in use would free, with a Free up memory button. It lists the programs that can be closed without risk, never Windows, security, drivers, file sync, remote access, programs playing sound, Bramble or the app in use. The ticked ones close like with their X, programs without a window stop, after a warning and a confirming click. Above 80 %, the memory row of Home leads there.
+- Mouse: the cursor library is sorted by family. All shows every theme; Bramble, Windows and My cursors show their themes, then each of their cursors, so one cursor of a Bramble theme can replace a single role.
+- Modes: each mode has an icon on its cover, picked among 13 in its settings (Night, Focus and Cinema get a moon, a target and a film), a mode can warm the screen (Night does), and three steps at the top explain how modes work.
 - Modes are visual: each mode shows its own wallpaper as a cover, dimmed as it will be on the desktop, with its cursors, sounds and triggers as icons, and a play button applies it. A click opens its settings in the side panel (what it brings back, when it starts by itself, what it opens, export, remove). A New mode tile saves the current setup, and the models show the current wallpaper with their effect.
 - Arrange: the screen map draws each icon at its real size, with its name under it.
 - Modes start when a chosen app opens or when headphones are plugged in, and the previous setup comes back when the app closes or the headphones are removed (unless something was changed meanwhile). A mode can also open apps or files when it is applied.
@@ -29,6 +35,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - The window remembers its size, position and maximized state.
 
 ### Changed
+- Sounds: one Sounds on switch instead of Sounds on and Silent, which did the same thing, and the list of events is titled Events.
+- Create: the preview adapts to the height of the window, so the themes stay visible without scrolling.
+- Settings that appear with an option (React to sound in Create and Wallpaper, Screen and sleep on Home, the icons of a mode) open and close smoothly instead of making everything under them jump.
+- The small taskbar drawn in previews shows the violet app icon.
 - The bar on the left shows the name of each service beside its icon, with the Bramble name at the top. Dragging its edge still narrows it to icons with names below.
 - Create: React to sound comes first in the panel.
 - Arrange: the first row keeps the same space from the top of the screen as the longest name of the last row from the taskbar, instead of touching the top edge.
@@ -63,6 +73,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Starting with Windows uses the --background option (--discret still works).
 
 ### Fixed
+- Arrange: Frame left an empty cell between two categories, which looked like missing icons, and filled a second ring from one side only. The frame now spaces its icons evenly when it is not full and centers the extra icons on its top and bottom rows.
+- Arrange: in Corners, a big category spilled into the corner of another one; each category is now a compact block in its corner, with room left between blocks. In Center, each category starts its own row.
+- React to sound could stay still after an audio output changed (a screen with speakers, headphones, another default output) until it was turned off and on again.
+- The Bramble wallpaper started without bubbles when its preview was loaded while hidden, on Home.
+- Icons could end up outside every screen after auto arrange was turned off, after Undo or Back to original, when the screens had changed in between.
 - The bar and the side panel stayed narrow after the window had been narrow for a moment.
 - Empty lists (Network addresses and test history, Sounds history, Folders) showed their message floating over the page.
 - French: names given in Bramble (modes, layouts, own cursor themes, wallpapers) were translated when they matched a word of the interface.

@@ -54,6 +54,9 @@ namespace Bramble
         public WindowPlace Window;
         public bool UpdatesAuto;
         public string UpdatesLast;
+        public bool WarmOn;
+        public int Warm = 50;
+        public int SaverThreshold = 30;
     }
 
     static class Program
@@ -137,6 +140,7 @@ namespace Bramble
                 DiskUsage.Start();
                 Hardware.Start();
                 AudioMeter.Set(R.Reactive);
+                Display.Start();
                 Moods.Start();
                 if (requestedFolder != null) { Icons.Ask(requestedFolder); requestedView = "icons"; }
 
@@ -419,7 +423,42 @@ namespace Bramble
             if (dead) RebuildSoon();
         }
 
-        static void Apply(bool fade = true) { ForEachWallpaper(f => f.Show(R, WallpaperOf(f.Screen), fade)); }
+        static readonly List<string> past = new List<string>();
+        static string shown;
+        static bool goingBack;
+
+        static void Apply(bool fade = true)
+        {
+            if (shown != null && shown != R.Wallpaper && !goingBack) { past.Add(shown); if (past.Count > 30) past.RemoveAt(0); }
+            shown = R.Wallpaper;
+            ForEachWallpaper(f => f.Show(R, WallpaperOf(f.Screen), fade));
+        }
+
+        public static void PreviousWallpaper()
+        {
+            var wallpapers = ListWallpapers().ToList();
+            RestartSlideshow();
+            string back = null;
+            while (back == null && past.Count > 0)
+            {
+                string last = past[past.Count - 1];
+                past.RemoveAt(past.Count - 1);
+                if (last != R.Wallpaper && wallpapers.Contains(last)) back = last;
+            }
+            if (back == null)
+            {
+                if (wallpapers.Count < 2) return;
+                int i = wallpapers.IndexOf(R.Wallpaper);
+                back = wallpapers[(i <= 0 ? wallpapers.Count : i) - 1];
+            }
+            R.Wallpaper = back;
+            R.ScreenWallpapers.RemoveAll(x => x.Wallpaper == R.Wallpaper);
+            goingBack = true;
+            try { Apply(); } finally { goingBack = false; }
+            Save();
+            Tray.Update();
+            SendState();
+        }
 
         public static string ScreenKey(Rectangle b) { return b.Width + "x" + b.Height + "@" + b.X + "," + b.Y; }
 
@@ -690,6 +729,13 @@ namespace Bramble
 
             if (action.StartsWith("home.")) { Weather.Receive(action.Substring(action.IndexOf('.') + 1)); return; }
 
+            if (action.StartsWith("display.") || action.StartsWith("power."))
+            {
+                string sub = action.Substring(action.IndexOf('.') + 1);
+                if (action.StartsWith("display.") ? Display.Receive(sub, m) : Power.Receive(sub, m)) { Save(); SendState(); }
+                return;
+            }
+
             if (action.StartsWith("updates."))
             {
                 if (Updates.Receive(action.Substring(action.IndexOf('.') + 1), m)) { Save(); SendState(); }
@@ -741,6 +787,7 @@ namespace Bramble
                 case "pauseAuto": R.PauseAuto = (bool)m["value"]; UpdateVisibility(); break;
                 case "pause": TogglePause(); return;
                 case "next": NextWallpaper(); return;
+                case "previous": PreviousWallpaper(); return;
                 case "startup": ToggleStartup(); break;
                 case "weather": R.Weather = !R.Weather; break;
                 case "zoom": R.Zoom = Math.Max(70, Math.Min(200, Convert.ToInt32(m["value"]))); if (settingsWindow != null) settingsWindow.SetZoom(R.Zoom); break;
@@ -828,6 +875,8 @@ namespace Bramble
                 zoom = R.Zoom,
                 moods = Moods.State(),
                 moodModels = Moods.Models(),
+                display = Display.State(),
+                power = Power.State(),
                 language = R.Language,
                 about = new
                 {
@@ -944,6 +993,7 @@ namespace Bramble
             quitting = true;
             Tray.Hide();
             Sounds.Stop();
+            Display.Stop();
             Discard();
             if (settingsWindow != null) settingsWindow.Shutdown();
             Destroy();

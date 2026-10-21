@@ -9,7 +9,7 @@ namespace Bramble
     {
         static readonly List<IAudioMeterInformation> meters = new List<IAudioMeterInformation>();
         static Timer timer;
-        static DateTime lookedFor = DateTime.MinValue;
+        static DateTime lookedFor = DateTime.MinValue, opened = DateTime.MinValue;
         static double ceiling = 0.05, last;
 
         static bool wanted, previewing;
@@ -43,7 +43,9 @@ namespace Bramble
             float peak = 0;
             try
             {
-                if (meters.Count == 0 && (DateTime.Now - lookedFor).TotalSeconds > 2) { lookedFor = DateTime.Now; Open(); }
+                // Outputs come and go (HDMI screen, headphones, default device), and a meter on a removed or idle output stays silent.
+                if (meters.Count > 0 && (DateTime.Now - opened).TotalSeconds > 4) Release();
+                if (meters.Count == 0 && (DateTime.Now - lookedFor).TotalSeconds > 2) { lookedFor = opened = DateTime.Now; Open(); }
                 foreach (var meter in meters)
                 {
                     float one;
@@ -99,6 +101,52 @@ namespace Bramble
             }
         }
 
+        // Programs with a running audio stream on any output (music, a call, a video) are in use even without a window in front.
+        public static HashSet<int> Playing()
+        {
+            var ids = new HashSet<int>();
+            IMMDeviceCollection devices = null;
+            try
+            {
+                var enumerator = (IMMDeviceEnumerator)new MMDeviceEnumerator();
+                if (enumerator.EnumAudioEndpoints(0, 1, out devices) != 0) return ids;
+                uint count;
+                devices.GetCount(out count);
+                Guid id = typeof(IAudioSessionManager2).GUID;
+                for (uint i = 0; i < count; i++)
+                {
+                    IMMDevice device;
+                    object manager;
+                    if (devices.Item(i, out device) != 0) continue;
+                    if (device.Activate(ref id, 23, IntPtr.Zero, out manager) == 0)
+                    {
+                        IAudioSessionEnumerator sessions;
+                        if (((IAudioSessionManager2)manager).GetSessionEnumerator(out sessions) == 0)
+                        {
+                            int n;
+                            sessions.GetCount(out n);
+                            for (int k = 0; k < n; k++)
+                            {
+                                object session;
+                                if (sessions.GetSession(k, out session) != 0) continue;
+                                var control = session as IAudioSessionControl2;
+                                int state;
+                                uint process;
+                                if (control != null && control.GetState(out state) == 0 && state == 1 && control.GetProcessId(out process) == 0 && process != 0) ids.Add((int)process);
+                                Marshal.ReleaseComObject(session);
+                            }
+                            Marshal.ReleaseComObject(sessions);
+                        }
+                        Marshal.ReleaseComObject(manager);
+                    }
+                    Marshal.ReleaseComObject(device);
+                }
+            }
+            catch { }
+            finally { if (devices != null) Marshal.ReleaseComObject(devices); }
+            return ids;
+        }
+
         static void Release()
         {
             foreach (var meter in meters) try { Marshal.ReleaseComObject(meter); } catch { }
@@ -149,6 +197,38 @@ namespace Bramble
         interface IAudioMeterInformation
         {
             [PreserveSig] int GetPeakValue(out float peak);
+        }
+
+        [ComImport, Guid("77AA99A0-1BD6-484F-8BC7-2C654C9A9B6F"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        interface IAudioSessionManager2
+        {
+            [PreserveSig] int GetAudioSessionControl(IntPtr session, int flags, out IntPtr control);
+            [PreserveSig] int GetSimpleAudioVolume(IntPtr session, int flags, out IntPtr volume);
+            [PreserveSig] int GetSessionEnumerator(out IAudioSessionEnumerator sessions);
+        }
+
+        [ComImport, Guid("E2F5BB11-0570-40CA-ACDD-3AA01277DEE8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        interface IAudioSessionEnumerator
+        {
+            [PreserveSig] int GetCount(out int count);
+            [PreserveSig] int GetSession(int index, [MarshalAs(UnmanagedType.IUnknown)] out object session);
+        }
+
+        [ComImport, Guid("bfb7ff88-7239-4fc9-8fa2-07c950be9c6d"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        interface IAudioSessionControl2
+        {
+            [PreserveSig] int GetState(out int state);
+            [PreserveSig] int GetDisplayName(out IntPtr name);
+            [PreserveSig] int SetDisplayName(IntPtr name, IntPtr context);
+            [PreserveSig] int GetIconPath(out IntPtr path);
+            [PreserveSig] int SetIconPath(IntPtr path, IntPtr context);
+            [PreserveSig] int GetGroupingParam(out Guid group);
+            [PreserveSig] int SetGroupingParam(IntPtr group, IntPtr context);
+            [PreserveSig] int RegisterAudioSessionNotification(IntPtr client);
+            [PreserveSig] int UnregisterAudioSessionNotification(IntPtr client);
+            [PreserveSig] int GetSessionIdentifier(out IntPtr id);
+            [PreserveSig] int GetSessionInstanceIdentifier(out IntPtr id);
+            [PreserveSig] int GetProcessId(out uint id);
         }
     }
 }

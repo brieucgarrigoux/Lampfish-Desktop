@@ -106,10 +106,10 @@ body:not([data-view="wallpaper"]) .only-wallpaper, body:not([data-view="station"
 body:not([data-view="icons"]) .only-icons, body:not([data-view="mouse"]) .only-mouse, body:not([data-view="network"]) .only-network, body:not([data-view="arrange"]) .only-arrange,
 body:not([data-view="files"]) .only-files, body:not([data-view="hardware"]) .only-hardware,
 body:not([data-view="tasks"]) .only-tasks, body:not([data-view="create"]) .only-create, body:not([data-view="settings"]) .only-settings, body:not([data-view="home"]) .only-home,
-body:not([data-view="modes"]) .only-modes { display: none !important; }
+body:not([data-view="modes"]) .only-modes, body:not([data-view="display"]) .only-display { display: none !important; }
 
-body[data-view="settings"], body[data-view="home"] { grid-template-columns: var(--width-rail, 180px) 1fr; }
-body[data-view="settings"] .panel, body[data-view="home"] .panel { display: none; }
+body[data-view="settings"], body[data-view="home"], body[data-view="display"] { grid-template-columns: var(--width-rail, 180px) 1fr; }
+body[data-view="settings"] .panel, body[data-view="home"] .panel, body[data-view="display"] .panel { display: none; }
 body[data-view="tasks"]:not(.sheet-open), body[data-view="modes"]:not(.mode-open) { grid-template-columns: var(--width-rail, 180px) 1fr; }
 body[data-view="tasks"]:not(.sheet-open) .panel, body[data-view="modes"]:not(.mode-open) .panel { display: none; }
 
@@ -120,6 +120,12 @@ body[data-view="tasks"]:not(.sheet-open) .panel, body[data-view="modes"]:not(.mo
 
 .view--settings { max-width: 720px; margin-inline: auto; }
 .settings-title { margin: 28px 0 12px; }
+.time-select { display: inline-flex; align-items: center; gap: 2px; padding-left: 7px; border-radius: var(--radius-small); background: var(--sunken); box-shadow: inset 0 0 0 1px transparent; cursor: pointer; transition: box-shadow var(--fast); }
+.time-select:hover { box-shadow: inset 0 0 0 1px var(--hairline-strong); }
+.time-select:focus-within { box-shadow: inset 0 0 0 1px var(--accent); }
+.time-select svg { flex: none; width: 13px; height: 13px; fill: none; stroke: var(--text-pale); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.time-select select { border: 0; padding: 5px 4px; background: none; color: var(--text); font: 12.5px var(--numbers); font-variant-numeric: tabular-nums; color-scheme: dark; outline: none; cursor: pointer; }
+.no-battery .battery-only { display: none; }
 .view--settings > h1 + .settings-title { margin-top: 0; }
 .row--setting .segments { flex: 0 0 300px; }
 .view--settings .caption small { white-space: normal; }

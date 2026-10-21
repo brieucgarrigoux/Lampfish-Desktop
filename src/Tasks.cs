@@ -23,6 +23,19 @@ namespace Bramble
 
         static readonly string WindowsFolder = Environment.GetFolderPath(Environment.SpecialFolder.Windows) + "\\";
 
+        // Never offered by Free up memory: drivers and hardware tools, security, VPN, file sync and remote access.
+        static readonly string[] SparedCompanies =
+        {
+            "realtek", "intel", "nvidia", "advanced micro devices", "synaptics", "elan microelectronics", "logitech", "razer", "corsair", "dolby", "waves",
+            "conexant", "qualcomm", "broadcom", "avast", "avg", "norton", "symantec", "mcafee", "kaspersky", "bitdefender", "eset", "malwarebytes", "sophos",
+            "trend micro", "avira", "nordvpn", "proton", "openvpn", "wireguard", "cisco", "teamviewer", "anydesk",
+        };
+        static readonly HashSet<string> SparedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "OneDrive", "Dropbox", "GoogleDriveFS", "iCloudDrive", "iCloudServices", "Nextcloud", "pCloud", "MEGAsync", "TeamViewer", "AnyDesk",
+        };
+        static readonly Dictionary<string, string> companies = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
         static Dictionary<int, TimeSpan> previous = new Dictionary<int, TimeSpan>();
         static DateTime previousTime = DateTime.UtcNow;
         static bool running;
@@ -30,7 +43,7 @@ namespace Bramble
         static readonly Dictionary<string, object> info = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
         static readonly HashSet<string> delivered = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        class Group { public string Id, Name, Path; public int Count; public long Memory; public double Cpu; public bool Locked, Window; }
+        class Group { public string Id, Name, Path; public int Count; public long Memory; public double Cpu; public bool Locked, Window, Playing; }
 
         static object Read()
         {
@@ -208,6 +221,99 @@ namespace Bramble
             if (closed > 0) Program.Announce("{0} closed", name);
             else if (asked > 0) Program.Announce("{0} was asked to close", name);
             else if (refused > 0) Program.Announce("{0} could not be closed", name);
+        }
+
+        static string Company(string path)
+        {
+            if (path == null) return "";
+            string company;
+            if (!companies.TryGetValue(path, out company))
+            {
+                try { company = (FileVersionInfo.GetVersionInfo(path).CompanyName ?? "").ToLowerInvariant(); } catch { company = ""; }
+                companies[path] = company;
+            }
+            return company;
+        }
+
+        static int InUse()
+        {
+            int self = Process.GetCurrentProcess().Id, found = 0;
+            EnumWindows((h, l) =>
+            {
+                if (!IsWindowVisible(h) || GetWindow(h, 4) != IntPtr.Zero || GetWindowTextLength(h) == 0) return true;
+                if ((GetWindowLong(h, -20) & 0x80) != 0) return true;
+                int cloaked;
+                if (DwmGetWindowAttribute(h, 14, out cloaked, 4) == 0 && cloaked != 0) return true;
+                uint id;
+                GetWindowThreadProcessId(h, out id);
+                if ((int)id == self) return true;
+                found = (int)id;
+                return false;
+            }, IntPtr.Zero);
+            return found;
+        }
+
+        static List<Group> Candidates()
+        {
+            int session = Process.GetCurrentProcess().SessionId, active = InUse();
+            var windowed = Windowed();
+            var playing = AudioMeter.Playing();
+            var groups = new Dictionary<string, Group>(StringComparer.OrdinalIgnoreCase);
+            string used = null;
+            foreach (var p in Process.GetProcesses())
+                using (p)
+                {
+                    if (p.Id == 0) continue;
+                    string path = PathOf(p.Id), id = Identify(p.ProcessName, path);
+                    if (p.Id == active) used = id;
+                    Group g;
+                    if (!groups.TryGetValue(id, out g)) groups[id] = g = new Group { Id = id, Name = p.ProcessName, Path = path, Locked = Locked.Contains(p.ProcessName) };
+                    g.Count++;
+                    if (windowed.Contains(p.Id)) g.Window = true;
+                    if (playing.Contains(p.Id)) g.Playing = true;
+                    try { g.Memory += p.WorkingSet64; if (p.SessionId != session) g.Locked = true; }
+                    catch { g.Locked = true; }
+                }
+            return groups.Values.Where(g => !g.Locked && !g.Playing && g.Id != used && g.Memory >= 100L * 1024 * 1024 && !SparedNames.Contains(g.Name)
+                    && (Kind(g) == "app" || Kind(g) == "background") && !SparedCompanies.Any(c => Company(g.Path).Contains(c)))
+                .OrderByDescending(g => g.Memory).Take(12).ToList();
+        }
+
+        static object FreeList()
+        {
+            var status = new MEMORYSTATUSEX { dwLength = (uint)Marshal.SizeOf(typeof(MEMORYSTATUSEX)) };
+            GlobalMemoryStatusEx(ref status);
+            return new
+            {
+                type = "tasks.free", total = (long)status.ullTotalPhys, available = (long)status.ullAvailPhys,
+                items = Candidates().Select(g => new { id = g.Id, name = g.Name, memory = g.Memory, kind = Kind(g), count = g.Count }).ToArray(),
+            };
+        }
+
+        // Windows are asked to close like with their X, so an app can still ask to save; only programs without any window are stopped.
+        static void Free(IEnumerable<string> ids)
+        {
+            var wanted = new HashSet<string>(ids, StringComparer.OrdinalIgnoreCase);
+            var safe = Candidates().Where(g => wanted.Contains(g.Id)).ToDictionary(g => g.Id, g => g, StringComparer.OrdinalIgnoreCase);
+            if (safe.Count == 0) return;
+            int session = Process.GetCurrentProcess().SessionId;
+            var touched = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var p in Process.GetProcesses())
+                using (p)
+                {
+                    try
+                    {
+                        Group g;
+                        if (!safe.TryGetValue(Identify(p.ProcessName, PathOf(p.Id)), out g) || p.SessionId != session || Locked.Contains(p.ProcessName)) continue;
+                        if (g.Window) { if (p.MainWindowHandle != IntPtr.Zero && p.CloseMainWindow()) touched.Add(g.Id); }
+                        else { p.Kill(); touched.Add(g.Id); }
+                    }
+                    catch { }
+                }
+            long freed = safe.Values.Where(g => touched.Contains(g.Id)).Sum(g => g.Memory);
+            string size = freed >= 1L << 30 ? (freed / (double)(1L << 30)).ToString("0.0") + " " + Language.T("GB") : (freed >> 20) + " " + Language.T("MB");
+            if (touched.Count == 0) Program.Announce("Nothing could be closed");
+            else Program.Announce(touched.Count == 1 ? "1 program closed, about {1} freed" : "{0} programs closed, about {1} freed", touched.Count, size);
         }
 
         static object Details(string id)
@@ -393,6 +499,22 @@ namespace Bramble
                     object id;
                     End(m.TryGetValue("id", out id) && id != null ? id.ToString() : null);
                     return true;
+                case "freeList":
+                    Task.Run(() => FreeList()).ContinueWith(t => Program.OnInterface(() =>
+                    {
+                        if (t.IsFaulted) { Program.Log(t.Exception); return; }
+                        Program.Send(t.Result);
+                    }));
+                    return false;
+                case "free":
+                {
+                    object list;
+                    if (!m.TryGetValue("ids", out list) || !(list is System.Collections.ArrayList)) return false;
+                    Free(((System.Collections.ArrayList)list).Cast<object>().Select(x => x.ToString()));
+                    Program.SendState();
+                    Program.Send(FreeList());
+                    return false;
+                }
             }
             return false;
         }
@@ -409,5 +531,10 @@ namespace Bramble
         [DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr handle);
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode)] static extern bool QueryFullProcessImageName(IntPtr process, int flags, StringBuilder name, ref int size);
         [DllImport("iphlpapi.dll")] static extern uint GetExtendedTcpTable(IntPtr table, ref int size, bool order, int family, int kind, uint reserved);
+
+        [StructLayout(LayoutKind.Sequential)]
+        struct MEMORYSTATUSEX { public uint dwLength, dwMemoryLoad; public ulong ullTotalPhys, ullAvailPhys, ullTotalPageFile, ullAvailPageFile, ullTotalVirtual, ullAvailVirtual, ullAvailExtendedVirtual; }
+
+        [DllImport("kernel32.dll")] static extern bool GlobalMemoryStatusEx(ref MEMORYSTATUSEX status);
     }
 }

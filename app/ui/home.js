@@ -33,7 +33,7 @@
     b.className = 'h-row';
     b.innerHTML = `${glyph(icon)}<span class="h-row__what"><span class="h-row__name"></span><span class="h-detail"></span></span><span class="h-visual"></span><span class="h-value"></span>`;
     b.querySelector('.h-row__name').textContent = tr(name);
-    b.addEventListener('click', () => showView(view));
+    b.addEventListener('click', () => key === 'memory' && tiles.memory.high ? Bramble.tasks.free() : showView(view));
     $('h-rows').append(b);
     tiles[key] = { el: b, name: b.querySelector('.h-row__name'), value: b.querySelector('.h-value'), detail: b.querySelector('.h-detail'), visual: b.querySelector('.h-visual') };
   }
@@ -59,8 +59,27 @@
   const urlIcon = a => `/app/icon-cache/${encodeURIComponent(a.key)}-${a.retro ? 32 : 64}.png`;
   const urlCursor = a => `/app/cursor-cache/${encodeURIComponent(a.key)}-${a.retro ? 32 : 64}.png`;
   $('h-wallpaper').addEventListener('click', () => showView('wallpaper'));
+  $('h-previous').addEventListener('click', () => send('previous'));
   $('h-pause').addEventListener('click', () => send('pause'));
   $('h-next').addEventListener('click', () => send('next'));
+
+  const renderPower = Quick.bind({
+    warmOn: 'warm-on', warm: 'warm-strength', night: 'night-light', group: 'h-quick',
+    saver: 'saver-on', saverDetail: 'saver-detail', saverRow: 'h-saver',
+    screenAc: 'screen-ac', screenDc: 'screen-dc', sleepAc: 'sleep-ac', sleepDc: 'sleep-dc',
+  });
+  function renderQuick(e) {
+    renderPower(e);
+    const p = e.power;
+    if (!p) return;
+    const battery = p.battery && e.onBattery, screen = battery ? p.screenDc : p.screenAc, sleep = battery ? p.sleepDc : p.sleepAc;
+    $('power-summary').textContent = screen < 0 ? '' : tr(battery ? 'On battery: screen {0}, sleep {1}' : 'Plugged in: screen {0}, sleep {1}', Quick.timeout(screen).toLowerCase(), Quick.timeout(sleep).toLowerCase());
+  }
+  $('power-more').addEventListener('click', () => {
+    const open = $('power-more').getAttribute('aria-expanded') !== 'true';
+    reveal($('power-rows'), open);
+    $('power-more').setAttribute('aria-expanded', String(open));
+  });
 
   function duration(s) {
     const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60);
@@ -93,13 +112,15 @@
     $('h-now-type').textContent = wallpaper ? wallpaper.type.toUpperCase() : '';
     $('h-pause').textContent = tr(e.paused ? 'Resume' : 'Pause');
     $('h-pause').setAttribute('aria-pressed', String(!!e.paused));
-    $('h-next').disabled = !e.wallpapers || e.wallpapers.length < 2;
+    $('h-next').disabled = $('h-previous').disabled = !e.wallpapers || e.wallpapers.length < 2;
+    renderQuick(e);
 
     const s = e.station;
     if (s) {
       const active = s.events.filter(x => x.active).length;
-      set('station', tr(!s.active ? 'Sounds off' : s.silence ? 'Silent' : active === 1 ? '1 event on' : '{0} events on', active));
-      visual('station', '<span class="h-leds">' + s.events.map(x => `<i class="${x.active && s.active ? 'on' : ''}"></i>`).join('') + '</span>');
+      const on = s.active && !s.silence;
+      set('station', tr(!on ? 'Sounds off' : active === 1 ? '1 event on' : '{0} events on', active));
+      visual('station', '<span class="h-leds">' + s.events.map(x => `<i class="${x.active && on ? 'on' : ''}"></i>`).join('') + '</span>');
     }
 
     if (network) {
@@ -114,7 +135,9 @@
       const ram = stats.memory.used / stats.memory.total * 100, t = stats.temperature;
       set('processor', Math.round(stats.processor.total) + ' %', t != null ? Math.round(t) + ' °C' : stats.processor.threads.length ? tr('{0} threads', stats.processor.threads.length) : '');
       tiles.processor.visual.innerHTML = '<span class="h-threads">' + stats.processor.threads.slice(0, 16).map(v => `<i style="--h:${Math.max(8, Math.min(100, v)).toFixed(0)}%"></i>`).join('') + '</span>';
-      set('memory', Math.round(ram) + ' %', tr('{0} of {1}', size(stats.memory.used).replace(/ \S+$/, ''), size(stats.memory.total)), ram >= 90);
+      tiles.memory.high = ram >= 80;
+      tiles.memory.el.classList.toggle('act', tiles.memory.high);
+      set('memory', Math.round(ram) + ' %', tiles.memory.high ? tr('Free up memory') : tr('{0} of {1}', size(stats.memory.used).replace(/ \S+$/, ''), size(stats.memory.total)), ram >= 90);
       visual('memory', bar(ram));
 
       const b = stats.battery;
@@ -166,7 +189,7 @@
 
   function renderMoods(moods) {
     const zone = $('h-moods');
-    const key = moods.map(m => m.id + (m.current ? '*' : '') + m.name).join('|');
+    const key = moods.map(m => m.id + (m.current ? '*' : '') + m.name + m.icon).join('|');
     if (zone.dataset.key === key && zone.children.length) return;
     zone.dataset.key = key;
     const title = document.createElement('span');
@@ -180,8 +203,8 @@
       const b = document.createElement('button');
       b.className = 'tool-chip';
       b.setAttribute('aria-pressed', String(!!m.current));
-      b.textContent = m.name;
-      b.translate = false;
+      if (Bramble.moods) b.insertAdjacentHTML('beforeend', Bramble.moods.icon(m.icon));
+      b.append(Object.assign(document.createElement('span'), { textContent: m.name, translate: false }));
       b.title = m.current ? tr('Active') : tr('Apply');
       b.addEventListener('click', () => { if (!m.current) send('moods.apply', { id: m.id }); });
       return b;

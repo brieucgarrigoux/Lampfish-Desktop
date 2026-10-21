@@ -184,8 +184,7 @@ namespace Bramble
 
         public static void Listen(string id, string deck)
         {
-            if (!R.Active) { Program.Send(new { type = "station.refusal", reason = "off" }); return; }
-            if (R.Silence) { Program.Send(new { type = "station.refusal", reason = "silence" }); return; }
+            if (!R.Active || R.Silence) { Program.Send(new { type = "station.refusal", reason = "off" }); return; }
             Play(id, deck);
         }
 
@@ -443,6 +442,7 @@ namespace Bramble
                     return false;
                 case "active":
                     R.Active = Convert.ToBoolean(m["value"]);
+                    R.Silence = false;
                     if (!R.Active) Player.Stop();
                     WriteLog(R.Active ? "Sounds on" : "Sounds off");
                     return true;
@@ -459,12 +459,13 @@ namespace Bramble
 
         public static void Toggle()
         {
-            R.Active = !R.Active;
+            R.Active = !Active;
+            R.Silence = false;
             if (!R.Active) Player.Stop();
             WriteLog(R.Active ? "Sounds on" : "Sounds off");
         }
 
-        public static bool Active { get { return R.Active; } }
+        public static bool Active { get { return R.Active && !R.Silence; } }
 
         static string Text(Dictionary<string, object> m, string key)
         {

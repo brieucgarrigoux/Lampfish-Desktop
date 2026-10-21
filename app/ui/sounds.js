@@ -80,7 +80,7 @@
     if (!e) return;
     $('banner-event').textContent = e.label;
     $('sounds-for').textContent = tr(e.label);
-    const state = !s.active ? 'Sounds off' : s.silence ? 'Silent' : !e.active ? 'Off' : '';
+    const state = !s.active || s.silence ? 'Sounds off' : !e.active ? 'Off' : '';
     $('banner-sound-name').textContent = [tr(packOf(e.sound)), tr(titleOf(e.sound))].filter(Boolean).join(' · ');
     $('banner-state').textContent = state ? tr(state) : '';
     $('banner-sound').classList.toggle('muted', !s.active || s.silence);
@@ -161,7 +161,6 @@
   knob.addEventListener('dblclick', () => turn(100, true));
 
   $('power').addEventListener('change', e => send('station.active', { value: e.target.checked }));
-  $('silence').addEventListener('change', e => send('station.silence', { value: e.target.checked }));
 
   function buildEvents() {
     const zone = $('events');
@@ -380,8 +379,7 @@
 
   function state(n) {
     s = n;
-    $('power').checked = s.active;
-    $('silence').checked = s.silence;
+    $('power').checked = s.active && !s.silence;
     if (performance.now() > volumeFreeAfter) showVolume(s.volume);
     if (!eventOf(chosen)) chosen = s.events[0].id;
 
@@ -431,7 +429,7 @@
     toast(m.found ? tr('Dock recognized: {0}', m.name) : 'Nothing was plugged in, dock unchanged', false, 3500);
   }
 
-  const REFUSAL = { off: 'Sounds are off (Sounds on)', silence: 'Silent mode is on', nothing: 'Nothing is playing', output: 'Audio output not found', file: 'Unreadable file' };
+  const REFUSAL = { off: 'Sounds are off (Sounds on)', nothing: 'Nothing is playing', output: 'Audio output not found', file: 'Unreadable file' };
   function event(m) {
     switch (m.type) {
       case 'station.playback': startPlayback(m); break;

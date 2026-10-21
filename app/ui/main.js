@@ -46,7 +46,7 @@ if (LANGUAGE !== 'en') {
   }).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRIBUTES_TRANSLATED });
 }
 const Bramble = { state: null, station: null, icons: null, arrange: null, mouse: null, network: null, files: null, hardware: null, tasks: null, moods: null, creator: null };
-const VIEWS = ['home', 'modes', 'wallpaper', 'create', 'icons', 'arrange', 'mouse', 'station', 'files', 'hardware', 'tasks', 'network', 'settings'];
+const VIEWS = ['home', 'modes', 'wallpaper', 'create', 'display', 'icons', 'arrange', 'mouse', 'station', 'files', 'hardware', 'tasks', 'network', 'settings'];
 
 const scrolls = {}, narrowLayout = matchMedia('(max-width: 900px)');
 const scrollZones = () => narrowLayout.matches ? [document.scrollingElement] : [document.querySelector('.contents'), document.querySelector('.panel')];
@@ -69,6 +69,7 @@ function showView(view) {
   if (Bramble.hardware) Bramble.hardware.visible(view === 'hardware');
   if (Bramble.tasks) Bramble.tasks.visible(view === 'tasks');
   if (Bramble.creator) Bramble.creator.visible(view === 'create');
+  if (Bramble.display) Bramble.display.visible(view === 'display');
   send('audioPreview', { value: view === 'create' });
   if (Bramble.home) Bramble.home.visible(view === 'home');
 }
@@ -120,6 +121,7 @@ webview.addEventListener('message', e => {
   if (m.type && m.type.startsWith('tasks.')) { if (Bramble.tasks) Bramble.tasks.event(m); return; }
   if (m.type && m.type.startsWith('hardware.')) { if (Bramble.hardware) Bramble.hardware.event(m); return; }
   if (m.type && m.type.startsWith('moods.')) { if (Bramble.moods) Bramble.moods.event(m); return; }
+  if (m.type && m.type.startsWith('display.')) { if (Bramble.display) Bramble.display.event(m); return; }
   if (m.type === 'window.closed') { if (Bramble.creator) Bramble.creator.reset(); return; }
   render(m);
 });
@@ -149,6 +151,7 @@ function render(state) {
   if (Bramble.files && state.files) Bramble.files.state(state.files);
   if (Bramble.moods && state.moods) Bramble.moods.state(state.moods);
   if (Bramble.home) Bramble.home.state();
+  if (Bramble.display) Bramble.display.state();
 
   if (state.view && VIEWS.includes(state.view)) showView(state.view);
 
@@ -256,6 +259,24 @@ function wallpaperFor(key) {
 
 const fill = cursor => cursor.style.setProperty('--pct', cursor.value + '%');
 
+// Rows that depend on an option open and close smoothly: a row that pops in or out makes everything under it jump.
+const calm = matchMedia('(prefers-reduced-motion: reduce)'), loadedAt = performance.now();
+function reveal(el, show) {
+  if (!el || (el._reveal ? el._wanted === show : el.hidden === !show)) return;
+  if (el._reveal) el._reveal.cancel();
+  el._wanted = show;
+  const parent = el.parentElement;
+  if (calm.matches || !parent || !parent.offsetParent || performance.now() - loadedAt < 800) { el._reveal = null; el.hidden = !show; return; }
+  el.hidden = false;
+  const style = getComputedStyle(el);
+  const open = { height: el.offsetHeight + 'px', minHeight: style.minHeight, paddingTop: style.paddingTop, paddingBottom: style.paddingBottom, opacity: 1 };
+  const shut = { height: '0px', minHeight: '0px', paddingTop: '0px', paddingBottom: '0px', opacity: 0 };
+  el.style.overflow = 'hidden';
+  const a = el._reveal = el.animate(show ? [shut, open] : [open, shut], { duration: show ? 220 : 180, easing: show ? 'cubic-bezier(.2, .7, .3, 1)' : 'ease-in' });
+  a.onfinish = () => { el._reveal = null; el.style.overflow = ''; if (!show) el.hidden = true; };
+  a.oncancel = () => { el.style.overflow = ''; };
+}
+
 let heroScreen = '';
 try { heroScreen = localStorage.getItem('wallpaper.screen') || ''; } catch (e) { }
 const heroDisplay = () => { const list = (Bramble.state && Bramble.state.displays) || []; return list.find(d => d.key === heroScreen) || list.find(d => d.primary) || list[0]; };
@@ -317,7 +338,7 @@ function renderWallpaper(state, before) {
   $('pauseAuto').checked = state.pauseAuto;
   $('pauseOnBattery').checked = state.pauseOnBattery;
   $('reactive').checked = state.reactive;
-  $('level-row').hidden = !state.reactive;
+  reveal($('level-row'), state.reactive);
 
   const wallpaper = shownWallpaper();
   $('speed').disabled = !!wallpaper && wallpaper.type === 'gif';
@@ -508,7 +529,7 @@ const TASKBAR_APPS = [
   '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2.4" fill="#f4c542"/><path d="M3 9.5h18v7.6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#ffd966"/><path d="M3 8.6a2.4 2.4 0 0 1 2.4-2.4h4l1.6 2z" fill="#e0a82e"/></svg>',
   '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#1d7fe6"/><path d="M12 3a9 9 0 0 0-9 9h10a3 3 0 0 0 0-6h-1z" fill="#34d399"/><path d="M5.5 13c2-3.6 6.4-4.4 10-2.6 1.6.8 2.6 2.2 3 3.6-1.8-1.4-3.8-1.8-6-1.4-2.4.4-4.4 2-7 .4z" fill="#0a3a8a" opacity=".55"/></svg>',
   '<svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="15" rx="3" fill="#1b1c24" stroke="#4a4c5c" stroke-width="1"/><path d="m7.5 9.5 3 2.5-3 2.5M12.5 15h4" fill="none" stroke="#c9b8e6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-  '<svg viewBox="0 0 24 24"><image href="/brand/logo/logo-bramble-192.png" x="2" y="2" width="20" height="20"/></svg>',
+  '<svg viewBox="0 0 24 24"><image href="/brand/app-icon/app-icon-violet.png" x="2" y="2" width="20" height="20"/></svg>',
 ].map((svg, i) => `<i${i === 4 ? ' class="on"' : ''}>${svg}</i>`).join('');
 const TASKBAR_TRAY = '<svg viewBox="0 0 24 24"><path d="m6 14 6-6 6 6" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><svg viewBox="0 0 24 24"><path d="M3 9a13 13 0 0 1 18 0M6 12.5a8.5 8.5 0 0 1 12 0M9 16a4 4 0 0 1 6 0" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg><svg viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z" fill="#fff"/><path d="M15 9a4 4 0 0 1 0 6" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg><svg viewBox="0 0 24 24"><rect x="3" y="8" width="16" height="8" rx="2" fill="none" stroke="#fff" stroke-width="1.8"/><rect x="5" y="10" width="9" height="4" rx=".8" fill="#fff"/><path d="M21 10.5v3" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>';
 

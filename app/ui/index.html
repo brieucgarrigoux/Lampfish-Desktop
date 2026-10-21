@@ -18,6 +18,7 @@
 <link rel="stylesheet" href="moods.css">
 <link rel="stylesheet" href="creator.css">
 <link rel="stylesheet" href="home.css">
+<link rel="stylesheet" href="display.css">
 <link rel="stylesheet" href="panels.css">
 <link rel="stylesheet" href="shell.css">
 </head>
@@ -36,6 +37,10 @@
   <button class="service" data-view="create">
     <svg viewBox="0 0 24 24"><path d="m21.6 3.6-1.3-1.3a1.2 1.2 0 0 0-1.7 0L2.4 18.6a1.2 1.2 0 0 0 0 1.7l1.3 1.3a1.2 1.2 0 0 0 1.7 0L21.6 5.4a1.2 1.2 0 0 0 0-1.8z"/><path d="m14 7 3 3"/><path d="M5 6v4M3 8h4"/><path d="M19 14v4M17 16h4"/><path d="M10 2v2M9 3h2"/></svg>
     Create
+  </button>
+  <button class="service" data-view="display">
+    <svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="12" rx="1.5"/><path d="M9 20h6M12 16.5V20"/></svg>
+    Display
   </button>
   <button class="service" data-view="icons">
     <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="m12 7.8 1.2 2.6 2.8.3-2.1 1.9.6 2.8-2.5-1.4-2.5 1.4.6-2.8-2.1-1.9 2.8-.3z"/></svg>
@@ -96,6 +101,7 @@
         </button>
         <div class="h-now">
           <div class="h-now__what"><span class="h-now__name" id="h-now-name" translate="no"></span><span class="h-now__type" id="h-now-type"></span></div>
+          <button class="button" id="h-previous">Previous</button>
           <button class="button" id="h-pause">Pause</button>
           <button class="button" id="h-next">Next</button>
         </div>
@@ -104,6 +110,41 @@
       <div class="h-pc">
         <h2>This PC</h2>
         <div class="group h-rows" id="h-rows"></div>
+        <h2>Quick settings</h2>
+        <div class="group h-quick" id="h-quick">
+          <div class="h-q">
+            <svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/></svg>
+            <span class="h-q__what"><span class="h-q__name">Warm screen</span><small>Warmer colors at night · <button class="link h-q__night" id="night-light" title="Opens the Night light settings of Windows">Night light</button></small></span>
+            <input type="range" id="warm-strength" min="10" max="100" step="5" aria-label="Warmth">
+            <span class="toggler"><input type="checkbox" id="warm-on" aria-label="Warm screen"></span>
+          </div>
+          <div class="h-q" id="h-saver">
+            <svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19c0-7 5-12 14-13-1 9-6 14-13 14"/><path d="M5 19c3-4 6-6.5 9-8"/></svg>
+            <span class="h-q__what"><span class="h-q__name">Energy saver</span><small id="saver-detail"></small></span>
+            <span></span>
+            <span class="toggler"><input type="checkbox" id="saver-on" aria-label="Energy saver"></span>
+          </div>
+          <button class="h-q h-q--link" id="power-more" aria-expanded="false" aria-controls="power-rows">
+            <svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 14.6A7.6 7.6 0 0 1 9.4 4.5a7.6 7.6 0 1 0 10.1 10.1z"/><path d="M15 4h3l-3 4h3"/></svg>
+            <span class="h-q__what"><span class="h-q__name">Screen and sleep</span><small id="power-summary"></small></span>
+            <span></span>
+            <svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+          </button>
+          <div class="h-q__more" id="power-rows" hidden>
+            <div class="h-q">
+              <svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="12" rx="1.5"/><path d="M9 20h6M12 16.5V20"/></svg>
+              <span class="h-q__what"><span class="h-q__name">Screen off after</span><small class="h-q__when battery-only">Plugged in, then on battery</small></span>
+              <label class="time-select" title="Plugged in"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3.5v4M15 3.5v4M7 7.5h10v3a5 5 0 0 1-10 0zM12 15.5v5"/></svg><select id="screen-ac" aria-label="Screen off after, plugged in"></select></label>
+              <label class="time-select battery-only" title="On battery"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="16" height="8" rx="2"/><path d="M21 10.5v3M6 11v2"/></svg><select id="screen-dc" aria-label="Screen off after, on battery"></select></label>
+            </div>
+            <div class="h-q">
+              <svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 14.6A7.6 7.6 0 0 1 9.4 4.5a7.6 7.6 0 1 0 10.1 10.1z"/><path d="M15 4h3l-3 4h3"/></svg>
+              <span class="h-q__what"><span class="h-q__name">Sleep after</span><small class="h-q__when battery-only">Plugged in, then on battery</small></span>
+              <label class="time-select" title="Plugged in"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3.5v4M15 3.5v4M7 7.5h10v3a5 5 0 0 1-10 0zM12 15.5v5"/></svg><select id="sleep-ac" aria-label="Sleep after, plugged in"></select></label>
+              <label class="time-select battery-only" title="On battery"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="16" height="8" rx="2"/><path d="M21 10.5v3M6 11v2"/></svg><select id="sleep-dc" aria-label="Sleep after, on battery"></select></label>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="h-shortcuts" id="h-tiles"></div>
@@ -111,7 +152,7 @@
 
   <section class="view view--modes only-modes" aria-label="Modes">
     <h1>Modes</h1>
-    <p class="modes-intro" id="mood-help"></p>
+    <div class="mode-steps" id="mood-help"></div>
     <div class="mood-preview" id="mood-preview" hidden></div>
     <div class="title-section title-section--first"><h2>My modes<span class="count" id="mood-count"></span></h2><button class="link" id="mood-import"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19.5h14"/></svg>Import</button></div>
     <div class="moods" id="moods"></div>
@@ -200,7 +241,7 @@
       <section class="zone-sounds zone-sounds--events" aria-labelledby="title-events">
         <header class="zone-sounds__header">
           <svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="11" rx="1.5"/><path d="M9 19.5h6M12 15.5v4"/></svg>
-          <div><h2 id="title-events">On this PC</h2><p>Pick an event, turn it on or off</p></div>
+          <div><h2 id="title-events">Events</h2><p>Pick a moment of the PC, then the sound it plays</p></div>
         </header>
         <div class="events" id="events"></div>
       </section>
@@ -215,6 +256,52 @@
       </section>
     </div>
     <input type="file" id="sounds-files" accept="audio/*,.wav,.mp3,.m4a,.aac,.ogg,.oga,.opus,.flac,.webm" multiple hidden>
+  </section>
+
+  <section class="view view--display only-display" aria-label="Display">
+    <h1>Display</h1>
+    <div class="d-map" id="d-map"><div class="waiting loading">Reading screens</div></div>
+    <p class="help-section d-help" id="d-help"></p>
+    <div class="group">
+      <div class="row row--setting d-chosen">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="12" rx="1.5"/><path d="M9 20h6M12 16.5V20"/></svg><span><span id="d-name" translate="no"></span><small id="d-specs"></small></span></span>
+        <span class="d-badge" id="d-main" hidden>Main screen</span>
+        <button class="button" id="d-primary" title="The Start menu and new windows will open on this screen" hidden>Make main screen</button>
+      </div>
+    </div>
+
+    <h2 class="settings-title">Comfort</h2>
+    <div class="group">
+      <label class="toggle">
+        <input type="checkbox" id="d-warm-on">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/></svg><span>Warm screen<small>Warmer colors for the evening, gone when Bramble closes</small></span></span>
+      </label>
+      <div class="setting">
+        <label for="d-warm"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.5v9"/><circle cx="12" cy="16.5" r="3"/><path d="M15 6.5h2M15 9.5h2"/></svg><span>Warmth<small>From a light tint to deep amber</small></span></span><output id="d-warm-value"></output></label>
+        <input type="range" id="d-warm" min="10" max="100" step="5">
+        <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <button class="row action" id="d-night-light">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 14.6A7.6 7.6 0 0 1 9.4 4.5a7.6 7.6 0 1 0 10.1 10.1z"/></svg><span>Night light of Windows<small>Its own schedule and strength, in the Windows settings</small></span></span>
+        <svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+      </button>
+    </div>
+
+    <h2 class="settings-title">Power</h2>
+    <div class="group" id="d-power">
+      <div class="row row--setting">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="12" rx="1.5"/><path d="M9 20h6M12 16.5V20"/></svg><span>Screen off after<small class="battery-only">Plugged in, then on battery</small></span></span>
+        <div class="d-pair"><label class="time-select" title="Plugged in"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3.5v4M15 3.5v4M7 7.5h10v3a5 5 0 0 1-10 0zM12 15.5v5"/></svg><select id="d-screen-ac" aria-label="Screen off after, plugged in"></select></label><label class="time-select battery-only" title="On battery"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="16" height="8" rx="2"/><path d="M21 10.5v3M6 11v2"/></svg><select id="d-screen-dc" aria-label="Screen off after, on battery"></select></label></div>
+      </div>
+      <div class="row row--setting">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 14.6A7.6 7.6 0 0 1 9.4 4.5a7.6 7.6 0 1 0 10.1 10.1z"/><path d="M15 4h3l-3 4h3"/></svg><span>Sleep after<small class="battery-only">Plugged in, then on battery</small></span></span>
+        <div class="d-pair"><label class="time-select" title="Plugged in"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3.5v4M15 3.5v4M7 7.5h10v3a5 5 0 0 1-10 0zM12 15.5v5"/></svg><select id="d-sleep-ac" aria-label="Sleep after, plugged in"></select></label><label class="time-select battery-only" title="On battery"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="16" height="8" rx="2"/><path d="M21 10.5v3M6 11v2"/></svg><select id="d-sleep-dc" aria-label="Sleep after, on battery"></select></label></div>
+      </div>
+      <label class="toggle" id="d-saver-row">
+        <input type="checkbox" id="d-saver-on">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19c0-7 5-12 14-13-1 9-6 14-13 14"/><path d="M5 19c3-4 6-6.5 9-8"/></svg><span>Energy saver<small id="d-saver-detail"></small></span></span>
+      </label>
+    </div>
   </section>
 
   <section class="view view--icons only-icons" aria-label="Icons">
@@ -356,6 +443,15 @@
 
   <section class="view view--tasks only-tasks" aria-label="Tasks">
     <h1>Tasks</h1>
+    <div class="t-memory" id="t-memory">
+      <span class="t-memory__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="9.5" width="15.5" height="8.5" rx="1.5"/><path d="M6.25 12.5v2.5M10.25 12.5v2.5M14.25 12.5v2.5M5 18v2.5M15.5 18v2.5"/><path d="M19.75 2.25l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg></span>
+      <span class="t-memory__text">
+        <span class="t-memory__head"><b>Memory</b><span class="number" id="t-memory-value"></span></span>
+        <span class="t-memory__meter"><i id="t-memory-bar"></i></span>
+        <small id="t-memory-hint">Looking for what can be closed</small>
+      </span>
+      <button class="button button--accent t-memory__go" id="t-free"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="9.5" width="15.5" height="8.5" rx="1.5"/><path d="M6.25 12.5v2.5M10.25 12.5v2.5M14.25 12.5v2.5M5 18v2.5M15.5 18v2.5"/><path d="M19.75 2.25l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg><span>Free up memory</span></button>
+    </div>
     <div class="title-section title-section--tabs">
       <div class="segments tabs" id="t-tabs" role="tablist" aria-label="Kind of program"></div>
       <label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg><input type="search" id="t-search" placeholder="Search a program" aria-label="Search a program" autocomplete="off" spellcheck="false"></label>
@@ -501,10 +597,6 @@
       <label class="toggle">
         <input type="checkbox" id="power">
         <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v8"/><path d="M7 6.3a7 7 0 1 0 10 0"/></svg><span>Sounds on<small>Plays the events that are on</small></span></span>
-      </label>
-      <label class="toggle">
-        <input type="checkbox" id="silence">
-        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="m16 9.5 5 5M21 9.5l-5 5"/></svg><span>Silent<small>Logs everything, plays nothing</small></span></span>
       </label>
     </div>
     <h2>Status</h2>
@@ -715,6 +807,7 @@
 <script src="tasks.js"></script>
 <script src="moods.js"></script>
 <script src="creator.js"></script>
+<script src="display.js"></script>
 <script src="home.js"></script>
 <script src="panels.js"></script>
 <script src="scrollbars.js"></script>

@@ -11,11 +11,12 @@ namespace Bramble
 {
     class MoodSetting
     {
-        public string Id, Name, Wallpaper, Fit, Theme, Time, LastRun, Power, App;
+        public string Id, Name, Wallpaper, Fit, Theme, Time, LastRun, Power, App, Icon;
         public int Light, Speed, Blur, Saturation, Dim, Volume, Screens;
         public bool SoundsActive, Silence, Headset;
         public List<string> Opens;
         public bool? Reactive;
+        public int? Warm;
         public List<ScreenWallpaper> ScreenWallpapers;
     }
 
@@ -34,8 +35,19 @@ namespace Bramble
 
         static List<MoodSetting> All { get { return Program.R.Moods; } }
 
+        static readonly string[] Icons = { "spark", "moon", "sun", "target", "film", "game", "music", "book", "coffee", "leaf", "bolt", "heart", "code" };
+
+        static string IconOrNone(string icon) { return Icons.Contains(icon) ? icon : null; }
+
         public static void Start()
         {
+            foreach (var m in All.Where(x => x.Icon == null))
+                foreach (var kind in new[] { "night", "focus", "cinema" })
+                {
+                    string english = kind == "night" ? "Night" : kind == "focus" ? "Focus" : "Cinema";
+                    if (string.Equals(m.Name, english, StringComparison.OrdinalIgnoreCase) || string.Equals(m.Name, Language.T(english), StringComparison.OrdinalIgnoreCase))
+                        m.Icon = kind == "night" ? "moon" : kind == "focus" ? "target" : "film";
+                }
             screenCount = Screen.AllScreens.Length;
             power = SystemInformation.PowerStatus.PowerLineStatus;
             timer = new Timer { Interval = 20000 };
@@ -66,19 +78,19 @@ namespace Bramble
                 Id = Guid.NewGuid().ToString("N").Substring(0, 8), Name = name, Wallpaper = r.Wallpaper, Fit = r.Fit, Theme = Mouse.ThemeName,
                 Light = r.Light, Speed = r.Speed, Blur = r.Blur, Saturation = r.Saturation, Dim = r.Dim,
                 SoundsActive = r.Dock.Active, Silence = r.Dock.Silence, Volume = r.Dock.Volume, Time = "", Power = "",
-                Reactive = r.Reactive, ScreenWallpapers = Copy(r.ScreenWallpapers),
+                Reactive = r.Reactive, Warm = Display.WarmStrength, ScreenWallpapers = Copy(r.ScreenWallpapers),
             };
         }
 
         static void Overwrite(MoodSetting target, MoodSetting source)
         {
-            string id = target.Id, name = target.Name, time = target.Time, last = target.LastRun, powerTrigger = target.Power, app = target.App;
+            string id = target.Id, name = target.Name, time = target.Time, last = target.LastRun, powerTrigger = target.Power, app = target.App, icon = target.Icon;
             int screens = target.Screens;
             bool headset = target.Headset;
             var opens = target.Opens;
             foreach (var f in typeof(MoodSetting).GetFields()) f.SetValue(target, f.GetValue(source));
             target.Id = id; target.Name = name; target.Time = time; target.LastRun = last; target.Screens = screens; target.Power = powerTrigger;
-            target.App = app; target.Headset = headset; target.Opens = opens;
+            target.App = app; target.Headset = headset; target.Opens = opens; target.Icon = icon;
         }
 
         public static bool Matches(MoodSetting m)
@@ -88,8 +100,9 @@ namespace Bramble
             var now = r.ScreenWallpapers.OrderBy(x => x.Key).Select(x => x.Key + "=" + x.Wallpaper);
             return m.Wallpaper == r.Wallpaper && mine.SequenceEqual(now) && m.Fit == r.Fit && m.Light == r.Light && m.Speed == r.Speed
                 && m.Blur == r.Blur && m.Saturation == r.Saturation && m.Dim == r.Dim
-                && m.SoundsActive == r.Dock.Active && m.Silence == r.Dock.Silence && m.Volume == r.Dock.Volume
+                && (m.SoundsActive && !m.Silence) == (r.Dock.Active && !r.Dock.Silence) && m.Volume == r.Dock.Volume
                 && (!m.Reactive.HasValue || m.Reactive.Value == r.Reactive)
+                && (!m.Warm.HasValue || m.Warm.Value == Display.WarmStrength)
                 && (string.IsNullOrEmpty(m.Theme) || m.Theme == Mouse.ThemeName);
         }
 
@@ -107,6 +120,7 @@ namespace Bramble
             r.ScreenWallpapers = Copy(mood.ScreenWallpapers);
             r.Dock.Active = mood.SoundsActive; r.Dock.Silence = mood.Silence; r.Dock.Volume = mood.Volume;
             if (mood.Reactive.HasValue && mood.Reactive.Value != r.Reactive) { r.Reactive = mood.Reactive.Value; AudioMeter.Set(r.Reactive); }
+            if (mood.Warm.HasValue && mood.Warm.Value != Display.WarmStrength) Display.SetWarm(mood.Warm.Value);
             if (!string.IsNullOrEmpty(mood.Theme) && mood.Theme != Mouse.ThemeName) Mouse.SetTheme(mood.Theme);
             Program.WallpaperChanged();
             Program.UpdateMenu();
@@ -240,7 +254,7 @@ namespace Bramble
         {
             switch (kind)
             {
-                case "night": mood.Dim = Math.Min(100, mood.Dim + 30); mood.Light = Math.Max(10, mood.Light - 20); mood.Volume = Math.Min(mood.Volume, 50); return true;
+                case "night": mood.Dim = Math.Min(100, mood.Dim + 30); mood.Light = Math.Max(10, mood.Light - 20); mood.Volume = Math.Min(mood.Volume, 50); mood.Warm = 50; return true;
                 case "focus": mood.Silence = true; mood.Dim = Math.Min(100, mood.Dim + 20); mood.Speed = Math.Max(10, mood.Speed - 25); return true;
                 case "cinema": mood.Silence = true; mood.Dim = 70; mood.Light = Math.Max(10, mood.Light - 15); return true;
             }
@@ -252,6 +266,7 @@ namespace Bramble
             if (!Starters.Contains(kind)) return null;
             var mood = Capture(Language.T(kind == "night" ? "Night" : kind == "focus" ? "Focus" : "Cinema"));
             Tune(mood, kind);
+            mood.Icon = kind == "night" ? "moon" : kind == "focus" ? "target" : "film";
             return mood;
         }
 
@@ -260,9 +275,9 @@ namespace Bramble
             var r = Program.R;
             return Starters.Select(kind =>
             {
-                var m = new MoodSetting { Wallpaper = r.Wallpaper, Fit = r.Fit, Light = r.Light, Speed = r.Speed, Blur = r.Blur, Saturation = r.Saturation, Dim = r.Dim, Volume = r.Dock.Volume };
+                var m = new MoodSetting { Wallpaper = r.Wallpaper, Fit = r.Fit, Light = r.Light, Speed = r.Speed, Blur = r.Blur, Saturation = r.Saturation, Dim = r.Dim, Volume = r.Dock.Volume, Warm = Display.WarmStrength };
                 Tune(m, kind);
-                return new { kind, wallpaper = m.Wallpaper, fit = m.Fit, light = m.Light, speed = m.Speed, blur = m.Blur, saturation = m.Saturation, dim = m.Dim };
+                return new { kind, wallpaper = m.Wallpaper, fit = m.Fit, light = m.Light, speed = m.Speed, blur = m.Blur, saturation = m.Saturation, dim = m.Dim, warm = m.Warm };
             }).ToArray();
         }
 
@@ -292,6 +307,7 @@ namespace Bramble
                     { "light", mood.Light }, { "speed", mood.Speed }, { "blur", mood.Blur }, { "saturation", mood.Saturation }, { "dim", mood.Dim },
                     { "theme", mood.Theme }, { "soundsOn", mood.SoundsActive }, { "silent", mood.Silence }, { "volume", mood.Volume },
                     { "reactive", mood.Reactive }, { "time", mood.Time }, { "screens", mood.Screens }, { "power", mood.Power }, { "headphones", mood.Headset },
+                    { "icon", mood.Icon }, { "warm", mood.Warm },
                 };
                 File.WriteAllText(dialog.FileName, json.Serialize(data));
                 Program.Announce("{0} exported", mood.Name);
@@ -339,6 +355,7 @@ namespace Bramble
                     Time = DateTime.TryParseExact(time, "HH:mm", null, System.Globalization.DateTimeStyles.None, out parsed) ? time : "",
                     Screens = Number(d, "screens", 0, 8, 0), Power = powerTrigger == "mains" || powerTrigger == "battery" ? powerTrigger : "",
                     Headset = d.ContainsKey("headphones") && d["headphones"] is bool && (bool)d["headphones"],
+                    Icon = IconOrNone(Word(d, "icon", 20)), Warm = d.ContainsKey("warm") && d["warm"] != null ? (int?)Number(d, "warm", 0, 100, 0) : null,
                     ScreenWallpapers = new List<ScreenWallpaper>(),
                 };
                 if (pending.Name.Length == 0) pending.Name = string.Format(Language.T("Mode {0}"), All.Count + 1);
@@ -358,10 +375,10 @@ namespace Bramble
             looks.TryGetValue(m.Theme ?? "", out look);
             return new
             {
-                id = m.Id, name = m.Name, wallpaper = m.Wallpaper, fit = m.Fit, dim = m.Dim, light = m.Light, speed = m.Speed, blur = m.Blur, saturation = m.Saturation,
+                id = m.Id, name = m.Name, icon = m.Icon, warm = m.Warm, wallpaper = m.Wallpaper, fit = m.Fit, dim = m.Dim, light = m.Light, speed = m.Speed, blur = m.Blur, saturation = m.Saturation,
                 screenWallpapers = m.ScreenWallpapers == null ? 0 : m.ScreenWallpapers.Count, reactive = m.Reactive,
                 theme = m.Theme, look,
-                sounds = !m.SoundsActive ? "off" : m.Silence ? "silent" : "on", volume = m.Volume, time = m.Time, screens = m.Screens, power = m.Power ?? "",
+                sounds = m.SoundsActive && !m.Silence ? "on" : "off", volume = m.Volume, time = m.Time, screens = m.Screens, power = m.Power ?? "",
                 app = string.IsNullOrEmpty(m.App) ? null : Path.GetFileNameWithoutExtension(m.App), appIcon = IconOf(m.App), headset = m.Headset,
                 opens = (m.Opens ?? new List<string>()).Select(o => new { name = Path.GetFileNameWithoutExtension(o), icon = IconOf(o) }).ToArray(),
                 current = m == active,
@@ -451,6 +468,7 @@ namespace Bramble
                 }
                 case "appClear": if (mood == null) return false; mood.App = null; appsRunning.Remove(mood.Id); return true;
                 case "headset": if (mood == null) return false; mood.Headset = Text(m, "value") == "True" || Text(m, "value") == "true"; return true;
+                case "icon": if (mood == null) return false; mood.Icon = IconOrNone(Text(m, "value")); return true;
                 case "openAdd":
                 {
                     if (mood == null) return false;

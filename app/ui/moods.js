@@ -5,16 +5,32 @@
   let moods = [], models = [], chosen = null, naming = false, keyGrid = '';
 
   const MODELS = {
-    night: ['Night', 'Dimmer wallpaper, softer sounds', '<path d="M19.5 14.6A7.6 7.6 0 0 1 9.4 4.5a7.6 7.6 0 1 0 10.1 10.1z"/>'],
-    focus: ['Focus', 'Calmer wallpaper, sounds silenced', '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/>'],
-    cinema: ['Cinema', 'Dark wallpaper, sounds silenced', '<rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="m10.2 9.3 4.6 2.7-4.6 2.7z"/>'],
+    night: ['Night', 'Darker wallpaper, warm screen', 'moon'],
+    focus: ['Focus', 'Calmer wallpaper, sounds off', 'target'],
+    cinema: ['Cinema', 'Dark wallpaper, sounds off', 'film'],
   };
+  const MODE_ICONS = {
+    spark: '<path d="M12 3.5 13.6 10 20 12l-6.4 2L12 20.5 10.4 14 4 12l6.4-2z"/>',
+    moon: '<path d="M19.5 14.6A7.6 7.6 0 0 1 9.4 4.5a7.6 7.6 0 1 0 10.1 10.1z"/>',
+    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/>',
+    target: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/>',
+    film: '<rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="m10.2 9.3 4.6 2.7-4.6 2.7z"/>',
+    game: '<path d="M7.5 8h9a4 4 0 0 1 3.9 4.9l-.8 3.5a2.3 2.3 0 0 1-4 1L14 15.5h-4l-1.6 1.9a2.3 2.3 0 0 1-4-1l-.8-3.5A4 4 0 0 1 7.5 8z"/><path d="M8 11v3M6.5 12.5h3M15.5 12h.01M17.5 13.5h.01"/>',
+    music: '<path d="M9 17.5V6l10-2v11.5"/><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="15.5" r="2.5"/>',
+    book: '<path d="M4 5.5c2.5-1 5.5-1 8 .8 2.5-1.8 5.5-1.8 8-.8v13c-2.5-1-5.5-1-8 .8-2.5-1.8-5.5-1.8-8-.8z"/><path d="M12 6.3v13"/>',
+    coffee: '<path d="M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16M8.5 3.5v2M12 3.5v2"/>',
+    leaf: '<path d="M5 19c0-7 5-12 14-13-1 9-6 14-13 14"/><path d="M5 19c3-4 6-6.5 9-8"/>',
+    bolt: '<path d="M13 3.5 5.5 13H12l-1 7.5L18.5 11H12z"/>',
+    heart: '<path d="M12 19.5s-7.5-4.6-7.5-10a4.2 4.2 0 0 1 7.5-2.6 4.2 4.2 0 0 1 7.5 2.6c0 5.4-7.5 10-7.5 10z"/>',
+    code: '<path d="m8.5 7.5-4.5 4.5 4.5 4.5M15.5 7.5l4.5 4.5-4.5 4.5M13.5 5l-3 14"/>',
+  };
+  const icon = key => `<svg class="mode-icon" viewBox="0 0 24 24" aria-hidden="true">${MODE_ICONS[key] || MODE_ICONS.spark}</svg>`;
   const ICONS = {
     wallpaper: '<rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="m3.5 16 5-5 4 4 2.5-2.5 5.5 5.5"/><circle cx="15.5" cy="9.5" r="1.3"/>',
     cursor: '<path d="M6 3.5 18 12.3l-5.6.8-3.2 4.9z"/><path d="m12.4 13.1 3.6 6.4"/>',
     on: '<path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>',
-    silent: '<path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z"/><path d="m16 10 4 4M20 10l-4 4"/>',
-    off: '<path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z"/><path d="m3.5 3.5 17 17"/>',
+    off: '<path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z"/><path d="m16 10 4 4M20 10l-4 4"/>',
+    warm: '<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/>',
     dim: '<path d="M19.5 14.6A7.6 7.6 0 0 1 9.4 4.5a7.6 7.6 0 1 0 10.1 10.1z"/>',
     react: '<path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/>',
     time: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
@@ -53,6 +69,11 @@
       box.classList.add('mood__cover--none');
       box.insertAdjacentHTML('beforeend', svg(ICONS.wallpaper));
     }
+    if (m.warm > 0) {
+      const warmth = el('i', 'mood__warmth');
+      warmth.style.opacity = (m.warm / 100).toFixed(2);
+      box.append(warmth);
+    }
     const veil = el('i', 'mood__veil');
     veil.style.background = `rgba(0, 0, 0, ${((m.dim || 0) / 100 * .75).toFixed(3)})`;
     box.append(veil);
@@ -77,14 +98,15 @@
     return img;
   }
 
-  const SOUNDS = { on: 'Sounds on · {0} %', silent: 'Sounds silenced', off: 'Sounds off' };
+  const SOUNDS = { on: 'Sounds on · {0} %', off: 'Sounds off' };
   function traits(m) {
     const row = el('div', 'mood__traits');
     const theme = m.look ? m.look.title : m.theme;
     row.append(
       trait(cursorImage(m) || ICONS.cursor, theme || tr('Unchanged'), theme ? tr('Cursors: {0}', theme) : tr('Cursors unchanged')),
-      trait(ICONS[m.sounds] || ICONS.on, m.sounds === 'on' ? m.volume + ' %' : tr(m.sounds === 'silent' ? 'Silenced' : 'Off'), tr(SOUNDS[m.sounds] || SOUNDS.on, m.volume)),
+      trait(ICONS[m.sounds] || ICONS.on, m.sounds === 'on' ? m.volume + ' %' : tr('Off'), tr(SOUNDS[m.sounds] || SOUNDS.on, m.volume)),
       trait(ICONS.dim, m.dim + ' %', m.dim > 0 ? tr('Dimmed {0} %', m.dim) : tr('Not dimmed')));
+    if (m.warm > 0) row.append(trait(ICONS.warm, m.warm + ' %', tr('Warm screen {0} %', m.warm)));
     return row;
   }
 
@@ -122,6 +144,7 @@
     c.setAttribute('aria-label', m.name);
     c.dataset.id = m.id;
     const art = cover(m, c);
+    art.insertAdjacentHTML('beforeend', `<span class="mood__badge-icon">${icon(m.icon)}</span>`);
     if (!m.current) {
       const play = el('button', 'mood__play');
       play.type = 'button';
@@ -185,12 +208,12 @@
     if (list.dataset.key === key) return;
     list.dataset.key = key;
     list.replaceChildren(...models.filter(m => MODELS[m.kind]).map(m => {
-      const [name, help, icon] = MODELS[m.kind];
+      const [name, help, symbol] = MODELS[m.kind];
       const b = el('button', 'starter');
       b.type = 'button';
       b.title = tr('Adds a mode built from the current setup');
       const art = cover(m, b);
-      art.insertAdjacentHTML('beforeend', svg(icon, 'starter__icon'));
+      art.insertAdjacentHTML('beforeend', `<span class="mood__badge-icon">${icon(symbol)}</span>`);
       b.append(art, el('span', 'starter__name', tr(name)), el('span', 'starter__help', tr(help)));
       b.addEventListener('click', () => send('moods.starter', { kind: m.kind }));
       return b;
@@ -278,7 +301,24 @@
     sheet.dataset.key = key;
 
     const head = el('div', 'm-sheet__head');
-    head.innerHTML = '<div><span class="title"></span><span class="path"></span></div>';
+    head.innerHTML = `<button class="m-sheet__icon" type="button" aria-expanded="false">${icon(m.icon)}</button><div><span class="title"></span><span class="path"></span></div>`;
+    const picker = el('div', 'm-icons');
+    picker.hidden = true;
+    picker.setAttribute('role', 'radiogroup');
+    picker.setAttribute('aria-label', tr('Icon'));
+    for (const key of Object.keys(MODE_ICONS)) {
+      const b = el('button', 'm-icons__one');
+      b.type = 'button';
+      b.setAttribute('role', 'radio');
+      b.setAttribute('aria-checked', String(key === (m.icon || 'spark')));
+      b.innerHTML = icon(key);
+      b.addEventListener('click', () => { if (key !== (m.icon || 'spark')) send('moods.icon', { id: m.id, value: key }); });
+      picker.append(b);
+    }
+    const iconButton = head.querySelector('.m-sheet__icon');
+    iconButton.title = tr('Change the icon');
+    iconButton.setAttribute('aria-label', tr('Change the icon'));
+    iconButton.addEventListener('click', () => { const open = iconButton.getAttribute('aria-expanded') !== 'true'; reveal(picker, open); iconButton.setAttribute('aria-expanded', String(open)); });
     head.querySelector('.title').textContent = m.name;
     head.querySelector('.title').translate = false;
     head.querySelector('.title').title = tr('Double-click to rename');
@@ -313,7 +353,8 @@
       row(ICONS.wallpaper, tr('Wallpaper'), m.screenWallpapers === 1 ? tr('Plus one screen with its own wallpaper') : m.screenWallpapers > 1 ? tr('Plus {0} screens with their own wallpaper', m.screenWallpapers) : '', value(wallpaper)),
       row(ICONS.dim, tr('Dim'), '', value(m.dim > 0 ? m.dim + ' %' : tr('Not dimmed'))),
       row(ICONS.cursor, tr('Cursors'), '', value(theme || tr('Unchanged'))),
-      row(ICONS[m.sounds] || ICONS.on, tr('Sounds'), '', value(m.sounds === 'on' ? tr('On · {0} %', m.volume) : tr(m.sounds === 'silent' ? 'Silenced' : 'Off'))));
+      row(ICONS[m.sounds] || ICONS.on, tr('Sounds'), '', value(m.sounds === 'on' ? tr('On · {0} %', m.volume) : tr('Off'))));
+    if (m.warm != null) brings.append(row(ICONS.warm, tr('Warm screen'), '', value(m.warm > 0 ? m.warm + ' %' : tr('Off'))));
     if (m.reactive != null) brings.append(row(ICONS.react, tr('React to sound'), '', value(tr(m.reactive ? 'On' : 'Off'))));
 
     const auto = el('div', 'group');
@@ -378,7 +419,7 @@
       action(ICONS.export, tr('Export'), tr('Saves it as a file to share or keep'), () => send('moods.export', { id: m.id })),
       action(ICONS.remove, tr('Remove'), tr('Can be undone for a few seconds'), () => send('moods.remove', { id: m.id }), 'stop'));
 
-    sheet.replaceChildren(head, art, actions, el('h2', '', tr('What it brings back')), brings,
+    sheet.replaceChildren(head, picker, art, actions, el('h2', '', tr('What it brings back')), brings,
       el('h2', '', tr('Starts by itself')), auto, el('h2', '', tr('Opens with it')), opens, more);
   }
 
@@ -404,9 +445,25 @@
     box.hidden = false;
   }
 
+  const STEPS = [
+    ['<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>', 'Set up a wallpaper, cursors and sounds'],
+    ['<path d="M5.5 4.5h10l3 3v12h-13z"/><path d="M8.5 4.5v5h6v-5M8.5 19.5v-5h7v5"/>', 'Save them as a mode'],
+    ['<path d="M8.5 5.8v12.4a.8.8 0 0 0 1.2.7l9.6-6.2a.8.8 0 0 0 0-1.4L9.7 5.1a.8.8 0 0 0-1.2.7z"/>', 'Bring them back in one click, or at the right moment'],
+  ];
+  function renderSteps() {
+    const zone = $('mood-help');
+    if (zone.children.length) return;
+    STEPS.forEach(([path, text], i) => {
+      const step = el('span', 'mode-step');
+      step.innerHTML = `<b>${i + 1}</b>${svg(path)}`;
+      step.append(el('span', '', tr(text)));
+      zone.append(step);
+    });
+  }
+
   function render() {
     $('mood-count').textContent = moods.length || '';
-    $('mood-help').textContent = moods.length ? tr('A mode brings back a wallpaper, cursors and sounds in one click, or by itself at the right moment') : tr('Set everything up, then save it as a mode to bring it back in one click');
+    renderSteps();
     if (chosen && !moods.some(m => m.id === chosen)) chosen = null;
     const state = Bramble.state || {};
     const key = JSON.stringify(moods) + '|' + [state.current, state.light, state.speed, state.blur, state.saturation, state.dim].join() + '|' + (state.wallpapers ? state.wallpapers.map(w => w.name + '@' + w.stamp).join() : '');
@@ -439,5 +496,5 @@
   $('mood-import').addEventListener('click', () => send('moods.import'));
   addEventListener('keydown', e => { if (e.key === 'Escape' && chosen && document.body.dataset.view === 'modes' && !(e.target.matches && e.target.matches('input:not([type="checkbox"]), select'))) close(); });
 
-  Bramble.moods = { state, event, startNew };
+  Bramble.moods = { state, event, startNew, icon };
 })();

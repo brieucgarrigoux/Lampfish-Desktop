@@ -1,4 +1,4 @@
-.banner-sound, .tester, .security, .m-card, .m-header, .zone-sounds, .cr-theme {
+.banner-sound, .tester, .security, .m-card, .m-header, .zone-sounds, .cr-theme, .t-memory {
   border-radius: var(--radius-shell);
   background: var(--shell);
   box-shadow: var(--shell-edge), var(--shell-lift);
@@ -14,7 +14,7 @@
   box-shadow: inset 0 2px 5px rgba(0, 0, 0, .8), inset 0 0 0 1px rgba(0, 0, 0, .6), 0 1px 0 rgba(255, 255, 255, .05); }
 .m-display > .m-bar { flex: none; }
 
-.skeleton { border-radius: var(--radius-shell);
+.skeleton, .d-map { border-radius: var(--radius-shell);
   background: radial-gradient(120% 120% at 0% 0%, rgba(149, 97, 243, .06), transparent 55%), var(--wallpaper);
   box-shadow: inset 0 2px 8px rgba(0, 0, 0, .85), inset 0 0 0 1px rgba(0, 0, 0, .7), 0 1px 0 rgba(255, 255, 255, .06); }
 

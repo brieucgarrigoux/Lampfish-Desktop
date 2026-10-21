@@ -14,6 +14,7 @@
   const KIND_NAMES = { app: 'App', console: 'Command line', background: 'Background', system: 'System' };
   let shown = false, timer = 0, confirming = '', confirmTimer = 0, data = null;
   let filter = 'all', order = { key: 'memory', direction: -1 }, search = '', chosen = null, sheet = null, turn = 0;
+  let freeing = false, free = null, picked = new Set(), armed = 0;
 
   const UNITS = ['bytes', 'KB', 'MB', 'GB', 'TB'].map(u => tr(u));
   function size(o) {
@@ -122,6 +123,7 @@
 
   function choose(id) {
     chosen = id;
+    freeing = false;
     sheet = null;
     document.body.classList.add('sheet-open');
     send('tasks.details', { id });
@@ -130,6 +132,7 @@
 
   function close() {
     chosen = null;
+    freeing = false;
     sheet = null;
     document.body.classList.remove('sheet-open');
     render();
@@ -172,8 +175,115 @@
     return g.children.length ? [h, g] : [];
   }
 
+  function startFree() {
+    chosen = null;
+    sheet = null;
+    freeing = true;
+    free = null;
+    picked = new Set();
+    document.body.classList.add('sheet-open');
+    send('tasks.freeList');
+    render();
+  }
+  $('t-free').addEventListener('click', () => freeing ? close() : startFree());
+
+  function renderMemory() {
+    if (!free) { $('t-memory-hint').textContent = tr('Looking for what can be closed'); return; }
+    const used = free.total - free.available, part = free.total ? used / free.total * 100 : 0;
+    const n = free.items.length, total = free.items.reduce((a, i) => a + i.memory, 0);
+    $('t-memory-value').textContent = tr('{0} used · {1} of {2}', pct(part), size(used), size(free.total));
+    $('t-memory-bar').style.width = part.toFixed(1) + '%';
+    $('t-memory').classList.toggle('full', part >= 85);
+    $('t-memory-hint').textContent = n ? tr(n === 1 ? 'About {0} can be freed by closing 1 program not in use' : 'About {0} can be freed by closing {1} programs not in use', size(total), n)
+      : tr('Nothing to free right now: the programs using a lot of memory are in use or needed');
+    $('t-free').disabled = !n && !freeing;
+  }
+
+  function renderFree() {
+    const zone = $('t-details');
+    const key = 'free:' + JSON.stringify([free, [...picked], !!armed, LANGUAGE]);
+    if (zone.dataset.key === key) return;
+    const head = document.createElement('div');
+    head.className = 't-sheet__head';
+    head.innerHTML = '<span class="task__icon t-free__icon"></span><div><span class="title"></span><span class="path"></span></div><button class="t-close" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg></button>';
+    head.querySelector('.task__icon').innerHTML = $('t-free').querySelector('svg').outerHTML;
+    head.querySelector('.title').textContent = tr('Free up memory');
+    head.querySelector('.t-close').addEventListener('click', close);
+    const fresh = [head];
+    if (!free) {
+      head.querySelector('.path').textContent = tr('Looking for what can be closed');
+      zone.dataset.key = key;
+      zone.replaceChildren(...fresh);
+      return;
+    }
+    const used = free.total - free.available, part = free.total ? used / free.total * 100 : 0;
+    head.querySelector('.path').textContent = tr('Memory {0} used, {1} of {2}', pct(part), size(used), size(free.total));
+    const meter = document.createElement('span');
+    meter.className = 't-free__meter';
+    meter.innerHTML = `<i style="width:${part.toFixed(1)}%"></i>`;
+    meter.classList.toggle('full', part >= 85);
+    fresh.push(meter);
+    const help = document.createElement('p');
+    help.className = 'help-section t-hint';
+    help.textContent = free.items.length ? tr('These can be closed without risk. Windows, security, drivers, file sync, programs playing sound and the app you were using are never listed.') : tr('Nothing to free: every program using a lot of memory is needed or in use.');
+    fresh.push(help);
+    if (free.items.length) {
+      const every = free.items.every(i => picked.has(i.id));
+      const all = document.createElement('div');
+      all.className = 't-free__all';
+      all.innerHTML = '<span></span><button class="link" type="button"></button>';
+      all.firstChild.textContent = free.items.length === 1 ? tr('1 program') : tr('{0} programs', free.items.length);
+      all.lastChild.textContent = every ? tr('Untick all') : tr('Tick all');
+      all.lastChild.addEventListener('click', () => { picked = every ? new Set() : new Set(free.items.map(i => i.id)); armed = 0; renderFree(); });
+      fresh.push(all);
+      const g = document.createElement('div');
+      g.className = 'group';
+      for (const item of free.items) {
+        const d = details.get(item.id) || {};
+        const l = document.createElement('label');
+        l.className = 'row t-free__row';
+        l.innerHTML = '<input type="checkbox"><span class="task__icon"><img alt="" hidden></span><span class="task__what"><span class="task__name"></span><span class="task__detail"></span></span><span class="number"></span>';
+        const box = l.querySelector('input');
+        box.checked = picked.has(item.id);
+        box.addEventListener('change', () => { if (box.checked) picked.add(item.id); else picked.delete(item.id); armed = 0; renderFree(); });
+        if (d.icon) { l.querySelector('img').src = d.icon; l.querySelector('img').hidden = false; }
+        l.querySelector('.task__name').textContent = d.description || item.name;
+        l.querySelector('.task__name').title = item.name;
+        l.querySelector('.task__detail').textContent = item.kind === 'app' ? tr('Can ask to save first') : tr('Background, stops at once');
+        l.querySelector('.number').textContent = size(item.memory);
+        g.append(l);
+      }
+      fresh.push(g);
+      const chosenItems = free.items.filter(i => picked.has(i.id));
+      const total = chosenItems.reduce((a, i) => a + i.memory, 0);
+      const warn = document.createElement('p');
+      warn.className = 't-free__warning';
+      warn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 21 19.5H3z"/><path d="M12 10v4.5M12 17h.01"/></svg><span></span>';
+      warn.querySelector('span').textContent = tr('Unsaved work in a program without a window is lost. Apps with a window close like with their X.');
+      fresh.push(warn);
+      const go = document.createElement('button');
+      go.className = 'button t-free__go' + (armed ? ' armed' : '');
+      go.disabled = chosenItems.length === 0;
+      go.textContent = !chosenItems.length ? tr('Tick what to close') : armed ? tr('Confirm: close {0}', chosenItems.length === 1 ? tr('1 program') : tr('{0} programs', chosenItems.length))
+        : tr('Close {0} · {1}', chosenItems.length === 1 ? tr('1 program') : tr('{0} programs', chosenItems.length), size(total));
+      go.addEventListener('click', () => {
+        clearTimeout(armed);
+        if (!armed) { armed = setTimeout(() => { armed = 0; renderFree(); }, 4000); renderFree(); return; }
+        armed = 0;
+        send('tasks.free', { ids: chosenItems.map(i => i.id) });
+        picked = new Set();
+        free = null;
+        renderFree();
+      });
+      fresh.push(go);
+    }
+    zone.dataset.key = key;
+    zone.replaceChildren(...fresh);
+  }
+
   function renderSheet() {
     const zone = $('t-details');
+    if (freeing) { renderFree(); return; }
     const t = data && chosen && data.items.find(x => x.id === chosen);
     if (!t) {
       if (zone.dataset.key !== 'empty') { zone.dataset.key = 'empty'; zone.innerHTML = '<p class="help-section t-hint"></p>'; zone.firstChild.textContent = tr('Pick a program to see where it comes from, what it uses and whether it starts with Windows'); }
@@ -222,6 +332,7 @@
 
   function event(m) {
     if (m.type === 'tasks.details') { if (m.id === chosen) { sheet = m; renderSheet(); } return; }
+    if (m.type === 'tasks.free') { free = m; const ids = new Set(m.items.map(i => i.id)); picked = new Set([...picked].filter(id => ids.has(id))); renderMemory(); if (freeing) renderFree(); return; }
     if (m.type !== 'tasks.list') return;
     data = m;
     for (const t of m.items) if (t.info) details.set(t.id, t.info);
@@ -233,18 +344,22 @@
     clearInterval(timer);
     if (!yes) return;
     send('tasks.list', { fresh: true });
+    send('tasks.freeList');
     timer = setInterval(() => {
       if (!shown || document.visibilityState !== 'visible') return;
+      turn++;
       send('tasks.list');
-      if (chosen && ++turn % 3 === 0) send('tasks.details', { id: chosen });
+      if (chosen && turn % 3 === 0) send('tasks.details', { id: chosen });
+      if (turn % 5 === 0 && !armed) send('tasks.freeList');
     }, 2000);
   }
 
   const field = $('t-search');
   field.addEventListener('input', () => { search = field.value; render(); });
   field.addEventListener('keydown', e => { if (e.key === 'Escape' && field.value) { e.stopPropagation(); field.value = ''; search = ''; render(); } });
-  addEventListener('keydown', e => { if (e.key === 'Escape' && shown && chosen && e.target !== field) close(); });
+  addEventListener('keydown', e => { if (e.key === 'Escape' && shown && (chosen || freeing) && e.target !== field) close(); });
 
   render();
-  Bramble.tasks = { event, visible };
+  renderMemory();
+  Bramble.tasks = { event, visible, free: () => { showView('tasks'); startFree(); } };
 })();

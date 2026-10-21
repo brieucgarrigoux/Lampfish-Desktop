@@ -247,12 +247,12 @@
   const rows = { gradient: [], image: [], particles: [], glow: [], sound: [], vibe: [] };
   const tagged = (kind, r) => { rows[kind].push(r); return r; };
   function syncRows() {
-    for (const r of rows.gradient) r.hidden = st.bg.type !== 'gradient';
-    for (const r of rows.image) r.hidden = st.bg.type !== 'image';
-    for (const r of rows.particles) r.hidden = st.particles.type === 'none';
-    for (const r of rows.glow) r.hidden = !st.glow.on;
-    for (const r of rows.sound) r.hidden = !st.sound.on;
-    for (const r of rows.vibe) r.hidden = !st.sound.on || !st.sound.vibe;
+    for (const r of rows.gradient) reveal(r, st.bg.type === 'gradient');
+    for (const r of rows.image) reveal(r, st.bg.type === 'image');
+    for (const r of rows.particles) reveal(r, st.particles.type !== 'none');
+    for (const r of rows.glow) reveal(r, st.glow.on);
+    for (const r of rows.sound) reveal(r, st.sound.on);
+    for (const r of rows.vibe) reveal(r, st.sound.on && st.sound.vibe);
   }
 
   function syncAll() {

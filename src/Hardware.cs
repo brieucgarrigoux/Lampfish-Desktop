@@ -302,7 +302,7 @@ namespace Bramble
 
         class Monitor { public string Name, Manufacturer, Code; public int Year; public double Inches; public string Port; }
 
-        static object Screens()
+        public static object Screens()
         {
             var monitors = new Dictionary<string, Monitor>(StringComparer.OrdinalIgnoreCase);
             Func<ManagementObject, Monitor> monitor = m =>
@@ -356,7 +356,7 @@ namespace Bramble
                     n = i + 1, name = name, manufacturer = r.Manufacturer, code = r.Code, year = r.Year,
                     inches = r.Inches, port = r.Port == null ? null : Language.T(r.Port), builtin = builtin,
                     w = s.Bounds.Width, h = s.Bounds.Height, hz = hz, primary = s.Primary,
-                    scale = Scale(s),
+                    scale = Scale(s), key = Program.ScreenKey(s.Bounds), x = s.Bounds.X, y = s.Bounds.Y,
                 };
             }).ToArray();
         }
