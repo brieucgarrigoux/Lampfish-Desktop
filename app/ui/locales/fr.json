@@ -1036,7 +1036,6 @@
  "Dependencies, app data and system folders are left out": "Dépendances, données d'applications et dossiers système exclus",
  "Closing…": "Fermeture…",
  "Personal folder": "Dossier personnel",
- "The whole drive, Windows included": "Tout le disque, Windows compris",
  "Pick any folder": "N'importe quel dossier",
  "Open page": "Ouvrir la page",
  "Personalization": "Personnalisation",
@@ -1051,5 +1050,6 @@
  "Arrangement name": "Nom du rangement",
  "Saved with other screens": "Enregistré avec d'autres écrans",
  "Pick a folder below to change its icon": "Choisir un dossier ci-dessous pour changer son icône",
- "For the slideshow, not for Next": "Pour le diaporama, pas pour Suivant"
+ "For the slideshow, not for Next": "Pour le diaporama, pas pour Suivant",
+ "Whole drive, Windows included": "Tout le disque, Windows compris"
 }
