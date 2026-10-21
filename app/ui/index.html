@@ -533,6 +533,71 @@
     </div>
     <p class="help-section">Nothing else leaves this PC: no account, no analytics, nothing collected.</p>
 
+    <h2 class="settings-title">What Bramble reads and changes</h2>
+    <p class="help-section">Nothing leaves the PC except the connections above, and every change can be undone</p>
+    <div class="group transparency">
+      <details class="tr-row">
+        <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/></svg><span>Home<small>Changes nothing by itself</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
+        <dl class="tr-body"><dt>Reads</dt><dd>The time, the weather and what This PC shows</dd><dt>Changes</dt><dd>Nothing: its shortcuts use the other services</dd><dt>To undo</dt><dd>Nothing to undo</dd></dl>
+      </details>
+      <details class="tr-row">
+        <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 14.6A7.6 7.6 0 0 1 9.4 4.5a7.6 7.6 0 1 0 10.1 10.1z"/><path d="M17 3.5v4M15 5.5h4"/></svg><span>Themes<small>Applies a saved setup when asked</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
+        <dl class="tr-body"><dt>Reads</dt><dd>The current wallpaper, effects, cursors and sounds, to save them</dd><dt>Changes</dt><dd>What a theme holds, when you apply it or when its trigger starts it, and the apps it opens</dd><dt>To undo</dt><dd>Undo in the toast after applying</dd></dl>
+      </details>
+      <details class="tr-row">
+        <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="m3.5 16 5-5 4 4 2.5-2.5 5.5 5.5"/><circle cx="15.5" cy="9.5" r="1.3"/></svg><span>Wallpaper<small>A window behind the desktop icons</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
+        <dl class="tr-body"><dt>Reads</dt><dd>The files of the wallpapers folder</dd><dt>Changes</dt><dd>Nothing in Windows: the Windows wallpaper stays as it is</dd><dt>To undo</dt><dd>Quit Bramble to see the Windows wallpaper again</dd></dl>
+      </details>
+      <details class="tr-row">
+        <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="m21.6 3.6-1.3-1.3a1.2 1.2 0 0 0-1.7 0L2.4 18.6a1.2 1.2 0 0 0 0 1.7l1.3 1.3a1.2 1.2 0 0 0 1.7 0L21.6 5.4a1.2 1.2 0 0 0 0-1.8z"/><path d="m14 7 3 3"/><path d="M5 6v4M3 8h4"/><path d="M19 14v4M17 16h4"/><path d="M10 2v2M9 3h2"/></svg><span>Create<small>Makes wallpapers in its own folder</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
+        <dl class="tr-body"><dt>Reads</dt><dd>The images and logo you add</dd><dt>Changes</dt><dd>A new folder in the wallpapers of Bramble</dd><dt>To undo</dt><dd>Remove the wallpaper, with Undo</dd></dl>
+      </details>
+      <details class="tr-row">
+        <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="m12 7.8 1.2 2.6 2.8.3-2.1 1.9.6 2.8-2.5-1.4-2.5 1.4.6-2.8-2.1-1.9 2.8-.3z"/></svg><span>Icons<small>Folder icons and a right-click menu</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
+        <dl class="tr-body"><dt>Reads</dt><dd>The icons of Windows, read in place and never copied</dd><dt>Changes</dt><dd>The desktop.ini file of the folders you choose, and the right-click menu if it is on</dd><dt>To undo</dt><dd>Back to original, Reset everything, or uninstalling Bramble</dd></dl>
+      </details>
+      <details class="tr-row">
+        <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5 18 12.3l-5.6.8-3.2 4.9z"/><path d="m12.4 13.1 3.6 6.4"/></svg><span>Mouse<small>Cursors and pointer settings</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
+        <dl class="tr-body"><dt>Reads</dt><dd>The cursor settings of Windows</dd><dt>Changes</dt><dd>The cursors, the cursor size and the pointer settings of Windows</dd><dt>To undo</dt><dd>Back to original, or uninstalling Bramble for the cursors</dd></dl>
+      </details>
+      <details class="tr-row">
+        <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/></svg><span>Sounds<small>Plays sounds, changes nothing</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
+        <dl class="tr-body"><dt>Reads</dt><dd>Windows events: lock, sleep, power, USB devices</dd><dt>Changes</dt><dd>Nothing: the Windows volume is never touched</dd><dt>To undo</dt><dd>Nothing to undo</dd></dl>
+      </details>
+      <details class="tr-row">
+        <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="12" rx="1.5"/><path d="M9 20h6M12 16.5V20"/></svg><span>Display<small>Screen, brightness and power</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
+        <dl class="tr-body"><dt>Reads</dt><dd>The screens, their brightness and the power settings</dd><dt>Changes</dt><dd>Warm screen through the accessibility color filter, which goes away with Bramble, brightness, the main screen, sleep delays and energy saver</dd><dt>To undo</dt><dd>Undo in the toast after each change</dd></dl>
+      </details>
+      <details class="tr-row">
+        <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><rect x="14" y="14" width="6" height="6" rx="1.2"/></svg><span>Arrange<small>Moves the desktop icons</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
+        <dl class="tr-body"><dt>Reads</dt><dd>The position and size of the desktop icons</dd><dt>Changes</dt><dd>Where the icons are, their size, and auto arrange and align to grid</dd><dt>To undo</dt><dd>Undo, Back to original or a saved arrangement</dd></dl>
+      </details>
+      <details class="tr-row">
+        <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19.5s-7.5-4.3-7.5-10A4.2 4.2 0 0 1 12 7a4.2 4.2 0 0 1 7.5 2.5c0 5.7-7.5 10-7.5 10z"/><path d="M7 12.5h2.5l1.5-2.5 2 4 1.5-1.5H17"/></svg><span>Health<small>Reads, changes nothing</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
+        <dl class="tr-body"><dt>Reads</dt><dd>Antivirus, firewall, Windows Update history, BitLocker, Secure Boot, account control, startup programs and load</dd><dt>Changes</dt><dd>Nothing: each button opens the right place in Windows</dd><dt>To undo</dt><dd>Nothing to undo</dd></dl>
+      </details>
+      <details class="tr-row">
+        <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M6.5 13h2.5l1.5-4 3 7 1.5-3h2.5"/></svg><span>Tasks<small>Closes programs only when asked</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
+        <dl class="tr-body"><dt>Reads</dt><dd>The running programs, their files, startup entries and connections</dd><dt>Changes</dt><dd>Closes a program when you click Close or Free up memory, after a warning</dd><dt>To undo</dt><dd>An app can be opened again</dd></dl>
+      </details>
+      <details class="tr-row">
+        <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/></svg><span>Folders<small>Sends a file to the Recycle Bin only when asked</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
+        <dl class="tr-body"><dt>Reads</dt><dd>The names and sizes of the files in the analyzed folder, and their content to find duplicates</dd><dt>Changes</dt><dd>Moves a file to the Recycle Bin after a confirming click</dd><dt>To undo</dt><dd>Undo for 8 seconds, then the Recycle Bin of Windows</dd></dl>
+      </details>
+      <details class="tr-row">
+        <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/><rect x="9.5" y="9.5" width="5" height="5" rx=".8"/><path d="M9.5 3.5v3M14.5 3.5v3M9.5 17.5v3M14.5 17.5v3M3.5 9.5h3M3.5 14.5h3M17.5 9.5h3M17.5 14.5h3"/></svg><span>Hardware<small>Reads, changes nothing</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
+        <dl class="tr-body"><dt>Reads</dt><dd>The parts of the PC and their load, without a driver</dd><dt>Changes</dt><dd>Nothing</dd><dt>To undo</dt><dd>Nothing to undo</dd></dl>
+      </details>
+      <details class="tr-row">
+        <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.2" r="1.1"/></svg><span>Network<small>Reads, tests only when asked</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
+        <dl class="tr-body"><dt>Reads</dt><dd>The network adapter, the Wi-Fi and the addresses</dd><dt>Changes</dt><dd>Nothing: the speed test reaches Cloudflare or OVH only when you run it</dd><dt>To undo</dt><dd>Nothing to undo</dd></dl>
+      </details>
+      <details class="tr-row">
+        <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.2M12 18.3v2.2M20.5 12h-2.2M5.7 12H3.5M18 6l-1.6 1.6M7.6 16.4 6 18M18 18l-1.6-1.6M7.6 7.6 6 6"/><circle cx="12" cy="12" r="6.3"/></svg><span>Settings<small>Start with Windows and the window</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
+        <dl class="tr-body"><dt>Reads</dt><dd>Its own settings file</dd><dt>Changes</dt><dd>Start with Windows when it is on, and the right-click menu of Icons</dd><dt>To undo</dt><dd>Turn the option off, or uninstall Bramble</dd></dl>
+      </details>
+    </div>
+
     <h2 class="settings-title">Data</h2>
     <div class="group">
       <button class="row action" id="folder-bramble"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/></svg><span>Bramble folder<small id="about-folder"></small></span></span><svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>

@@ -264,6 +264,15 @@ body[data-view="tasks"]:not(.sheet-open) .panel, body[data-view="modes"]:not(.mo
 .places > .row { position: relative; }
 .places > .row::before { content: ""; position: absolute; top: 0; left: 14px; right: 0; height: 1px; background: var(--hairline); }
 .places .caption small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tr-row > summary { list-style: none; cursor: pointer; }
+.tr-row > summary::-webkit-details-marker { display: none; }
+.tr-row > summary .chevron { transition: transform var(--fast), stroke var(--fast); }
+.tr-row[open] > summary .chevron { transform: rotate(90deg); }
+.tr-row:first-child > summary { border-radius: var(--radius-group) var(--radius-group) 0 0; }
+.tr-row:last-child:not([open]) > summary { border-radius: 0 0 var(--radius-group) var(--radius-group); }
+.tr-body { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; margin: 0; padding: 0 14px 14px 48px; font-size: 12.5px; }
+.tr-body dt { color: var(--text-pale); }
+.tr-body dd { margin: 0; color: var(--text-soft); line-height: 1.4; }
 
 .caption { display: flex; align-items: center; gap: 12px; min-width: 0; text-align: left; }
 .caption > span { display: block; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
