@@ -20,6 +20,7 @@ namespace Bramble
         const string Key = @"Control Panel\Cursors";
         const string SchemesKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Control Panel\Cursors\Schemes";
         const string LegacyScheme = "Bramble";
+        const string Flagship = "Bramble Glass";
 
         static readonly string[][] Roles =
         {
@@ -138,7 +139,7 @@ namespace Bramble
             var list = new List<Theme>();
 
             if (Directory.Exists(FolderThemes))
-                foreach (string folder in Directory.GetDirectories(FolderThemes).OrderBy(d => d))
+                foreach (string folder in Directory.GetDirectories(FolderThemes).OrderBy(d => Path.GetFileName(d) != Flagship).ThenBy(d => d))
                 {
                     var paths = Roles.Select(r =>
                     {

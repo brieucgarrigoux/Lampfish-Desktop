@@ -5,6 +5,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Changed
+- Mouse: Bramble Glass comes first among the Bramble cursor themes, in the library and in the Home panel.
+
 ## [0.3.0] - 2026-10-21
 
 ### Added
