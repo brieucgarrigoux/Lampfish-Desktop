@@ -95,13 +95,25 @@
     return bad.length ? tr(bad.length === 1 ? '1 thing slows this PC' : '{0} things slow this PC', bad.length) : tr('Nothing slows this PC');
   }
 
-  function badge(r) {
-    const level = r ? overall(r) : 'ok';
-    const b = document.createElement('span');
-    b.className = 'mood-badge security--' + LAMPS[level];
-    b.innerHTML = `<span class="mood-badge__face">${svg(FACES[level])}</span><span class="mood-badge__text"></span>`;
-    b.lastChild.textContent = r ? verdict(r) : tr('Checking');
-    return b;
+  function face(id, level) {
+    const mouth = { ok: 'M21.5 35.5Q32 46.5 42.5 35.5', warn: 'M22.5 39.5H41.5', bad: 'M21.5 43Q32 33 42.5 43' }[level];
+    return `<svg class="seal__shield seal__face" viewBox="0 0 64 64" aria-hidden="true"><defs><radialGradient id="${id}-body" cx=".38" cy=".32" r=".75"><stop offset="0" style="stop-color:var(--lamp-hi)"/><stop offset=".45" style="stop-color:var(--lamp)"/><stop offset="1" style="stop-color:var(--lamp-lo)"/></radialGradient>`
+      + `<linearGradient id="${id}-gloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>`
+      + `<filter id="${id}-shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="2.2" stdDeviation="2.2" flood-color="#000" flood-opacity=".8"/></filter><filter id="${id}-bloom" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter></defs>`
+      + `<circle cx="32" cy="32" r="22" style="fill:var(--lamp)" opacity=".55" filter="url(#${id}-bloom)"/><g filter="url(#${id}-shadow)"><circle cx="32" cy="32" r="22" fill="url(#${id}-body)"/>`
+      + `<circle cx="32" cy="32" r="21.3" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="1"/>`
+      + `<g fill="none" stroke="#000" stroke-opacity=".45" stroke-width="5" stroke-linecap="round" transform="translate(0 1.2)"><path d="M25.5 25v3.5M38.5 25v3.5"/><path d="${mouth}"/></g>`
+      + `<g fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"><path d="M25.5 25v3.5M38.5 25v3.5"/><path d="${mouth}"/></g>`
+      + `<path d="M15 26a17 13 0 0 1 34 0c-6 3-11 4-17 4s-11-1-17-4z" fill="url(#${id}-gloss)" opacity=".6"/></g></svg>`;
+  }
+
+  // How full each measure is, for its row of lights: what counts as a lot differs from one to the other.
+  const SCALES = { processor: 100, memory: 100, disk: 100, uptime: 14, startup: 20, free: 100, heat: 100 };
+  function fill(m) {
+    let v = parseFloat(String(m.value).replace(',', '.')) || 0;
+    if (m.id === 'uptime' && /h/.test(m.value)) v /= 24;
+    if (m.id === 'free') v = 100 - v;
+    return Math.max(0, Math.min(1, v / (SCALES[m.id] || 100)));
   }
 
   function renderSlow() {
@@ -110,9 +122,11 @@
     card.className = 'security health-card security--' + LAMPS[worst(report.slow)];
     const top = document.createElement('div');
     top.className = 'security__head';
-    const why = Object.assign(document.createElement('span'), { className: 'security__why health-why', textContent: tr('Processor, memory, disk, restarts, startup, space, energy and heat') });
+    top.innerHTML = `<span class="seal">${face('health-face', overall(report))}</span><div class="security__verdict"><span class="led-panel"><span class="led-text"></span></span><span class="security__why"></span></div>`;
+    top.querySelector('.led-text').textContent = verdict(report);
+    top.querySelector('.security__why').textContent = tr('Processor, memory, disk, restarts, startup, space, energy and heat');
     const screen = Object.assign(document.createElement('span'), { className: 't-memory__screen health-time', textContent: checking ? tr('Checking…') : tr('Checked at {0}', report.when) });
-    top.append(badge(report), why, screen);
+    top.append(screen);
     const parts = [top];
     if (bad.length) {
       const list = document.createElement('div');
@@ -124,11 +138,14 @@
     measures.className = 'health-measures';
     for (const m of report.measures || []) {
       const el = document.createElement('div');
-      el.className = 'health-measure check--' + state(m.level);
-      el.innerHTML = `<span class="health-measure__icon" role="img">${svg(ICONS[m.id] || ICONS.processor)}</span><span class="health-measure__name"></span><b></b>`;
-      el.firstChild.setAttribute('aria-label', tr(STATES[state(m.level)]));
+      el.className = 'health-measure check--' + state(m.level) + ' security--' + (LAMPS[m.level] || 'high');
+      el.innerHTML = `<span class="health-measure__head"><span class="health-measure__icon" role="img">${svg(ICONS[m.id] || ICONS.processor)}</span><span class="health-measure__name"></span></span>`
+        + '<span class="health-measure__screen"><b class="led-text"></b></span><span class="health-measure__lights" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>';
+      el.querySelector('.health-measure__icon').setAttribute('aria-label', tr(STATES[state(m.level)]));
       el.querySelector('.health-measure__name').textContent = tr(MEASURES[m.id] || m.id);
       el.querySelector('b').textContent = m.value;
+      const lit = Math.max(1, Math.round(fill(m) * 8));
+      [...el.querySelector('.health-measure__lights').children].forEach((i, k) => i.classList.toggle('on', k < lit));
       measures.append(el);
     }
     parts.push(measures);

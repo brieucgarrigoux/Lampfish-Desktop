@@ -260,7 +260,7 @@ function confirmReset(button, warning, run) {
     note.className = 'warning-note';
     note.setAttribute('role', 'alert');
     note.innerHTML = WARNING + '<span></span>';
-    note.querySelector('span').textContent = tr(typeof warning === 'function' ? warning() : warning) + ' ' + tr('Undo is offered for 8 seconds.');
+    note.querySelector('span').textContent = tr(typeof warning === 'function' ? warning() : warning);
     (button.closest('.group, .security__next') || button).after(note);
     timer = setTimeout(disarm, 6000);
   });
