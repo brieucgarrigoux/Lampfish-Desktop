@@ -403,6 +403,32 @@ namespace Bramble
             Program.Announce("Windows icons refreshed");
         }
 
+        static bool Inside(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return false;
+            path = Environment.ExpandEnvironmentVariables(path.Split(',')[0].Trim());
+            return path.StartsWith(Program.Root + "\\", StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static void Uninstall()
+        {
+            foreach (string folder in R.Customized.ToList())
+            {
+                if (!Directory.Exists(folder)) continue;
+                var icon = ReadIcon(folder);
+                if (icon == null || !Inside(icon.Item1)) continue;
+                string original = OriginalOf(folder);
+                Write(folder, Inside(original) ? null : original);
+                R.Customized.RemoveAll(d => string.Equals(d, folder, StringComparison.OrdinalIgnoreCase));
+            }
+            using (var command = Registry.CurrentUser.OpenSubKey(MenuKey + @"\command"))
+            {
+                string v = command == null ? null : command.GetValue("") as string;
+                if (v == null || v.IndexOf(System.Windows.Forms.Application.ExecutablePath, StringComparison.OrdinalIgnoreCase) < 0) return;
+            }
+            Registry.CurrentUser.DeleteSubKeyTree(MenuKey, false);
+        }
+
         static void ResetAll()
         {
             var list = R.Customized.ToList();

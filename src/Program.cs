@@ -103,6 +103,7 @@ namespace Bramble
         [STAThread]
         static void Main(string[] args)
         {
+            if (args.Contains("--uninstall")) { Uninstall(); return; }
             bool firstInstance;
             using (new Mutex(true, "Bramble.SingleInstance", out firstInstance))
             {
@@ -967,6 +968,57 @@ namespace Bramble
                 System.Runtime.InteropServices.Marshal.FinalReleaseComObject(shell);
             }
             catch (Exception ex) { Log(ex); }
+        }
+
+        static string ShortcutTarget(string lnk)
+        {
+            try
+            {
+                Type type = Type.GetTypeFromProgID("WScript.Shell");
+                object shell = Activator.CreateInstance(type);
+                object r = type.InvokeMember("CreateShortcut", System.Reflection.BindingFlags.InvokeMethod, null, shell, new object[] { lnk });
+                string target = r.GetType().InvokeMember("TargetPath", System.Reflection.BindingFlags.GetProperty, null, r, null) as string;
+                System.Runtime.InteropServices.Marshal.FinalReleaseComObject(r);
+                System.Runtime.InteropServices.Marshal.FinalReleaseComObject(shell);
+                return target ?? "";
+            }
+            catch (Exception ex) { Log(ex); return ""; }
+        }
+
+        static void Uninstall()
+        {
+            string exe = Application.ExecutablePath;
+            foreach (var p in Process.GetProcessesByName("Bramble"))
+                using (p)
+                {
+                    string path;
+                    try { path = p.MainModule.FileName; } catch { continue; }
+                    if (p.Id == Process.GetCurrentProcess().Id || !path.Equals(exe, StringComparison.OrdinalIgnoreCase)) continue;
+                    try { File.WriteAllText(RequestFile, "::quit"); } catch { }
+                    EventWaitHandle signal;
+                    if (EventWaitHandle.TryOpenExisting(OpenSignal, out signal)) signal.Set();
+                    if (!p.WaitForExit(15000)) try { p.Kill(); p.WaitForExit(5000); } catch (Exception ex) { Log(ex); }
+                }
+
+            Load();
+            try { Mouse.Uninstall(); } catch (Exception ex) { Log(ex); }
+            try { Icons.Uninstall(); } catch (Exception ex) { Log(ex); }
+            try
+            {
+                using (var key = Registry.CurrentUser.OpenSubKey(StartupKey, true))
+                {
+                    string v = key == null ? null : key.GetValue("Bramble") as string;
+                    if (v != null && v.IndexOf(exe, StringComparison.OrdinalIgnoreCase) >= 0) key.DeleteValue("Bramble", false);
+                }
+            }
+            catch (Exception ex) { Log(ex); }
+            foreach (var folder in new[] { Environment.SpecialFolder.DesktopDirectory, Environment.SpecialFolder.Programs })
+            {
+                string lnk = Path.Combine(Environment.GetFolderPath(folder), "Bramble.lnk");
+                if (File.Exists(lnk) && ShortcutTarget(lnk).Equals(exe, StringComparison.OrdinalIgnoreCase))
+                    try { File.Delete(lnk); } catch (Exception ex) { Log(ex); }
+            }
+            Save();
         }
 
         public static void UpdateMenu() { Tray.Update(); }

@@ -307,6 +307,37 @@ namespace Bramble
             return path.StartsWith(FolderThemes + "\\", StringComparison.OrdinalIgnoreCase) || path.StartsWith(CustomFolder + "\\", StringComparison.OrdinalIgnoreCase);
         }
 
+        public static void Uninstall()
+        {
+            var now = Capture();
+            if (now.Roles.Values.Any(Ours))
+            {
+                var original = Program.R.CursorsOriginal;
+                bool usable = original != null && original.Roles != null && !original.Roles.Values.Any(Ours);
+                string[] fallback = Aero() ?? new string[0];
+                using (var key = Registry.CurrentUser.CreateSubKey(Key))
+                {
+                    for (int i = 0; i < Roles.Length; i++)
+                    {
+                        string kept;
+                        string v = !usable ? (i < fallback.Length ? fallback[i] : "") : original.Roles.TryGetValue(Roles[i][0], out kept) && kept != null ? kept : "";
+                        key.SetValue(Roles[i][0], v, RegistryValueKind.ExpandString);
+                    }
+                    string scheme = usable ? original.Scheme : fallback.Length > 0 ? "Windows Aero" : null;
+                    if (scheme != null) key.SetValue("", scheme); else key.DeleteValue("", false);
+                    key.SetValue("Scheme Source", usable ? original.Source : 2, RegistryValueKind.DWord);
+                }
+                Reload();
+            }
+            using (var schemes = Registry.CurrentUser.OpenSubKey(Key + @"\Schemes", true))
+                if (schemes != null)
+                    foreach (string name in schemes.GetValueNames())
+                    {
+                        string row = schemes.GetValue(name, null, RegistryValueOptions.DoNotExpandEnvironmentNames) as string;
+                        if (row != null && row.Split(',').Any(Ours)) schemes.DeleteValue(name, false);
+                    }
+        }
+
         static void Remember()
         {
             if (Program.R.CursorsOriginal != null) return;
