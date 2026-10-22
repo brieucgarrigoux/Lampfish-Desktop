@@ -43,12 +43,10 @@ The interface is in English, with a French translation (automatic, following the
 
 ## Install
 
-<img src="brand/app-icon/app-icon-violet.png" alt="Bramble icon" width="56" align="left" hspace="12">Download `Bramble-Setup-<version>.exe` from the [latest release](../../releases/latest) and run it. It installs Bramble for your account only, without administrator rights, in `%LOCALAPPDATA%\Programs\Bramble`.
+Download `Bramble-Setup-<version>.exe` from the [latest release](../../releases/latest) and run it. It installs Bramble for your account only, without administrator rights, in `%LOCALAPPDATA%\Programs\Bramble`.
 The installer is not signed yet: Windows SmartScreen may ask for confirmation the first time ("More info", then "Run anyway").
 
 New versions install from Settings > Updates, keeping your settings. To uninstall, use Settings > Apps > Installed apps in Windows: Bramble first puts back the cursors, folder icons and right-click menu it changed, then asks whether to keep your settings and files.
-
-<br clear="left">
 
 ## Build from source
 
