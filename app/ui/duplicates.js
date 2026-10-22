@@ -71,6 +71,8 @@
     go.dataset.state = busy ? 'progress' : 'ready';
     go.innerHTML = '<span class="dome"><svg class="i-ready" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 4.5a6 6 0 1 1 0 12 6 6 0 0 1 0-12zM15 15l5 5"/></svg><svg class="i-progress" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 1 1-8.5 8.5"/></svg></span><span></span>';
     go.lastChild.textContent = tr(busy ? 'Stop' : done ? 'Search again' : 'Search');
+    // The card is redrawn at each step of the search: the turning ring keeps its phase instead of starting over.
+    go.querySelector('.i-progress').style.animationDelay = -(performance.now() % 900) + 'ms';
     go.addEventListener('click', () => send(busy ? 'duplicates.stop' : 'duplicates.run'));
     keys.append(go);
     parts.push(next);

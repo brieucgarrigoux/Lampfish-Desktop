@@ -20,6 +20,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Fixed
 - Sounds: Reset everything turned on the dock sounds. Only the sound of the speed test is on by default.
 - Home: HTML wallpapers filled a quarter of their thumbnail in the side panel.
+- Duplicates: the ring of the Search button turned in jerks during a search.
 - Health: a program turned off in Startup could switch back on while Health was still reading the PC, and needed a second click.
 - Main screen: the desktop icons are placed once Windows has finished moving them, and put back if Windows moves them again. Layouts saved with other screens keep their positions, and the automatic restore of a layout no longer pulls the icons back to the old main screen.
 - Home: in a narrow window, the weather kept its details and fell on a line of its own.
