@@ -453,6 +453,7 @@
   }
 
   const RECIPE = {
+    mouse: '<path d="M6 3.5 18 12.3l-5.6.8-3.2 4.9z"/><path d="m12.4 13.1 3.6 6.4"/>',
     wave: '<path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/>',
     play: '<path d="M8.5 5.8v12.4a.8.8 0 0 0 1.2.7l9.6-6.2a.8.8 0 0 0 0-1.4L9.7 5.1a.8.8 0 0 0-1.2.7z"/>',
     clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
@@ -467,22 +468,13 @@
   // The steps are drawn with what is set up right now: this wallpaper, this cursor, as one theme brought back by a trigger.
   function renderSteps() {
     const zone = $('mood-help'), s = Bramble.state || {};
-    const arrow = s.mouse && s.mouse.roles ? s.mouse.roles.find(r => r.id === 'Arrow') : null, look = arrow && arrow.preview;
-    const key = [s.current, s.light, s.speed, s.blur, s.saturation, s.dim, look && look.key, LANGUAGE].join('|');
+    const key = [s.current, s.light, s.speed, s.blur, s.saturation, s.dim, LANGUAGE].join('|');
     if (zone.dataset.key === key && zone.children.length) return;
     zone.dataset.key = key;
     const now = { wallpaper: s.current, light: s.light, speed: s.speed, blur: s.blur, saturation: s.saturation, dim: s.dim };
     const piece = (path, cls) => { const p = el('span', 'recipe__piece' + (cls ? ' ' + cls : '')); p.insertAdjacentHTML('beforeend', svg(path)); return p; };
     const setup = el('div', 'recipe__visual');
-    const cursor = el('span', 'recipe__piece');
-    if (look) {
-      const img = el('img', 'recipe__cursor');
-      img.alt = '';
-      img.src = `/app/cursor-cache/${encodeURIComponent(look.key)}-32.png`;
-      img.classList.toggle('retro', !!look.retro);
-      cursor.append(img);
-    } else cursor.insertAdjacentHTML('beforeend', svg('<path d="M6 3.5 18 12.3l-5.6.8-3.2 4.9z"/>'));
-    setup.append(cover(now, el('div')), el('span', 'recipe__plus', '+'), cursor, el('span', 'recipe__plus', '+'), piece(RECIPE.wave));
+    setup.append(cover(now, el('div')), el('span', 'recipe__plus', '+'), piece(RECIPE.mouse), el('span', 'recipe__plus', '+'), piece(RECIPE.wave));
     const card = el('div', 'recipe__card');
     const name = el('span', 'recipe__name');
     name.insertAdjacentHTML('beforeend', icon('moon'));

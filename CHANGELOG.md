@@ -14,6 +14,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Home keeps three columns in a laptop window and uses more of a large screen.
 - Network: how far the network can be trusted shows only in the Security card, no longer also at the top.
 - Display: a click on a screen of the map makes it the main screen, as in Arrange.
+- Themes: the three steps are drawn larger, with a plain mouse instead of the cursor in use.
 - Home: in a narrow window, the wallpaper controls sit in one row beside the preview, and two columns put them under it.
 
 ### Fixed
