@@ -11,7 +11,7 @@
   <a href="CHANGELOG.md">Changelog</a>
 </p>
 
-Bramble lives in the system tray and gathers wallpapers, icons, cursors, sounds, desktop layout, disk usage, network, hardware and running programs in a single app, instead of a patchwork of separate tools. It needs no administrator rights, no account and no server, and it collects no data: everything stays on your PC. Settings list the few outside services it calls (weather, connection test, update check) and when.
+Bramble lives in the system tray and brings together wallpapers, icons, cursors, sounds, desktop layout, the health of the PC, disk usage, network, hardware and running programs. It needs no administrator rights, no account and no server, and it collects no data: everything stays on the PC. Settings list the few outside services it calls (weather, connection test, update check) and when.
 
 ## Services
 
@@ -21,12 +21,14 @@ Bramble lives in the system tray and gathers wallpapers, icons, cursors, sounds,
 | **Themes** | Each theme shows its own wallpaper, dimmed as on the desktop, with its icon, cursors, sounds and triggers, and can warm the screen. Puts back a wallpaper, cursors and sounds in one click, or by itself: at a set time, with a set number of screens, on mains power or battery, when an app opens or when headphones are plugged in (the previous setup comes back when the app closes or the headphones are removed). A theme can also open apps or files, and can be exported and imported. |
 | **Wallpaper** | Animated wallpapers behind the desktop icons, one for every screen or one per screen: videos, GIFs, animated images, HTML pages, optionally pulsing with the sound playing, with fades, a slideshow that can shuffle and a frame rate choice. Pauses on battery, when a window covers the screen or while the session is locked. |
 | **Create** | Builds a wallpaper from your logo and background: themes, particles, glow, a sound reaction and a live preview with snap guides where the logo and the text are placed, typed and resized. Made wallpapers can be edited again. |
-| **Display** | A map of your screens to choose the main one, a warm screen for the evening, a link to the Night light of Windows, when the screen turns off and the PC sleeps (plugged in and on battery) and the energy saver on battery. |
+| **Display** | A map of your screens to choose the main one, dark mode, a warm screen for the evening, a link to the Night light of Windows, when the screen turns off and the PC sleeps (plugged in and on battery) and the energy saver on battery. |
 | **Icons** | Gives any folder an icon from the Windows library (sorted retro pixel / modern) or your own, from the app or the right-click menu, with a way back to the icon it had before. |
 | **Mouse** | Cursor themes (including original pixel-art themes and a smooth, lightly animated one) sorted by family, any single cursor for a role, per-role cursors saved as your own themes, pointer size, speed, double-click, wheel and extras, with a way back to the mouse you had before. |
-| **Sounds** | A sound for thirteen system events (startup, lock, sleep, charger, USB devices, docking station, speed test), with a sound library, loudness matching and import. |
+| **Sounds** | A sound for thirteen system events (startup, lock, sleep, charger, USB devices, docking station, speed test), with a sound library, loudness matching and import, and the volume and microphone of Windows. |
 | **Arrange** | A live map of your screens (one, two, three or more) to sort and lay out desktop icons in eight even arrangements, five icon sizes, undo, a way back to the original layout, your own saved arrangements, and layouts saved per screen setup. |
-| **Folders** | What takes up space on a drive, as rings (in the spirit of DaisyDisk), without administrator rights. |
+| **Health** | Why the PC is slow, in plain words with the button that helps, a security check (antivirus, firewall, updates, encryption) and the programs that start with Windows, each with a switch. |
+| **Folders** | What takes up space on a drive, as rings (in the spirit of DaisyDisk), without administrator rights, and whether File Explorer shows file extensions and hidden files. |
+| **Duplicates** | Files stored twice, compared byte for byte, with the copies that are safe to clean ticked, a summary before anything goes to the Recycle Bin, and Restore. |
 | **Network** | Connection details, live traffic, a security check of the connection, and a speed test with jitter, loaded latency (graded A to F) and history. |
 | **Tasks** | What is running, grouped by program with its icon, publisher, memory and processor use, sorted into apps, command-line, background and system programs, with a search and a sheet per program (version, location, start with Windows, open connections). Ends a program on request, and a Memory card shows what closing the programs not in use would free, then closes what you tick. |
 | **Hardware** | Processor, memory, graphics, storage, battery, screens, temperature and connected devices, read live, with a plain-language health summary and a summary to copy. |
