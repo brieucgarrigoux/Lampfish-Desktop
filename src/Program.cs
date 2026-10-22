@@ -369,7 +369,7 @@ namespace Bramble
 
             if (screens.Count > 0)
             {
-                if (!Desktop.Valid() && Desktop.Recover()) Desktop.ArrangeWallpaperWindows();
+                if (!Desktop.Valid() && Desktop.Recover()) { Desktop.ArrangeWallpaperWindows(); Log(new Exception("Desktop window replaced by Windows, wallpapers moved back")); }
                 bool lost = !Desktop.Valid();
                 missing = lost ? missing + 1 : 0;
                 var dead = screens.FirstOrDefault(f => !f.Alive);

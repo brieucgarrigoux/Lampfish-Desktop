@@ -74,7 +74,7 @@ namespace Bramble
             view.CoreWebView2.ProcessFailed += (s, e) =>
             {
                 if (e.ProcessFailedKind == CoreWebView2ProcessFailedKind.BrowserProcessExited) Program.BrowserCrashed();
-                else if (IsRender(e.ProcessFailedKind)) BeginInvoke(new Action(() => { if (!IsDisposed && view.CoreWebView2 != null) view.CoreWebView2.Reload(); }));
+                else if (IsRender(e.ProcessFailedKind)) { Program.Log(new Exception("Wallpaper renderer stopped (" + e.ProcessFailedKind + "), reloaded")); BeginInvoke(new Action(() => { if (!IsDisposed && view.CoreWebView2 != null) view.CoreWebView2.Reload(); })); }
             };
         }
 
