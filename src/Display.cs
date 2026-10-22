@@ -58,7 +58,7 @@ namespace Bramble
 
         // The main screen is the one whose desktop starts at 0,0. The display configuration API moves every screen in one atomic change;
         // ChangeDisplaySettingsEx moved them one by one and Windows refused the first step with a laptop at 125 % and a screen at 100 %.
-        static bool SetPrimary(string device)
+        static bool SetPrimary(string device, string before)
         {
             uint pathCount, modeCount;
             if (GetDisplayConfigBufferSizes(QDC_ONLY_ACTIVE_PATHS, out pathCount, out modeCount) != 0) return false;
@@ -77,22 +77,38 @@ namespace Bramble
             for (int i = 0; i < modeCount; i++)
                 if (modes[i].infoType == DISPLAYCONFIG_MODE_INFO_TYPE_SOURCE) { modes[i].positionX -= dx; modes[i].positionY -= dy; }
             if (SetDisplayConfig(pathCount, paths, modeCount, modes, SDC_APPLY | SDC_USE_SUPPLIED_DISPLAY_CONFIG | SDC_SAVE_TO_DATABASE | SDC_ALLOW_CHANGES) != 0) return false;
-            Program.ScreensMoved(-dx, -dy);
+            Program.ScreensMoved(-dx, -dy, before);
             return true;
         }
 
-        // The desktop icons are read before the switch and moved once Windows has resized the desktop.
+        // The desktop icons are read before the switch and moved once Explorer has settled. Between two screens of different scales,
+        // Explorer resizes the desktop and moves the icons by itself, sometimes well after the 1.5 s that used to be waited, and once
+        // more after they are placed: the icons are then put back a second time.
         static bool Switch(string from, string to)
         {
+            string before = Arrange.Signature();
             var follow = Arrange.FollowPrimary(from, to);
-            if (!SetPrimary(to)) return false;
+            if (!SetPrimary(to, before)) return false;
             if (follow == null) return true;
-            var timer = new System.Windows.Forms.Timer { Interval = 1500 };
-            timer.Tick += (s, e) =>
+            Action run = () =>
             {
-                timer.Dispose();
                 try { follow(); Program.SendState(); }
                 catch (Exception ex) { Program.Log(ex); }
+            };
+            var timer = new System.Windows.Forms.Timer { Interval = 300 };
+            string seen = null;
+            int ticks = 0, still = 0;
+            timer.Tick += (s, e) =>
+            {
+                string now = Arrange.Fingerprint();
+                still = now == seen ? still + 1 : 0;
+                seen = now;
+                if (++ticks < 4 || (still < 3 && ticks < 27)) return;
+                timer.Dispose();
+                run();
+                var again = new System.Windows.Forms.Timer { Interval = 1500 };
+                again.Tick += (s2, e2) => { again.Dispose(); run(); };
+                again.Start();
             };
             timer.Start();
             return true;

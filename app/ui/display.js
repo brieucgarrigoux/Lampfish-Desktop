@@ -113,8 +113,13 @@ const Quick = (() => {
       b.innerHTML = '<b></b><span></span>';
       b.firstChild.textContent = s.n;
       b.lastChild.textContent = s.primary ? tr('Main') : '';
-      b.title = name(s);
-      b.addEventListener('click', () => { chosen = s.key; renderMap(); renderChosen(); });
+      b.title = s.primary || list.length < 2 ? name(s) : name(s) + '\n' + tr('Click to make it the main screen, the icons follow');
+      b.addEventListener('click', () => {
+        chosen = s.key;
+        if (!s.primary && list.length > 1) { list.forEach(x => { x.primary = x === s; }); makeMain(s); }
+        renderMap();
+        renderChosen();
+      });
       stage.append(b);
     }
     zone.replaceChildren(stage);
@@ -126,17 +131,14 @@ const Quick = (() => {
     $('d-name').textContent = name(s);
     $('d-specs').textContent = [`${s.w} × ${s.h}`, s.scale + ' %', s.hz ? s.hz + ' Hz' : '', s.inches ? tr('{0} in', s.inches.toLocaleString(LOCALE)) : '', s.port].filter(Boolean).join(' · ');
     $('d-main').hidden = !s.primary;
-    $('d-primary').hidden = s.primary || screens.length < 2;
-    $('d-help').textContent = screens.length < 2 ? tr('With a second screen plugged in, Bramble can choose which one is the main screen') : tr('The main screen shows the Start menu and opens new windows');
+    $('d-help').textContent = screens.length < 2 ? tr('With a second screen plugged in, Bramble can choose which one is the main screen') : tr('A click on a screen makes it the main screen, which shows the Start menu and opens new windows');
   }
 
-  $('d-primary').addEventListener('click', () => {
-    const s = (screens || []).find(x => x.key === chosen);
-    if (!s || s.primary) return;
+  function makeMain(s) {
     send('display.primary', { key: s.key });
     clearTimeout(later);
     later = setTimeout(() => send('display.screens'), 1500);
-  });
+  }
 
   function state() {
     const e = Bramble.state;

@@ -455,12 +455,13 @@ namespace Bramble
         public static string ScreenKey(Rectangle b) { return b.Width + "x" + b.Height + "@" + b.X + "," + b.Y; }
 
         // A wallpaper chosen for one screen is known by the screen's place, and changing the main screen moves every screen.
-        public static void ScreensMoved(int dx, int dy)
+        public static void ScreensMoved(int dx, int dy, string before)
         {
+            var screens = new HashSet<string>((before ?? "").Split('|'));
             Action<List<ScreenWallpaper>> shift = list =>
             {
                 if (list == null) return;
-                foreach (var w in list)
+                foreach (var w in list.Where(x => screens.Contains(x.Key ?? "")))
                 {
                     var m = System.Text.RegularExpressions.Regex.Match(w.Key ?? "", @"^(\d+x\d+)@(-?\d+),(-?\d+)$");
                     if (m.Success) w.Key = m.Groups[1].Value + "@" + (int.Parse(m.Groups[2].Value) + dx) + "," + (int.Parse(m.Groups[3].Value) + dy);
@@ -468,7 +469,7 @@ namespace Bramble
             };
             shift(R.ScreenWallpapers);
             foreach (var mood in R.Moods) shift(mood.ScreenWallpapers);
-            Arrange.Moved(dx, dy);
+            Arrange.Moved(dx, dy, before);
             Save();
         }
 

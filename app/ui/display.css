@@ -14,6 +14,6 @@
 .d-help { margin: 0 2px 12px; }
 .d-chosen .caption > span { min-width: 0; }
 .d-badge { flex: none; padding: 3px 9px; border-radius: 99px; background: var(--accent-dim); color: var(--accent); font-size: var(--text-badge); font-weight: 600; }
-.d-badge[hidden], #d-primary[hidden] { display: none; }
+.d-badge[hidden] { display: none; }
 .d-pair { flex: none; display: flex; gap: 8px; }
 .view--display .setting:has(input:disabled) { opacity: .4; }

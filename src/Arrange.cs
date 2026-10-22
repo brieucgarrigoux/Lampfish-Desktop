@@ -59,7 +59,7 @@ namespace Bramble
             return Screen.AllScreens.OrderBy(s => s.Bounds.X).ThenBy(s => s.Bounds.Y).ToList();
         }
 
-        static string Signature()
+        public static string Signature()
         {
             return string.Join("|", Screens().Select(s => s.Bounds.Width + "x" + s.Bounds.Height + "@" + s.Bounds.X + "," + s.Bounds.Y));
         }
@@ -601,6 +601,13 @@ namespace Bramble
             return 1;
         }
 
+        // Changes while Explorer is still resizing the desktop or moving the icons after a change of screens.
+        public static string Fingerprint()
+        {
+            try { return DesktopIcons.Case() + " " + string.Join(";", Capture().Select(p => p.X + "," + p.Y)); }
+            catch { return ""; }
+        }
+
         static List<IconPosition> Capture()
         {
             return DesktopIcons.List(false).Select(e => new IconPosition { Id = e.Id, X = e.Position.X, Y = e.Position.Y }).ToList();
@@ -694,7 +701,7 @@ namespace Bramble
         }
 
         // The desktop icons follow the main screen: read before the change, the returned action puts the icons of the old main screen
-        // on the new one cell for cell, and the reverse. An arrangement made by Bramble is simply made again on the new main screen.
+        // on the new one cell for cell, and the reverse. An arrangement made by Bramble is made again on the new main screen.
         public static Action FollowPrimary(string from, string to)
         {
             try
@@ -710,9 +717,11 @@ namespace Bramble
                     var s = Screen.AllScreens.FirstOrDefault(x => x.Bounds.Contains(p.X, p.Y)) ?? Screen.PrimaryScreen;
                     cells.Add(Tuple.Create(p.Id, s.DeviceName, new Grid(s.WorkingArea, c, Scale(s), iconSize).Cell(new Point(p.X, p.Y))));
                 }
+                List<IconPosition> done = null;
                 return () =>
                 {
-                    if (placed) { Sort(R.LastSort); return; }
+                    if (done != null) { if (!Same(Capture(), done)) Apply(done); return; }
+                    if (placed) { Sort(R.LastSort); done = Capture(); return; }
                     var grids = Screen.AllScreens.ToDictionary(s => s.DeviceName, s => new Grid(s.WorkingArea, DesktopIcons.Case(), Scale(s), DesktopIcons.IconSize()));
                     var positions = new Dictionary<string, Point>();
                     foreach (var t in cells)
@@ -725,13 +734,15 @@ namespace Bramble
                         positions[t.Item1] = g.Pixel(cell);
                     }
                     Place(positions);
+                    done = Capture();
                 };
             }
             catch (Exception ex) { Program.Log(ex); return null; }
         }
 
-        // Saved positions are desktop coordinates, which all move when the main screen changes.
-        public static void Moved(int dx, int dy)
+        // Saved positions are desktop coordinates, which all move when the main screen changes. A layout saved with other screens
+        // keeps its coordinates: they were made with another main screen and still match those screens when they come back.
+        public static void Moved(int dx, int dy, string before)
         {
             Action<List<IconPosition>> shift = list => { if (list != null) foreach (var p in list) { p.X += dx; p.Y += dy; } };
             Func<string, string> sign = s => s == null ? null : string.Join("|", s.Split('|').Select(part =>
@@ -739,11 +750,15 @@ namespace Bramble
                 var m = System.Text.RegularExpressions.Regex.Match(part, @"^(\d+x\d+)@(-?\d+),(-?\d+)$");
                 return m.Success ? m.Groups[1].Value + "@" + (int.Parse(m.Groups[2].Value) + dx) + "," + (int.Parse(m.Groups[3].Value) + dy) : part;
             }));
-            foreach (var d in R.Layouts) { shift(d.Positions); d.Screens = sign(d.Screens); }
-            shift(R.BeforeAuto); shift(R.Original); shift(R.Placed);
+            foreach (var d in R.Layouts.Where(x => x.Screens == before)) { shift(d.Positions); d.Screens = sign(d.Screens); }
+            if (R.BeforeAutoScreens == null || R.BeforeAutoScreens == before) { shift(R.BeforeAuto); R.BeforeAutoScreens = sign(R.BeforeAutoScreens); }
+            shift(R.Original); shift(R.Placed);
             foreach (var h in R.History) shift(h);
-            R.BeforeAutoScreens = sign(R.BeforeAutoScreens);
+            switched = sign(before);
         }
+
+        // The screens a change of main screen leads to: the icons follow the main screen there, a saved layout must not pull them back.
+        static string switched;
 
         public static void ScreensChanged()
         {
@@ -753,6 +768,8 @@ namespace Bramble
         static void RestoreByScreens()
         {
             string signature = Signature();
+            if (signature == switched) { switched = null; return; }
+            switched = null;
             var d = R.Layouts.LastOrDefault(x => x.Screens == signature);
             if (d == null) return;
             try
