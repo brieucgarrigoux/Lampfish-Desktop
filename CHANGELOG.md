@@ -6,6 +6,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Changed
+- Home: the face and the shield each have their own bubble, and the shield opens Protection.
 - Health: when the PC is too hot, the finding names the program that uses the processor the most, with Tasks, or offers to choose the power mode.
 - Health: the Processor measure names the program that uses it the most.
 

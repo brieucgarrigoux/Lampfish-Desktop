@@ -32,9 +32,10 @@
 }
 @container health (max-width: 560px) { .health-measures { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @container health (max-width: 460px) { .health-startup__foot { flex-direction: column; align-items: stretch; } }
-.h-health { margin-left: auto; display: flex; align-items: center; gap: 8px; padding: 0; border: 0; background: none; cursor: pointer; transition: filter var(--fast), transform var(--fast); }
-.h-health:hover { filter: brightness(1.1); }
-.h-health:active { transform: scale(.98); }
+.h-health { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.h-health__seal { display: block; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; transition: filter var(--fast), transform var(--fast); }
+.h-health__seal:hover { filter: brightness(1.1); }
+.h-health__seal:active { transform: scale(.96); }
 .seal--small { width: 44px; height: 44px; }
 .seal--small::before, .seal--small::after { inset: 4px; }
 .seal.seal--small .seal__face { width: 36px; height: 36px; }

@@ -364,14 +364,15 @@
     const b = $('h-health');
     b.hidden = !h;
     if (!h) return;
-    const [face, shield] = b.querySelectorAll('.seal');
+    const [faceButton, shieldButton] = b.querySelectorAll('.h-health__seal'), face = faceButton.firstChild, shield = shieldButton.firstChild;
     face.className = 'seal seal--small security--' + LAMPS[h.level];
     shield.className = 'seal seal--small security--' + LAMPS[h.protectionLevel];
     if (face.dataset.level !== h.level) { face.dataset.level = h.level; face.innerHTML = faceLight('home-face', LAMPS[h.level]); }
     if (shield.dataset.level !== h.protectionLevel) { shield.dataset.level = h.protectionLevel; shield.innerHTML = shieldLight('home-shield', LAMPS[h.protectionLevel]); }
-    details(b, { title: tr('Health'), lines: [[tr('Speed'), h.text], [tr('Protection'), h.protection]] });
+    details(faceButton, { title: tr('Speed'), lines: [[tr('Status'), h.text]] });
+    details(shieldButton, { title: tr('Protection'), lines: [[tr('Status'), h.protection]] });
   }
-  $('h-health').addEventListener('click', () => showView('health'));
+  for (const b of $('h-health').querySelectorAll('.h-health__seal')) b.addEventListener('click', () => { showView('health'); const card = $(b.dataset.to); if (card) card.scrollIntoView({ block: 'start' }); });
 
   function event(m) {
     if (m.type === 'home.weather') { weather = m; renderWeather(); return; }

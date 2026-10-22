@@ -99,7 +99,7 @@
   <section class="view view--home only-home" aria-label="Home">
     <div class="home-header">
       <div class="h-clock"><span class="h-time" id="h-time"></span><span class="h-date" id="h-date"></span></div>
-      <button class="h-health" id="h-health" hidden><span class="seal seal--small"></span><span class="seal seal--small"></span></button>
+      <div class="h-health" id="h-health" hidden><button type="button" class="h-health__seal" data-to="health-slow"><span class="seal seal--small"></span></button><button type="button" class="h-health__seal" data-to="health-radar"><span class="seal seal--small"></span></button></div>
       <div class="h-weather" id="h-weather" hidden>
         <svg class="h-weather__icon" id="h-weather-icon" viewBox="0 0 48 48" aria-hidden="true"></svg>
         <div class="h-weather__text"><span class="h-weather__temp" id="h-weather-temp"></span><span class="h-weather__what" id="h-weather-what"></span></div>
