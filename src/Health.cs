@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -15,7 +15,7 @@ namespace Bramble
         class Check { public string Id, Level = "unknown", Value, Detail, Action; }
         class Finding { public string Level, Title, Detail, Action, Icon, Verdict, Cause; }
 
-        static bool running;
+        static bool running, stale;
         static object last;
         static DateTime when = DateTime.MinValue;
 
@@ -28,6 +28,7 @@ namespace Bramble
             { "saver", "ms-settings:batterysaver" },
             { "encryption", "control.exe /name Microsoft.BitLockerDriveEncryption" },
             { "uac", "UserAccountControlSettings.exe" },
+            { "power", "ms-settings:powersleep" },
         };
 
         public static bool Receive(string action, Dictionary<string, object> m)
@@ -67,8 +68,9 @@ namespace Bramble
         // Shell.Application (BitLocker state) and the Windows Update agent are COM objects that expect a single-threaded apartment.
         static void Scan()
         {
-            if (running) return;
+            if (running) { stale = true; return; }
             running = true;
+            stale = false;
             Program.Send(new { type = "health.scanning" });
             var thread = new Thread(() =>
             {
@@ -78,6 +80,8 @@ namespace Bramble
                 Program.OnInterface(() =>
                 {
                     running = false;
+                    // A switch changed while Windows was being read: this report already shows the old state.
+                    if (stale) { Scan(); return; }
                     last = report;
                     when = DateTime.Now;
                     Program.Send(report);
@@ -386,6 +390,7 @@ namespace Bramble
                 if (!on) BitConverter.GetBytes(DateTime.UtcNow.ToFileTimeUtc()).CopyTo(data, 4);
                 key.SetValue(parts[2], data, RegistryValueKind.Binary);
             }
+            last = null;
             return true;
         }
 
@@ -405,9 +410,15 @@ namespace Bramble
             cpu.Dispose();
             idle.Dispose();
 
+            int self;
+            using (var current = Process.GetCurrentProcess()) self = current.Id;
+            var busiest = after.Where(p => p.Key != self && before.ContainsKey(p.Key))
+                .GroupBy(p => p.Value.Item1, StringComparer.OrdinalIgnoreCase)
+                .Select(g => new { id = g.First().Key, name = g.Key, share = g.Sum(p => (p.Value.Item2 - before[p.Key].Item2) / (15.0 * Environment.ProcessorCount)) })
+                .OrderByDescending(p => p.share).FirstOrDefault();
+            string top = busiest != null ? Tasks.NameOf(busiest.id, busiest.name) : null;
             if (processor >= 80)
             {
-                string top = after.Where(p => before.ContainsKey(p.Key)).OrderByDescending(p => p.Value.Item2 - before[p.Key].Item2).Select(p => p.Value.Item1).FirstOrDefault();
                 list.Add(new Finding { Icon = "processor", Level = processor >= 95 ? "bad" : "warn", Title = top == null ? Language.T("Processor {0} % busy", Math.Round(processor)) : Language.T("Processor {0} % busy, mostly {1}", Math.Round(processor), top), Detail = Language.T("Every other program waits its turn"), Action = "view:tasks",
                     Verdict = Language.T("The processor is overloaded"), Cause = Language.T("the processor") });
             }
@@ -419,7 +430,7 @@ namespace Bramble
                     Verdict = Language.T("Memory is almost full"), Cause = Language.T("memory") });
 
             double days = GetTickCount64() / 86400000.0;
-            measures.Add(new { id = "processor", value = Math.Round(processor) + " %", level = Level(processor, 80, 95) });
+            measures.Add(new { id = "processor", value = Math.Round(processor) + " %", level = Level(processor, 80, 95), top, topShare = busiest != null ? Math.Max(0, Math.Round(busiest.share)) : 0 });
             measures.Add(new { id = "memory", value = Math.Round(memory) + " %", level = Level(memory, 75, 85) });
             measures.Add(new { id = "disk", value = Math.Round(disk) + " %", level = Level(disk, 90, 101) });
             measures.Add(new { id = "uptime", value = days >= 1 ? Language.T("{0} d", (int)days) : Language.T("{0} h", (int)(days * 24)), level = Level(days, 7, double.MaxValue) });
@@ -460,6 +471,14 @@ namespace Bramble
                 }
             }
             catch (Exception ex) { Program.Log(ex); }
+
+            var heat = list.FirstOrDefault(f => f.Icon == "heat");
+            if (heat != null)
+            {
+                bool program = busiest != null && busiest.share >= 15;
+                heat.Detail = program ? Language.T("{0} uses the processor the most: closing it cools the PC down", top) : Language.T("A quieter power mode cools the PC down, and its vents need room");
+                heat.Action = program ? "view:tasks" : "power";
+            }
 
             return list;
         }

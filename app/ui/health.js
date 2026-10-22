@@ -1,7 +1,7 @@
 'use strict';
 
 (function () {
-  let report = null, shown = false, checking = false;
+  let report = null, shown = false, checking = false, toggled = {};
   const TITLES = {
     antivirus: 'Antivirus', firewall: 'Firewall', updates: 'Windows updates', restart: 'Restart', encryption: 'Disk encryption',
     secureBoot: 'Secure Boot', uac: 'Account control', space: 'Disk space', startup: 'Startup',
@@ -24,7 +24,7 @@
     heat: '<path d="M10 14.5V5a2 2 0 0 1 4 0v9.5a4 4 0 1 1-4 0z"/><path d="M12 11v5"/>',
   };
   const MEASURES = { processor: 'Processor', memory: 'Memory', disk: 'Disk activity', uptime: 'Since restart', startup: 'At startup', free: 'Free space', heat: 'Heat' };
-  const ACTIONS = { 'view:files': 'Open Folders', 'view:tasks': 'Open Tasks', 'view:hardware': 'Open Hardware', free: 'Free up memory', startup: 'Open the startup apps' };
+  const ACTIONS = { 'view:files': 'Open Folders', 'view:tasks': 'Open Tasks', 'view:hardware': 'Open Hardware', free: 'Free up memory', startup: 'Open the startup apps', power: 'Choose the power mode' };
   const STATES = { ok: 'Fine', warn: 'Be careful', bad: 'Risky', neutral: 'Not reported' };
   const LAMPS = { ok: 'high', warn: 'medium', bad: 'low' };
   const worst = list => list.some(x => x.level === 'bad') ? 'bad' : list.some(x => x.level === 'warn') ? 'warn' : 'ok';
@@ -133,9 +133,10 @@
     const shownMeasures = (report.measures || []).filter(m => m.id !== 'startup');
     measures.style.setProperty('--count', shownMeasures.length);
     dials(measures, shownMeasures.map(m => ({ key: m.id, part: fill(m) * 100, value: m.value, label: tr(MEASURES[m.id] || m.id), level: LAMPS[m.level] || 'high',
+      sub: m.top ? tr('Mostly {0}', m.top) : '',
       action: TARGETS[m.id] ? () => act(TARGETS[m.id]) : null,
       details: { title: tr(MEASURES[m.id] || m.id), value: m.value, note: MEANINGS[m.id] ? tr(MEANINGS[m.id][0]) : '',
-        lines: [[tr('Status'), word(m)], [m.id === 'free' ? tr('Watch below') : tr('Watch from'), MEANINGS[m.id] ? tr(MEANINGS[m.id][1]) : '']] } })));
+        lines: [[tr('Status'), word(m)], ...(m.top ? [[tr('Busiest'), m.top + ', ' + m.topShare + ' %']] : []), [m.id === 'free' ? tr('Watch below') : tr('Watch from'), MEANINGS[m.id] ? tr(MEANINGS[m.id][1]) : '']] } })));
     parts.push(measures);
     card.replaceChildren(...parts, next('', true));
   }
@@ -156,6 +157,8 @@
   function renderStartup(c, items) {
     const zone = $('health-startup');
     if (!c) { zone.replaceChildren(); return; }
+    // A switch flipped since the last report keeps its new place while Windows is read again.
+    items = items.map(i => i.id in toggled ? Object.assign({}, i, { enabled: toggled[i.id] }) : i);
     const on = items.filter(i => i.enabled).length;
     const card = document.createElement('div');
     card.className = 'health-startup check--' + state(c.level);
@@ -188,7 +191,7 @@
       const toggle = Object.assign(document.createElement('label'), { className: 'toggler' });
       const box = Object.assign(document.createElement('input'), { type: 'checkbox', checked: item.enabled });
       box.setAttribute('aria-label', item.name);
-      box.addEventListener('change', () => { row.classList.toggle('health-app--off', !box.checked); send('health.startup', { id: item.id, on: box.checked }); });
+      box.addEventListener('change', () => { toggled[item.id] = box.checked; row.classList.toggle('health-app--off', !box.checked); send('health.startup', { id: item.id, on: box.checked }); });
       toggle.append(box);
       end.append(toggle);
     }
@@ -235,6 +238,7 @@
     if (m.type !== 'health.report') return;
     checking = false;
     report = m;
+    toggled = {};
     render();
   }
 

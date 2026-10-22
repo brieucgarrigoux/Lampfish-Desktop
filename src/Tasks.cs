@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -159,6 +159,18 @@ namespace Bramble
                 return QueryFullProcessImageName(h, 0, b, ref n) ? b.ToString() : null;
             }
             finally { CloseHandle(h); }
+        }
+
+        public static string NameOf(int id, string fallback)
+        {
+            try
+            {
+                string path = PathOf(id);
+                string description = path == null ? null : FileVersionInfo.GetVersionInfo(path).FileDescription;
+                if (!string.IsNullOrWhiteSpace(description)) return description.Trim();
+            }
+            catch { }
+            return fallback;
         }
 
         static object Describe(string path)

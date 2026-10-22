@@ -5,8 +5,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Changed
+- Health: when the PC is too hot, the finding names the program that uses the processor the most, with Tasks, or offers to choose the power mode.
+- Health: the Processor measure names the program that uses it the most.
+
 ### Fixed
 - Sounds: Reset everything turned on the dock sounds. Only the sound of the speed test is on by default.
+- Health: a program turned off in Startup could switch back on while Health was still reading the PC, and needed a second click.
 
 ## [0.4.0] - 2026-10-22
 

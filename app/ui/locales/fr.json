@@ -1509,5 +1509,8 @@
  "and {0} more": "et {0} de plus",
  "Effects, framing, slideshow and sound": "Effets, cadrage, diaporama et son",
  "Settings only, the content stays": "Réglages seulement, le contenu reste",
- "Original places and sort settings": "Places d'origine et réglages du tri"
+ "Original places and sort settings": "Places d'origine et réglages du tri",
+ "{0} uses the processor the most: closing it cools the PC down": "{0} sollicite le plus le processeur : le fermer refroidit le PC",
+ "A quieter power mode cools the PC down, and its vents need room": "Un mode d'alimentation plus économe refroidit le PC, à condition que ses aérations restent dégagées",
+ "Choose the power mode": "Choisir le mode d'alimentation"
 }
