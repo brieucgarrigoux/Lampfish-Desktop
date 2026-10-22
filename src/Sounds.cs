@@ -86,7 +86,6 @@ namespace Bramble
         {
             if (Program.R.Dock == null) Program.R.Dock = new DockSettings();
             Complete();
-            if (R.Device == Belkin && R.DeviceName == null) R.DeviceName = "Belkin USB-C 8-in-1";
             save = new System.Windows.Forms.Timer { Interval = 600 };
             save.Tick += (s, e) => { save.Stop(); Program.Save(); };
             station = new Dock(R.Device, Change, present => Trigger(present ? "usb_on" : "usb_off"));
@@ -127,11 +126,9 @@ namespace Bramble
                 bool arrival = i % 2 == 0;
                 string sound = pair != null ? (arrival ? pair[1] : pair[2]) : (arrival ? R.SoundA : R.SoundB);
                 if (SoundPath(sound) == null) sound = arrival ? DefaultPair()[1] : DefaultPair()[2];
-                R.Events.Add(new EventSetting { Id = id, Sound = sound, Active = id.StartsWith("station_") || id.StartsWith("speedtest_") });
+                R.Events.Add(new EventSetting { Id = id, Sound = sound, Active = id.StartsWith("speedtest_") });
             }
         }
-
-        const string Belkin = "VID_050D&PID_015B";
 
         static EventSetting Setting(string id) { return R.Events.FirstOrDefault(x => x.Id == id); }
         static string Label(string id) { var e = Events.FirstOrDefault(x => x[0] == id); return e != null ? e[1] : id; }

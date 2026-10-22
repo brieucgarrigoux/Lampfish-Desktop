@@ -5,6 +5,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Fixed
+- Sounds: Reset everything turned on the dock sounds. Only the sound of the speed test is on by default.
+
 ## [0.4.0] - 2026-10-22
 
 ### Added
