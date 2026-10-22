@@ -5,6 +5,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-22
+
 ### Added
 - Settings: What Bramble reads and changes lists, for every service, what it reads, what it changes in Windows and how to undo it, folded until it is opened.
 - Duplicates, a new service in the PC family: it finds files of 1 MB or more stored twice on a drive or in a folder, compared byte for byte, and keeps searching while another page is open. Copies in Downloads or named as a copy are ticked under Safe to clean; the same file in two folders of the user waits, unticked, under Look first. Projects, game libraries and synced folders are left out. Clean up first shows the space freed and the files kept, then sends the ticked copies to the Recycle Bin; each copy also has its own bin, the last copy always stays, and Restore puts a file back in its folder.
