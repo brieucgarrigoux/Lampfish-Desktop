@@ -455,7 +455,7 @@ namespace Bramble
             }
         }
 
-        static string Target(string lnk)
+        internal static string Target(string lnk)
         {
             object shell = null, link = null;
             try

@@ -13,7 +13,7 @@ namespace Bramble
     static class Health
     {
         class Check { public string Id, Level = "unknown", Value, Detail, Action; }
-        class Finding { public string Level, Title, Detail, Action, Icon; }
+        class Finding { public string Level, Title, Detail, Action, Icon, Verdict, Cause; }
 
         static bool running;
         static object last;
@@ -39,6 +39,16 @@ namespace Bramble
                     if (!again && last != null && (DateTime.Now - when).TotalSeconds < 60) { Program.Send(last); return false; }
                     Scan();
                     return false;
+                case "startup":
+                {
+                    string id = m.ContainsKey("id") ? m["id"] as string : null;
+                    bool on = m.ContainsKey("on") && Convert.ToBoolean(m["on"]);
+                    if (!SetStartup(id, on)) return false;
+                    string name = (StartupItems().FirstOrDefault(i => i.Id == id) ?? new StartupItem { Name = "" }).Name;
+                    Program.Undoable(Language.T(on ? "{0} starts with Windows again" : "{0} no longer starts with Windows", name), () => { SetStartup(id, !on); Scan(); });
+                    Scan();
+                    return false;
+                }
                 case "open":
                     string target;
                     if (!Targets.TryGetValue(m.ContainsKey("target") ? m["target"] as string ?? "" : "", out target)) return false;
@@ -85,7 +95,8 @@ namespace Bramble
 
         static object Report()
         {
-            var startup = StartupPrograms();
+            var items = StartupItems();
+            var startup = items.Where(i => i.Enabled).Select(i => i.Name).ToList();
             string system = Path.GetPathRoot(Environment.SystemDirectory);
             var drive = new DriveInfo(system);
             double free = drive.TotalSize > 0 ? 100.0 * drive.AvailableFreeSpace / drive.TotalSize : 100;
@@ -121,8 +132,9 @@ namespace Bramble
                 type = "health.report",
                 when = DateTime.Now.ToString("HH:mm"),
                 checks = checks.Select(c => new { id = c.Id, level = c.Level, value = c.Value, detail = c.Detail, action = c.Action }).ToArray(),
-                slow = Slow(startup.Count, free, measures).Select(f => new { level = f.Level, title = f.Title, detail = f.Detail, action = f.Action, icon = f.Icon }).ToArray(),
+                slow = Slow(startup.Count, free, measures).Select(f => new { level = f.Level, title = f.Title, detail = f.Detail, action = f.Action, icon = f.Icon, verdict = f.Verdict, cause = f.Cause }).ToArray(),
                 measures = measures.ToArray(),
+                startup = items.Select(i => new { id = i.Id, name = i.Name, publisher = i.Publisher, icon = i.Icon, enabled = i.Enabled, machine = i.Machine }).ToArray(),
             };
         }
 
@@ -300,9 +312,12 @@ namespace Bramble
             }
         }
 
-        static List<string> StartupPrograms()
+        class StartupItem { public string Id, Name, Publisher, Icon, List, Value; public bool Enabled, Machine; }
+
+        // Every program that starts with Windows, on or off, as the startup apps of Windows list them.
+        static List<StartupItem> StartupItems()
         {
-            var names = new List<string>();
+            var items = new List<StartupItem>();
             try
             {
                 foreach (var k in RunKeys)
@@ -311,19 +326,67 @@ namespace Bramble
                     using (var key = root.OpenSubKey(k[1]))
                         if (key != null)
                             foreach (string value in key.GetValueNames())
-                                if (value.Length > 0 && Approved(root, k[2], value)) names.Add(value);
+                                if (value.Length > 0) items.Add(Item(value, ExePath(key.GetValue(value) as string), k[2], value, Approved(root, k[2], value), k[0] == "machine"));
                 }
-                foreach (var place in new[] { new { root = Registry.CurrentUser, folder = Environment.GetFolderPath(Environment.SpecialFolder.Startup) }, new { root = Registry.LocalMachine, folder = Environment.GetFolderPath(Environment.SpecialFolder.CommonStartup) } })
+                foreach (var place in new[] { new { root = Registry.CurrentUser, folder = Environment.GetFolderPath(Environment.SpecialFolder.Startup), machine = false }, new { root = Registry.LocalMachine, folder = Environment.GetFolderPath(Environment.SpecialFolder.CommonStartup), machine = true } })
                     if (Directory.Exists(place.folder))
                         foreach (string file in Directory.GetFiles(place.folder))
                         {
                             string name = Path.GetFileName(file);
                             if (name.Equals("desktop.ini", StringComparison.OrdinalIgnoreCase)) continue;
-                            if (Approved(place.root, "StartupFolder", name)) names.Add(Path.GetFileNameWithoutExtension(name));
+                            string target = name.EndsWith(".lnk", StringComparison.OrdinalIgnoreCase) ? Tasks.Target(file) : file;
+                            items.Add(Item(Path.GetFileNameWithoutExtension(name), target, "StartupFolder", name, Approved(place.root, "StartupFolder", name), place.machine));
                         }
             }
             catch (Exception ex) { Program.Log(ex); }
-            return names.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            return items.GroupBy(i => i.Id, StringComparer.OrdinalIgnoreCase).Select(g => g.First()).OrderBy(i => !i.Enabled).ThenBy(i => i.Name, StringComparer.CurrentCultureIgnoreCase).ToList();
+        }
+
+        static StartupItem Item(string fallback, string path, string list, string value, bool enabled, bool machine)
+        {
+            var item = new StartupItem { Id = (machine ? "machine|" : "user|") + list + "|" + value, Name = fallback, List = list, Value = value, Enabled = enabled, Machine = machine };
+            try
+            {
+                if (!string.IsNullOrEmpty(path) && File.Exists(path))
+                {
+                    var info = FileVersionInfo.GetVersionInfo(path);
+                    if (!string.IsNullOrWhiteSpace(info.FileDescription) && info.FileDescription.Length <= 40) item.Name = info.FileDescription.Trim();
+                    item.Publisher = string.IsNullOrWhiteSpace(info.CompanyName) ? null : info.CompanyName.Trim();
+                    item.Icon = Tasks.IconOf(path);
+                }
+            }
+            catch { }
+            return item;
+        }
+
+        static string ExePath(string command)
+        {
+            command = Environment.ExpandEnvironmentVariables(command ?? "").Trim();
+            if (command.StartsWith("\""))
+            {
+                int end = command.IndexOf('"', 1);
+                return end > 1 ? command.Substring(1, end - 1) : null;
+            }
+            int exe = command.IndexOf(".exe", StringComparison.OrdinalIgnoreCase);
+            return exe > 0 ? command.Substring(0, exe + 4) : command.Split(' ')[0];
+        }
+
+        // The startup apps page of Windows keeps its own switch: first byte 2 for on, 3 for off, then when it was turned off.
+        // Only the current user's list can be written without administrator rights.
+        static bool SetStartup(string id, bool on)
+        {
+            var parts = (id ?? "").Split(new[] { '|' }, 3);
+            if (parts.Length != 3 || parts[0] != "user" || (parts[1] != "Run" && parts[1] != "StartupFolder")) return false;
+            var item = StartupItems().FirstOrDefault(i => i.Id == id);
+            if (item == null) return false;
+            using (var key = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\" + parts[1]))
+            {
+                var data = new byte[12];
+                data[0] = (byte)(on ? 2 : 3);
+                if (!on) BitConverter.GetBytes(DateTime.UtcNow.ToFileTimeUtc()).CopyTo(data, 4);
+                key.SetValue(parts[2], data, RegistryValueKind.Binary);
+            }
+            return true;
         }
 
         static string Level(double value, double warn, double bad) { return value >= bad ? "bad" : value >= warn ? "warn" : "ok"; }
@@ -345,13 +408,15 @@ namespace Bramble
             if (processor >= 80)
             {
                 string top = after.Where(p => before.ContainsKey(p.Key)).OrderByDescending(p => p.Value.Item2 - before[p.Key].Item2).Select(p => p.Value.Item1).FirstOrDefault();
-                list.Add(new Finding { Icon = "processor", Level = processor >= 95 ? "bad" : "warn", Title = Language.T("Processor {0} % busy", Math.Round(processor)), Detail = top == null ? Language.T("Something is working hard") : Language.T("Mostly {0}", top), Action = "view:tasks" });
+                list.Add(new Finding { Icon = "processor", Level = processor >= 95 ? "bad" : "warn", Title = top == null ? Language.T("Processor {0} % busy", Math.Round(processor)) : Language.T("Processor {0} % busy, mostly {1}", Math.Round(processor), top), Detail = Language.T("Every other program waits its turn"), Action = "view:tasks",
+                    Verdict = Language.T("The processor is overloaded"), Cause = Language.T("the processor") });
             }
 
             var info = new Microsoft.VisualBasic.Devices.ComputerInfo();
             double memory = 100.0 * (info.TotalPhysicalMemory - info.AvailablePhysicalMemory) / info.TotalPhysicalMemory;
             if (memory >= 75)
-                list.Add(new Finding { Icon = "memory", Level = memory >= 85 ? "bad" : "warn", Title = Language.T("Memory {0} % in use", Math.Round(memory)), Detail = Language.T("Windows moves memory to the disk, which is much slower"), Action = "free" });
+                list.Add(new Finding { Icon = "memory", Level = memory >= 85 ? "bad" : "warn", Title = Language.T("Memory {0} % in use", Math.Round(memory)), Detail = Language.T("Windows moves memory to the disk, so programs lag"), Action = "free",
+                    Verdict = Language.T("Memory is almost full"), Cause = Language.T("memory") });
 
             double days = GetTickCount64() / 86400000.0;
             measures.Add(new { id = "processor", value = Math.Round(processor) + " %", level = Level(processor, 80, 95) });
@@ -362,20 +427,25 @@ namespace Bramble
             measures.Add(new { id = "free", value = Math.Round(free) + " %", level = free < 5 ? "bad" : free < 10 ? "warn" : "ok" });
 
             if (disk >= 90)
-                list.Add(new Finding { Icon = "disk", Level = "warn", Title = Language.T("Disk {0} % busy", Math.Round(disk)), Detail = Language.T("Programs wait for the disk"), Action = "view:hardware" });
+                list.Add(new Finding { Icon = "disk", Level = "warn", Title = Language.T("Disk {0} % busy", Math.Round(disk)), Detail = Language.T("Programs wait for their files"), Action = "view:hardware",
+                    Verdict = Language.T("The disk is overloaded"), Cause = Language.T("the disk") });
 
             if (days >= 7)
-                list.Add(new Finding { Icon = "uptime", Level = "warn", Title = Language.T("Not restarted for {0} days", (int)days), Detail = Language.T("Shutting down does not count when Fast startup is on: a restart clears memory and finishes updates") });
+                list.Add(new Finding { Icon = "uptime", Level = "warn", Title = Language.T("Not restarted for {0} days", (int)days), Detail = Language.T("Memory is never fully cleared and updates wait: shutting down does not count, only a restart"),
+                    Verdict = Language.T("No restart for {0} days", (int)days), Cause = Language.T("no restart") });
 
             if (startup > 10)
-                list.Add(new Finding { Icon = "startup", Level = "warn", Title = Language.T("{0} programs start with Windows", startup), Detail = Language.T("Each one slows the start and stays in memory"), Action = "startup" });
+                list.Add(new Finding { Icon = "startup", Level = "warn", Title = Language.T("{0} programs start with Windows", startup), Detail = Language.T("Windows takes longer to be ready, and they stay in memory afterwards"), Action = "startup",
+                    Verdict = Language.T("{0} programs slow the start", startup), Cause = Language.T("startup") });
 
             if (free < 10)
-                list.Add(new Finding { Icon = "free", Level = free < 5 ? "bad" : "warn", Title = Language.T("Only {0} % of the system drive free", Math.Round(free)), Detail = Language.T("Windows needs room for updates and memory"), Action = "view:files" });
+                list.Add(new Finding { Icon = "free", Level = free < 5 ? "bad" : "warn", Title = Language.T("Only {0} % of the system drive free", Math.Round(free)), Detail = Language.T("Windows lacks room for updates and for memory moved to the disk"), Action = "view:files",
+                    Verdict = Language.T("The system drive is almost full"), Cause = Language.T("free space") });
 
             SYSTEM_POWER_STATUS power;
             if (GetSystemPowerStatus(out power) && power.SystemStatusFlag == 1)
-                list.Add(new Finding { Icon = "free", Level = "warn", Title = Language.T("Energy saver is on"), Detail = Language.T("Windows slows the processor to save the battery"), Action = "saver" });
+                list.Add(new Finding { Icon = "free", Level = "warn", Title = Language.T("Energy saver is on"), Detail = Language.T("Windows slows the processor to save the battery: fine for light use, slower for heavy work"), Action = "saver",
+                    Verdict = Language.T("Energy saver slows the processor"), Cause = Language.T("energy saver") });
 
             try
             {
@@ -385,7 +455,8 @@ namespace Bramble
                     double hottest = zones.GetInstanceNames().Select(n => { using (var c = new PerformanceCounter("Thermal Zone Information", "Temperature", n)) return (double)c.NextValue(); }).Where(k => k > 200).DefaultIfEmpty(0).Max() - 273.15;
                     if (hottest > 0) measures.Add(new { id = "heat", value = Math.Round(hottest) + " °C", level = Level(hottest, 90, 95) });
                     if (hottest >= 90)
-                        list.Add(new Finding { Icon = "heat", Level = hottest >= 95 ? "bad" : "warn", Title = Language.T("{0} °C inside the PC", Math.Round(hottest)), Detail = Language.T("The processor slows down to cool off, check the vents") });
+                        list.Add(new Finding { Icon = "heat", Level = hottest >= 95 ? "bad" : "warn", Title = Language.T("{0} °C inside the PC", Math.Round(hottest)), Detail = Language.T("The processor slows down to cool off: check that the vents are clear"),
+                    Verdict = Language.T("The PC is too hot"), Cause = Language.T("heat") });
                 }
             }
             catch (Exception ex) { Program.Log(ex); }

@@ -50,6 +50,7 @@ namespace Bramble
         public int Zoom = 100;
         public List<MoodSetting> Moods = new List<MoodSetting>();
         public string CurrentMood;
+        public MoodSetting MoodBefore;
         public DockSettings Dock = new DockSettings();
         public IconsSettings Icons = new IconsSettings();
         public IconsSettings Folders;
@@ -766,6 +767,7 @@ namespace Bramble
                 return;
             }
 
+            if (action.StartsWith("audio.")) { if (AudioMeter.Receive(action.Substring(action.IndexOf('.') + 1), m)) SendState(); return; }
             if (action.StartsWith("health.")) { Health.Receive(action.Substring(action.IndexOf('.') + 1), m); return; }
             if (action.StartsWith("duplicates.")) { if (Duplicates.Receive(action.Substring(action.IndexOf('.') + 1), m)) { Save(); SendState(); } return; }
 
@@ -934,6 +936,7 @@ namespace Bramble
                 moodModels = Moods.Models(),
                 display = Display.State(),
                 power = Power.State(),
+                audio = AudioMeter.Endpoints(),
                 language = R.Language,
                 about = new
                 {

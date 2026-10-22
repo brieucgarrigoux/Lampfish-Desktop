@@ -243,6 +243,15 @@ namespace Bramble
                     Warm(WarmStrength);
                     return !live;
                 }
+                case "dark":
+                {
+                    bool dark = Text(m, "on") == "True" || Text(m, "on") == "true";
+                    bool? before = Dark();
+                    if (before == dark) return false;
+                    SetDark(dark);
+                    if (before.HasValue) Program.Undoable(Language.T(dark ? "Windows is in dark mode" : "Windows is in light mode"), () => SetDark(before.Value));
+                    return true;
+                }
                 case "screens":
                     Task.Run(() => Hardware.Screens()).ContinueWith(t => Program.OnInterface(() =>
                     {
@@ -281,7 +290,40 @@ namespace Bramble
             return false;
         }
 
-        public static object State() { return new { warm = R.Warm, warmOn = R.WarmOn }; }
+        public static object State() { return new { warm = R.Warm, warmOn = R.WarmOn, dark = Dark() }; }
+
+        // The light or dark mode of Windows has no public interface: these two values are the ones Settings and PowerToys write.
+        const string Personalize = @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
+
+        public static bool? Dark()
+        {
+            try
+            {
+                using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(Personalize))
+                {
+                    var apps = key == null ? null : key.GetValue("AppsUseLightTheme");
+                    return apps == null ? (bool?)null : Convert.ToInt32(apps) == 0;
+                }
+            }
+            catch { return null; }
+        }
+
+        public static void SetDark(bool dark)
+        {
+            try
+            {
+                using (var key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(Personalize))
+                {
+                    key.SetValue("AppsUseLightTheme", dark ? 0 : 1, Microsoft.Win32.RegistryValueKind.DWord);
+                    key.SetValue("SystemUsesLightTheme", dark ? 0 : 1, Microsoft.Win32.RegistryValueKind.DWord);
+                }
+                IntPtr result;
+                SendMessageTimeout((IntPtr)0xFFFF, 0x001A, IntPtr.Zero, "ImmersiveColorSet", 0x0002, 200, out result);
+            }
+            catch (Exception ex) { Program.Log(ex); }
+        }
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern IntPtr SendMessageTimeout(IntPtr window, uint message, IntPtr wParam, string lParam, uint flags, uint timeout, out IntPtr result);
 
         const uint QDC_ONLY_ACTIVE_PATHS = 2, SDC_APPLY = 0x80, SDC_USE_SUPPLIED_DISPLAY_CONFIG = 0x20, SDC_SAVE_TO_DATABASE = 0x200, SDC_ALLOW_CHANGES = 0x400;
         const uint DISPLAYCONFIG_MODE_INFO_TYPE_SOURCE = 1, DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME = 1;

@@ -17,6 +17,7 @@ namespace Bramble
         public List<string> Opens;
         public bool? Reactive;
         public int? Warm;
+        public bool? Dark;
         public List<ScreenWallpaper> ScreenWallpapers;
     }
 
@@ -78,7 +79,7 @@ namespace Bramble
                 Id = Guid.NewGuid().ToString("N").Substring(0, 8), Name = name, Wallpaper = r.Wallpaper, Fit = r.Fit, Theme = Mouse.ThemeName,
                 Light = r.Light, Speed = r.Speed, Blur = r.Blur, Saturation = r.Saturation, Dim = r.Dim,
                 SoundsActive = r.Dock.Active, Silence = r.Dock.Silence, Volume = r.Dock.Volume, Time = "", Power = "",
-                Reactive = r.Reactive, Warm = Display.WarmStrength, ScreenWallpapers = Copy(r.ScreenWallpapers),
+                Reactive = r.Reactive, Warm = Display.WarmStrength, Dark = Display.Dark(), ScreenWallpapers = Copy(r.ScreenWallpapers),
             };
         }
 
@@ -103,6 +104,7 @@ namespace Bramble
                 && (m.SoundsActive && !m.Silence) == (r.Dock.Active && !r.Dock.Silence) && m.Volume == r.Dock.Volume
                 && (!m.Reactive.HasValue || m.Reactive.Value == r.Reactive)
                 && (!m.Warm.HasValue || m.Warm.Value == Display.WarmStrength)
+                && (!m.Dark.HasValue || m.Dark == Display.Dark())
                 && (string.IsNullOrEmpty(m.Theme) || m.Theme == Mouse.ThemeName);
         }
 
@@ -121,6 +123,7 @@ namespace Bramble
             r.Dock.Active = mood.SoundsActive; r.Dock.Silence = mood.Silence; r.Dock.Volume = mood.Volume;
             if (mood.Reactive.HasValue && mood.Reactive.Value != r.Reactive) { r.Reactive = mood.Reactive.Value; AudioMeter.Set(r.Reactive); }
             if (mood.Warm.HasValue && mood.Warm.Value != Display.WarmStrength) Display.SetWarm(mood.Warm.Value);
+            if (mood.Dark.HasValue && mood.Dark != Display.Dark()) Display.SetDark(mood.Dark.Value);
             if (!string.IsNullOrEmpty(mood.Theme) && mood.Theme != Mouse.ThemeName) Mouse.SetTheme(mood.Theme);
             Program.WallpaperChanged();
             Program.UpdateMenu();
@@ -198,6 +201,7 @@ namespace Bramble
         static void Apply(MoodSetting mood, bool manual)
         {
             var before = Capture("");
+            if (manual && Active() == null) Program.R.MoodBefore = before;
             Set(mood);
             Open(mood);
             Program.R.CurrentMood = mood.Id;
@@ -408,6 +412,18 @@ namespace Bramble
                     return true;
                 }
                 case "apply": if (mood == null) return false; Apply(mood, true); return true;
+                case "release":
+                {
+                    var back = Program.R.MoodBefore;
+                    if (back == null) { Program.Announce("The setup from before this theme is not known: apply another theme"); return false; }
+                    var now = Capture("");
+                    string current = Program.R.CurrentMood;
+                    Set(back);
+                    Program.R.CurrentMood = null;
+                    Program.R.MoodBefore = null;
+                    Program.Undoable(Language.T("{0} turned off", mood != null ? mood.Name : ""), () => { Set(now); Program.R.CurrentMood = current; Program.R.MoodBefore = back; Program.Save(); });
+                    return true;
+                }
                 case "update":
                     if (mood == null) return false;
                     Overwrite(mood, Capture(mood.Name));

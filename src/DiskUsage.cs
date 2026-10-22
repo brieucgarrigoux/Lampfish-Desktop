@@ -364,10 +364,39 @@ namespace Bramble
                 Process.Start("explorer.exe", "\"" + path + "\"");
         }
 
+        const string Advanced = @"Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced";
+
+        static object Explorer()
+        {
+            try
+            {
+                using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(Advanced))
+                    return new { extensions = Convert.ToInt32(key == null ? 1 : key.GetValue("HideFileExt", 1)) == 0, hidden = Convert.ToInt32(key == null ? 2 : key.GetValue("Hidden", 2)) == 1 };
+            }
+            catch { return null; }
+        }
+
+        static void SetExplorer(string name, int value)
+        {
+            using (var key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(Advanced)) key.SetValue(name, value, Microsoft.Win32.RegistryValueKind.DWord);
+            SHChangeNotify(0x08000000, 0, IntPtr.Zero, IntPtr.Zero);
+        }
+
+        [DllImport("shell32.dll")] static extern void SHChangeNotify(int eventId, uint flags, IntPtr item1, IntPtr item2);
+
         public static bool Receive(string action, Dictionary<string, object> m)
         {
             switch (action)
             {
+                case "explorer":
+                {
+                    bool on = Convert.ToBoolean(m["on"]);
+                    string what = m["key"] as string;
+                    if (what == "extensions") { SetExplorer("HideFileExt", on ? 0 : 1); Program.Undoable(Language.T(on ? "File extensions shown" : "File extensions hidden"), () => SetExplorer("HideFileExt", on ? 1 : 0)); }
+                    else if (what == "hidden") { SetExplorer("Hidden", on ? 1 : 2); Program.Undoable(Language.T(on ? "Hidden files shown" : "Hidden files hidden"), () => SetExplorer("Hidden", on ? 2 : 1)); }
+                    else return false;
+                    return true;
+                }
                 case "visible":
                     if (Convert.ToBoolean(m["value"]))
                     {
@@ -414,6 +443,7 @@ namespace Bramble
             return new
             {
                 source = source,
+                explorer = Explorer(),
                 sourceName = NameOf(source),
                 disks = disks,
                 custom = custom,

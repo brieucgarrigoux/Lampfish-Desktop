@@ -153,6 +153,91 @@ namespace Bramble
             meters.Clear();
         }
 
+        // The default output and input, read and set through the documented endpoint volume of Core Audio.
+        public static object Endpoints()
+        {
+            float level, unused; bool muted, micMuted;
+            bool output = Endpoint(0, v => { }, out level, out muted);
+            bool input = Endpoint(1, v => { }, out unused, out micMuted);
+            return new { volume = output ? (int?)Math.Round(level * 100) : null, muted = output && muted, mic = input, micMuted = input && micMuted };
+        }
+
+        delegate void Use(IAudioEndpointVolume volume);
+
+        static bool Endpoint(int flow, Use use, out float level, out bool muted)
+        {
+            level = 0; muted = false;
+            IMMDevice device = null;
+            object found = null;
+            try
+            {
+                var enumerator = (IMMDeviceEnumerator)new MMDeviceEnumerator();
+                if (enumerator.GetDefaultAudioEndpoint(flow, 0, out device) != 0 || device == null) return false;
+                var id = typeof(IAudioEndpointVolume).GUID;
+                if (device.Activate(ref id, 23, IntPtr.Zero, out found) != 0 || found == null) return false;
+                var volume = (IAudioEndpointVolume)found;
+                float l = 0; bool m = false;
+                volume.GetMasterVolumeLevelScalar(out l);
+                volume.GetMute(out m);
+                level = l; muted = m;
+                use(volume);
+                return true;
+            }
+            catch { return false; }
+            finally
+            {
+                if (found != null) Marshal.ReleaseComObject(found);
+                if (device != null) Marshal.ReleaseComObject(device);
+            }
+        }
+
+        public static bool Receive(string action, Dictionary<string, object> m)
+        {
+            float level; bool muted;
+            Guid none = Guid.Empty;
+            switch (action)
+            {
+                case "volume":
+                {
+                    int value = Math.Max(0, Math.Min(100, Convert.ToInt32(m["value"])));
+                    Endpoint(0, v => { v.SetMasterVolumeLevelScalar(value / 100f, ref none); if (value > 0) v.SetMute(false, ref none); }, out level, out muted);
+                    return !(m.ContainsKey("live") && Convert.ToBoolean(m["live"]));
+                }
+                case "mute":
+                {
+                    bool on = Convert.ToBoolean(m["on"]);
+                    Endpoint(0, v => v.SetMute(on, ref none), out level, out muted);
+                    return true;
+                }
+                case "mic":
+                {
+                    bool on = Convert.ToBoolean(m["on"]);
+                    Endpoint(1, v => v.SetMute(!on, ref none), out level, out muted);
+                    Program.Undoable(Language.T(on ? "Microphone on" : "Microphone off"), () => Endpoint(1, v => v.SetMute(on, ref none), out level, out muted));
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        [ComImport, Guid("5CDF2C82-841E-4546-9722-0CF74078229A"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        interface IAudioEndpointVolume
+        {
+            [PreserveSig] int RegisterControlChangeNotify(IntPtr notify);
+            [PreserveSig] int UnregisterControlChangeNotify(IntPtr notify);
+            [PreserveSig] int GetChannelCount(out uint count);
+            [PreserveSig] int SetMasterVolumeLevel(float level, ref Guid context);
+            [PreserveSig] int SetMasterVolumeLevelScalar(float level, ref Guid context);
+            [PreserveSig] int GetMasterVolumeLevel(out float level);
+            [PreserveSig] int GetMasterVolumeLevelScalar(out float level);
+            [PreserveSig] int SetChannelVolumeLevel(uint channel, float level, ref Guid context);
+            [PreserveSig] int SetChannelVolumeLevelScalar(uint channel, float level, ref Guid context);
+            [PreserveSig] int GetChannelVolumeLevel(uint channel, out float level);
+            [PreserveSig] int GetChannelVolumeLevelScalar(uint channel, out float level);
+            [PreserveSig] int SetMute([MarshalAs(UnmanagedType.Bool)] bool mute, ref Guid context);
+            [PreserveSig] int GetMute([MarshalAs(UnmanagedType.Bool)] out bool mute);
+        }
+
         [ComImport, Guid("BCDE0395-E52F-467C-8E3D-C4579291692E")] class MMDeviceEnumerator { }
 
         [ComImport, Guid("A95664D2-9614-4F35-A746-DE8DB63617E6"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
