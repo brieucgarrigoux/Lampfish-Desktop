@@ -12,6 +12,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Health: when the PC is too hot, the finding names the program that uses the processor the most, with Tasks, or offers to choose the power mode.
 - Health: the Processor measure names the program that uses it the most.
 - Home keeps three columns in a laptop window and uses more of a large screen.
+- The arrow keys of the bar open the service they move to.
 - Network: how far the network can be trusted shows only in the Security card, no longer also at the top.
 - Display: a click on a screen of the map makes it the main screen, as in Arrange.
 - Themes: the three steps are drawn larger, with a plain mouse instead of the cursor in use.

@@ -965,7 +965,10 @@ addEventListener('keydown', e => {
   const step = keys[e.key];
   const current = inRail ? buttons.indexOf(active.closest('button.service')) : buttons.findIndex(b => b.dataset.view === document.body.dataset.view);
   const next = step === 'first' ? 0 : step === 'last' ? buttons.length - 1 : Math.max(0, Math.min(buttons.length - 1, (current < 0 ? 0 : current) + (inRail || current < 0 ? step : 0)));
-  if (buttons[next]) buttons[next].focus();
+  const target = buttons[next];
+  if (!target) return;
+  target.focus();
+  if (target.dataset.view !== document.body.dataset.view) target.click();
 });
 let zoomWheel = 0;
 addEventListener('wheel', e => {
