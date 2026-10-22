@@ -11,13 +11,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Home: the face and the shield each have their own bubble, and the shield opens Protection.
 - Health: when the PC is too hot, the finding names the program that uses the processor the most, with Tasks, or offers to choose the power mode.
 - Health: the Processor measure names the program that uses it the most.
+- Home keeps three columns in a laptop window and uses more of a large screen.
 - Network: how far the network can be trusted shows only in the Security card, no longer also at the top.
 - Display: a click on a screen of the map makes it the main screen, as in Arrange.
+- Home: in a narrow window, the wallpaper controls sit in one row beside the preview, and two columns put them under it.
 
 ### Fixed
 - Sounds: Reset everything turned on the dock sounds. Only the sound of the speed test is on by default.
+- Home: HTML wallpapers filled a quarter of their thumbnail in the side panel.
 - Health: a program turned off in Startup could switch back on while Health was still reading the PC, and needed a second click.
 - Main screen: the desktop icons are placed once Windows has finished moving them, and put back if Windows moves them again. Layouts saved with other screens keep their positions, and the automatic restore of a layout no longer pulls the icons back to the old main screen.
+- Home: in a narrow window, the weather kept its details and fell on a line of its own.
 
 ## [0.4.0] - 2026-10-22
 
