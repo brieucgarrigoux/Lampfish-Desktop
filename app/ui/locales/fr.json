@@ -1333,5 +1333,12 @@
  "Sends copies to the Recycle Bin only when asked": "N'envoie des copies à la Corbeille que sur demande",
  "The names, sizes and content of the files of 1 MB or more in the chosen folder": "Le nom, la taille et le contenu des fichiers de 1 Mo ou plus du dossier choisi",
  "Moves extra copies to the Recycle Bin after a confirming click, never the last copy": "Envoie les copies en trop à la Corbeille après un clic de confirmation, jamais la dernière copie",
- "The names and sizes of the files in the analyzed folder": "Le nom et la taille des fichiers du dossier analysé"
+ "The names and sizes of the files in the analyzed folder": "Le nom et la taille des fichiers du dossier analysé",
+ "Fold every family": "Replier toutes les familles",
+ "Unfold every family": "Déplier toutes les familles",
+ "Set up": "Régler",
+ "Bring back": "Retrouver",
+ "A wallpaper, cursors, sounds and effects": "Un fond, des curseurs, des sons et des effets",
+ "All of it, as one theme": "Le tout, en un seul thème",
+ "In one click, or by itself at the right moment": "En un clic, ou tout seul au bon moment"
 }

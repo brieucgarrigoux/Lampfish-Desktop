@@ -345,10 +345,9 @@
     const b = $('h-health');
     b.hidden = !h;
     if (!h) return;
-    b.className = 'mood-badge mood-badge--small security--' + LAMPS[h.level];
-    const face = `<svg viewBox="0 0 24 24" aria-hidden="true">${Bramble.health.faces[h.level]}</svg>`;
-    if (b.firstElementChild.innerHTML !== face) b.firstElementChild.innerHTML = face;
-    b.lastElementChild.textContent = h.text;
+    b.className = 'h-health security--' + LAMPS[h.level];
+    if (b.dataset.level !== h.level) { b.dataset.level = h.level; b.firstElementChild.innerHTML = Bramble.health.face('home-face', h.level); }
+    b.querySelector('.led-text').textContent = h.text;
   }
   $('h-health').addEventListener('click', () => showView('health'));
 

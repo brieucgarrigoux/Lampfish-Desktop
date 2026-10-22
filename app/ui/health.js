@@ -30,11 +30,6 @@
   const worst = list => list.some(x => x.level === 'bad') ? 'bad' : list.some(x => x.level === 'warn') ? 'warn' : 'ok';
   const state = level => level === 'unknown' ? 'neutral' : level;
   const svg = path => `<svg viewBox="0 0 24 24" aria-hidden="true">${path}</svg>`;
-  const FACES = {
-    ok: '<circle cx="12" cy="12" r="8.5"/><path d="M8.3 13.6c1 1.6 2.2 2.4 3.7 2.4s2.7-.8 3.7-2.4"/><circle cx="9" cy="9.8" r=".9"/><circle cx="15" cy="9.8" r=".9"/>',
-    warn: '<circle cx="12" cy="12" r="8.5"/><path d="M8.5 15h7"/><circle cx="9" cy="9.8" r=".9"/><circle cx="15" cy="9.8" r=".9"/>',
-    bad: '<circle cx="12" cy="12" r="8.5"/><path d="M8.3 16.2c1-1.6 2.2-2.4 3.7-2.4s2.7.8 3.7 2.4"/><circle cx="9" cy="9.8" r=".9"/><circle cx="15" cy="9.8" r=".9"/>',
-  };
 
   // The gradients of an inline SVG resolve their colors where they are defined, so each seal needs its own ids.
   function shield(id) {
@@ -122,9 +117,8 @@
     card.className = 'security health-card security--' + LAMPS[worst(report.slow)];
     const top = document.createElement('div');
     top.className = 'security__head';
-    top.innerHTML = `<span class="seal">${face('health-face', overall(report))}</span><div class="security__verdict"><span class="led-panel"><span class="led-text"></span></span><span class="security__why"></span></div>`;
+    top.innerHTML = `<span class="seal">${face('health-face', overall(report))}</span><div class="security__verdict"><span class="led-panel"><span class="led-text"></span></span></div>`;
     top.querySelector('.led-text').textContent = verdict(report);
-    top.querySelector('.security__why').textContent = tr('Processor, memory, disk, restarts, startup, space, energy and heat');
     const screen = Object.assign(document.createElement('span'), { className: 't-memory__screen health-time', textContent: checking ? tr('Checking…') : tr('Checked at {0}', report.when) });
     top.append(screen);
     const parts = [top];
@@ -209,7 +203,7 @@
     }
     if (!report || report.failed) {
       $('health-slow').className = 'security health-card security--medium';
-      $('health-slow').replaceChildren(head(svg(FACES.warn), tr('Windows could not be read'), tr('Check again in a moment')), next('', true));
+      $('health-slow').replaceChildren(head(face('health-face', 'warn'), tr('Windows could not be read'), tr('Check again in a moment')), next('', true));
       $('health-radar').replaceChildren();
       $('health-startup').replaceChildren();
       return;
@@ -231,5 +225,5 @@
     if (yes) { render(); send('health.scan', { again: false }); }
   }
 
-  Bramble.health = { event, visible, faces: FACES };
+  Bramble.health = { event, visible, face };
 })();

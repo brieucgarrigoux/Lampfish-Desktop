@@ -453,17 +453,18 @@
   }
 
   const STEPS = [
-    ['<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>', 'Set up a wallpaper, cursors and sounds'],
-    ['<path d="M5.5 4.5h10l3 3v12h-13z"/><path d="M8.5 4.5v5h6v-5M8.5 19.5v-5h7v5"/>', 'Save them as a theme'],
-    ['<path d="M8.5 5.8v12.4a.8.8 0 0 0 1.2.7l9.6-6.2a.8.8 0 0 0 0-1.4L9.7 5.1a.8.8 0 0 0-1.2.7z"/>', 'Bring them back in one click, or at the right moment'],
+    ['<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>', 'Set up', 'A wallpaper, cursors, sounds and effects'],
+    ['<path d="M5.5 4.5h10l3 3v12h-13z"/><path d="M8.5 4.5v5h6v-5M8.5 19.5v-5h7v5"/>', 'Save', 'All of it, as one theme'],
+    ['<path d="M8.5 5.8v12.4a.8.8 0 0 0 1.2.7l9.6-6.2a.8.8 0 0 0 0-1.4L9.7 5.1a.8.8 0 0 0-1.2.7z"/>', 'Bring back', 'In one click, or by itself at the right moment'],
   ];
   function renderSteps() {
     const zone = $('mood-help');
     if (zone.children.length) return;
-    STEPS.forEach(([path, text], i) => {
-      const step = el('span', 'mode-step');
-      step.innerHTML = `<b>${i + 1}</b>${svg(path)}`;
-      step.append(el('span', '', tr(text)));
+    STEPS.forEach(([path, title, text], i) => {
+      const step = el('div', 'mode-step');
+      step.innerHTML = `<span class="seal seal--small security--high">${svg(path, 'mode-step__icon')}</span><span class="mode-step__what"><span class="mode-step__title"><b>${i + 1}</b></span><span class="mode-step__text"></span></span>`;
+      step.querySelector('.mode-step__title').append(tr(title));
+      step.querySelector('.mode-step__text').textContent = tr(text);
       zone.append(step);
     });
   }

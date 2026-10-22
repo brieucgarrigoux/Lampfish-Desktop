@@ -139,6 +139,20 @@ for (const el of document.querySelectorAll('.panel > div[class^="only-"]'))
   };
   const saved = read();
   let items = null, count = 0;
+  const families = [];
+  const all = document.createElement('button');
+  all.className = 'rail-fold-all';
+  all.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="expand" d="m7 15 5 5 5-5M7 9l5-5 5 5"/><path class="collapse" d="m7 20 5-5 5 5M7 4l5 5 5-5"/></svg>';
+  const paintAll = () => {
+    const open = families.some(f => !f.title.classList.contains('folded'));
+    all.classList.toggle('collapsing', open);
+    all.title = all.ariaLabel = tr(open ? 'Fold every family' : 'Unfold every family');
+  };
+  all.addEventListener('click', () => {
+    const fold = families.some(f => !f.title.classList.contains('folded'));
+    for (const f of families) { f.set(fold); remember(f.id, fold); }
+    paintAll();
+  });
   for (const el of [...rail.children]) {
     if (el.classList.contains('rail-title')) {
       const id = 'rail:' + count++, group = items = [], title = el;
@@ -147,18 +161,28 @@ for (const el of document.querySelectorAll('.panel > div[class^="only-"]'))
         title.classList.toggle('folded', folded);
         title.setAttribute('aria-expanded', String(!folded));
       };
+      families.push({ id, title, set });
       title.setAttribute('role', 'button');
       set(!!saved[id]);
       title.addEventListener('click', () => {
         const folded = !title.classList.contains('folded');
         set(folded);
         remember(id, folded);
+        paintAll();
       });
       title.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); title.click(); } });
     } else if (el.classList.contains('service--settings')) items = null;
     else if (items && el.classList.contains('service')) items.push(el);
   }
+  rail.querySelector('.logo-home').after(all);
+  paintAll();
+  // On the line of the first family, at its right end, not beside the logo.
+  const place = () => {
+    const first = rail.querySelector('.rail-title');
+    if (first) all.style.top = first.offsetTop + (first.offsetHeight - 24) / 2 + 'px';
+  };
   const wide = () => {
+    place();
     const on = rail.clientWidth >= 140;
     rail.dataset.wide = String(on);
     for (const t of rail.querySelectorAll('.rail-title')) t.tabIndex = on ? 0 : -1;

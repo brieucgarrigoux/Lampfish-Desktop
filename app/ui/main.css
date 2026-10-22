@@ -167,7 +167,7 @@ body[data-view="tasks"]:not(.sheet-open) .panel, body[data-view="modes"]:not(.mo
 .fold:has(> [hidden]) { display: none; }
 .fold.collapsed { gap: 0; }
 .fold__title { display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; transition: color var(--fast); }
-.fold__title:hover { color: var(--text); }
+
 .fold__title::before, .rail[data-wide="true"] .rail-title::before { content: ""; flex: none; width: 12px; height: 12px; background: currentColor; opacity: .55; transition: transform var(--fast), opacity var(--fast);
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat; }
@@ -175,7 +175,15 @@ body[data-view="tasks"]:not(.sheet-open) .panel, body[data-view="modes"]:not(.mo
 .fold.collapsed .fold__title::before, .rail[data-wide="true"] .rail-title.folded::before { transform: rotate(-90deg); }
 .rail:not([data-wide="true"]) .rail-title { pointer-events: none; }
 .rail[data-wide="true"] .rail-title { display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; transition: color var(--fast); }
-.rail[data-wide="true"] .rail-title:hover { color: var(--text-soft); }
+.rail[data-wide="true"] .rail-title:hover, .fold__title:hover { color: var(--accent); }
+.rail { position: relative; }
+.rail-fold-all { display: none; position: absolute; top: 90px; right: 14px; z-index: 1; width: 24px; height: 24px; padding: 0; place-items: center; border: 0; border-radius: var(--radius-small);
+  background: none; color: var(--text-pale); transition: color var(--fast), background var(--fast); }
+.rail[data-wide="true"] .rail-fold-all { display: grid; }
+.rail-fold-all:hover { color: var(--accent); background: var(--hover); }
+.rail-fold-all svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.rail-fold-all .collapse, .rail-fold-all.collapsing .expand { display: none; }
+.rail-fold-all.collapsing .collapse { display: inline; }
 .rail[data-wide="true"] .service.is-folded { display: none; }
 .rail[data-wide="true"] .rail-title.folded.has-current::after { content: ""; flex: none; width: 6px; height: 6px; margin-left: 2px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent); }
 .fold__body { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .22s ease; }
@@ -511,3 +519,4 @@ body.resizing .rail-scrollable { pointer-events: none; }
 .taskbar__tray > svg { width: 36cqh; height: 36cqh; opacity: .85; }
 .taskbar__clock { display: flex; flex-direction: column; align-items: flex-end; margin-left: 10cqh; font: 600 27cqh/1.25 "Segoe UI", system-ui, sans-serif; color: rgba(255, 255, 255, .92); white-space: nowrap; }
 .taskbar__clock b { font-weight: 500; }
+.row--setting #zoom { flex-basis: 380px; }

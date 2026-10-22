@@ -6,25 +6,6 @@
 .health-why { flex: 1; min-width: 0; }
 .health-time { flex: none; align-self: center; margin-top: 0; font: 12px var(--numbers); font-variant-numeric: tabular-nums; color: #cdb8ff; }
 
-.mood-badge { position: relative; flex: none; display: inline-flex; align-items: center; gap: 12px; padding: 8px 22px 8px 8px; border-radius: 20px;
-  background: linear-gradient(160deg, #8d8f99, #d7d9e0 18%, #6c6e78 42%, #b9bbc4 64%, #5d5f69 84%, #9a9ca6);
-  box-shadow: 0 0 0 1px #07080b, 0 6px 14px rgba(0, 0, 0, .55), inset 0 1px 1px rgba(255, 255, 255, .5), inset 0 -1px 2px rgba(0, 0, 0, .5); }
-.mood-badge::before { content: ""; position: absolute; inset: 4px; border-radius: 16px; background: radial-gradient(circle at 18% 50%, color-mix(in srgb, var(--lamp) 40%, #0b0a12), #09080d 70%);
-  box-shadow: inset 0 3px 8px rgba(0, 0, 0, .95), 0 1px 0 rgba(255, 255, 255, .22); }
-.mood-badge::after { content: ""; position: absolute; left: 10px; right: 10px; top: 6px; height: 40%; border-radius: 14px 14px 50% 50%; background: linear-gradient(180deg, rgba(255, 255, 255, .16), rgba(255, 255, 255, 0)); pointer-events: none; }
-.mood-badge__face { position: relative; z-index: 1; display: grid; place-items: center; width: 44px; height: 44px; }
-.mood-badge__face svg { width: 38px; height: 38px; fill: none; stroke: #fff; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
-  filter: drop-shadow(0 0 6px var(--lamp)) drop-shadow(0 1px 1px rgba(0, 0, 0, .8)); }
-.mood-badge__face svg circle:not(:first-child) { fill: #fff; stroke: none; }
-.mood-badge__text { position: relative; z-index: 1; font: 600 16px/1.2 var(--display); color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, .8); white-space: nowrap; }
-button.mood-badge { border: 0; cursor: pointer; transition: filter var(--fast), transform var(--fast); }
-button.mood-badge:hover { filter: brightness(1.08); }
-button.mood-badge:active { transform: scale(.98); }
-.mood-badge--small { gap: 8px; padding: 5px 14px 5px 5px; border-radius: 15px; }
-.mood-badge--small::before { inset: 3px; border-radius: 12px; }
-.mood-badge--small .mood-badge__face { width: 30px; height: 30px; }
-.mood-badge--small .mood-badge__face svg { width: 26px; height: 26px; }
-.mood-badge--small .mood-badge__text { font-size: 13px; }
 
 .health-check { grid-template-columns: 30px minmax(0, 1fr); }
 .health-icon { grid-row: 1 / 3; display: grid; place-items: center; width: 30px; height: 30px; border-radius: var(--radius-control); background: var(--raised);
@@ -78,3 +59,12 @@ button.mood-badge:active { transform: scale(.98); }
 @container health (min-width: 820px) { #health-radar .security__checks { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @container health (max-width: 640px) { .health-card .security__checks { grid-template-columns: 1fr; } .health-why { display: none; } }
 .seal .seal__face { width: 50px; height: 50px; }
+.h-health { display: flex; align-items: center; gap: 10px; padding: 0; border: 0; background: none; cursor: pointer; transition: filter var(--fast), transform var(--fast); }
+.h-health:hover { filter: brightness(1.1); }
+.h-health:active { transform: scale(.98); }
+.seal--small { width: 44px; height: 44px; }
+.seal--small::before { inset: 4px; }
+.seal--small::after { left: 9px; right: 9px; top: 6px; height: 14px; }
+.seal--small .seal__face { width: 34px; height: 34px; }
+.h-health .led-panel { padding: 7px 14px; border-radius: 12px; }
+.h-health .led-text { font-size: 13.5px; }

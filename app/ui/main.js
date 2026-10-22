@@ -173,11 +173,9 @@ function render(state) {
   $('place-auto').hidden = !state.weatherPlace;
   check('language', state.language || 'auto');
   check('zoom', String(state.zoom || 100));
-  const zoom = state.zoom || 100;
-  $('zoom-value').textContent = zoom + ' %';
-  document.documentElement.style.setProperty('--zoom', zoom / 100);
-  $('zoom-out').disabled = zoom <= ZOOMS[0];
-  $('zoom-in').disabled = zoom >= ZOOMS[ZOOMS.length - 1];
+  zoomNow = state.zoom || 100;
+  zoomBase = devicePixelRatio / (zoomNow / 100);
+  paintZoom(zoomNow);
   renderUpdates(state.updates);
   if (state.about) {
     $('about-version').textContent = tr('Version {0} · built on {1}', state.about.version, new Date(state.about.compile).toLocaleDateString(LOCALE, { day: 'numeric', month: 'long', year: 'numeric' }));
@@ -776,21 +774,37 @@ addEventListener('DOMContentLoaded', () => {
 });
 
 const ZOOMS = [80, 90, 100, 115, 130, 150];
-function zoomBy(step) {
-  const now = (Bramble.state && Bramble.state.zoom) || 100;
-  let i = ZOOMS.reduce((best, z, k) => Math.abs(z - now) < Math.abs(ZOOMS[best] - now) ? k : best, 0);
-  i = Math.max(0, Math.min(ZOOMS.length - 1, i + step));
-  send('zoom', { value: ZOOMS[i] });
+// The zoom is applied by the window before the page hears of it: the pill follows the pixel ratio at once instead of
+// waiting for the state, which made it grow then shrink. Quick clicks count from the zoom asked last, not the last one confirmed.
+let zoomNow = 100, zoomBase = devicePixelRatio;
+function paintZoom(zoom) {
+  $('zoom-value').textContent = Math.round(zoom) + ' %';
+  document.documentElement.style.setProperty('--zoom', zoom / 100);
+  $('zoom-out').disabled = zoom <= ZOOMS[0];
+  $('zoom-in').disabled = zoom >= ZOOMS[ZOOMS.length - 1];
 }
-for (const b of $('zoom').children) b.addEventListener('click', () => send('zoom', { value: Number(b.dataset.value) }));
+function zoomTo(value) {
+  zoomNow = value;
+  send('zoom', { value });
+}
+function zoomBy(step) {
+  let i = ZOOMS.reduce((best, z, k) => Math.abs(z - zoomNow) < Math.abs(ZOOMS[best] - zoomNow) ? k : best, 0);
+  i = Math.max(0, Math.min(ZOOMS.length - 1, i + step));
+  zoomTo(ZOOMS[i]);
+}
+addEventListener('resize', () => {
+  const zoom = Math.round(devicePixelRatio / zoomBase * 100);
+  if (ZOOMS.includes(zoom)) paintZoom(zoom);
+});
+for (const b of $('zoom').children) b.addEventListener('click', () => zoomTo(Number(b.dataset.value)));
 $('zoom-out').addEventListener('click', () => zoomBy(-1));
 $('zoom-in').addEventListener('click', () => zoomBy(1));
-$('zoom-value').addEventListener('click', () => send('zoom', { value: 100 }));
+$('zoom-value').addEventListener('click', () => zoomTo(100));
 addEventListener('keydown', e => {
   if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
   if (e.key === '+' || e.key === '=') { e.preventDefault(); zoomBy(1); }
   else if (e.key === '-' || e.key === '_') { e.preventDefault(); zoomBy(-1); }
-  else if (e.key === '0' || e.code === 'Digit0' || e.code === 'Numpad0') { e.preventDefault(); send('zoom', { value: 100 }); }
+  else if (e.key === '0' || e.code === 'Digit0' || e.code === 'Numpad0') { e.preventDefault(); zoomTo(100); }
 });
 addEventListener('keydown', e => {
   if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
