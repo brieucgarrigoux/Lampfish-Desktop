@@ -67,7 +67,7 @@ Fonts: `--display` for titles and lit text, `--numbers` with `font-variant-numer
 | Flat | `--group`, `--group-up` | Lists, settings, Personalization cards |
 | Shell | `--shell`, `--shell-edge`, `--shell-lift` | Cards in relief of the PC family, the zoom pill |
 | Well | `--sunken` + inset shadow | Fields, readout lists, segment rails |
-| Anodized metal | `--metal`, `--metal-edge` | Bezels, seals, ring dials: matte, a soft light from the top, the same thin edge all around so the frame keeps one width |
+| Brushed steel | `--steel`, `--steel-edge` | Frames of bezels, seals, ring dials and the speed test dial: a turning sheen, the same thin edge all around so the frame keeps one width |
 | Glass | `--glass`, `--glass-sheen`, `--glass-inset` | Behind lit text and drawings in light |
 | Light | `--lit`, `--warn`, `--bad`, `.led-text` | Lit letters, rings and drawings on glass |
 
@@ -81,7 +81,7 @@ Fonts: `--display` for titles and lit text, `--numbers` with `font-variant-numer
 - **Buttons**: main `.button--accent`, or `.keycap-pill` for the main action of a shell; secondary `.button`; card header action = chip; title line action = link. Armed red (`--danger-dim`, text and ring `--danger`) is the only red button.
 - **Ring dial** (`.dials`, `.dial`, filled by `dials(zone, list)`): a value and its share. `.dials--small` on Home, `.dials--led` with lit figures in Health. Each dial shows details in a bubble on hover or keyboard focus.
 - **Instruments** (`thermometer`, `batteryRelief`, `wifiRelief` in `main.js`): used instead of a ring wherever they exist. A ring is only for what has no instrument.
-- **Bezel** (`.bezel`, `.bezel__glass`): a rectangular screen in anodized metal with a verdict in `.led-text` and a gray line.
+- **Bezel** (`.bezel`, `.bezel__glass`): a rectangular screen in a brushed steel frame with a verdict in `.led-text` and a gray line.
 - **Seal** (`.seal`): a round anodized frame with a face or a shield drawn in light (`faceLight`, `shieldLight`). Never in a diagram.
 - **Readouts** (`.readouts`, `.readout`): a well with rows of icon, title, effect, value and action.
 - **Bubble** (`.chart-tip`): title, note and label and value lines.
@@ -107,7 +107,7 @@ Fonts: `--display` for titles and lit text, `--numbers` with `font-variant-numer
 
 ## Never
 
-- Screws, decorative separator lines, stripes of gloss, chrome.
+- Screws, decorative separator lines, stripes of gloss, mirror chrome. Brushed steel is for frames only.
 - Green, decorative gradients, red outside destructive actions.
 - Fixed-width fonts, whole words in capitals, em dashes.
 - Two radii for the same element type, a raw value used twice.

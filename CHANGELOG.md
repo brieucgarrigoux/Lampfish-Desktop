@@ -6,9 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Changed
+- Network: the top card shows the connection on the glass of a round seal, the Wi-Fi lit in violet, instead of an icon and separate signal bars. The security level is three lit arcs instead of three bars.
+- The frames of seals, ring dials and screens are brushed steel, like the dial of the speed test.
 - Home: the face and the shield each have their own bubble, and the shield opens Protection.
 - Health: when the PC is too hot, the finding names the program that uses the processor the most, with Tasks, or offers to choose the power mode.
 - Health: the Processor measure names the program that uses it the most.
+- Network: how far the network can be trusted shows only in the Security card, no longer also at the top.
 
 ### Fixed
 - Sounds: Reset everything turned on the dock sounds. Only the sound of the speed test is on by default.

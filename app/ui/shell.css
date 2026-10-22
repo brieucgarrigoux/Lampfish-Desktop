@@ -96,12 +96,12 @@ button.dial:active { transform: scale(.98); }
 
 .led-text { font: 600 var(--text-title)/1.2 var(--display); font-variant-numeric: tabular-nums; letter-spacing: .01em; color: var(--lamp-hi);
   text-shadow: 0 0 6px color-mix(in srgb, var(--lamp) 55%, transparent); }
-.bezel { flex: 1; min-width: 0; padding: 4px; border-radius: var(--radius-shell); background: var(--metal); box-shadow: var(--metal-edge); }
+.bezel { flex: 1; min-width: 0; padding: 4px; border-radius: var(--radius-shell); background: var(--steel); box-shadow: var(--steel-edge); }
 .bezel__glass { position: relative; display: flex; align-items: center; gap: 14px; min-height: 52px; padding: 9px 16px; border-radius: var(--radius-card); overflow: hidden;
   background: var(--glass-sheen), radial-gradient(130% 170% at 0% 0%, color-mix(in srgb, var(--lamp) 16%, var(--glass)), var(--glass) 70%); box-shadow: var(--glass-inset); }
 .bezel__text { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .bezel__sub { font-size: var(--text-caption); line-height: 1.3; color: var(--lamp-hi); opacity: .62; }
-.bezel .security__meter { position: relative; z-index: 1; }
+.bezel .level-arc { position: relative; z-index: 1; }
 
 .wifi-relief { overflow: visible; }
 .wifi-relief__bevel path { fill: none; stroke: rgba(255, 255, 255, .07); stroke-width: 9; stroke-linecap: round; transform: translateY(1.2px); }

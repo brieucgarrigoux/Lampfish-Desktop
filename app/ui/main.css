@@ -51,8 +51,8 @@
   --shell-up: linear-gradient(180deg, #232430, #191a22 60%, #15161d);
   --shell-edge: inset 0 1px 0 rgba(255, 255, 255, .07), inset 0 0 0 1px rgba(255, 255, 255, .025), inset 0 -1px 0 rgba(0, 0, 0, .45), 0 0 0 1px rgba(0, 0, 0, .6);
   --shell-lift: 0 1px 2px rgba(0, 0, 0, .45), 0 8px 14px -8px rgba(0, 0, 0, .6);
-  --metal: linear-gradient(180deg, #44464f, #393a44 50%, #33343d);
-  --metal-edge: inset 0 0 0 1px rgba(255, 255, 255, .09), 0 0 0 1px #050608, 0 4px 12px rgba(0, 0, 0, .5);
+  --steel: conic-gradient(from 210deg, #8d8f99, #d7d9e0 12%, #6c6e78 28%, #b9bbc4 45%, #5d5f69 60%, #c9cbd3 78%, #7c7e88 90%, #8d8f99);
+  --steel-edge: 0 0 0 1px #07080b, 0 4px 12px rgba(0, 0, 0, .5), inset 0 0 0 1px rgba(255, 255, 255, .22);
   --glass-sheen: linear-gradient(135deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, 0) 42%);
   --glass: #060609;
   --ink: #08090c;

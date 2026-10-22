@@ -62,26 +62,28 @@
 
   function renderHeader() {
     const type = !cx ? 'none' : !cx.connected ? 'none' : cx.wifi ? 'wifi' : 'cable';
-    $('r-type').innerHTML = GLYPHS[type];
+    face(type);
     $('r-header').classList.toggle('offline', !cx || !cx.connected);
     if (!cx) return;
     if (!cx.connected) {
       $('r-name').textContent = 'No connection';
       $('r-detail').textContent = 'Neither Wi-Fi nor cable in use';
       $('r-ip').textContent = '';
-      $('r-trust').hidden = true;
-      $('r-bars').hidden = true;
       return;
     }
     $('r-name').textContent = cx.wifi ? (cx.network || 'Wi-Fi') : 'Cable';
     $('r-detail').textContent = [cx.wifi ? cx.standard || 'Wi-Fi' : 'Ethernet', cx.wifi && cx.strip ? cx.strip : '', cx.wifi && cx.signal >= 0 ? tr('signal {0} %', cx.signal) : '', cx.card].filter(Boolean).join(' · ');
     $('r-ip').textContent = cx.ipv4 || '';
-    const t = trust(), pill = $('r-trust');
-    pill.hidden = !t;
-    if (t) { pill.className = 'pill trust ' + TRUST[t.level][1]; pill.textContent = tr(TRUST[t.level][0]); pill.title = tr(t.why); }
-    $('r-bars').hidden = !cx.wifi || cx.signal < 0;
-    if (!$('r-bars').firstChild) $('r-bars').innerHTML = wifiRelief();
-    setWifi($('r-bars').firstChild, cx.signal, cx.connected);
+  }
+
+  // The type of connection lit on the glass of a round seal: the Wi-Fi in relief with its signal, or the cable.
+  function face(type) {
+    const zone = $('r-face'), wifi = type === 'wifi' && cx.signal >= 0;
+    if (zone.dataset.type !== (wifi ? 'wifi' : type)) {
+      zone.dataset.type = wifi ? 'wifi' : type;
+      zone.innerHTML = wifi ? wifiRelief() : '<svg class="network-seal__glyph" viewBox="0 0 24 24">' + GLYPHS[type] + '</svg>';
+    }
+    if (wifi) setWifi(zone.firstChild, cx.signal, cx.connected);
   }
 
   function plot() {
@@ -427,6 +429,13 @@
     return [enc, prof, vpn];
   }
 
+  // Three arcs lit on the glass, like a small dial: one for risky, two for be careful, three for trusted.
+  function levelArc() {
+    const point = a => (24 + 18 * Math.cos(a * Math.PI / 180)).toFixed(2) + ' ' + (25 + 18 * Math.sin(a * Math.PI / 180)).toFixed(2);
+    const parts = [[-166, -122], [-112, -68], [-58, -14]].map(([a, b]) => `<path class="level-arc__part" d="M${point(a)} A18 18 0 0 1 ${point(b)}"/>`).join('');
+    return `<svg class="level-arc" viewBox="0 0 48 30" aria-hidden="true">${parts}</svg>`;
+  }
+
   function renderSecurity(t) {
     const zone = $('r-security');
     $('r-security-title').hidden = zone.hidden = !t;
@@ -439,10 +448,10 @@
     const head = document.createElement('div');
     head.className = 'security__head';
     head.innerHTML = `<span class="seal">${shieldLight('network-shield', t.level)}</span><div class="bezel"><div class="bezel__glass"><div class="bezel__text"><span class="led-text"></span><span class="bezel__sub"></span></div>`
-      + '<div class="security__meter" aria-hidden="true"><i></i><i></i><i></i></div></div></div>';
+      + levelArc() + '</div></div>';
     head.querySelector('.led-text').textContent = tr(TRUST[t.level][0]);
     head.querySelector('.bezel__sub').textContent = tr(t.why);
-    [...head.querySelector('.security__meter').children].forEach((b, i) => b.classList.toggle('on', i < level));
+    [...head.querySelectorAll('.level-arc__part')].forEach((b, i) => b.classList.toggle('on', i < level));
 
     const list = document.createElement('div');
     list.className = 'readouts';
