@@ -31,20 +31,6 @@
   const state = level => level === 'unknown' ? 'neutral' : level;
   const svg = path => `<svg viewBox="0 0 24 24" aria-hidden="true">${path}</svg>`;
 
-  // The gradients of an inline SVG resolve their colors where they are defined, so each seal needs its own ids.
-  function shield(id) {
-    return `<svg class="seal__shield" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="${id}-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--lamp-hi)"/><stop offset=".5" style="stop-color:var(--lamp)"/><stop offset="1" style="stop-color:var(--lamp-lo)"/></linearGradient>`
-      + `<linearGradient id="${id}-face" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--lamp)"/><stop offset="1" style="stop-color:var(--lamp-lo)"/></linearGradient>`
-      + `<linearGradient id="${id}-rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".55"/></linearGradient>`
-      + `<linearGradient id="${id}-gloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>`
-      + `<filter id="${id}-shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="2.2" stdDeviation="2.2" flood-color="#000" flood-opacity=".8"/></filter><filter id="${id}-bloom" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter></defs>`
-      + `<path d="M32 6 54 14v16c0 14-9 24-22 29C19 54 10 44 10 30V14z" style="fill:var(--lamp)" opacity=".55" filter="url(#${id}-bloom)"/><g filter="url(#${id}-shadow)"><path d="M32 6 54 14v16c0 14-9 24-22 29C19 54 10 44 10 30V14z" fill="url(#${id}-body)"/>`
-      + `<path d="M32 6 54 14v16c0 14-9 24-22 29C19 54 10 44 10 30V14z" fill="none" stroke="url(#${id}-rim)" stroke-width="1.6"/><path d="M32 11.5 49 17.6V30c0 10.6-6.8 18.4-17 22.6C21.8 48.4 15 40.6 15 30V17.6z" fill="url(#${id}-face)"/>`
-      + `<path d="M32 11.5 49 17.6V30c0 10.6-6.8 18.4-17 22.6C21.8 48.4 15 40.6 15 30V17.6z" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="1"/>`
-      + `<path d="M23 31.5 29.6 38 42 24.5" fill="none" stroke="#000" stroke-opacity=".5" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 1.3)"/><path d="M23 31.5 29.6 38 42 24.5" fill="none" stroke="#fff" stroke-opacity=".95" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>`
-      + `<path d="M32 11.5 49 17.6V28c-6 3-11 4.4-17 4.4S21 31 15 28V17.6z" fill="url(#${id}-gloss)" opacity=".7"/></g></svg>`;
-  }
-
   function act(action) {
     if (action.startsWith('view:')) showView(action.slice(5));
     else if (action === 'free') { if (Bramble.tasks) Bramble.tasks.free(); else showView('tasks'); }
@@ -52,135 +38,167 @@
   }
 
   function link(action) {
-    const b = Object.assign(document.createElement('button'), { className: 'link check__open', textContent: tr(ACTIONS[action] || 'Open') });
+    const b = Object.assign(document.createElement('button'), { className: 'link', textContent: tr(ACTIONS[action] || 'Open') });
     b.addEventListener('click', () => act(action));
     return b;
   }
 
-  function check(level, icon, title, detail, value, action) {
+  function readout(level, icon, title, detail, value, action) {
     const el = document.createElement('div');
-    el.className = 'check health-check check--' + state(level);
-    el.innerHTML = `<span class="health-icon" role="img">${svg(icon || ICONS.antivirus)}</span><div class="check__what"><span class="check__title"></span><span class="check__detail"></span></div>`;
+    el.className = 'readout check--' + state(level);
+    el.innerHTML = `<svg class="glyph" role="img" viewBox="0 0 24 24">${icon || ICONS.antivirus}</svg><span class="readout__what"><span class="readout__title"></span><span class="readout__detail"></span></span><span class="readout__end"></span>`;
     el.firstChild.setAttribute('aria-label', tr(STATES[state(level)]));
-    el.querySelector('.check__title').textContent = title;
-    el.querySelector('.check__detail').textContent = el.querySelector('.check__detail').title = detail || '';
-    const shown = value ? Object.assign(document.createElement('span'), { className: 'check__value' }) : null;
-    if (shown) { shown.append(Object.assign(document.createElement('span'), { textContent: value })); el.append(shown); }
-    if (action) (shown || el).append(link(action));
+    el.querySelector('.readout__title').textContent = title;
+    el.querySelector('.readout__detail').textContent = el.querySelector('.readout__detail').title = detail || '';
+    const end = el.lastChild;
+    if (value) {
+      const v = Object.assign(document.createElement('span'), { className: 'readout__value', innerHTML: '<i></i><span></span>' });
+      v.lastChild.textContent = v.lastChild.title = value;
+      end.append(v);
+    }
+    if (action) end.append(link(action));
     return el;
   }
 
-  function head(seal, title, why) {
+  // A round instrument with a screen in a metal bezel beside it, as on a dashboard.
+  function head(seal, title, sub, extra) {
     const h = document.createElement('div');
     h.className = 'security__head';
-    h.innerHTML = `<span class="seal">${seal}</span><div class="security__verdict"><span class="security__title"></span><span class="security__why"></span></div>`;
-    h.querySelector('.security__title').textContent = title;
-    h.querySelector('.security__why').textContent = why;
+    h.innerHTML = `<span class="seal">${seal}</span><div class="bezel"><div class="bezel__glass"><div class="bezel__text"><span class="led-text"></span><span class="bezel__sub"></span></div></div></div>`;
+    h.querySelector('.led-text').textContent = title;
+    h.querySelector('.bezel__sub').textContent = sub;
+    if (extra) h.querySelector('.bezel__glass').append(extra);
     return h;
   }
 
-  // The state of the whole PC, from the findings and the checks: also shown on Home.
-  function overall(r) {
-    const all = r.slow.concat(r.checks);
-    return worst(all);
+  // Startup has its own card and disk space its own measure, so the protection checks keep only what protects the PC.
+  const radar = r => r.checks.filter(c => c.id !== 'startup' && c.id !== 'space');
+  const findings = r => r.slow.filter(f => f.level !== 'ok');
+
+  function protection(r) {
+    const bad = radar(r).filter(c => c.level === 'warn' || c.level === 'bad');
+    return bad.length ? tr(bad.length === 1 ? '1 point to look at' : '{0} points to look at', bad.length) : tr('Every check is fine');
   }
 
+  // One cause: its own words. Several: they are named, each one explained in the list below.
   function verdict(r) {
-    const bad = r.slow.filter(f => f.level !== 'ok');
+    const bad = findings(r);
+    if (bad.length === 1 && bad[0].verdict) return bad[0].verdict;
+    if (bad.length > 1 && bad.every(f => f.cause)) return tr('{0} causes slow this PC: {1}', bad.length, bad.map(f => f.cause).join(', '));
     return bad.length ? tr(bad.length === 1 ? '1 thing slows this PC' : '{0} things slow this PC', bad.length) : tr('Nothing slows this PC');
   }
 
-  function face(id, level) {
-    const mouth = { ok: 'M21.5 35.5Q32 46.5 42.5 35.5', warn: 'M22.5 39.5H41.5', bad: 'M21.5 43Q32 33 42.5 43' }[level];
-    return `<svg class="seal__shield seal__face" viewBox="0 0 64 64" aria-hidden="true"><defs><radialGradient id="${id}-body" cx=".38" cy=".32" r=".75"><stop offset="0" style="stop-color:var(--lamp-hi)"/><stop offset=".45" style="stop-color:var(--lamp)"/><stop offset="1" style="stop-color:var(--lamp-lo)"/></radialGradient>`
-      + `<linearGradient id="${id}-gloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>`
-      + `<filter id="${id}-shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="2.2" stdDeviation="2.2" flood-color="#000" flood-opacity=".8"/></filter><filter id="${id}-bloom" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter></defs>`
-      + `<circle cx="32" cy="32" r="22" style="fill:var(--lamp)" opacity=".55" filter="url(#${id}-bloom)"/><g filter="url(#${id}-shadow)"><circle cx="32" cy="32" r="22" fill="url(#${id}-body)"/>`
-      + `<circle cx="32" cy="32" r="21.3" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="1"/>`
-      + `<g fill="none" stroke="#000" stroke-opacity=".45" stroke-width="5" stroke-linecap="round" transform="translate(0 1.2)"><path d="M25.5 25v3.5M38.5 25v3.5"/><path d="${mouth}"/></g>`
-      + `<g fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"><path d="M25.5 25v3.5M38.5 25v3.5"/><path d="${mouth}"/></g>`
-      + `<path d="M15 26a17 13 0 0 1 34 0c-6 3-11 4-17 4s-11-1-17-4z" fill="url(#${id}-gloss)" opacity=".6"/></g></svg>`;
+  const face = (id, level) => faceLight(id, LAMPS[level] || 'medium');
+
+
+  // The lights show the value itself, so they read like the number above them; what counts as a lot differs from one measure to the other.
+  const MEANINGS = {
+    processor: ['How busy the processor is right now', '80 %'], memory: ['Share of the memory in use', '75 %'], disk: ['Share of the time the disk is busy', '90 %'],
+    uptime: ['Time since the last real restart', '7 days'], free: ['Free room on the system drive', '10 %'], heat: ['Temperature of the processor thermal zone', '90 °C'],
+  };
+  const SCALES = { processor: 100, memory: 100, disk: 100, uptime: 7, free: 100, heat: 100 };
+  const TARGETS = { processor: 'view:tasks', memory: 'free', disk: 'view:tasks', free: 'view:files', heat: 'view:hardware' };
+  function word(m) {
+    const v = parseFloat(m.value) || 0;
+    switch (m.id) {
+      case 'processor': case 'memory': case 'disk': return tr(v < 15 ? 'Idle' : v < 50 ? 'Moderate' : v < 85 ? 'Busy' : 'Maxed out');
+      case 'heat': return tr(v < 60 ? 'Cool' : v < 85 ? 'Warm' : 'Hot');
+      case 'uptime': return tr(m.level === 'ok' ? 'Restarted lately' : 'Restart advised');
+      case 'free': return tr(m.level === 'ok' ? 'Enough room' : m.level === 'warn' ? 'Getting full' : 'Almost no room');
+    }
+    return '';
   }
 
-  // How full each measure is, for its row of lights: what counts as a lot differs from one to the other.
-  const SCALES = { processor: 100, memory: 100, disk: 100, uptime: 14, startup: 20, free: 100, heat: 100 };
   function fill(m) {
     let v = parseFloat(String(m.value).replace(',', '.')) || 0;
     if (m.id === 'uptime' && /h/.test(m.value)) v /= 24;
-    if (m.id === 'free') v = 100 - v;
     return Math.max(0, Math.min(1, v / (SCALES[m.id] || 100)));
   }
 
+
+
   function renderSlow() {
     const card = $('health-slow');
-    const bad = report.slow.filter(f => f.level !== 'ok');
-    card.className = 'security health-card security--' + LAMPS[worst(report.slow)];
-    const top = document.createElement('div');
-    top.className = 'security__head';
-    top.innerHTML = `<span class="seal">${face('health-face', overall(report))}</span><div class="security__verdict"><span class="led-panel"><span class="led-text"></span></span></div>`;
-    top.querySelector('.led-text').textContent = verdict(report);
-    const screen = Object.assign(document.createElement('span'), { className: 't-memory__screen health-time', textContent: checking ? tr('Checking…') : tr('Checked at {0}', report.when) });
-    top.append(screen);
-    const parts = [top];
+    const bad = findings(report), level = worst(report.slow);
+    card.className = 'security health-card security--' + LAMPS[level];
+    const parts = [head(face('health-face', level), verdict(report), checking ? tr('Checking…') : bad.length === 1 && bad[0].verdict ? bad[0].detail : tr('Checked at {0}', report.when))];
     if (bad.length) {
       const list = document.createElement('div');
-      list.className = 'security__checks health-findings';
-      list.append(...bad.map(f => check(f.level, ICONS[f.icon] || ICONS.processor, f.title, f.detail, null, f.action)));
+      list.className = 'readouts';
+      list.append(...bad.map(f => readout(f.level, ICONS[f.icon] || ICONS.processor, f.title, bad.length === 1 && f.verdict ? '' : f.detail, null, f.action)));
       parts.push(list);
     }
     const measures = document.createElement('div');
-    measures.className = 'health-measures';
-    for (const m of report.measures || []) {
-      const el = document.createElement('div');
-      el.className = 'health-measure check--' + state(m.level) + ' security--' + (LAMPS[m.level] || 'high');
-      el.innerHTML = `<span class="health-measure__head"><span class="health-measure__icon" role="img">${svg(ICONS[m.id] || ICONS.processor)}</span><span class="health-measure__name"></span></span>`
-        + '<span class="health-measure__screen"><b class="led-text"></b></span><span class="health-measure__lights" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>';
-      el.querySelector('.health-measure__icon').setAttribute('aria-label', tr(STATES[state(m.level)]));
-      el.querySelector('.health-measure__name').textContent = tr(MEASURES[m.id] || m.id);
-      el.querySelector('b').textContent = m.value;
-      const lit = Math.max(1, Math.round(fill(m) * 8));
-      [...el.querySelector('.health-measure__lights').children].forEach((i, k) => i.classList.toggle('on', k < lit));
-      measures.append(el);
-    }
+    measures.className = 'dials dials--small dials--led health-measures';
+    const shownMeasures = (report.measures || []).filter(m => m.id !== 'startup');
+    measures.style.setProperty('--count', shownMeasures.length);
+    dials(measures, shownMeasures.map(m => ({ key: m.id, part: fill(m) * 100, value: m.value, label: tr(MEASURES[m.id] || m.id), level: LAMPS[m.level] || 'high',
+      action: TARGETS[m.id] ? () => act(TARGETS[m.id]) : null,
+      details: { title: tr(MEASURES[m.id] || m.id), value: m.value, note: MEANINGS[m.id] ? tr(MEANINGS[m.id][0]) : '',
+        lines: [[tr('Status'), word(m)], [m.id === 'free' ? tr('Watch below') : tr('Watch from'), MEANINGS[m.id] ? tr(MEANINGS[m.id][1]) : '']] } })));
     parts.push(measures);
-    card.replaceChildren(...parts, next(bad.length ? tr('Each button opens what helps, nothing is changed without you') : tr('Measured now: Bramble reads, it changes nothing'), true));
+    card.replaceChildren(...parts, next('', true));
   }
 
   function renderRadar() {
     const card = $('health-radar');
-    const checks = report.checks.filter(c => c.id !== 'startup'), bad = checks.filter(c => c.level === 'warn' || c.level === 'bad');
+    const checks = radar(report);
     card.className = 'security health-card security--' + LAMPS[worst(checks)];
-    const top = head(shield('health-shield'), bad.length ? tr(bad.length === 1 ? '1 point to look at' : '{0} points to look at', bad.length) : tr('Every check is fine'),
-      tr('{0} checks read without administrator rights', checks.length));
     const list = document.createElement('div');
-    list.className = 'security__checks';
-    list.append(...checks.map(c => check(c.level, ICONS[c.id], tr(TITLES[c.id] || c.id), c.detail, c.value, c.level === 'ok' ? null : c.action)));
-    const first = checks.find(c => c.level === 'bad') || checks.find(c => c.level === 'warn');
-    card.replaceChildren(top, list, next(first ? tr('Start with {0}: {1}', tr(TITLES[first.id] || first.id), first.detail) : tr('Read only: each button opens the right place in Windows'), false));
-    renderStartup(report.checks.find(c => c.id === 'startup'));
+    list.className = 'readouts readouts--two';
+    list.append(...checks.map(c => readout(c.level, ICONS[c.id], tr(TITLES[c.id] || c.id), c.detail, c.value, c.level === 'ok' ? null : c.action)));
+    const flagged = checks.filter(c => c.level === 'warn' || c.level === 'bad').map(c => tr(TITLES[c.id] || c.id));
+    card.replaceChildren(head(shieldLight('health-shield', LAMPS[worst(checks)]), protection(report), flagged.length ? flagged.join(', ') : tr('Checked at {0}', report.when)), list);
+    renderStartup(report.checks.find(c => c.id === 'startup'), (report.startup || []).filter(i => typeof i === 'object'));
   }
 
-  // Startup is a list to tidy rather than a yes or no check, so it has its own card with what it means and where to change it.
-  function renderStartup(c) {
+  // Startup is a list to tidy rather than a yes or no check: what these programs cost, each one with its logo and its switch.
+  function renderStartup(c, items) {
     const zone = $('health-startup');
     if (!c) { zone.replaceChildren(); return; }
-    const row = document.createElement('div');
-    row.className = 'health-startup check--' + state(c.level);
-    row.innerHTML = `<span class="health-icon" role="img">${svg(ICONS.startup)}</span><div class="health-startup__what"><span class="health-startup__title"></span><span class="health-startup__names"></span><span class="health-startup__help"></span></div>`;
-    row.querySelector('.health-startup__title').textContent = c.value;
-    row.querySelector('.health-startup__names').textContent = c.detail;
-    row.querySelector('.health-startup__help').textContent = tr('Each one starts with Windows and stays in memory. They can be turned off in the startup apps of Windows, without uninstalling them.');
-    const open = Object.assign(document.createElement('button'), { className: 'button', textContent: tr('Open the startup apps') });
+    const on = items.filter(i => i.enabled).length;
+    const card = document.createElement('div');
+    card.className = 'health-startup check--' + state(c.level);
+    card.innerHTML = `<div class="health-startup__head"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${ICONS.startup}</svg><span class="health-startup__title"></span><span class="health-startup__state"></span></div>`
+      + '<p class="health-startup__help"></p><div class="readouts health-startup__apps"></div><div class="health-startup__foot"><span></span></div>';
+    card.querySelector('.health-startup__title').textContent = on === 1 ? tr('1 program starts with Windows') : tr('{0} programs start with Windows', on);
+    card.querySelector('.health-startup__state').textContent = tr(c.level === 'ok' ? 'Up to 10 is fine' : 'More than 10 slows the start');
+    card.querySelector('.health-startup__help').textContent = tr('They open by themselves at every start, before anything is clicked. Each one makes the start longer and keeps some memory afterwards.');
+    card.querySelector('.health-startup__apps').append(...items.map(startupRow));
+    card.querySelector('.health-startup__foot span').textContent = tr('Turned off, a program stays installed and still opens when launched.');
+    const open = Object.assign(document.createElement('button'), { className: 'button', textContent: tr('Startup apps of Windows') });
     open.addEventListener('click', () => act('startup'));
-    row.append(open);
-    zone.replaceChildren(row);
+    card.querySelector('.health-startup__foot').append(open);
+    zone.replaceChildren(card);
+  }
+
+  function startupRow(item) {
+    const row = document.createElement('div');
+    row.className = 'readout health-app' + (item.enabled ? '' : ' health-app--off');
+    row.innerHTML = '<span class="health-app__logo"></span><span class="readout__what"><span class="readout__title" translate="no"></span><span class="readout__detail" translate="no"></span></span><span class="readout__end"></span>';
+    const logo = row.querySelector('.health-app__logo');
+    if (item.icon) logo.append(Object.assign(document.createElement('img'), { src: item.icon, alt: '' }));
+    else logo.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS.startup}</svg>`;
+    row.querySelector('.readout__title').textContent = item.name;
+    row.querySelector('.readout__detail').textContent = item.publisher || '';
+    const end = row.querySelector('.readout__end');
+    if (item.machine) {
+      end.append(Object.assign(document.createElement('span'), { className: 'health-app__lock', textContent: tr(item.enabled ? 'On, for every user' : 'Off, for every user'), title: tr('Needs administrator rights: change it in the startup apps of Windows') }));
+    } else {
+      const toggle = Object.assign(document.createElement('label'), { className: 'toggler' });
+      const box = Object.assign(document.createElement('input'), { type: 'checkbox', checked: item.enabled });
+      box.setAttribute('aria-label', item.name);
+      box.addEventListener('change', () => { row.classList.toggle('health-app--off', !box.checked); send('health.startup', { id: item.id, on: box.checked }); });
+      toggle.append(box);
+      end.append(toggle);
+    }
+    return row;
   }
 
   function next(tip, again) {
     const n = document.createElement('div');
     n.className = 'security__next';
-    n.innerHTML = '<span class="security__tip"></span>';
-    n.firstChild.textContent = tip;
+    if (tip) n.append(Object.assign(document.createElement('span'), { className: 'security__tip', textContent: tip }));
     if (again) {
       const b = document.createElement('button');
       b.className = 'keycap-pill keycap-test';
@@ -195,7 +213,7 @@
   }
 
   function render() {
-    if (Bramble.home && Bramble.home.health) Bramble.home.health(report && !report.failed ? { level: overall(report), text: verdict(report) } : null);
+    if (Bramble.home && Bramble.home.health) Bramble.home.health(report && !report.failed ? { level: worst(report.slow), text: verdict(report), protectionLevel: worst(radar(report)), protection: protection(report) } : null);
     if (!shown) return;
     if (checking && !report) {
       $('health-slow').replaceChildren(Object.assign(document.createElement('div'), { className: 'row loading', textContent: tr('Checking') }));
@@ -225,5 +243,5 @@
     if (yes) { render(); send('health.scan', { again: false }); }
   }
 
-  Bramble.health = { event, visible, face };
+  Bramble.health = { event, visible };
 })();

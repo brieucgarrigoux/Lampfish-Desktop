@@ -3,68 +3,38 @@
 .health-card { margin-bottom: 4px; }
 .health-card:empty { display: none; }
 .health-card > .row.loading { padding: 18px 24px; }
-.health-why { flex: 1; min-width: 0; }
-.health-time { flex: none; align-self: center; margin-top: 0; font: 12px var(--numbers); font-variant-numeric: tabular-nums; color: #cdb8ff; }
+.health-measures { display: grid; grid-template-columns: repeat(var(--count, 6), minmax(0, 1fr)); justify-items: center; padding: 6px 12px 16px; }
+.health-measures .dial { width: 100%; min-width: 0; }
 
-
-.health-check { grid-template-columns: 30px minmax(0, 1fr); }
-.health-icon { grid-row: 1 / 3; display: grid; place-items: center; width: 30px; height: 30px; border-radius: var(--radius-control); background: var(--raised);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 1px 2px rgba(0, 0, 0, .6); }
-.health-icon svg { width: 17px; height: 17px; fill: none; stroke: var(--text-pale); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-.check--ok .health-icon svg { stroke: var(--accent); }
-.check--warn .health-icon svg { stroke: #f0b955; }
-.check--bad .health-icon svg { stroke: #ff7a88; }
-.check--warn .health-icon { background: rgba(240, 185, 85, .12); }
-.check--bad .health-icon { background: rgba(255, 85, 102, .14); }
-.health-check .check__value { grid-column: 1 / -1; }
-
-.health-findings { grid-template-columns: repeat(2, minmax(0, 1fr)); padding-bottom: 10px; }
-.health-findings .check:only-child { grid-column: 1 / -1; }
-.health-measures { display: grid; grid-template-columns: repeat(auto-fit, minmax(108px, 1fr)); gap: 10px; padding: 0 18px 16px; }
-.health-measure { display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 10px 10px 11px; border-radius: var(--radius-group);
-  background: linear-gradient(180deg, #1b1c24, #111218); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07), 0 0 0 1px rgba(0, 0, 0, .55), 0 3px 8px rgba(0, 0, 0, .45); }
-.health-measure__head { display: flex; align-items: center; gap: 7px; min-width: 0; }
-.health-measure__icon svg { display: block; width: 15px; height: 15px; fill: none; stroke: var(--lamp); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-.health-measure__name { min-width: 0; font-size: 12px; color: var(--text-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.health-measure__screen { display: flex; align-items: center; justify-content: center; height: 34px; border-radius: var(--radius-small);
-  background: radial-gradient(circle, rgba(255, 255, 255, .045) .8px, transparent 1.1px) 0 0 / 3px 3px, linear-gradient(180deg, #040406, #0b0b10);
-  box-shadow: inset 0 2px 5px rgba(0, 0, 0, .95), 0 1px 0 rgba(255, 255, 255, .07); }
-.health-measure__screen b { font-size: 18px; }
-.health-measure__lights { display: flex; gap: 3px; padding: 4px 5px; border-radius: 99px; background: linear-gradient(180deg, #050608, #111217); box-shadow: inset 0 1px 3px rgba(0, 0, 0, .95), 0 1px 0 rgba(255, 255, 255, .06); }
-.health-measure__lights i { flex: 1; height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--lamp) 12%, #16171d); box-shadow: inset 0 1px 1px rgba(0, 0, 0, .7); }
-.health-measure__lights i.on { background: linear-gradient(180deg, var(--lamp-hi), var(--lamp) 60%, color-mix(in srgb, var(--lamp) 80%, #000)); box-shadow: 0 0 6px var(--lamp); }
-
-.led-text { font: 600 17px/1.15 var(--display); font-variant-numeric: tabular-nums; letter-spacing: .02em; color: var(--lamp-hi);
-  text-shadow: 0 0 3px var(--lamp), 0 0 10px var(--lamp), 0 0 18px color-mix(in srgb, var(--lamp) 50%, transparent); }
-.led-panel { align-self: flex-start; display: inline-flex; align-items: center; max-width: 100%; padding: 9px 18px; border-radius: 14px;
-  background: radial-gradient(circle, rgba(255, 255, 255, .05) .8px, transparent 1.1px) 0 0 / 3px 3px, linear-gradient(180deg, #040406, #0c0c12);
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, .95), inset 0 0 0 1px rgba(0, 0, 0, .8), 0 0 0 1px rgba(255, 255, 255, .08), 0 1px 0 rgba(255, 255, 255, .1); }
-.led-panel .led-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-#health-slow .security__verdict { gap: 7px; }
-
-.health-card .check__detail { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-.check__open { grid-column: 2; justify-self: start; margin-top: 4px; font-size: 12px; }
-.health-card .check__value { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.health-card .check__value > span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.health-card .check__value .check__open { flex: none; margin: 0; }
 .health-card .security__next .keycap-pill { min-width: 150px; }
 
-.health-startup { display: flex; align-items: center; gap: 14px; padding: 14px 16px; }
-.health-startup .health-icon { flex: none; }
-.health-startup__what { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.health-startup__title { font: 600 15px/1.2 var(--display); }
-.health-startup__names { font-size: 12.5px; color: var(--text-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.health-startup__help { font-size: 12px; color: var(--text-pale); line-height: 1.35; }
-.health-startup .button { flex: none; }
-@container health (min-width: 820px) { #health-radar .security__checks { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-@container health (max-width: 640px) { .health-card .security__checks { grid-template-columns: 1fr; } .health-why { display: none; } }
-.seal .seal__face { width: 50px; height: 50px; }
-.h-health { display: flex; align-items: center; gap: 10px; padding: 0; border: 0; background: none; cursor: pointer; transition: filter var(--fast), transform var(--fast); }
+.health-startup { display: flex; flex-direction: column; gap: 12px; padding: 16px 18px; }
+.health-startup__head { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.health-startup__title { flex: 1; min-width: 0; font: 600 var(--text-title)/1.2 var(--display); }
+.health-startup__state { flex: none; padding: 3px 10px; border-radius: 99px; font-size: var(--text-badge); font-weight: 600; background: var(--accent-dim); color: var(--accent); }
+.health-startup.check--warn .health-startup__state { background: color-mix(in srgb, var(--warn) 14%, transparent); color: var(--warn); }
+.health-startup__help { margin: 0; font-size: var(--text-caption); line-height: 1.4; color: var(--text-soft); }
+.health-startup__apps { margin: 0; }
+.health-app__logo { display: grid; place-items: center; width: 30px; height: 30px; border-radius: var(--radius-control); background: var(--raised); }
+.health-app__logo img { width: 20px; height: 20px; }
+.health-app__logo svg { width: 18px; height: 18px; fill: none; stroke: var(--text-soft); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.health-app--off .health-app__logo, .health-app--off .readout__what { opacity: .5; }
+.health-app__lock { font-size: var(--text-caption); color: var(--text-pale); white-space: nowrap; }
+.health-startup__foot { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding-top: 12px; border-top: 1px solid var(--hairline); }
+.health-startup__foot span { min-width: 0; font-size: var(--text-caption); line-height: 1.35; color: var(--text-pale); }
+.health-startup__foot .button { flex: none; }
+@container health (min-width: 760px) {
+  .readouts--two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .readouts--two .readout + .readout { border-top: 0; }
+  .readouts--two .readout:nth-child(n + 3) { border-top: 1px solid rgba(255, 255, 255, .045); }
+  .readouts--two .readout:nth-child(odd) { border-right: 1px solid rgba(255, 255, 255, .045); }
+  .readouts--two .readout:last-child:nth-child(odd) { grid-column: 1 / -1; border-right: 0; }
+}
+@container health (max-width: 560px) { .health-measures { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@container health (max-width: 460px) { .health-startup__foot { flex-direction: column; align-items: stretch; } }
+.h-health { margin-left: auto; display: flex; align-items: center; gap: 8px; padding: 0; border: 0; background: none; cursor: pointer; transition: filter var(--fast), transform var(--fast); }
 .h-health:hover { filter: brightness(1.1); }
 .h-health:active { transform: scale(.98); }
 .seal--small { width: 44px; height: 44px; }
-.seal--small::before { inset: 4px; }
-.seal--small::after { left: 9px; right: 9px; top: 6px; height: 14px; }
-.seal--small .seal__face { width: 34px; height: 34px; }
-.h-health .led-panel { padding: 7px 14px; border-radius: 12px; }
-.h-health .led-text { font-size: 13.5px; }
+.seal--small::before, .seal--small::after { inset: 4px; }
+.seal.seal--small .seal__face { width: 36px; height: 36px; }

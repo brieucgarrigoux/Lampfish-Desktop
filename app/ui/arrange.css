@@ -18,7 +18,7 @@
 .map-actions .button-sort { flex: none; }
 .scene { position: relative; flex: none; }
 .screen-map { position: absolute; border-radius: var(--radius-small); background: var(--screen); box-shadow: 0 0 0 1px var(--hairline-strong); overflow: hidden; }
-.screen-map.primary { box-shadow: 0 0 0 1px rgba(149, 97, 243, .45); }
+.screen-map.primary { box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent); }
 
 
 .screen-map .wallpaper-map { position: absolute; inset: 0; border-radius: 0; }
@@ -33,9 +33,9 @@
 .arrangement svg { width: 78px; height: 52px; }
 .arrangement .screen-v { fill: var(--screen); stroke: var(--hairline-strong); }
 .arrangement rect.t0 { fill: #8b8d9b; } .arrangement rect.t1 { fill: #6b6d7b; } .arrangement rect.t2 { fill: #a5a7b4; } .arrangement rect.t3 { fill: #5a5c69; }
-.arrangement .name-ag { font-size: 12.5px; color: var(--text-soft); }
+.arrangement .name-ag { font-size: var(--text-value); color: var(--text-soft); }
 .arrangement--add { justify-content: center; background: none; box-shadow: inset 0 0 0 1.5px var(--hairline-strong); cursor: pointer; }
-.arrangement__plus { display: grid; place-items: center; width: 78px; height: 52px; font: 300 30px/1 var(--display); color: var(--text-soft); }
+.arrangement__plus { display: grid; place-items: center; width: 78px; height: 52px; font: 300 var(--text-counter)/1 var(--display); color: var(--text-soft); }
 .arrangement--form { justify-content: center; gap: 8px; cursor: default; }
 .arrangement--form input { width: 100%; min-width: 0; }
 .arrangement--mine[aria-disabled="true"] { opacity: .5; cursor: default; }
@@ -58,7 +58,7 @@
 .map.switching .point { transition: none !important; }
 .map.switching::after { content: ""; position: absolute; left: 50%; top: 50%; width: 28px; height: 28px; margin: -14px 0 0 -14px; border-radius: 50%;
   border: 2px solid rgba(190, 200, 255, .12); border-top-color: var(--accent); animation: turning 1s linear infinite; }
-.screen-label { position: absolute; margin-top: 6px; font: 600 11.5px/1 var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); white-space: nowrap; pointer-events: none; }
+.screen-label { position: absolute; margin-top: 6px; font: 600 var(--text-badge)/1 var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); white-space: nowrap; pointer-events: none; }
 .screen-label.primary { color: var(--accent); }
 .point { position: absolute; z-index: 2; cursor: grab; touch-action: none; transition: opacity .2s; }
 .scene.settled .point { transition: left .25s ease-out, top .25s ease-out, opacity .2s; }
@@ -70,14 +70,14 @@
 .scene:has(.point.grabbed) .point-name { transition: opacity .2s; }
 .label {
   position: absolute; z-index: 3; transform: translateX(-50%); padding: 3px 8px; border-radius: var(--radius-small); max-width: 220px;
-  background: var(--group-up); box-shadow: 0 0 0 1px var(--hairline-strong); font-size: 12px; white-space: nowrap;
+  background: var(--group-up); box-shadow: 0 0 0 1px var(--hairline-strong); font-size: var(--text-caption); white-space: nowrap;
   overflow: hidden; text-overflow: ellipsis; pointer-events: none; opacity: 0; transition: opacity .1s;
 }
 .label.visible { opacity: 1; }
 
 .layout .what { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .layout .name-layout { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.layout .details { font: 12px var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); }
+.layout .details { font: var(--text-caption) var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); }
 .layout.other .name-layout { color: var(--text-soft); }
 .layout .remove { background: none; }
 .layout:hover .remove, .layout:focus-within .remove { opacity: 1; }
@@ -90,7 +90,7 @@
 
 .sorts { padding: 10px 12px 12px; }
 .sorts__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.button-sort { display: flex; align-items: center; gap: 10px; padding: 7px 10px 7px 7px; border-radius: var(--radius-control); text-align: left; font-size: 13px; color: var(--text); }
+.button-sort { display: flex; align-items: center; gap: 10px; padding: 7px 10px 7px 7px; border-radius: var(--radius-control); text-align: left; font-size: var(--text-body); color: var(--text); }
 .button-sort .glyph { width: 26px; height: 26px; padding: 5px; }
 .button-sort:hover .glyph, .button-sort[aria-pressed="true"] .glyph { stroke: var(--accent); background: var(--accent-dim); }
 .button-sort[aria-pressed="true"] { color: var(--text); }

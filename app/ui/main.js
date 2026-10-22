@@ -73,9 +73,18 @@ $('dock-close').addEventListener('click', () => setDock(null));
 $('dock-open').addEventListener('click', () => { const view = document.body.dataset.dock; setDock(null); if (view) showView(view); });
 addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.dataset.dock && !(e.target.matches && e.target.matches('input:not([type="checkbox"]), select, textarea'))) setDock(null); });
 
+// In a narrow window the side panel would fall far below the page: it opens as a drawer from the Options button instead.
+const OWN_PANEL = ['home', 'settings', 'display', 'health', 'tasks', 'modes'];
+const setPanel = open => document.body.classList.toggle('panel-open', open);
+$('panel-toggle').addEventListener('click', () => setPanel(true));
+$('panel-close').addEventListener('click', () => setPanel(false));
+addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.classList.contains('panel-open')) setPanel(false); });
+
 function showView(view) {
   const previous = document.body.dataset.view;
   if (document.body.dataset.dock) setDock(null);
+  setPanel(false);
+  $('panel-toggle').hidden = OWN_PANEL.includes(view);
   if (previous && previous !== view) scrolls[previous] = scrollZones().map(z => z.scrollTop);
   document.body.dataset.view = view;
   if (previous !== view) scrollZones().forEach((z, i) => { z.scrollTop = (scrolls[view] || [])[i] || 0; });
@@ -100,7 +109,7 @@ function showView(view) {
   if (Bramble.home) Bramble.home.visible(view === 'home');
 }
 for (const b of document.querySelectorAll('.service')) b.addEventListener('click', () => showView(b.dataset.view));
-const iconRail = matchMedia('(max-width: 620px)');
+const iconRail = matchMedia('(max-width: 620px), (max-width: 900px) and (max-height: 1000px)');
 function railTitles() {
   for (const b of document.querySelectorAll('.rail .service:not(.logo-home)')) {
     if (iconRail.matches) b.title = b.textContent.trim(); else b.removeAttribute('title');
@@ -136,6 +145,7 @@ webview.addEventListener('message', e => {
   }
 
   if (Bramble.home && m.type && (m.type.startsWith('network.') || m.type.startsWith('hardware.') || m.type === 'arrange.map' || m.type === 'tasks.list')) Bramble.home.event(m);
+  if (m.type === 'network.infos' && Bramble.hardware) Bramble.hardware.wifiInfo(m);
   if (m.type === 'home.places') { renderPlaces(m); return; }
   if (m.type && m.type.startsWith('home.')) { if (Bramble.home) Bramble.home.event(m); return; }
   if (m.type && m.type.startsWith('station.')) { if (Bramble.station) Bramble.station.event(m); return; }
@@ -399,6 +409,115 @@ function wallpaperFor(key) {
 }
 
 const fill = cursor => { const min = Number(cursor.min || 0), max = Number(cursor.max || 100); cursor.style.setProperty('--pct', (cursor.value - min) / (max - min) * 100 + '%'); };
+
+// Drawings in light on the glass of a round seal: the dots of the screen, then the lines lit by the lamp color of their card.
+// Filters of an inline SVG are found by id in the whole page, so each drawing needs its own ids.
+function litDrawing(id, lines, fill) {
+  return `<svg class="seal__face" viewBox="0 0 64 64" aria-hidden="true"><defs><filter id="${id}-bloom" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2"/></filter></defs>${fill || ''}`
+    + `<g fill="none" stroke-linecap="round" stroke-linejoin="round"><g style="stroke:var(--lamp)" stroke-width="6" opacity=".5" filter="url(#${id}-bloom)">${lines}</g><g style="stroke:var(--lamp-hi)" stroke-width="3.2">${lines}</g></g></svg>`;
+}
+const SHIELD = 'M32 11 49 17v13c0 10.6-6.8 18.4-17 22.6C21.8 48.4 15 40.6 15 30V17z';
+function shieldLight(id, level) {
+  const mark = { high: 'M24.5 31 29.8 36.3 40 25.5', medium: 'M32 22.5V32.5M32 39.5v.5', low: 'M26.5 25.5l11 11M37.5 25.5l-11 11' }[level] || 'M32 22.5V32.5M32 39.5v.5';
+  return litDrawing(id, `<path d="${SHIELD}"/><path d="${mark}"/>`, `<path d="${SHIELD}" style="fill:var(--lamp)" opacity=".14"/>`);
+}
+function faceLight(id, level) {
+  const mouth = { high: 'M21 36.5Q32 47 43 36.5', medium: 'M22 40.5H42', low: 'M21 44Q32 34 43 44' }[level] || 'M22 40.5H42';
+  return litDrawing(id, `<path d="M24.5 24.5v4.5M39.5 24.5v4.5"/><path d="${mouth}"/>`);
+}
+
+// The instruments of Hardware, shared with Home: a needle thermometer, a battery in relief and Wi-Fi arcs in relief.
+function thermometer() {
+  let ticks = '';
+  for (let t = 20; t <= 100; t += 10) {
+    const a = Math.PI + (t - 20) / 80 * Math.PI, r1 = 46, r2 = t % 20 === 0 ? 39 : 42;
+    ticks += `<path d="M${(60 + r1 * Math.cos(a)).toFixed(1)} ${(62 + r1 * Math.sin(a)).toFixed(1)}L${(60 + r2 * Math.cos(a)).toFixed(1)} ${(62 + r2 * Math.sin(a)).toFixed(1)}"/>`;
+  }
+  return `<svg class="thermo" viewBox="0 0 120 72" aria-hidden="true"><g class="thermo__ticks">${ticks}</g><path class="thermo__red" d="M98.2 36.4A46 46 0 0 1 106.0 62.0"/><g class="thermo__needle"><path d="M58.8 62 60 22l1.2 40z"/></g><circle class="thermo__pivot" cx="60" cy="62" r="5"/></svg>`;
+}
+const setThermometer = (svg, t) => { if (t != null) svg.querySelector('.thermo__needle').style.transform = `rotate(${(-90 + Math.max(0, Math.min(1, (t - 20) / 80)) * 180).toFixed(1)}deg)`; };
+const batteryRelief = () => '<div class="cell-relief"><span class="cell-relief__segments">' + '<i></i>'.repeat(10) + '</span><span class="cell-relief__tip"></span></div>';
+function setBattery(el, b) {
+  const lit = Math.ceil(b.charge / 10), low = b.charge <= 15 && !b.mains;
+  el.querySelectorAll('.cell-relief__segments i').forEach((s, i) => s.className = i < lit ? (low ? 'low' : 'full') : '');
+}
+const WIFI_ARCS = ['M38 46a31 31 0 0 1 44 0', 'M28 36a45 45 0 0 1 64 0', 'M18 26a59 59 0 0 1 84 0'];
+const wifiRelief = () => `<svg class="wifi-relief" viewBox="0 0 120 72" aria-hidden="true"><g class="wifi-relief__bevel">${WIFI_ARCS.map(d => `<path d="${d}"/>`).join('')}<circle cx="60" cy="59" r="6"/></g>`
+  + `<g class="wifi-relief__grooves">${WIFI_ARCS.map(d => `<path d="${d}"/>`).join('')}<circle cx="60" cy="58" r="6"/></g>`
+  + `<g class="wifi-relief__lit">${WIFI_ARCS.map(d => `<path d="${d}"/>`).join('')}<circle cx="60" cy="58" r="3.6"/></g></svg>`;
+function setWifi(svg, signal, connected) {
+  const lit = [...svg.querySelectorAll('.wifi-relief__lit > *')];
+  const arcs = connected ? Math.min(3, Math.floor(signal / 25)) : 0;
+  lit.forEach((el, i) => el.classList.toggle('on', el.tagName === 'circle' ? connected : i < arcs));
+}
+
+// A bubble of details over an instrument, on hover or keyboard focus: a few more facts without opening its page.
+const detailTip = Object.assign(document.createElement('div'), { className: 'chart-tip detail-tip', hidden: true });
+document.body.append(detailTip);
+let detailTimer = 0, detailFor = null;
+function showDetails(el) {
+  const d = typeof el._details === 'function' ? el._details() : el._details;
+  if (!d) return;
+  detailFor = el;
+  const head = Object.assign(document.createElement('div'), { className: 'chart-tip__head' });
+  head.append(Object.assign(document.createElement('b'), { textContent: d.title }));
+  if (d.value) head.append(Object.assign(document.createElement('span'), { textContent: d.value }));
+  const parts = [head];
+  if (d.note) parts.push(Object.assign(document.createElement('p'), { textContent: d.note }));
+  for (const [label, value] of d.lines || []) {
+    if (value == null || value === '') continue;
+    const line = Object.assign(document.createElement('div'), { className: 'chart-tip__line' });
+    line.append(Object.assign(document.createElement('span'), { textContent: label }), Object.assign(document.createElement('em'), { textContent: value, translate: false }));
+    parts.push(line);
+  }
+  detailTip.replaceChildren(...parts);
+  detailTip.hidden = false;
+  const r = el.getBoundingClientRect(), t = detailTip.getBoundingClientRect();
+  const left = Math.max(8, Math.min(innerWidth - t.width - 8, r.left + r.width / 2 - t.width / 2));
+  const top = r.top - t.height - 8 >= 8 ? r.top - t.height - 8 : r.bottom + 8;
+  detailTip.style.left = left.toFixed(1) + 'px';
+  detailTip.style.top = top.toFixed(1) + 'px';
+}
+function hideDetails() { clearTimeout(detailTimer); detailTip.hidden = true; detailFor = null; }
+function details(el, d) {
+  el._details = d;
+  if (el._detailsBound) return;
+  el._detailsBound = true;
+  const soon = () => { clearTimeout(detailTimer); detailTimer = setTimeout(() => showDetails(el), 250); };
+  el.addEventListener('mouseenter', soon);
+  el.addEventListener('focus', soon);
+  el.addEventListener('mouseleave', hideDetails);
+  el.addEventListener('blur', hideDetails);
+  el.addEventListener('click', hideDetails);
+}
+addEventListener('scroll', hideDetails, true);
+
+// A row of ring dials in metal seals, the dashboard of the PC family. Dials are updated in place so their rings turn instead of jumping.
+function dials(zone, list) {
+  list.forEach((g, i) => {
+    let el = zone.children[i];
+    if (!el || el.tagName !== (g.action ? 'BUTTON' : 'DIV')) {
+      const fresh = document.createElement(g.action ? 'button' : 'div');
+      fresh.innerHTML = '<span class="seal"><span class="seal__ring"></span><span class="seal__text"></span></span><span class="dial__label"></span><span class="dial__sub"></span>';
+      if (g.action) { fresh.type = 'button'; fresh.addEventListener('click', () => fresh._action()); }
+      if (el) el.replaceWith(fresh); else zone.append(fresh);
+      el = fresh;
+    }
+    el._action = g.action;
+    el.className = 'dial security--' + (g.level || 'high');
+    if (g.key) el.dataset.key = g.key;
+    el.querySelector('.seal').style.setProperty('--part', Math.max(0, Math.min(100, g.part || 0)).toFixed(1));
+    const [number, unit] = String(g.value).split(/\s+(?=\S+$)/);
+    el.querySelector('.seal__text').classList.toggle('seal__text--long', (unit ? number : String(g.value)).length > 4);
+    el.querySelector('.seal__text').replaceChildren(unit ? number : String(g.value), ...(unit ? [Object.assign(document.createElement('small'), { textContent: unit })] : []));
+    el.querySelector('.dial__label').textContent = g.label;
+    el.querySelector('.dial__sub').textContent = el.querySelector('.dial__sub').title = g.sub || '';
+    el.removeAttribute('title');
+    details(el, g.details || (g.title ? { title: g.title } : null));
+    if (detailFor === el && g.details) showDetails(el);
+  });
+  while (zone.children.length > list.length) zone.lastChild.remove();
+}
 
 // Rows that depend on an option open and close smoothly: a row that pops in or out makes everything under it jump.
 const calm = matchMedia('(prefers-reduced-motion: reduce)'), loadedAt = performance.now();
@@ -776,20 +895,33 @@ const ZOOMS = [80, 90, 100, 115, 130, 150];
 // instead of following the state, which made it grow then shrink. The pixel ratio also changes when the window moves to a
 // screen with another scale, which is not a zoom. Quick clicks count from the zoom asked last, not the last one confirmed.
 let zoomNow = 100, zoomBase = devicePixelRatio, zoomAsked = null, zoomWait = 0;
+// The pill and the Options button keep their size whatever the zoom. A script hears of a zoom one frame late, so their
+// counter-scale comes from media queries on the resolution, which apply in the very frame the zoom changes.
+const zoomSheet = document.head.appendChild(document.createElement('style'));
+let zoomSheetBase = 0;
+function zoomRules() {
+  if (Math.abs(zoomSheetBase - zoomBase) < .001) return;
+  zoomSheetBase = zoomBase;
+  zoomSheet.textContent = ZOOMS.map(z => {
+    const r = zoomBase * z / 100;
+    return `@media (min-resolution: ${(r - .005).toFixed(4)}dppx) and (max-resolution: ${(r + .005).toFixed(4)}dppx) { :root { --zoom: ${z / 100}; } }`;
+  }).join('\n');
+}
 function settleZoom() {
   zoomAsked = null;
   zoomBase = devicePixelRatio / (zoomNow / 100);
+  zoomRules();
   paintZoom(zoomNow);
 }
 function paintZoom(zoom) {
   $('zoom-value').textContent = Math.round(zoom) + ' %';
-  document.documentElement.style.setProperty('--zoom', zoom / 100);
   $('zoom-out').disabled = zoom <= ZOOMS[0];
   $('zoom-in').disabled = zoom >= ZOOMS[ZOOMS.length - 1];
 }
 function zoomTo(value) {
   if (value === zoomNow) return;
   zoomNow = zoomAsked = value;
+  paintZoom(value);
   send('zoom', { value });
   clearTimeout(zoomWait);
   zoomWait = setTimeout(settleZoom, 1500);
@@ -800,9 +932,10 @@ function zoomBy(step) {
   zoomTo(ZOOMS[i]);
 }
 addEventListener('resize', () => {
-  if (zoomAsked == null) zoomBase = devicePixelRatio / (zoomNow / 100);
-  else if (Math.round(devicePixelRatio / zoomBase * 100) === zoomAsked) { clearTimeout(zoomWait); settleZoom(); }
+  if (zoomAsked == null) { zoomBase = devicePixelRatio / (zoomNow / 100); zoomRules(); return; }
+  if (Math.round(devicePixelRatio / zoomBase * 100) === zoomAsked) { clearTimeout(zoomWait); settleZoom(); }
 });
+zoomRules();
 for (const b of $('zoom').children) b.addEventListener('click', () => zoomTo(Number(b.dataset.value)));
 $('zoom-out').addEventListener('click', () => zoomBy(-1));
 $('zoom-in').addEventListener('click', () => zoomBy(1));

@@ -80,7 +80,8 @@
     pill.hidden = !t;
     if (t) { pill.className = 'pill trust ' + TRUST[t.level][1]; pill.textContent = tr(TRUST[t.level][0]); pill.title = tr(t.why); }
     $('r-bars').hidden = !cx.wifi || cx.signal < 0;
-    [...$('r-bars').children].forEach((b, i) => b.classList.toggle('full', cx.signal > i * 25));
+    if (!$('r-bars').firstChild) $('r-bars').innerHTML = wifiRelief();
+    setWifi($('r-bars').firstChild, cx.signal, cx.connected);
   }
 
   function plot() {
@@ -391,12 +392,6 @@
     return { level, enc, enterprise, why };
   }
 
-  const SECURITY_GLYPHS = {
-    ok: '<circle cx="12" cy="12" r="8.5"/><path d="m8.5 12.3 2.4 2.4 4.6-5"/>',
-    warn: '<path d="M12 4 21 19.5H3z"/><path d="M12 10v4.5M12 17v.01"/>',
-    bad: '<circle cx="12" cy="12" r="8.5"/><path d="m9 9 6 6M15 9l-6 6"/>',
-    neutral: '<circle cx="12" cy="12" r="8.5"/><path d="M8.5 12h7"/>',
-  };
   const ENC_TEXT = { none: 'Traffic sent in the clear', weak: 'Outdated protection', good: 'Shared Wi-Fi password', unknown: 'Not reported by Windows',
     wired: 'Cable, no radio to listen to', strong: 'Latest Wi-Fi protection' };
   const CIPHERS = { ccmp: 'AES', 'ccmp-256': 'AES-256', gcmp: 'AES-GCMP', 'gcmp-256': 'AES-GCMP-256', tkip: 'TKIP', wep: 'WEP' };
@@ -443,21 +438,23 @@
 
     const head = document.createElement('div');
     head.className = 'security__head';
-    head.innerHTML = '<span class="seal"><svg class="seal__shield" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="seal-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--lamp-hi)"/><stop offset=".5" style="stop-color:var(--lamp)"/><stop offset="1" style="stop-color:var(--lamp-lo)"/></linearGradient><linearGradient id="seal-face" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--lamp)"/><stop offset="1" style="stop-color:var(--lamp-lo)"/></linearGradient><linearGradient id="seal-rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".55"/></linearGradient><linearGradient id="seal-gloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><filter id="seal-shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="2.2" stdDeviation="2.2" flood-color="#000" flood-opacity=".8"/></filter><filter id="seal-bloom" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter></defs><path d="M32 6 54 14v16c0 14-9 24-22 29C19 54 10 44 10 30V14z" style="fill:var(--lamp)" opacity=".55" filter="url(#seal-bloom)"/><g filter="url(#seal-shadow)"><path d="M32 6 54 14v16c0 14-9 24-22 29C19 54 10 44 10 30V14z" fill="url(#seal-body)"/><path d="M32 6 54 14v16c0 14-9 24-22 29C19 54 10 44 10 30V14z" fill="none" stroke="url(#seal-rim)" stroke-width="1.6"/><path d="M32 11.5 49 17.6V30c0 10.6-6.8 18.4-17 22.6C21.8 48.4 15 40.6 15 30V17.6z" fill="url(#seal-face)"/><path d="M32 11.5 49 17.6V30c0 10.6-6.8 18.4-17 22.6C21.8 48.4 15 40.6 15 30V17.6z" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="1"/><path d="M23 31.5 29.6 38 42 24.5" fill="none" stroke="#000" stroke-opacity=".5" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 1.3)"/><path d="M23 31.5 29.6 38 42 24.5" fill="none" stroke="#fff" stroke-opacity=".95" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M32 11.5 49 17.6V28c-6 3-11 4.4-17 4.4S21 31 15 28V17.6z" fill="url(#seal-gloss)" opacity=".7"/></g></svg></span><div class="security__verdict"><span class="security__title"></span><span class="security__why"></span></div><div class="security__meter" aria-hidden="true"><i></i><i></i><i></i></div>';
-    head.querySelector('.security__title').textContent = tr(TRUST[t.level][0]);
-    head.querySelector('.security__why').textContent = tr(t.why);
+    head.innerHTML = `<span class="seal">${shieldLight('network-shield', t.level)}</span><div class="bezel"><div class="bezel__glass"><div class="bezel__text"><span class="led-text"></span><span class="bezel__sub"></span></div>`
+      + '<div class="security__meter" aria-hidden="true"><i></i><i></i><i></i></div></div></div>';
+    head.querySelector('.led-text').textContent = tr(TRUST[t.level][0]);
+    head.querySelector('.bezel__sub').textContent = tr(t.why);
     [...head.querySelector('.security__meter').children].forEach((b, i) => b.classList.toggle('on', i < level));
 
     const list = document.createElement('div');
-    list.className = 'security__checks';
+    list.className = 'readouts';
     for (const c of checks) {
       const item = document.createElement('div');
-      item.className = 'check check--' + c.state;
-      item.innerHTML = `<span class="jewel" role="img"><svg viewBox="0 0 24 24" aria-hidden="true">${SECURITY_GLYPHS[c.state]}</svg></span><div class="check__what"><span class="check__title"></span><span class="check__detail"></span></div><span class="check__value"></span>`;
-      item.querySelector('.jewel').setAttribute('aria-label', tr({ ok: 'Fine', warn: 'Be careful', bad: 'Risky', neutral: 'Not reported' }[c.state]));
-      item.querySelector('.check__title').textContent = tr(c.title);
-      item.querySelector('.check__detail').textContent = item.querySelector('.check__detail').title = tr(c.detail);
-      item.querySelector('.check__value').textContent = c.value;
+      item.className = 'readout check--' + c.state;
+      item.innerHTML = `<svg class="glyph" role="img" viewBox="0 0 24 24">${GLYPHS[c.icon]}</svg><span class="readout__what"><span class="readout__title"></span><span class="readout__detail"></span></span>`
+        + '<span class="readout__end"><span class="readout__value"><i></i><span></span></span></span>';
+      item.firstChild.setAttribute('aria-label', tr({ ok: 'Fine', warn: 'Be careful', bad: 'Risky', neutral: 'Not reported' }[c.state]));
+      item.querySelector('.readout__title').textContent = tr(c.title);
+      item.querySelector('.readout__detail').textContent = item.querySelector('.readout__detail').title = tr(c.detail);
+      item.querySelector('.readout__value span').textContent = item.querySelector('.readout__value span').title = c.value;
       list.append(item);
     }
 
@@ -465,14 +462,14 @@
     const next = document.createElement('div');
     next.className = 'security__next';
     next.innerHTML = '<span class="security__tip"></span><button class="security__key" hidden></button>';
-    next.querySelector('.security__tip').textContent = todo ? tr(todo.advice) : tr('Nothing to fix on this network');
+    next.querySelector('.security__tip').textContent = todo ? tr(todo.advice) : '';
     if (todo) {
       const open = next.querySelector('.security__key');
       open.hidden = false;
       open.textContent = tr('Network settings');
       open.addEventListener('click', () => send('network.settings'));
     }
-    zone.replaceChildren(head, list, next);
+    zone.replaceChildren(head, list, ...(todo ? [next] : []));
   }
 
   function renderPanel() {

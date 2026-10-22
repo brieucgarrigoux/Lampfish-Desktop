@@ -2,7 +2,7 @@
 
 (function () {
   const HISTORY = 60;
-  let inv = null, stats = null, devices = null, shown = false, timer = 0;
+  let inv = null, stats = null, devices = null, wifi = null, shown = false, timer = 0;
   let choice = 'processor';
   const histories = {};
   let cards = {};
@@ -125,6 +125,7 @@
     header.innerHTML = `${glyph('system')}<div class="m-header__what"><span class="title"></span><span class="path"></span></div><div class="m-health"><i></i><span id="m-health"></span></div>`;
     header.querySelector('.title').textContent = [s.manufacturer, s.model].filter(Boolean).join(' ') || 'Computer';
     header.querySelector('.path').textContent = [(s.windows || '').replace(/^Microsoft\s+/, ''), s.version].filter(Boolean).join(' · ');
+    header.append(Object.assign(document.createElement('div'), { className: 'dials', id: 'm-gauges' }));
 
     const threads = '<div class="m-threads">' + '<i></i>'.repeat(Math.max(1, p.threads || 1)) + '</div>';
     const cpu = card('processor', 'processor', 'Processor', shortName(p.name), threads);
@@ -149,26 +150,24 @@
       });
       storage.push(c);
     }
-    for (const r of inv.networks) storage.push(card('network-' + r.id, r.type === 'Wi-Fi' ? 'network' : 'cable', 'Network', r.name));
+    for (const r of inv.networks) {
+      const c = card('network-' + r.id, r.type === 'Wi-Fi' ? 'network' : 'cable', 'Network', r.name, r.type === 'Wi-Fi' ? wifiRelief() : '');
+      cards['network-' + r.id].wifi = c.querySelector('.wifi-relief');
+      storage.push(c);
+    }
+    paintWifi();
 
     const power = [];
     if (inv.battery) {
-      const b = card('battery', 'battery', 'Battery', inv.battery.name, '<div class="cell-relief"><span class="cell-relief__segments">' + '<i></i>'.repeat(10) + '</span><span class="cell-relief__tip"></span></div>');
+      const b = card('battery', 'battery', 'Battery', inv.battery.name, batteryRelief());
       cards.battery.segments = [...b.querySelectorAll('.cell-relief__segments i')];
       b.querySelector('.mini-curve').remove();
       power.push(b);
     }
 
-    const tc = card('temperature', 'temperature', 'Temperature', tr('Processor thermal zone'),
-      '<svg class="thermo" viewBox="0 0 120 72" aria-hidden="true"><g class="thermo__ticks"></g><path class="thermo__red" d="M98.2 36.4A46 46 0 0 1 106.0 62.0"/><g class="thermo__needle"><path d="M58.8 62 60 22l1.2 40z"/></g><circle class="thermo__pivot" cx="60" cy="62" r="5"/></svg>');
+    const tc = card('temperature', 'temperature', 'Temperature', tr('Processor thermal zone'), thermometer());
     tc.querySelector('.mini-curve').remove();
-    let grad = '';
-    for (let t = 20; t <= 100; t += 10) {
-      const a = Math.PI + (t - 20) / 80 * Math.PI, r1 = 46, r2 = t % 20 === 0 ? 39 : 42;
-      grad += `<path d="M${(60 + r1 * Math.cos(a)).toFixed(1)} ${(62 + r1 * Math.sin(a)).toFixed(1)}L${(60 + r2 * Math.cos(a)).toFixed(1)} ${(62 + r2 * Math.sin(a)).toFixed(1)}"/>`;
-    }
-    tc.querySelector('.thermo__ticks').innerHTML = grad;
-    cards.temperature.needle = tc.querySelector('.thermo__needle');
+    cards.temperature.needle = tc.querySelector('.thermo');
     power.push(tc);
 
     const e = inv.screens;
@@ -197,8 +196,9 @@
     cards.screens.facts.textContent = '';
     power.push(scr);
 
-    const dv = card('devices', 'devices', 'Connected devices', tr('Plugged in now'));
+    const dv = card('devices', 'devices', 'Connected devices', tr('Plugged in now'), '<ul class="m-devices"></ul>');
     dv.querySelector('.mini-curve').remove();
+    cards.devices.list = dv.querySelector('.m-devices');
     cards.devices.facts.textContent = '';
 
     const dash = document.createElement('div');
@@ -304,8 +304,39 @@
       k.value.textContent = t != null ? Math.round(t) + ' °C' : '–';
       k.word.textContent = t == null ? '' : tr(t < 60 ? 'Cool' : t < 85 ? 'Warm' : 'Hot');
       k.el.dataset.level = t >= 85 ? 'up' : t >= 70 ? 'medium' : '';
-      if (t != null) k.needle.style.transform = `rotate(${(-90 + Math.max(0, Math.min(1, (t - 20) / 80)) * 180).toFixed(1)}deg)`;
+      setThermometer(k.needle, t);
     }
+
+    const ring = (v, warn, bad) => v >= bad ? 'low' : v >= warn ? 'medium' : 'high';
+    const system = inv.disks.flatMap(d => d.volumes.map(v => Object.assign({ disk: d.number }, v))).sort((a, b) => (b.letter === 'C:') - (a.letter === 'C:'))[0];
+    const t = stats.temperature, b = stats.battery;
+    const list = [
+      { key: 'processor', part: p.total, value: pct(p.total), label: tr('Processor'), sub: charge(p.total), level: ring(p.total, 80, 95) },
+      { key: 'memory', part, value: pct(part), label: tr('Memory'), sub: tr('{0} of {1}', size(m.used, 1), size(m.total, 1)), level: ring(part, 75, 85) },
+    ];
+    if (gc) list.push({ key: 'graphics-0', part: g.usage, value: pct(g.usage), label: tr('Graphics'), sub: charge(g.usage), level: ring(g.usage, 80, 95) });
+    if (system) {
+      const used = (system.size - system.free) / system.size * 100;
+      list.push({ key: 'disk-' + system.disk, part: used, value: pct(used), label: tr('Storage'), sub: tr('{0} free on {1}', size(system.free, 0), system.letter), level: system.free / system.size < 0.1 ? 'low' : 'high' });
+    }
+    if (cards.battery && b) list.push({ key: 'battery', part: b.charge, value: b.charge + ' %', label: tr('Battery'), level: b.charge <= 15 && !b.mains ? 'low' : 'high',
+      sub: b.mains ? tr('Plugged in') : b.remaining > 0 ? tr('{0} left', duration(b.remaining)) : tr('On battery') });
+    if (t != null) list.push({ key: 'temperature', part: (t - 20) / 80 * 100, value: Math.round(t) + ' °C', label: tr('Heat'), sub: tr(t < 60 ? 'Cool' : t < 85 ? 'Warm' : 'Hot'), level: t >= 85 ? 'low' : t >= 70 ? 'medium' : 'high' });
+    const dial = $('m-gauges');
+    if (dial) dial.style.setProperty('--count', list.length);
+    const p0 = inv.processor || {}, ram0 = inv.memory, g0 = inv.graphics[0];
+    const facts = {
+      processor: [[tr('Model'), shortName(p0.name)], [tr('Cores'), p0.cores ? tr('{0} cores, {1} threads', p0.cores, p0.threads) : ''], [tr('Clock'), p.frequency ? ghz(p.frequency) : '']],
+      memory: [[tr('Installed'), [size(ram0.modules.reduce((t, x) => t + x.capacity, 0), 0), ram0.modules[0] && ram0.modules[0].type].filter(Boolean).join(' · ')],
+        [tr('Speed'), ram0.modules[0] && ram0.modules[0].speed ? ram0.modules[0].speed + ' MT/s' : ''], [tr('Slots'), ram0.slots ? tr('{0} of {1} used', ram0.modules.length, ram0.slots) : '']],
+      'graphics-0': g0 ? [[tr('Model'), g0.name], [tr('Memory used'), size(g.memory, 1)]] : [],
+      battery: [[tr('Model'), inv.battery ? inv.battery.name : ''], [tr('Power'), b && b.mains ? tr('Plugged in') : tr('On battery')]],
+      temperature: [[tr('Read in'), tr('Processor thermal zone')], [tr('Slows down from'), '90 °C']],
+    };
+    if (system) facts['disk-' + system.disk] = [[tr('Drive'), (inv.disks.find(d => d.number === system.disk) || {}).name || ''], [tr('Free'), size(system.free, 0)], [tr('Size'), size(system.size, 0)]];
+    if (dial) dials(dial, list.map(x => Object.assign(x, { action: () => choose(x.key), details: { title: x.label, value: x.value, lines: facts[x.key] || [] } })));
+    // The rings above say the value: each card keeps only what they do not show, its history and its details.
+    for (const x of list) { const measure = cards[x.key] && cards[x.key].el.querySelector('.m-measure'); if (measure) measure.remove(); }
 
     const health = $('m-health');
     if (health) {
@@ -321,6 +352,8 @@
     k.value.textContent = devices ? devices.usb : '–';
     k.word.textContent = devices ? tr('USB devices') : '';
     k.facts.textContent = devices ? tr('{0} USB controllers', devices.controllers) : '';
+    const names = devices ? devices.items.filter(d => d.usb).map(d => d.name).slice(0, 4) : [];
+    k.list.replaceChildren(...names.map(n => Object.assign(document.createElement('li'), { textContent: n, title: n, translate: false })));
   }
 
   function choose(key) {
@@ -566,6 +599,19 @@
     }
   }
 
+  function paintWifi() {
+    if (!inv) return;
+    for (const r of inv.networks) {
+      const k = cards['network-' + r.id];
+      if (k && k.wifi) setWifi(k.wifi, wifi && wifi.wifi && wifi.signal >= 0 ? wifi.signal : 0, !!(wifi && wifi.connected));
+    }
+  }
+
+  function wifiInfo(m) {
+    wifi = m;
+    paintWifi();
+  }
+
   function visible(yes) {
     shown = yes;
     clearInterval(timer);
@@ -573,13 +619,15 @@
     send('hardware.inventory');
     send('hardware.stats');
     send('hardware.devices');
+    send('network.infos');
     let turn = 0;
     timer = setInterval(() => {
       if (!shown || document.visibilityState !== 'visible') return;
       send('hardware.stats');
       if (++turn % 5 === 0) send('hardware.devices');
+      if (turn % 10 === 0) send('network.infos');
     }, 1000);
   }
 
-  Bramble.hardware = { event, visible, focus, renderDock };
+  Bramble.hardware = { event, visible, focus, renderDock, wifiInfo };
 })();

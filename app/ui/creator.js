@@ -681,7 +681,7 @@
   resetButton.type = 'button';
   resetButton.innerHTML = '<span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4v4h4"/></svg><span><small></small></span></span>';
   resetButton.querySelector('small').before(tr('Reset everything'));
-  resetButton.querySelector('small').textContent = tr('Every setting, the logo, text and picture stay');
+  resetButton.querySelector('small').textContent = tr('Settings only, the content stays');
   resetGroup.append(resetButton);
   resetBlock.append(el('h2', '', tr('Maintenance')), resetGroup);
   const looks = s => JSON.stringify(Object.assign({}, s, { files: null, aspect: 0, title: Object.assign({}, s.title, { text: '' }) }));

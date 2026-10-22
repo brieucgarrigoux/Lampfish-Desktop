@@ -2,9 +2,9 @@
 .chart-dot { position: fixed; z-index: 31; width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; border-radius: 50%; box-shadow: 0 0 0 2px var(--group); pointer-events: none; }
 .chart-dot.hot { width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; }
 .chart-tip {
-  position: fixed; z-index: 32; min-width: 150px; max-width: 250px; padding: 9px 11px 8px; border-radius: var(--radius-control);
+  position: fixed; z-index: 45; min-width: 150px; max-width: 250px; padding: 9px 11px 8px; border-radius: var(--radius-control);
   background: var(--group-up); box-shadow: 0 0 0 1px var(--hairline-strong), 0 8px 22px rgba(0, 0, 0, .5); pointer-events: none;
-  font-size: 12px; font-variant-numeric: tabular-nums;
+  font-size: var(--text-caption); font-variant-numeric: tabular-nums;
 }
 .chart-tip__head { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; }
 .chart-tip__head b { font-weight: 600; color: var(--text); }

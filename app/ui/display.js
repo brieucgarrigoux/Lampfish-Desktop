@@ -44,7 +44,42 @@ const Quick = (() => {
     };
   }
 
-  return { bind, timeout };
+  // Dark mode, the sound of Windows and two File Explorer options appear on several pages: each copy is marked data-win.
+  function windows() {
+    const all = what => [...document.querySelectorAll(`[data-win="${what}"]`)];
+    for (const box of all('dark')) box.addEventListener('change', () => send('display.dark', { on: box.checked }));
+    for (const box of all('sound')) box.addEventListener('change', () => send('audio.mute', { on: !box.checked }));
+    for (const box of all('mic')) box.addEventListener('change', () => send('audio.mic', { on: box.checked }));
+    for (const what of ['extensions', 'hidden']) for (const box of all(what)) box.addEventListener('change', () => send('files.explorer', { key: what, on: box.checked }));
+    for (const range of all('volume')) {
+      const live = throttle(() => send('audio.volume', { value: Number(range.value), live: true }), 80);
+      range.addEventListener('input', () => { fill(range); for (const o of document.querySelectorAll('[data-win-text="level"]')) o.textContent = range.value + ' %'; live(); });
+      range.addEventListener('change', () => send('audio.volume', { value: Number(range.value) }));
+    }
+    const text = (what, value) => { for (const t of document.querySelectorAll(`[data-win-text="${what}"]`)) t.textContent = value; };
+    const rows = (what, shown) => { for (const r of document.querySelectorAll(`[data-win-row="${what}"]`)) r.hidden = !shown; };
+    return e => {
+      const d = e.display || {}, a = e.audio || {}, x = e.files && e.files.explorer;
+      rows('dark', d.dark != null);
+      for (const box of all('dark')) box.checked = d.dark === true;
+      rows('volume', a.volume != null);
+      for (const box of all('sound')) box.checked = !a.muted;
+      for (const range of all('volume')) {
+        if (document.activeElement !== range) range.value = a.volume || 0;
+        range.classList.toggle('is-muted', !!a.muted);
+        fill(range);
+      }
+      text('level', (a.volume || 0) + ' %');
+      text('volume', a.muted ? tr('Muted') : (a.volume || 0) + ' %');
+      rows('mic', !!a.mic);
+      for (const box of all('mic')) box.checked = !a.micMuted;
+      text('mic', tr(a.micMuted ? 'Muted for every app' : 'On for every app'));
+      rows('extensions', !!x);
+      if (x) { for (const box of all('extensions')) box.checked = x.extensions; for (const box of all('hidden')) box.checked = x.hidden; }
+    };
+  }
+
+  return { bind, timeout, windows: windows() };
 })();
 
 (function () {
@@ -107,6 +142,7 @@ const Quick = (() => {
     const e = Bramble.state;
     if (!e) return;
     renderQuick(e);
+    Quick.windows(e);
     const key = (e.displays || []).map(d => d.key + (d.primary ? '*' : '')).join('|');
     if (key !== keyDisplays) { keyDisplays = key; if (shown) { send('display.screens'); send('display.brightness'); } else screens = null; }
   }

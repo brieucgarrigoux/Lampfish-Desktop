@@ -9,11 +9,11 @@
 .d-screen:active { transform: scale(.98); }
 .d-screen[aria-pressed="true"] { box-shadow: var(--chosen); color: var(--text); }
 .d-screen b { font: 600 26px/1 var(--display); }
-.d-screen span { font-size: 11.5px; color: var(--accent); }
+.d-screen span { font-size: var(--text-badge); color: var(--accent); }
 .d-screen span:empty { display: none; }
 .d-help { margin: 0 2px 12px; }
 .d-chosen .caption > span { min-width: 0; }
-.d-badge { flex: none; padding: 3px 9px; border-radius: 99px; background: var(--accent-dim); color: var(--accent); font-size: 11.5px; font-weight: 600; }
+.d-badge { flex: none; padding: 3px 9px; border-radius: 99px; background: var(--accent-dim); color: var(--accent); font-size: var(--text-badge); font-weight: 600; }
 .d-badge[hidden], #d-primary[hidden] { display: none; }
 .d-pair { flex: none; display: flex; gap: 8px; }
 .view--display .setting:has(input:disabled) { opacity: .4; }

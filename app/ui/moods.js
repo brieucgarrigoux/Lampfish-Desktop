@@ -452,21 +452,58 @@
     box.hidden = false;
   }
 
+  const RECIPE = {
+    wave: '<path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/>',
+    play: '<path d="M8.5 5.8v12.4a.8.8 0 0 0 1.2.7l9.6-6.2a.8.8 0 0 0 0-1.4L9.7 5.1a.8.8 0 0 0-1.2.7z"/>',
+    clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+    headset: '<path d="M4.5 15v-3a7.5 7.5 0 0 1 15 0v3"/><rect x="3.5" y="14" width="4" height="6" rx="1.5"/><rect x="16.5" y="14" width="4" height="6" rx="1.5"/>',
+    arrow: '<path d="M2 12h26M22 6l6 6-6 6"/>',
+  };
   const STEPS = [
-    ['<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>', 'Set up', 'A wallpaper, cursors, sounds and effects'],
-    ['<path d="M5.5 4.5h10l3 3v12h-13z"/><path d="M8.5 4.5v5h6v-5M8.5 19.5v-5h7v5"/>', 'Save', 'All of it, as one theme'],
-    ['<path d="M8.5 5.8v12.4a.8.8 0 0 0 1.2.7l9.6-6.2a.8.8 0 0 0 0-1.4L9.7 5.1a.8.8 0 0 0-1.2.7z"/>', 'Bring back', 'In one click, or by itself at the right moment'],
+    ['Set up', 'A wallpaper, cursors, sounds and effects'],
+    ['Save', 'All of it, as one theme'],
+    ['Bring back', 'In one click, or by itself at the right moment'],
   ];
+  // The steps are drawn with what is set up right now: this wallpaper, this cursor, as one theme brought back by a trigger.
   function renderSteps() {
-    const zone = $('mood-help');
-    if (zone.children.length) return;
-    STEPS.forEach(([path, title, text], i) => {
+    const zone = $('mood-help'), s = Bramble.state || {};
+    const arrow = s.mouse && s.mouse.roles ? s.mouse.roles.find(r => r.id === 'Arrow') : null, look = arrow && arrow.preview;
+    const key = [s.current, s.light, s.speed, s.blur, s.saturation, s.dim, look && look.key, LANGUAGE].join('|');
+    if (zone.dataset.key === key && zone.children.length) return;
+    zone.dataset.key = key;
+    const now = { wallpaper: s.current, light: s.light, speed: s.speed, blur: s.blur, saturation: s.saturation, dim: s.dim };
+    const piece = (path, cls) => { const p = el('span', 'recipe__piece' + (cls ? ' ' + cls : '')); p.insertAdjacentHTML('beforeend', svg(path)); return p; };
+    const setup = el('div', 'recipe__visual');
+    const cursor = el('span', 'recipe__piece');
+    if (look) {
+      const img = el('img', 'recipe__cursor');
+      img.alt = '';
+      img.src = `/app/cursor-cache/${encodeURIComponent(look.key)}-32.png`;
+      img.classList.toggle('retro', !!look.retro);
+      cursor.append(img);
+    } else cursor.insertAdjacentHTML('beforeend', svg('<path d="M6 3.5 18 12.3l-5.6.8-3.2 4.9z"/>'));
+    setup.append(cover(now, el('div')), el('span', 'recipe__plus', '+'), cursor, el('span', 'recipe__plus', '+'), piece(RECIPE.wave));
+    const card = el('div', 'recipe__card');
+    const name = el('span', 'recipe__name');
+    name.insertAdjacentHTML('beforeend', icon('moon'));
+    name.append(el('span', '', tr('Night')));
+    card.append(cover(now, el('div')), name);
+    const saved = el('div', 'recipe__visual');
+    saved.append(card);
+    const back = el('div', 'recipe__visual');
+    back.append(piece(RECIPE.play, 'recipe__piece--lit'), piece(RECIPE.clock), piece(RECIPE.headset));
+    const visuals = [setup, saved, back];
+    const parts = [];
+    STEPS.forEach(([title, text], i) => {
+      if (i) { const a = el('span', 'recipe__arrow'); a.insertAdjacentHTML('beforeend', `<svg viewBox="0 0 30 24" aria-hidden="true">${RECIPE.arrow}</svg>`); parts.push(a); }
       const step = el('div', 'mode-step');
-      step.innerHTML = `<span class="seal seal--small security--high">${svg(path, 'mode-step__icon')}</span><span class="mode-step__what"><span class="mode-step__title"><b>${i + 1}</b></span><span class="mode-step__text"></span></span>`;
-      step.querySelector('.mode-step__title').append(tr(title));
+      step.innerHTML = `<span class="mode-step__what"><span class="mode-step__title"><b>${i + 1}</b><span></span></span><span class="mode-step__text"></span></span>`;
+      step.querySelector('.mode-step__title span').textContent = tr(title);
       step.querySelector('.mode-step__text').textContent = tr(text);
-      zone.append(step);
+      step.prepend(visuals[i]);
+      parts.push(step);
     });
+    zone.replaceChildren(...parts);
   }
 
   function render() {
@@ -500,8 +537,8 @@
       b.querySelector('[translate]').textContent = m.name;
       if (m.current) b.append(el('span', 'value', tr('Active')));
       else b.insertAdjacentHTML('beforeend', svg(ICONS.play, 'dock-modes__play'));
-      b.title = m.current ? tr('Active') : tr('Apply');
-      b.addEventListener('click', () => { if (!m.current) send('moods.apply', { id: m.id }); });
+      b.title = m.current ? tr('Turn off') : tr('Apply');
+      b.addEventListener('click', () => send(m.current ? 'moods.release' : 'moods.apply', { id: m.id }));
       return b;
     }));
     if (!moods.length) group.append(el('div', 'row empty', tr('No theme yet')));

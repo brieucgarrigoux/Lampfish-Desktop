@@ -1,27 +1,60 @@
 .view--duplicates { max-width: 900px; margin-inline: auto; container: duplicates / inline-size; }
 .dup-card { margin-bottom: 4px; }
-.dup-seal .seal__ring { position: absolute; inset: 9px; z-index: 1; border-radius: 50%; background: conic-gradient(from 0deg, var(--lamp) calc(var(--part, 0) * 1%), rgba(255, 255, 255, .1) 0);
-  -webkit-mask: radial-gradient(circle, transparent 62%, #000 63%); mask: radial-gradient(circle, transparent 62%, #000 63%); }
-.dup-seal .seal__text { position: relative; z-index: 2; font: 700 14px var(--display); font-variant-numeric: tabular-nums; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, .7); }
-.dup-freed { flex: none; align-self: center; margin-top: 0; font: 12px var(--numbers); font-variant-numeric: tabular-nums; color: #cdb8ff; }
-.dup-progress { height: 4px; margin: 0 24px 14px; border-radius: 2px; background: var(--meter); overflow: hidden; }
-.dup-progress i { display: block; height: 100%; border-radius: 2px; background: var(--accent); transition: width .5s; }
 .dup-keys { flex: none; display: flex; align-items: center; gap: 10px; }
 .dup-keep { display: flex; align-items: center; gap: 7px; }
 .dup-keep svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-.dup-keep:hover { color: var(--danger); }
-.dup-keep.armed, .dup-keep.armed:hover { background: var(--danger-dim); box-shadow: inset 0 0 0 1px var(--danger); color: var(--danger); }
+.dup-keep:disabled { opacity: .45; cursor: default; }
 .dup-card .warning-note { margin: 0 24px 12px; }
 .dup-group { margin-bottom: 10px; }
-.dup-group__head { font-size: 12px; color: var(--text-soft); }
-.dup-file { gap: 10px; }
+.dup-group__head { gap: 12px; }
+.dup-thumb { flex: none; display: grid; place-items: center; width: 40px; height: 40px; overflow: hidden; border-radius: var(--radius-small); background: var(--sunken); }
+.dup-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.dup-thumb .glyph { background: none; }
+.dup-group__what { flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.dup-group__title { font-size: var(--text-body); font-weight: 600; }
+.dup-group__what small { font-size: var(--text-caption); color: var(--text-pale); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dup-same { flex: none; padding: 2px 8px; border-radius: 99px; background: var(--raised); color: var(--text-soft); font-size: var(--text-badge); }
+.dup-restore { display: flex; align-items: center; gap: 7px; }
+.dup-restore svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.dup-expected { margin-top: 4px; }
+.dup-file { gap: 10px; cursor: pointer; }
+.dup-file input { flex: none; width: 16px; height: 16px; margin: 0; accent-color: var(--accent-strong); cursor: pointer; }
+.dup-file input:disabled { cursor: default; }
+.dup-file--kept .dup-file__name { color: var(--text); font-weight: 600; }
 .dup-file__what { flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .dup-file__name, .dup-file small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dup-file small { font-size: 12px; color: var(--text-pale); }
-.dup-file .size { flex: none; font: 12.5px var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-soft); }
-.dup-pill { flex: none; padding: 2px 8px; border-radius: 99px; background: var(--accent-dim); color: var(--accent); font-size: 11.5px; font-weight: 600; }
+.dup-file small { font-size: var(--text-caption); color: var(--text-pale); }
+.dup-file .size { flex: none; font: var(--text-value) var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-soft); }
+.dup-pill { flex: none; padding: 2px 8px; border-radius: 99px; background: var(--accent-dim); color: var(--accent); font-size: var(--text-badge); font-weight: 600; }
 .dup-tool { flex: none; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: var(--radius-small); background: none; color: var(--text-pale); transition: color var(--fast), background var(--fast), box-shadow var(--fast); }
 .dup-tool svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .dup-tool:hover:not(:disabled) { color: var(--text); background: var(--hover); }
-.dup-bin.armed { color: var(--danger); background: var(--danger-dim); box-shadow: inset 0 0 0 1px var(--danger); }
-@container duplicates (max-width: 640px) { .dup-card .security__checks { grid-template-columns: 1fr; } .dup-freed { display: none; } }
+@container duplicates (max-width: 640px) { .dup-card .security__checks { grid-template-columns: 1fr; } }
+.dup-bin:hover:not(:disabled) { color: var(--danger); }
+.dup-bin.armed, .dup-bin.armed:hover { background: var(--danger-dim); box-shadow: inset 0 0 0 1px var(--danger); color: var(--danger); }
+.dup-dialog { width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 48px); padding: 22px; border: 0; border-radius: var(--radius-shell); background: var(--shell); box-shadow: var(--shell-edge), 0 24px 60px rgba(0, 0, 0, .65); color: var(--text); }
+.dup-dialog::backdrop { background: rgba(5, 6, 10, .62); backdrop-filter: blur(3px); }
+.dup-dialog[open] { animation: dup-dialog-in .2s ease-out; }
+@keyframes dup-dialog-in { from { opacity: 0; transform: translateY(8px) scale(.98); } }
+@media (prefers-reduced-motion: reduce) { .dup-dialog[open] { animation: none; } }
+.dup-dialog__head { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.dup-dialog__icon { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--accent-dim); color: var(--accent); }
+.dup-dialog__icon svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.dup-dialog__head h2 { margin: 0; font: 600 var(--text-title) var(--display); color: var(--text); }
+.dup-dialog__head p { margin: 2px 0 0; font-size: var(--text-caption); color: var(--text-soft); }
+.dup-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.dup-fact { display: flex; flex-direction: column; gap: 3px; min-width: 0; padding: 14px; border-radius: var(--radius-group); background: var(--sunken); box-shadow: inset 0 1px 3px rgba(0, 0, 0, .6); }
+.dup-fact strong { font: 600 var(--text-heading)/1.1 var(--display); font-variant-numeric: tabular-nums; color: var(--accent); }
+.dup-fact span { font-size: var(--text-body); font-weight: 600; }
+.dup-fact small { font-size: var(--text-caption); line-height: 1.35; color: var(--text-pale); }
+.dup-dialog__list-title { margin: 18px 2px 8px; font-size: var(--text-caption); color: var(--text-soft); }
+.dup-dialog__list { margin: 0; padding: 0; list-style: none; border-radius: var(--radius-group); background: var(--group); }
+.dup-dialog__list li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1px 12px; padding: 8px 12px; }
+.dup-dialog__list li + li { box-shadow: inset 0 1px 0 var(--hairline); }
+.dup-dialog__list span, .dup-dialog__list small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dup-dialog__list span { font-size: var(--text-body); }
+.dup-dialog__list small { grid-column: 1; font-size: var(--text-caption); color: var(--text-pale); }
+.dup-dialog__list b { grid-column: 2; grid-row: 1 / 3; align-self: center; font: 500 var(--text-value) var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-soft); }
+.dup-dialog__list .dup-dialog__more { display: block; font-size: var(--text-caption); color: var(--text-soft); }
+.dup-dialog__keys { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+@media (max-width: 600px) { .dup-facts { grid-template-columns: 1fr; } }

@@ -191,38 +191,26 @@
     const card = $('t-memory');
     $('t-free').dataset.state = closing ? 'progress' : '';
     $('t-free').lastElementChild.textContent = tr(closing ? 'Closing…' : 'Free up memory');
-    if (!free) { $('t-memory-hint').textContent = tr(closing ? 'Closing the programs' : 'Looking for what can be closed'); return; }
+    $('t-memory-hint').textContent = closing ? tr('Closing the programs') : '';
+    if (!free) return;
     const used = free.total - free.available, part = free.total ? used / free.total * 100 : 0;
     const n = free.items.length, total = free.items.reduce((a, i) => a + i.memory, 0);
     const level = part >= 85 ? 'low' : part >= 70 ? 'medium' : 'high';
     card.className = 'security t-memory security--' + level;
-    $('t-memory-value').textContent = tr('{0} of {1} in use', size(used), size(free.total));
-    $('t-memory-percent').textContent = Math.round(part) + '%';
-    $('t-memory-seal').style.setProperty('--part', part.toFixed(1));
-    const lit = Math.round(part / 10);
-    [...$('t-memory-meter').children].forEach((b, i) => b.classList.toggle('on', i < lit));
-    const checks = [
-      { title: 'In use', detail: 'Held by programs and Windows', value: size(used), state: part >= 85 ? 'bad' : part >= 70 ? 'warn' : 'ok' },
-      { title: 'Available', detail: 'Ready for new programs', value: size(free.available), state: part >= 85 ? 'bad' : part >= 70 ? 'warn' : 'ok' },
-      { title: 'Can be freed', detail: n ? (n === 1 ? '1 program not in use' : tr('{0} programs not in use', n)) : 'Everything big is in use or needed',
-        value: n ? tr('About {0}', size(total)) : tr('Nothing'), state: !n ? 'neutral' : part >= 70 ? 'warn' : 'ok' },
-    ];
-    const key = JSON.stringify([checks, LANGUAGE]);
-    const zone = $('t-memory-checks');
-    if (zone.dataset.key !== key) {
-      zone.dataset.key = key;
-      zone.replaceChildren(...checks.map(c => {
-        const el = document.createElement('div');
-        el.className = 'check check--' + c.state;
-        el.innerHTML = '<span class="jewel" role="img"></span><div class="check__what"><span class="check__title"></span><span class="check__detail"></span></div><span class="check__value"></span>';
-        el.querySelector('.jewel').setAttribute('aria-label', tr({ ok: 'Fine', warn: 'Be careful', bad: 'Risky', neutral: 'Not reported' }[c.state]));
-        el.querySelector('.check__title').textContent = tr(c.title);
-        el.querySelector('.check__detail').textContent = el.querySelector('.check__detail').title = tr(c.detail);
-        el.querySelector('.check__value').textContent = c.value;
-        return el;
-      }));
-    }
-    $('t-memory-hint').textContent = n ? tr('Closing the unused programs frees about {0}', size(total)) : tr('Nothing to free right now: the programs using a lot of memory are in use or needed');
+    const items = data ? data.items : [], cpu = Math.min(100, items.reduce((a, t) => a + (t.cpu || 0), 0));
+    const busiest = items.reduce((a, t) => !a || (t.cpu || 0) > (a.cpu || 0) ? t : a, null);
+    const heaviest = [...free.items].sort((a, b) => b.memory - a.memory).slice(0, 4).map(i => [i.name, size(i.memory)]);
+    const busiestList = [...items].filter(t => (t.cpu || 0) >= 1).sort((a, b) => b.cpu - a.cpu).slice(0, 4).map(t => [t.name, Math.round(t.cpu) + ' %']);
+    dials($('t-gauges'), [
+      { part, value: Math.round(part) + ' %', label: tr('Memory in use'), sub: tr('{0} of {1}', size(used), size(free.total)), level,
+        details: { title: tr('Memory in use'), value: Math.round(part) + ' %', lines: [[tr('In use'), size(used)], [tr('Available'), size(free.available)], [tr('Installed'), size(free.total)]] } },
+      { part: free.total ? total / free.total * 100 : 0, value: n ? size(total) : '0', label: tr('Can be freed'), level: n ? 'high' : 'off',
+        sub: n ? (n === 1 ? tr('1 program not in use') : tr('{0} programs not in use', n)) : tr('Nothing right now'), action: n ? () => { if (!freeing) startFree(); } : null,
+        details: n ? { title: tr('Can be freed'), value: size(total), note: tr('Open but not in use'), lines: heaviest } : null },
+      { part: cpu, value: Math.round(cpu) + ' %', label: tr('Processor'), level: cpu >= 90 ? 'low' : cpu >= 70 ? 'medium' : 'high',
+        sub: busiest && busiest.cpu >= 1 ? tr('Busiest: {0}', busiest.name) : tr('Quiet'),
+        details: busiestList.length ? { title: tr('Processor'), value: Math.round(cpu) + ' %', lines: busiestList } : null },
+    ]);
     $('t-free').disabled = (!n && !freeing) || closing;
   }
 
@@ -367,6 +355,7 @@
     data = m;
     for (const t of m.items) if (t.info) details.set(t.id, t.info);
     render();
+    renderMemory();
   }
 
   function visible(yes) {

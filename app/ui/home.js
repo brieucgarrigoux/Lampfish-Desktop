@@ -4,13 +4,6 @@
   let network = null, stats = null, shown = false, timer = 0, keyWallpaper = '', map = null, weather = null, tasks = null;
   const images = new Map(), appIcons = new Map();
 
-  const ROWS = [
-    ['processor', 'Processor', 'hardware', '<rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/><rect x="9.5" y="9.5" width="5" height="5" rx=".8"/><path d="M9.5 3.5v3M14.5 3.5v3M9.5 17.5v3M14.5 17.5v3M3.5 9.5h3M3.5 14.5h3M17.5 9.5h3M17.5 14.5h3"/>'],
-    ['memory', 'Memory', 'hardware', '<rect x="3.5" y="7" width="17" height="9.5" rx="1.5"/><path d="M7.5 10.5v2.5M11 10.5v2.5M14.5 10.5v2.5M6 16.5v2.5M18 16.5v2.5"/>'],
-    ['disk', 'Disk', 'files', '<rect x="3.5" y="6.5" width="17" height="11" rx="2"/><path d="M6.5 12h6"/><circle cx="16.5" cy="12" r="1.2"/>'],
-    ['power', 'Battery', 'hardware', '<rect x="3.5" y="8" width="15" height="8" rx="1.5"/><path d="M21 11v2M11.5 9.5 9 12.5h3l-2.5 3"/>'],
-    ['network', 'Network', 'network', '<path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.2" r="1.1"/>'],
-  ];
   const SHORTCUTS = [
     ['icons', 'Icons', '<rect x="4" y="4" width="16" height="16" rx="4"/><path d="m12 7.8 1.2 2.6 2.8.3-2.1 1.9.6 2.8-2.5-1.4-2.5 1.4.6-2.8-2.1-1.9 2.8-.3z"/>'],
     ['arrange', 'Arrange', '<rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><rect x="14" y="14" width="6" height="6" rx="1.2"/>'],
@@ -28,17 +21,6 @@
 
   const tiles = {};
   const glyph = icon => `<svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${icon}</svg>`;
-  for (const [key, name, view, icon] of ROWS) {
-    const b = document.createElement('button');
-    b.className = 'h-row';
-    b.innerHTML = `${glyph(icon)}<span class="h-row__what"><span class="h-row__name"></span><span class="h-detail"></span></span><span class="h-visual"></span><span class="h-value"></span>`;
-    b.querySelector('.h-row__name').textContent = tr(name);
-    b.dataset.row = key;
-    b.setAttribute('aria-pressed', 'false');
-    b.addEventListener('click', () => openRow(key));
-    $('h-rows').append(b);
-    tiles[key] = { el: b, name: b.querySelector('.h-row__name'), value: b.querySelector('.h-value'), detail: b.querySelector('.h-detail'), visual: b.querySelector('.h-visual') };
-  }
   for (const [view, name, icon] of SHORTCUTS) {
     const b = document.createElement('button');
     b.className = 'h-tile';
@@ -51,10 +33,10 @@
     tiles[view] = { el: b, value: b.querySelector('.h-value'), detail: null, visual: b.querySelector('.h-visual') };
   }
   // This PC opens its details in the side panel, like the tiles, so Home stays in view.
-  const PARTS = { processor: 'processor', memory: 'memory', disk: 'disk', power: 'battery' };
-  let rowShown = null;
+  const PARTS = { processor: 'processor', memory: 'memory', disk: 'disk', power: 'battery', heat: 'temperature' };
+  let rowShown = null, memoryHigh = false;
   function openRow(key) {
-    const dock = key === 'memory' && tiles.memory.high ? 'tasks' : key === 'network' ? 'network' : 'hardware';
+    const dock = key === 'memory' && memoryHigh ? 'tasks' : key === 'network' ? 'network' : 'hardware';
     if (document.body.dataset.dock === dock && rowShown === key) { setDock(null); return; }
     rowShown = key;
     setDock(dock);
@@ -64,7 +46,7 @@
   function markRows() {
     const dock = document.body.dataset.dock;
     if (!dock) rowShown = null;
-    for (const r of $('h-rows').children) r.setAttribute('aria-pressed', String(!!dock && r.dataset.row === rowShown && ['hardware', 'network', 'tasks'].includes(dock)));
+    for (const r of [...$('h-dials').children, ...$('h-instruments').children]) r.setAttribute('aria-pressed', String(!!dock && r.dataset.key === rowShown && ['hardware', 'network', 'tasks'].includes(dock)));
   }
   new MutationObserver(markRows).observe(document.body, { attributes: true, attributeFilter: ['data-dock'] });
 
@@ -77,12 +59,12 @@
   };
 
   const visual = (key, html) => { const v = tiles[key].visual; if (v.dataset.key !== html) { v.dataset.key = html; v.innerHTML = html; } };
-  const bar = part => `<span class="h-bar"><i style="width:${Math.max(0, Math.min(100, part)).toFixed(1)}%"></i></span>`;
   const urlIcon = a => `/app/icon-cache/${encodeURIComponent(a.key)}-${a.retro ? 32 : 64}.png`;
   const urlCursor = a => `/app/cursor-cache/${encodeURIComponent(a.key)}-${a.retro ? 32 : 64}.png`;
   $('h-wallpaper').dataset.dockTo = 'wallpaper';
   $('h-wallpaper').addEventListener('click', () => dockTo('wallpaper'));
   $('h-display').addEventListener('click', () => dockTo('display'));
+  $('h-sound').addEventListener('click', () => dockTo('station'));
   const CHEVRON = '<svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>';
   $('h-previous').addEventListener('click', () => send('previous'));
   $('h-pause').addEventListener('click', () => send('pause'));
@@ -148,42 +130,29 @@
       visual('station', '<span class="h-leds">' + s.events.map(x => `<i class="${x.active && on ? 'on' : ''}"></i>`).join('') + '</span>');
     }
 
-    if (network) {
-      const t = network.history && network.history[0];
-      const sig = network.wifi && network.signal >= 0 ? network.signal : network.connected ? 100 : 0;
-      set('network', !network.connected ? tr('Offline') : network.wifi ? sig + ' %' : tr('Cable'),
-        [network.connected && network.wifi ? network.network || 'Wi-Fi' : '', t ? '↓ ' + Math.round(t.down) + ' Mbit/s' : ''].filter(Boolean).join(' · '), !network.connected);
-      visual('network', '<span class="h-signal">' + [1, 2, 3, 4].map(i => `<i class="${sig > (i - 1) * 25 ? 'on' : ''}"></i>`).join('') + '</span>');
-    }
-
+    const pc = [], level = (v, warn, bad) => v >= bad ? 'low' : v >= warn ? 'medium' : 'high';
     if (stats) {
-      const ram = stats.memory.used / stats.memory.total * 100, t = stats.temperature;
-      set('processor', Math.round(stats.processor.total) + ' %', t != null ? Math.round(t) + ' °C' : stats.processor.threads.length ? tr('{0} threads', stats.processor.threads.length) : '');
-      tiles.processor.visual.innerHTML = '<span class="h-threads">' + stats.processor.threads.slice(0, 16).map(v => `<i style="--h:${Math.max(8, Math.min(100, v)).toFixed(0)}%"></i>`).join('') + '</span>';
-      tiles.memory.high = ram >= 80;
-      tiles.memory.el.classList.toggle('act', tiles.memory.high);
-      set('memory', Math.round(ram) + ' %', tiles.memory.high ? tr('Free up memory') : tr('{0} of {1}', size(stats.memory.used).replace(/ \S+$/, ''), size(stats.memory.total)), ram >= 90);
-      visual('memory', bar(ram));
-
-      const b = stats.battery;
-      if (b) {
-        tiles.power.name.textContent = tr('Battery');
-        set('power', b.charge + ' %', b.mains ? tr('Plugged in') : b.remaining > 0 ? tr('{0} left', duration(b.remaining)) : tr('On battery'), b.charge <= 15 && !b.mains);
-        visual('power', '<span class="h-cell">' + Array.from({ length: 5 }, (_, i) => `<i class="${i < Math.ceil(b.charge / 20) ? (b.charge <= 15 && !b.mains ? 'low' : 'on') : ''}"></i>`).join('') + '</span><span class="h-tip"></span>');
-      } else {
-        tiles.power.name.textContent = tr('Power');
-        set('power', tr('Plugged in'), '');
-        visual('power', '');
-      }
+      const cpu = stats.processor.total, ram = stats.memory.used / stats.memory.total * 100;
+      memoryHigh = ram >= 80;
+      const apps = tasks ? tasks.items : [], top = key => apps.reduce((a, t) => !a || (t[key] || 0) > (a[key] || 0) ? t : a, null);
+      const busy = top('cpu'), heavy = top('memory');
+      pc.push({ key: 'processor', part: cpu, value: Math.round(cpu) + ' %', label: tr('Processor'), sub: tr('{0} threads', stats.processor.threads.length), level: level(cpu, 80, 95),
+        details: { title: tr('Processor'), value: Math.round(cpu) + ' %', lines: [[tr('Clock'), stats.processor.frequency ? (stats.processor.frequency / 1000).toLocaleString(LOCALE, { maximumFractionDigits: 2 }) + ' GHz' : ''],
+          [tr('Threads'), String(stats.processor.threads.length)], [tr('Busiest'), busy && busy.cpu >= 1 ? busy.name + ' · ' + Math.round(busy.cpu) + ' %' : '']] } });
+      pc.push({ key: 'memory', part: ram, value: Math.round(ram) + ' %', label: tr('Memory'), level: level(ram, 75, 85),
+        sub: memoryHigh ? tr('Free up memory') : tr('{0} of {1}', size(stats.memory.used).replace(/ \S+$/, ''), size(stats.memory.total)),
+        details: { title: tr('Memory'), value: Math.round(ram) + ' %', lines: [[tr('In use'), size(stats.memory.used)], [tr('Available'), size(stats.memory.total - stats.memory.used)],
+          [tr('Installed'), size(stats.memory.total)], [tr('Heaviest'), heavy ? heavy.name + ' · ' + size(heavy.memory) : '']] } });
     }
-
     const fi = e.files;
     if (fi && fi.disks && fi.disks[0]) {
-      const d = fi.disks[0];
-      tiles.disk.name.textContent = tr('Disk {0}', (d.path || '').slice(0, 2));
-      set('disk', Math.round((d.size - d.free) / d.size * 100) + ' %', tr('{0} free of {1}', size(d.free), size(d.size)), d.free / d.size < 0.1);
-      visual('disk', bar((d.size - d.free) / d.size * 100));
+      const d = fi.disks[0], used = (d.size - d.free) / d.size * 100;
+      pc.push({ key: 'disk', part: used, value: Math.round(used) + ' %', label: tr('Disk {0}', (d.path || '').slice(0, 2)), sub: tr('{0} free', size(d.free)), level: d.free / d.size < 0.1 ? 'low' : 'high',
+        details: { title: tr('Disk {0}', (d.path || '').slice(0, 2)), value: Math.round(used) + ' %', lines: [[tr('In use'), size(d.size - d.free)], [tr('Free'), size(d.free)], [tr('Size'), size(d.size)]] } });
     }
+    renderInstruments();
+    dials($('h-dials'), pc.map(x => Object.assign(x, { action: () => openRow(x.key) })));
+    markRows();
 
     const a = e.icons;
     if (a) {
@@ -238,8 +207,8 @@
       b.setAttribute('aria-pressed', String(!!m.current));
       if (Bramble.moods) b.insertAdjacentHTML('beforeend', Bramble.moods.icon(m.icon));
       b.append(Object.assign(document.createElement('span'), { textContent: m.name, translate: false }));
-      b.title = m.current ? tr('Active') : tr('Apply');
-      b.addEventListener('click', () => { if (!m.current) send('moods.apply', { id: m.id }); });
+      b.title = m.current ? tr('Turn off') : tr('Apply');
+      b.addEventListener('click', () => send(m.current ? 'moods.release' : 'moods.apply', { id: m.id }));
       return b;
     }), more);
   }
@@ -341,13 +310,66 @@
   }
 
   const LAMPS = { ok: 'high', warn: 'medium', bad: 'low' };
+  // Heat, battery and Wi-Fi keep the instruments of Hardware rather than a ring.
+  const instruments = {};
+  function instrument(key, label, drawing) {
+    const b = document.createElement('button');
+    b.className = 'h-instrument';
+    b.dataset.key = key;
+    b.innerHTML = `<span class="h-instrument__label"></span>${drawing}<span class="h-instrument__value"><b></b><span></span></span>`;
+    b.querySelector('.h-instrument__label').textContent = tr(label);
+    b.addEventListener('click', () => openRow(key));
+    details(b, () => instrumentDetails(key));
+    $('h-instruments').append(b);
+    return instruments[key] = { el: b, value: b.querySelector('b'), word: b.querySelector('.h-instrument__value span'), drawing: b.children[1] };
+  }
+  function instrumentDetails(key) {
+    const t = stats && stats.temperature, b = stats && stats.battery, n = network;
+    if (key === 'heat') return { title: tr('Heat'), value: Math.round(t) + ' °C', note: tr('Read in the processor thermal zone'), lines: [[tr('Hot from'), '85 °C'], [tr('Slows down from'), '90 °C']] };
+    if (key === 'power') return { title: tr('Battery'), value: b.charge + ' %', lines: [[tr('Power'), b.mains ? tr('Plugged in') : tr('On battery')], [tr('Time left'), !b.mains && b.remaining > 0 ? duration(b.remaining) : '']] };
+    if (key === 'network' && n) return { title: n.wifi ? tr('Wi-Fi') : tr('Network'), value: n.wifi && n.signal >= 0 ? n.signal + ' %' : '', lines: [[tr('Network'), n.network || ''],
+      [tr('Standard'), n.standard || ''], [tr('Channel'), n.channel ? String(n.channel) : ''], [tr('Link speed'), n.speed > 0 ? Math.round(n.speed) + ' Mbit/s' : ''], [tr('Last test'), n.history && n.history[0] ? '↓ ' + Math.round(n.history[0].down) + ' Mbit/s' : '']] };
+    return null;
+  }
+  function renderInstruments() {
+    const t = stats && stats.temperature, b = stats && stats.battery;
+    if (t != null) {
+      const k = instruments.heat || instrument('heat', 'Heat', thermometer());
+      k.value.textContent = Math.round(t) + ' °C';
+      k.word.textContent = tr(t < 60 ? 'Cool' : t < 85 ? 'Warm' : 'Hot');
+      k.el.classList.toggle('alert', t >= 85);
+      setThermometer(k.drawing, t);
+    }
+    if (b) {
+      const k = instruments.power || instrument('power', 'Battery', batteryRelief());
+      k.value.textContent = b.charge + ' %';
+      k.word.textContent = b.mains ? tr('Plugged in') : b.remaining > 0 ? tr('{0} left', duration(b.remaining)) : tr('On battery');
+      k.el.classList.toggle('alert', b.charge <= 15 && !b.mains);
+      setBattery(k.drawing, b);
+    }
+    if (network) {
+      const k = instruments.network || instrument('network', network.wifi ? 'Wi-Fi' : 'Network', wifiRelief());
+      const sig = network.wifi && network.signal >= 0 ? network.signal : network.connected ? 100 : 0;
+      k.value.textContent = !network.connected ? tr('Offline') : network.wifi ? sig + ' %' : tr('Cable');
+      k.word.textContent = network.connected ? network.network || '' : '';
+      k.word.translate = false;
+      k.el.classList.toggle('alert', !network.connected);
+      setWifi(k.drawing, sig, network.connected);
+    }
+    const order = ['heat', 'power', 'network'];
+    for (const key of order) if (instruments[key]) $('h-instruments').append(instruments[key].el);
+  }
+
   function health(h) {
     const b = $('h-health');
     b.hidden = !h;
     if (!h) return;
-    b.className = 'h-health security--' + LAMPS[h.level];
-    if (b.dataset.level !== h.level) { b.dataset.level = h.level; b.firstElementChild.innerHTML = Bramble.health.face('home-face', h.level); }
-    b.querySelector('.led-text').textContent = h.text;
+    const [face, shield] = b.querySelectorAll('.seal');
+    face.className = 'seal seal--small security--' + LAMPS[h.level];
+    shield.className = 'seal seal--small security--' + LAMPS[h.protectionLevel];
+    if (face.dataset.level !== h.level) { face.dataset.level = h.level; face.innerHTML = faceLight('home-face', LAMPS[h.level]); }
+    if (shield.dataset.level !== h.protectionLevel) { shield.dataset.level = h.protectionLevel; shield.innerHTML = shieldLight('home-shield', LAMPS[h.protectionLevel]); }
+    details(b, { title: tr('Health'), lines: [[tr('Speed'), h.text], [tr('Protection'), h.protection]] });
   }
   $('h-health').addEventListener('click', () => showView('health'));
 
