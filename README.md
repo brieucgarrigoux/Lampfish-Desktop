@@ -11,7 +11,7 @@
   <a href="CHANGELOG.md">Changelog</a>
 </p>
 
-Bramble lives in the system tray and brings together wallpapers, icons, cursors, sounds, desktop layout, the health of the PC, disk usage, network, hardware and running programs. It needs no administrator rights, no account and no server, and it collects no data: everything stays on the PC. Settings list the few outside services it calls (weather, connection test, update check) and when.
+Bramble lives in the system tray and brings together wallpapers, icons, cursors, sounds, desktop layout, the health of the PC, disk usage, network, hardware and running programs. It needs no administrator rights, no account and no server, and it collects no data: everything stays on the PC. Settings list the few outside services it calls (weather, connection test, update check) and when. On the very first start, a short welcome shows what it does and asks three questions, all of them skippable.
 
 ## Services
 

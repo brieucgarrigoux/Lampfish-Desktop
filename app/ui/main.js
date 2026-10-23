@@ -108,6 +108,7 @@ function showView(view) {
   if (Bramble.duplicates) Bramble.duplicates.visible(view === 'duplicates');
   send('audioPreview', { value: view === 'create' });
   if (Bramble.home) Bramble.home.visible(view === 'home');
+  if (Bramble.welcome) Bramble.welcome.viewed(view);
 }
 for (const b of document.querySelectorAll('.service')) b.addEventListener('click', () => showView(b.dataset.view));
 const iconRail = matchMedia('(max-width: 620px), (max-width: 900px) and (max-height: 1000px)');
@@ -178,6 +179,7 @@ function render(state) {
   $('allow-test').checked = state.speedTest !== false;
   showViews(state.hiddenViews || []);
   if (Bramble.layout) Bramble.layout.state(state.layout || {});
+  if (Bramble.welcome) Bramble.welcome.state(state);
   $('allow-ip').checked = state.publicIp !== false;
   $('place-row').hidden = !state.weather;
   if (!state.weather) $('place-results').hidden = true;

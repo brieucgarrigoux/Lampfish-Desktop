@@ -1604,5 +1604,22 @@
  "Home reset": "Accueil réinitialisé",
  "Bar reset": "Barre réinitialisée",
  "Wallpaper and themes": "Fond et thèmes",
- "Shown": "Affiché"
+ "Shown": "Affiché",
+ "Welcome to Bramble": "Bienvenue dans Bramble",
+ "One window to make Windows yours and keep an eye on your PC. Nothing leaves the PC without asking, and every change can be undone.": "Une fenêtre pour faire de Windows le vôtre et garder un œil sur votre PC. Rien ne quitte le PC sans vous le demander, et chaque changement peut être annulé.",
+ "Pick a wallpaper": "Choisir un fond",
+ "It plays behind your desktop icons and pauses on its own when a window fills the screen. More in Wallpaper.": "Il tourne derrière les icônes du Bureau et se met en pause tout seul quand une fenêtre remplit l'écran. D'autres dans Fond d'écran.",
+ "A few choices": "Quelques choix",
+ "Everything here can be changed later in Settings.": "Tout se modifie plus tard dans Réglages.",
+ "Your approximate location comes from your IP address": "Votre position approximative vient de votre adresse IP",
+ "Skip": "Passer",
+ "Back": "Retour",
+ "Start": "Commencer",
+ "Hide": "Masquer",
+ "First steps": "Premiers pas",
+ "First steps hidden": "Premiers pas masqués",
+ "Check the health of the PC": "Vérifier la santé du PC",
+ "Save your setup as a theme": "Enregistrer votre configuration en thème",
+ "Arrange the desktop icons": "Ranger les icônes du Bureau",
+ "Choose the cards of Home": "Choisir les cartes de l'accueil"
 }
