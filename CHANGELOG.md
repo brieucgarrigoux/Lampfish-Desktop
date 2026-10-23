@@ -27,6 +27,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Home: in a narrow window, the wallpaper controls sit in one row beside the preview, and two columns put them under it.
 
 ### Fixed
+- Health: the program named as the busiest could be the page engine of Bramble itself, Microsoft Edge WebView2. Its processes now count for the app that shows them.
 - Sounds: Reset everything turned on the dock sounds. Only the sound of the speed test is on by default.
 - Home: HTML wallpapers filled a quarter of their thumbnail in the side panel.
 - Duplicates: the ring of the Search button turned in jerks during a search.

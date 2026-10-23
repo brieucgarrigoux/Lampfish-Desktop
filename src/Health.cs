@@ -416,9 +416,10 @@ namespace Bramble
 
             int self;
             using (var current = Process.GetCurrentProcess()) self = current.Id;
-            var busiest = after.Where(p => p.Key != self && before.ContainsKey(p.Key))
-                .GroupBy(p => p.Value.Item1, StringComparer.OrdinalIgnoreCase)
-                .Select(g => new { id = g.First().Key, name = g.Key, share = g.Sum(p => (p.Value.Item2 - before[p.Key].Item2) / (15.0 * Environment.ProcessorCount)) })
+            var owners = Owners(after);
+            var busiest = after.Where(p => before.ContainsKey(p.Key) && owners[p.Key] != self)
+                .GroupBy(p => after[owners[p.Key]].Item1, StringComparer.OrdinalIgnoreCase)
+                .Select(g => new { id = owners[g.First().Key], name = g.Key, share = g.Sum(p => (p.Value.Item2 - before[p.Key].Item2) / (15.0 * Environment.ProcessorCount)) })
                 .OrderByDescending(p => p.share).FirstOrDefault();
             string top = busiest != null ? Tasks.NameOf(busiest.id, busiest.name) : null;
             if (processor >= 80)
@@ -496,6 +497,45 @@ namespace Bramble
                     catch { }
             return times;
         }
+
+        // A WebView2 page runs in msedgewebview2 processes started by the app that shows it: their time goes to that app, Bramble's own included.
+        static Dictionary<int, int> Owners(Dictionary<int, Tuple<string, double>> times)
+        {
+            var parents = new Dictionary<int, int>();
+            IntPtr snapshot = CreateToolhelp32Snapshot(2, 0);
+            if (snapshot != new IntPtr(-1))
+                try
+                {
+                    var entry = new PROCESSENTRY32 { dwSize = Marshal.SizeOf(typeof(PROCESSENTRY32)) };
+                    for (bool more = Process32FirstW(snapshot, ref entry); more; more = Process32NextW(snapshot, ref entry))
+                        parents[entry.th32ProcessID] = entry.th32ParentProcessID;
+                }
+                finally { CloseHandle(snapshot); }
+            var owners = new Dictionary<int, int>();
+            foreach (int id in times.Keys)
+            {
+                int owner = id, parent;
+                for (int depth = 0; depth < 8 && string.Equals(times[owner].Item1, "msedgewebview2", StringComparison.OrdinalIgnoreCase)
+                    && parents.TryGetValue(owner, out parent) && times.ContainsKey(parent); depth++)
+                    owner = parent;
+                owners[id] = owner;
+            }
+            return owners;
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        struct PROCESSENTRY32
+        {
+            public int dwSize, cntUsage, th32ProcessID;
+            public IntPtr th32DefaultHeapID;
+            public int th32ModuleID, cntThreads, th32ParentProcessID, pcPriClassBase, dwFlags;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)] public string szExeFile;
+        }
+
+        [DllImport("kernel32.dll", SetLastError = true)] static extern IntPtr CreateToolhelp32Snapshot(int flags, int process);
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)] static extern bool Process32FirstW(IntPtr snapshot, ref PROCESSENTRY32 entry);
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)] static extern bool Process32NextW(IntPtr snapshot, ref PROCESSENTRY32 entry);
+        [DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr handle);
 
         [StructLayout(LayoutKind.Sequential)]
         struct SYSTEM_POWER_STATUS { public byte ACLineStatus, BatteryFlag, BatteryLifePercent, SystemStatusFlag; public int BatteryLifeTime, BatteryFullLifeTime; }
