@@ -52,6 +52,8 @@ namespace Bramble
             view.ZoomFactor = Program.R.Zoom / 100.0;
             core.SetVirtualHostNameToFolderMapping(WallpaperForm.AppHost, Program.Root, CoreWebView2HostResourceAccessKind.DenyCors);
             core.SetVirtualHostNameToFolderMapping(WallpaperForm.MediaHost, Program.WallpapersFolder, CoreWebView2HostResourceAccessKind.Allow);
+            Map(Notes.Host, Notes.Folder);
+            Map(Shelf.Host, Shelf.Folder);
             core.WebMessageReceived += (s, e) =>
             {
                 var files = new List<string>();
@@ -71,6 +73,15 @@ namespace Bramble
             };
             scriptLanguage = await core.AddScriptToExecuteOnDocumentCreatedAsync(Language.Script());
             core.Navigate("https://" + WallpaperForm.AppHost + "/app/ui/index.html");
+        }
+
+        // Images of the notes and of the shelf, read from their folders; the page can show them but not fetch them from elsewhere.
+        public void Map(string host, string folder)
+        {
+            var core = view.CoreWebView2;
+            if (core == null) return;
+            try { core.ClearVirtualHostNameToFolderMapping(host); } catch { }
+            core.SetVirtualHostNameToFolderMapping(host, folder, CoreWebView2HostResourceAccessKind.DenyCors);
         }
 
         public void SetZoom(int percent) { view.ZoomFactor = percent / 100.0; }

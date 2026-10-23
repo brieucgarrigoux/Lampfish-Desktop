@@ -29,7 +29,7 @@ $('dock-open').addEventListener('click', () => { const view = document.body.data
 addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.dataset.dock && !(e.target.matches && e.target.matches('input:not([type="checkbox"]), select, textarea'))) setDock(null); });
 
 // In a narrow window the side panel would fall far below the page: it opens as a drawer from the Options button instead.
-const OWN_PANEL = ['home', 'settings', 'display', 'audio', 'health', 'tasks', 'modes'];
+const OWN_PANEL = ['home', 'settings', 'display', 'audio', 'shelf', 'health', 'tasks', 'modes'];
 const setPanel = open => document.body.classList.toggle('panel-open', open);
 $('panel-toggle').addEventListener('click', () => setPanel(true));
 $('panel-close').addEventListener('click', () => setPanel(false));
@@ -59,6 +59,8 @@ function showView(view) {
   if (Bramble.creator) Bramble.creator.visible(view === 'create');
   if (Bramble.display) Bramble.display.visible(view === 'display');
   if (Bramble.audio) Bramble.audio.visible(view === 'audio');
+  if (Bramble.notes) Bramble.notes.visible(view === 'notes');
+  if (Bramble.shelf) Bramble.shelf.visible(view === 'shelf');
   if (Bramble.health) Bramble.health.visible(view === 'health');
   if (Bramble.duplicates) Bramble.duplicates.visible(view === 'duplicates');
   send('audioPreview', { value: view === 'create' });
@@ -117,6 +119,8 @@ webview.addEventListener('message', e => {
   if (m.type && m.type.startsWith('moods.')) { if (Bramble.moods) Bramble.moods.event(m); return; }
   if (m.type && m.type.startsWith('display.')) { if (Bramble.display) Bramble.display.event(m); return; }
   if (m.type === 'audio.devices' || m.type === 'audio.levels') { if (Bramble.audio) Bramble.audio.event(m); return; }
+  if (m.type && m.type.startsWith('notes.')) { if (Bramble.notes) Bramble.notes.event(m); return; }
+  if (m.type && m.type.startsWith('shelf.')) { if (Bramble.shelf) Bramble.shelf.event(m); return; }
   if (m.type && m.type.startsWith('health.')) { if (Bramble.health) Bramble.health.event(m); return; }
   if (m.type && m.type.startsWith('duplicates.')) { if (Bramble.duplicates) Bramble.duplicates.event(m); return; }
   if (m.type === 'window.closed') { if (Bramble.creator) Bramble.creator.reset(); return; }
@@ -238,7 +242,7 @@ confirmReset($('r-reset'), 'The icons go back to where they were before Bramble 
 
 let depth = 0;
 const carriesFiles = e => [...e.dataTransfer.types].includes('Files');
-const DROP_HINTS = { wallpaper: 'Videos, GIFs, images or HTML pages', icons: 'ICO files or images', mouse: 'Cursor files, .cur or .ani', station: 'MP3, AAC, OGG, FLAC or WAV sounds' };
+const DROP_HINTS = { wallpaper: 'Videos, GIFs, images or HTML pages', icons: 'ICO files or images', mouse: 'Cursor files, .cur or .ani', station: 'MP3, AAC, OGG, FLAC or WAV sounds', shelf: 'Any file: a copy goes on the shelf' };
 addEventListener('dragenter', e => {
   const view = document.body.dataset.view;
   if (!carriesFiles(e) || !DROP_HINTS[view]) return;
@@ -257,7 +261,7 @@ addEventListener('drop', e => {
   const files = e.dataTransfer.files;
   if (!files.length) return;
   const view = document.body.dataset.view;
-  const action = { icons: 'icons.drop', mouse: 'mouse.drop', wallpaper: 'drop' }[view];
+  const action = { icons: 'icons.drop', mouse: 'mouse.drop', wallpaper: 'drop', shelf: 'shelf.drop' }[view];
   if (view === 'station' && Bramble.station) Bramble.station.ingest([...files]);
   else if (action) {
     try { webview.postMessageWithAdditionalObjects({ action }, files); }

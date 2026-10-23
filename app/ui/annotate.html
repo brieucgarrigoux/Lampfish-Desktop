@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; base-uri 'none'; form-action 'none'">
+<title>Annotate</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="main.css">
+<link rel="stylesheet" href="annotate.css">
+</head>
+<body class="annotate">
+  <header class="an-bar">
+    <div class="an-tools" role="radiogroup" aria-label="Tool">
+      <button type="button" data-tool="arrow" aria-pressed="true" title="Arrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M10 5h9v9"/></svg><span>Arrow</span></button>
+      <button type="button" data-tool="box" aria-pressed="false" title="Frame"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="6" width="16" height="12" rx="2"/></svg><span>Frame</span></button>
+      <button type="button" data-tool="marker" aria-pressed="false" title="Highlighter"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 4.5 5 5L10 19H5v-5z"/><path d="M4 21h16"/></svg><span>Highlighter</span></button>
+      <button type="button" data-tool="text" aria-pressed="false" title="Text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6V4.5h14V6M12 4.5v15M9 19.5h6"/></svg><span>Text</span></button>
+      <button type="button" data-tool="pixelate" aria-pressed="false" title="Pixelate"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h5v5H4zM15 4h5v5h-5zM9.5 9.5h5v5h-5zM4 15h5v5H4zM15 15h5v5h-5z"/></svg><span>Pixelate</span></button>
+    </div>
+    <div class="an-colors" role="radiogroup" aria-label="Color">
+      <button type="button" data-color="#9561f3" aria-pressed="true" aria-label="Violet"></button>
+      <button type="button" data-color="#ff5c6c" aria-pressed="false" aria-label="Red"></button>
+      <button type="button" data-color="#f0b955" aria-pressed="false" aria-label="Yellow"></button>
+      <button type="button" data-color="#ffffff" aria-pressed="false" aria-label="White"></button>
+    </div>
+    <button type="button" class="button" id="an-undo" title="Ctrl + Z" disabled>Undo</button>
+    <span class="an-space"></span>
+    <button type="button" class="link an-delete" id="an-delete">Delete the capture</button>
+    <button type="button" class="button" id="an-close">Close</button>
+    <button type="button" class="button button--accent" id="an-done" title="Ctrl + S">Copy and close</button>
+  </header>
+  <main class="an-stage" id="an-stage">
+    <canvas id="an-canvas" aria-label="Capture"></canvas>
+    <input type="text" class="an-text" id="an-text" hidden aria-label="Text to add" spellcheck="false">
+  </main>
+<script src="base.js"></script>
+<script src="annotate.js"></script>
+</body>
+</html>

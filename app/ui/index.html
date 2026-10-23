@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://media.example; media-src 'self' data: blob: https://media.example; frame-src 'self' https://media.example; connect-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://media.example https://notes.example https://shelf.example; media-src 'self' data: blob: https://media.example; frame-src 'self' https://media.example; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <title>Bramble</title>
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="main.css">
@@ -23,6 +23,8 @@
 <link rel="stylesheet" href="audio.css">
 <link rel="stylesheet" href="health.css">
 <link rel="stylesheet" href="duplicates.css">
+<link rel="stylesheet" href="notes.css">
+<link rel="stylesheet" href="shelf.css">
 <link rel="stylesheet" href="layout.css">
 <link rel="stylesheet" href="welcome.css">
 <link rel="stylesheet" href="panels.css">
@@ -69,6 +71,15 @@
   <button class="service" data-view="arrange">
     <svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><rect x="14" y="14" width="6" height="6" rx="1.2"/></svg>
     Arrange
+  </button>
+  <div class="rail-title" role="presentation" data-group="workspace">Workspace</div>
+  <button class="service" data-view="notes">
+    <svg viewBox="0 0 24 24"><path d="M6 3.5h9l3.5 3.5v13.5H6z"/><path d="M15 3.5V7h3.5M9 11h6M9 14.5h6M9 18h3.5"/></svg>
+    Notes
+  </button>
+  <button class="service" data-view="shelf">
+    <svg viewBox="0 0 24 24"><path d="M3.5 17h17M5 20.5h14"/><rect x="5.5" y="8" width="5" height="9" rx="1"/><path d="m13 17 2.2-8.5 4.3 1.1-2.1 7.4"/></svg>
+    Shelf
   </button>
   <div class="rail-title" role="presentation" data-group="pc">PC</div>
   <button class="service" data-view="health">
@@ -436,6 +447,48 @@
     <div class="arrangements arrangements--mine" id="mine"></div>
   </section>
 
+  <section class="view view--notes only-notes" aria-label="Notes">
+    <h1>Notes</h1>
+    <div class="n-layout">
+      <aside class="n-side">
+        <div class="n-tools">
+          <input type="search" id="n-search" placeholder="Search the notes" aria-label="Search the notes">
+          <button type="button" class="button button--accent" id="n-new">New note</button>
+        </div>
+        <div class="n-list" id="n-list" role="list"></div>
+      </aside>
+      <article class="n-note" id="n-note">
+        <div class="n-empty" id="n-empty">
+          <p>Notes are Markdown files, readable by any app, and by Obsidian when they are saved in a vault.</p>
+          <button type="button" class="button button--accent" id="n-first">Write a note</button>
+        </div>
+        <div class="n-editor" id="n-editor" hidden>
+          <div class="n-head">
+            <input type="text" class="n-title" id="n-title" aria-label="Name of the note" spellcheck="false" translate="no">
+            <div class="segments n-mode" role="group" aria-label="Mode"><button type="button" data-mode="write" aria-pressed="true">Write</button><button type="button" data-mode="read" aria-pressed="false">Read</button></div>
+            <button type="button" class="link n-remove" id="n-remove">Remove</button>
+          </div>
+          <div class="n-bar" id="n-bar" role="toolbar" aria-label="Formatting"></div>
+          <textarea class="n-text" id="n-text" spellcheck="true" aria-label="Text of the note"></textarea>
+          <div class="n-read md" id="n-read" hidden></div>
+          <div class="n-status" id="n-status" aria-live="polite"></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="view view--shelf only-shelf" aria-label="Shelf">
+    <h1>Shelf</h1>
+    <div class="s-tools">
+      <div class="segments" id="s-filters" role="group" aria-label="Show"><button type="button" data-kind="all" aria-pressed="true">All</button><button type="button" data-kind="capture" aria-pressed="false">Captures</button><button type="button" data-kind="image" aria-pressed="false">Images</button><button type="button" data-kind="pdf" aria-pressed="false">PDF</button><button type="button" data-kind="other" aria-pressed="false">Other</button></div>
+      <button type="button" class="button" id="s-capture">Capture</button>
+      <button type="button" class="button" id="s-add">Add files</button>
+      <button type="button" class="link" id="s-folder">Open folder</button>
+    </div>
+    <p class="help-section">Drop files here to keep a copy at hand. Captures land here too, already in the clipboard.</p>
+    <div class="s-grid" id="s-grid"></div>
+  </section>
+
   <section class="view view--files only-files" aria-label="Storage">
     <h1>Storage</h1>
     <div class="bar-crumbs">
@@ -655,6 +708,14 @@
         <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><rect x="14" y="14" width="6" height="6" rx="1.2"/></svg><span>Arrange<small>Moves the desktop icons</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
         <dl class="tr-body"><dt>Reads</dt><dd>The position and size of the desktop icons</dd><dt>Changes</dt><dd>Where the icons are, their size, and auto arrange and align to grid</dd><dt>To undo</dt><dd>Undo, Back to original or a saved arrangement</dd></dl>
       </details>
+      <details class="tr-row" data-view="notes">
+        <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h9l3.5 3.5v13.5H6z"/><path d="M15 3.5V7h3.5M9 11h6M9 14.5h6M9 18h3.5"/></svg><span>Notes<small>Writes Markdown files in one folder</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
+        <dl class="tr-body"><dt>Reads</dt><dd>The notes of its folder, and the list of vaults Obsidian keeps, to offer them</dd><dt>Changes</dt><dd>Only the .md files of its folder, saved as you type</dd><dt>To undo</dt><dd>Remove, with Undo for 8 seconds, then the Recycle Bin of Windows</dd></dl>
+      </details>
+      <details class="tr-row" data-view="shelf">
+        <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 17h17M5 20.5h14"/><rect x="5.5" y="8" width="5" height="9" rx="1"/><path d="m13 17 2.2-8.5 4.3 1.1-2.1 7.4"/></svg><span>Shelf<small>Keeps copies of files and captures</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
+        <dl class="tr-body"><dt>Reads</dt><dd>The files you drop or add, and the screen when you take a capture</dd><dt>Changes</dt><dd>Nothing outside its folder: files are copied, never moved, and a capture goes to the clipboard</dd><dt>To undo</dt><dd>Remove, with Undo for 8 seconds, then the Recycle Bin of Windows</dd></dl>
+      </details>
       <details class="tr-row" data-view="health">
         <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19.5s-7.5-4.3-7.5-10A4.2 4.2 0 0 1 12 7a4.2 4.2 0 0 1 7.5 2.5c0 5.7-7.5 10-7.5 10z"/><path d="M7 12.5h2.5l1.5-2.5 2 4 1.5-1.5H17"/></svg><span>Health<small>Turns startup programs on or off when asked</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
         <dl class="tr-body"><dt>Reads</dt><dd>Antivirus, firewall, Windows Update history, BitLocker, Secure Boot, account control, startup programs and load</dd><dt>Changes</dt><dd>Whether a program of this user starts with Windows, as the startup apps of Windows do, and the privacy switches of Windows for this user</dd><dt>To undo</dt><dd>Undo for 8 seconds, or the same switch</dd></dl>
@@ -681,7 +742,6 @@
       </details>
       <details class="tr-row" data-view="settings">
         <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.2M12 18.3v2.2M20.5 12h-2.2M5.7 12H3.5M18 6l-1.6 1.6M7.6 16.4 6 18M18 18l-1.6-1.6M7.6 7.6 6 6"/><circle cx="12" cy="12" r="6.3"/></svg><span>Settings<small>Start with Windows and the window</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
-        <dl class="tr-body"><dt>Reads</dt><dd>Its own settings file</dd><dt>Changes</dt><dd>Start with Windows when it is on, and the right-click menu of Icons</dd><dt>To undo</dt><dd>Turn the option off, or uninstall Bramble</dd></dl>
       </details>
     </div>
     </details>
@@ -989,6 +1049,19 @@
     </div>
   </div>
 
+  <div class="only-notes">
+    <h2>Where notes are saved</h2>
+    <p class="help-section n-where" id="n-where" translate="no"></p>
+    <div class="group" id="n-places"></div>
+    <div class="group">
+      <label class="toggle">
+        <input type="checkbox" id="n-move" checked>
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h12M12 7l5 5-5 5"/><path d="M20 5v14"/></svg><span>Bring the notes along<small>Moving the folder moves the notes already written</small></span></span>
+      </label>
+      <button class="row action" id="n-reveal"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/></svg><span>Open the folder<small>In File Explorer</small></span></span><svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+    </div>
+  </div>
+
   <div class="only-network">
     <h2>Addresses</h2>
     <p class="help-section">Click an address to copy it</p>
@@ -1068,6 +1141,9 @@
 <script src="health.js"></script>
 <script src="duplicates.js"></script>
 <script src="home.js"></script>
+<script src="md.js"></script>
+<script src="notes.js"></script>
+<script src="shelf.js"></script>
 <script src="layout.js"></script>
 <script src="welcome.js"></script>
 <script src="panels.js"></script>

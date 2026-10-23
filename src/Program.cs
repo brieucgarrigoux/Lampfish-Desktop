@@ -154,6 +154,7 @@ namespace Bramble
                 AudioDevices.Start();
                 Customize.Load();
                 Welcome.Start(firstRun);
+                Notes.Start();
                 Moods.Start();
                 if (requestedFolder != null) { Icons.Ask(requestedFolder); requestedView = "icons"; }
 
@@ -238,12 +239,19 @@ namespace Bramble
             return folder;
         }
 
+        // The notes folder can change while the window is open: its images follow.
+        public static void MapNotes()
+        {
+            if (settingsWindow != null) settingsWindow.Map(Notes.Host, Notes.Folder);
+        }
+
         public static void OnInterface(Action action)
         {
             context.Post(_ => action(), null);
         }
 
         public static Form SettingsWindow { get { return settingsWindow; } }
+        public static CoreWebView2Environment WebEnvironment { get { return environment; } }
 
         public static string Version { get { var v = typeof(Program).Assembly.GetName().Version; return v.Major + "." + v.Minor + "." + v.Build; } }
 
@@ -786,6 +794,9 @@ namespace Bramble
                 if (AudioDevices.Handles(sub) ? AudioDevices.Receive(sub, m) : AudioMeter.Receive(sub, m)) SendState();
                 return;
             }
+            if (action.StartsWith("capture.")) { Capture.Receive(action.Substring(action.IndexOf('.') + 1), m); return; }
+            if (action.StartsWith("notes.")) { if (Notes.Receive(action.Substring(action.IndexOf('.') + 1), m)) SendState(); return; }
+            if (action.StartsWith("shelf.")) { if (Shelf.Receive(action.Substring(action.IndexOf('.') + 1), m, files)) SendState(); return; }
             if (action.StartsWith("welcome.")) { if (Welcome.Receive(action.Substring(action.IndexOf('.') + 1), m)) SendState(); return; }
             if (action.StartsWith("layout.")) { if (Customize.Receive(action.Substring(action.IndexOf('.') + 1), m)) { Save(); SendState(); } return; }
             if (action.StartsWith("health.")) { Health.Receive(action.Substring(action.IndexOf('.') + 1), m); return; }
@@ -951,6 +962,8 @@ namespace Bramble
                 hiddenViews = R.HiddenViews,
                 layout = Customize.State(),
                 welcome = Welcome.State(),
+                notes = Notes.Summary(),
+                shelf = Shelf.Summary(),
                 weatherPlace = R.WeatherPlace == null ? null : R.WeatherPlace.Label,
                 reactive = R.Reactive,
                 zoom = R.Zoom,

@@ -1,0 +1,16 @@
+body.annotate { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+.an-bar { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 14px; border-bottom: 1px solid var(--hairline); background: var(--group); }
+.an-tools { display: flex; gap: 2px; padding: 2px; border-radius: var(--radius-control); background: var(--sunken); }
+.an-tools button { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border: 0; border-radius: var(--radius-small); background: none; color: var(--text-soft); font-size: var(--text-value); cursor: pointer; transition: background var(--fast), color var(--fast); }
+.an-tools button:hover { color: var(--text); }
+.an-tools button[aria-pressed="true"] { background: var(--raised); color: var(--accent); }
+.an-tools svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.an-colors { display: flex; gap: 6px; }
+.an-colors button { width: 22px; height: 22px; padding: 0; border: 2px solid transparent; border-radius: 50%; background: var(--swatch); box-shadow: 0 0 0 1px var(--hairline-strong); cursor: pointer; }
+.an-colors button[aria-pressed="true"] { border-color: var(--wallpaper); box-shadow: 0 0 0 2px var(--text); }
+.an-space { flex: 1; }
+.an-delete:hover { color: var(--danger); }
+.an-stage { position: relative; flex: 1; display: grid; place-items: center; padding: 16px; overflow: auto; background: repeating-conic-gradient(#14151b 0% 25%, #101116 0% 50%) 0 0 / 20px 20px; }
+.an-stage canvas { max-width: 100%; max-height: 100%; box-shadow: 0 6px 24px rgba(0, 0, 0, .5); cursor: crosshair; touch-action: none; }
+.an-text { position: absolute; min-width: 160px; padding: 4px 6px; border: 1px dashed currentColor; border-radius: 4px; background: rgba(0, 0, 0, .55); font: 600 16px "Segoe UI", sans-serif; }
+.an-text[hidden] { display: none; }

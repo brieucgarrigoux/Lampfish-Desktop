@@ -145,10 +145,10 @@ body:not([data-view="wallpaper"]) .only-wallpaper, body:not([data-view="station"
 body:not([data-view="icons"]) .only-icons, body:not([data-view="mouse"]) .only-mouse, body:not([data-view="network"]) .only-network, body:not([data-view="arrange"]) .only-arrange,
 body:not([data-view="files"]) .only-files, body:not([data-view="hardware"]) .only-hardware,
 body:not([data-view="tasks"]) .only-tasks, body:not([data-view="create"]) .only-create, body:not([data-view="settings"]) .only-settings, body:not([data-view="home"]) .only-home,
-body:not([data-view="modes"]) .only-modes, body:not([data-view="display"]) .only-display, body:not([data-view="audio"]) .only-audio, body:not([data-view="health"]) .only-health, body:not([data-view="duplicates"]) .only-duplicates { display: none !important; }
+body:not([data-view="modes"]) .only-modes, body:not([data-view="display"]) .only-display, body:not([data-view="audio"]) .only-audio, body:not([data-view="notes"]) .only-notes, body:not([data-view="shelf"]) .only-shelf, body:not([data-view="health"]) .only-health, body:not([data-view="duplicates"]) .only-duplicates { display: none !important; }
 
-body[data-view="settings"], body[data-view="home"], body[data-view="display"], body[data-view="audio"], body[data-view="health"] { grid-template-columns: var(--width-rail, 180px) 1fr; }
-body[data-view="settings"] .panel, body[data-view="home"] .panel, body[data-view="display"] .panel, body[data-view="audio"] .panel, body[data-view="health"] .panel { display: none; }
+body[data-view="settings"], body[data-view="home"], body[data-view="display"], body[data-view="audio"], body[data-view="shelf"], body[data-view="health"] { grid-template-columns: var(--width-rail, 180px) 1fr; }
+body[data-view="settings"] .panel, body[data-view="home"] .panel, body[data-view="display"] .panel, body[data-view="audio"] .panel, body[data-view="shelf"] .panel, body[data-view="health"] .panel { display: none; }
 body[data-view="tasks"]:not(.sheet-open), body[data-view="modes"]:not(.mode-open) { grid-template-columns: var(--width-rail, 180px) 1fr; }
 /* On Home, a shortcut opens the settings of its service in the side panel. */
 body[data-view="home"][data-dock] { grid-template-columns: var(--width-rail, 180px) 1fr var(--width-panel, 300px); }

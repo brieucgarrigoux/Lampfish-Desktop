@@ -12,7 +12,7 @@
     station: ['Sounds', '<path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/>'],
     tasks: ['Tasks', '<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M6.5 13h2.5l1.5-4 3 7 1.5-3h2.5"/>'],
     modes: ['Themes'], wallpaper: ['Wallpaper'], create: ['Create'], display: ['Display'], audio: ['Audio'],
-    health: ['Health'], files: ['Storage'], duplicates: ['Duplicates'], hardware: ['Hardware'], network: ['Network'],
+    notes: ['Notes'], shelf: ['Shelf'], claude: ['Claude usage', '<path d="M4 17a8 8 0 1 1 16 0"/><path d="m12 17 4.5-5"/><path d="M8 20h8"/>'], health: ['Health'], files: ['Storage'], duplicates: ['Duplicates'], hardware: ['Hardware'], network: ['Network'],
   };
   const TILES = ['icons', 'arrange', 'mouse', 'station', 'tasks'];
   const BLOCKS = { stage: 'Wallpaper and themes', pc: 'This PC', quick: 'Quick settings' };
@@ -147,6 +147,11 @@
       visual('audio', e.audio.volume == null ? '' : bar(e.audio.muted ? 0 : e.audio.volume));
     }
     set('duplicates', tr('Find extra copies'), tr('Files of 1 MB or more'));
+    if (e.notes) {
+      set('notes', e.notes.count === 1 ? tr('1 note') : e.notes.count ? tr('{0} notes', e.notes.count) : tr('No note yet'), e.notes.last || '');
+      if (tiles.notes) tiles.notes.el.title = e.notes.last || '';
+    }
+    if (e.shelf) set('shelf', e.shelf.count === 1 ? tr('1 file') : e.shelf.count ? tr('{0} files', e.shelf.count) : tr('Empty'), e.shelf.captures === 1 ? tr('1 capture') : e.shelf.captures ? tr('{0} captures', e.shelf.captures) : '');
 
     const s = e.station;
     if (s) {
