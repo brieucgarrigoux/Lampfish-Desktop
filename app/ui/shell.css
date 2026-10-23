@@ -65,6 +65,12 @@
 .keycap-pill:disabled { cursor: default; }
 
 /* Instruments of the PC family: a ring dial in a metal seal, a screen in a metal bezel, a recessed list of readouts. */
+.seal { position: relative; flex: none; width: 68px; height: 68px; border-radius: 50%; display: grid; place-items: center; background: var(--steel); box-shadow: var(--steel-edge); }
+.seal::before { content: ""; position: absolute; inset: 4px; border-radius: 50%; background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--lamp) 20%, var(--glass)), var(--glass) 72%); box-shadow: var(--glass-inset); }
+.seal::after { content: ""; position: absolute; z-index: 2; inset: 4px; border-radius: 50%; background: var(--glass-sheen); pointer-events: none; }
+.security--high { --lamp-hi: #e2d0ff; --lamp: var(--accent); --lamp-lo: #4a1fa8; }
+.security--medium { --lamp-hi: #ffe9b8; --lamp: var(--warn); --lamp-lo: #a8700f; }
+.security--low { --lamp-hi: #ffc2c8; --lamp: #ff5566; --lamp-lo: #9d1424; }
 .seal__ring { position: absolute; inset: 9px; z-index: 1; border-radius: 50%; background: conic-gradient(from 0deg, var(--lamp) calc(var(--part, 0) * 1%), rgba(255, 255, 255, .1) 0);
   -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 calc(100% - 5px)); mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 calc(100% - 5px));
   filter: drop-shadow(0 0 4px color-mix(in srgb, var(--lamp) 70%, transparent)); transition: background .4s; }

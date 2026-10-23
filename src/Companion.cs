@@ -28,7 +28,7 @@ namespace Bramble
         public KeyChoice Toggle = new KeyChoice { Key = 0x42, Label = "Ctrl + Alt + B" };
     }
 
-    // The companion: a round button on the desktop, at the edge of the screen. A click opens a small window to write a note,
+    // The companion: a round button on the desktop, wherever it is put. A click opens a small window to write a note,
     // take a capture or glance at the PC. It steps aside when a window fills the screen.
     static class Companion
     {
@@ -152,7 +152,7 @@ namespace Bramble
             return false;
         }
 
-        // Stays on its edge of the screen; out of the way when a window fills that screen.
+        // Stays where it was put; out of the way when a window fills that screen.
         // A capture must not show the companion itself.
         static void Aside(bool away)
         {
@@ -177,18 +177,22 @@ namespace Bramble
                 if (Native.GetWindowRect(active, out r) && Rectangle.FromLTRB(r.Left, r.Top, r.Right, r.Bottom).Contains(screen.Bounds)) covered = true;
             }
             if (covered) { if (dot.Visible) dot.Hide(); return; }
-            if (!dot.Visible || dot.Location != at) dot.Put(at);
+            if (!dot.Gliding && (!dot.Visible || dot.Location != at || dot.Width != side)) dot.Put(at);
         }
 
         static void Moved(Point p)
         {
-            var area = Screen.FromPoint(p).WorkingArea;
             int side = dot.Side;
-            // It snaps to the nearest side edge, at the height where it was let go.
-            S.X = p.X + side / 2 < area.Left + area.Width / 2 ? area.Left + 8 : area.Right - side - 8;
-            S.Y = Math.Max(area.Top, Math.Min(area.Bottom - side, p.Y));
+            var area = Screen.FromPoint(new Point(p.X + side / 2, p.Y + side / 2)).WorkingArea;
+            // It stays where it is let go, kept inside the screen; close to an edge, it settles a few pixels from it.
+            int margin = (int)(8 * Arrange.Scale(Screen.FromPoint(p))), x = Math.Max(area.Left, Math.Min(area.Right - side, p.X)), y = Math.Max(area.Top, Math.Min(area.Bottom - side, p.Y));
+            if (x - area.Left < margin * 3) x = area.Left + margin;
+            if (area.Right - side - x < margin * 3) x = area.Right - side - margin;
+            if (y - area.Top < margin * 3) y = area.Top + margin;
+            if (area.Bottom - side - y < margin * 3) y = area.Bottom - side - margin;
+            S.X = x; S.Y = y;
             Save();
-            Place();
+            dot.GlideTo(new Point(x, y));
         }
 
         public static async void Open(string which)
@@ -210,7 +214,7 @@ namespace Bramble
             idle.Stop();
             refresh.Start();
             popup.Activate();
-            SendData();
+            SendData(true);
         }
 
         static void Position()
@@ -218,14 +222,14 @@ namespace Bramble
             var anchor = dot != null && dot.Visible ? dot.Bounds : new Rectangle(Cursor.Position, Size.Empty);
             var screen = Screen.FromPoint(anchor.Location);
             double k = Arrange.Scale(screen);
-            int w = (int)(340 * k), h = (int)(500 * k), gap = (int)(10 * k);
+            int w = (int)(380 * k), h = (int)(560 * k), gap = (int)(10 * k);
             var area = screen.WorkingArea;
             int x = anchor.Left + anchor.Width / 2 > area.Left + area.Width / 2 ? anchor.Left - w - gap : anchor.Right + gap;
             int y = anchor.Top + anchor.Height / 2 - h / 2;
             popup.Bounds = new Rectangle(Math.Max(area.Left, Math.Min(area.Right - w, x)), Math.Max(area.Top, Math.Min(area.Bottom - h, y)), w, h);
         }
 
-        static void SendData()
+        static void SendData(bool open = false)
         {
             if (popup == null) return;
             if (cpu == null) try { cpu = new PerformanceCounter("Processor Information", "% Processor Utility", "_Total"); cpu.NextValue(); } catch (Exception ex) { Program.Log(ex); }
@@ -236,7 +240,7 @@ namespace Bramble
             var theme = Moods.Active();
             popup.Send(new
             {
-                type = "companion.data", tab, language = Language.Code,
+                type = "companion.data", tab, open, language = Language.Code,
                 processor = Math.Round(processor), memory = Math.Round(memory), busiest = Health.Busiest,
                 theme = theme == null ? null : theme.Name, output = AudioDevices.NameOf(AudioDevices.DefaultOutput()),
                 claude = ClaudeUsage.State(), notes = Notes.Items().Take(3).ToArray(), captures = Shelf.Items().Take(3).ToArray(),
@@ -289,7 +293,13 @@ namespace Bramble
             Point down, start;
             bool moving, hover;
 
-            public int Side { get { return (int)(52 * Arrange.Scale(Screen.FromPoint(Location))); } }
+            const int Diameter = 64;
+            readonly Timer glide = new Timer { Interval = 15 };
+            Point glideFrom, glideTo;
+            DateTime glideAt;
+
+            public int Side { get { return (int)(Diameter * Arrange.Scale(Screen.FromPoint(Location))); } }
+            public bool Gliding { get { return glide.Enabled; } }
 
             public Dot()
             {
@@ -300,6 +310,21 @@ namespace Bramble
                 AutoScaleMode = AutoScaleMode.None;
                 try { logo = Image.FromFile(Path.Combine(Program.Root, "brand", "logo", "logo-bramble-192.png")); } catch (Exception ex) { Program.Log(ex); }
                 Cursor = Cursors.Hand;
+                new ToolTip { InitialDelay = 700 }.SetToolTip(this, Language.T("Bramble: click to open, drag to move, right-click for the app"));
+                glide.Tick += (s, e) =>
+                {
+                    double t = Math.Min(1, (DateTime.Now - glideAt).TotalMilliseconds / 180), k = 1 - Math.Pow(1 - t, 3);
+                    Location = new Point(glideFrom.X + (int)Math.Round((glideTo.X - glideFrom.X) * k), glideFrom.Y + (int)Math.Round((glideTo.Y - glideFrom.Y) * k));
+                    if (t >= 1) glide.Stop();
+                };
+            }
+
+            // From where it was let go to where it settles, in a short ease instead of a jump.
+            public void GlideTo(Point to)
+            {
+                glideFrom = Location; glideTo = to; glideAt = DateTime.Now;
+                if (glideFrom == to) return;
+                glide.Start();
             }
 
             protected override bool ShowWithoutActivation { get { return true; } }
@@ -307,7 +332,7 @@ namespace Bramble
 
             public void Put(Point at)
             {
-                int side = (int)(52 * Arrange.Scale(Screen.FromPoint(at)));
+                int side = (int)(Diameter * Arrange.Scale(Screen.FromPoint(at)));
                 Bounds = new Rectangle(at, new Size(side, side));
                 if (!Visible) Show();
                 Draw();
@@ -349,6 +374,7 @@ namespace Bramble
             protected override void OnMouseDown(MouseEventArgs e)
             {
                 if (e.Button != MouseButtons.Left) return;
+                glide.Stop();
                 down = Cursor.Position;
                 start = Location;
                 moving = false;

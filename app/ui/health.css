@@ -36,6 +36,6 @@
 .h-health__seal { display: block; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; transition: filter var(--fast), transform var(--fast); }
 .h-health__seal:hover { filter: brightness(1.1); }
 .h-health__seal:active { transform: scale(.96); }
-.seal--small { width: 44px; height: 44px; }
-.seal--small::before, .seal--small::after { inset: 4px; }
+.seal.seal--small { width: 44px; height: 44px; }
+.seal.seal--small::before, .seal.seal--small::after { inset: 4px; }
 .seal.seal--small .seal__face { width: 36px; height: 36px; }
