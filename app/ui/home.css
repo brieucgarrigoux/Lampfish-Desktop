@@ -58,7 +58,7 @@
 .h-instrument__value span { max-width: 100%; font-size: var(--text-caption); color: var(--text-pale); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .h-instrument.alert .h-instrument__value b { color: var(--danger); }
 
-.h-shortcuts { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+.h-shortcuts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-top: 12px; }
 .h-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; min-width: 0; padding: 10px 12px 11px; border: 0; border-radius: var(--radius-card); background: var(--group); text-align: left; transition: background var(--fast); }
 .h-tile:hover { background: var(--group-up); }
 .h-tile[aria-pressed="true"] { background: var(--accent-tint); box-shadow: var(--chosen); }

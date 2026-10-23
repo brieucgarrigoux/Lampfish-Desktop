@@ -23,6 +23,7 @@
 <link rel="stylesheet" href="audio.css">
 <link rel="stylesheet" href="health.css">
 <link rel="stylesheet" href="duplicates.css">
+<link rel="stylesheet" href="layout.css">
 <link rel="stylesheet" href="panels.css">
 <link rel="stylesheet" href="shell.css">
 </head>
@@ -30,7 +31,7 @@
 
 <nav class="rail" aria-label="Services" data-resizable="right" data-variable="--width-rail" data-key="rail-width" data-min="76" data-max="230" data-initial="180">
   <button class="logo-home service" data-view="home" title="Home" aria-label="Home"><img class="logo" src="/brand/logo/logo-bramble-192.png" alt=""><span class="wordmark" aria-hidden="true">Bramble</span></button>
-  <div class="rail-title" role="presentation">Personalization</div>
+  <div class="rail-title" role="presentation" data-group="personalization">Personalization</div>
   <button class="service" data-view="modes">
     <svg viewBox="0 0 24 24"><path d="M19.5 14.6A7.6 7.6 0 0 1 9.4 4.5a7.6 7.6 0 1 0 10.1 10.1z"/><path d="M17 3.5v4M15 5.5h4"/></svg>
     Themes
@@ -55,7 +56,7 @@
     <svg viewBox="0 0 24 24"><path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/></svg>
     Sounds
   </button>
-  <div class="rail-title" role="presentation">Desktop</div>
+  <div class="rail-title" role="presentation" data-group="desktop">Desktop</div>
   <button class="service" data-view="display">
     <svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="12" rx="1.5"/><path d="M9 20h6M12 16.5V20"/></svg>
     Display
@@ -68,7 +69,7 @@
     <svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><rect x="14" y="14" width="6" height="6" rx="1.2"/></svg>
     Arrange
   </button>
-  <div class="rail-title" role="presentation">PC</div>
+  <div class="rail-title" role="presentation" data-group="pc">PC</div>
   <button class="service" data-view="health">
     <svg viewBox="0 0 24 24"><path d="M12 19.5s-7.5-4.3-7.5-10A4.2 4.2 0 0 1 12 7a4.2 4.2 0 0 1 7.5 2.5c0 5.7-7.5 10-7.5 10z"/><path d="M7 12.5h2.5l1.5-2.5 2 4 1.5-1.5H17"/></svg>
     Health
@@ -97,6 +98,11 @@
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.2M12 18.3v2.2M20.5 12h-2.2M5.7 12H3.5M18 6l-1.6 1.6M7.6 16.4 6 18M18 18l-1.6-1.6M7.6 7.6 6 6"/><circle cx="12" cy="12" r="6.3"/></svg>
     Settings
   </button>
+  <div class="rail-edit">
+    <button type="button" class="rail-edit__start" id="bar-edit" title="Arrange the bar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></svg><span>Arrange the bar</span></button>
+    <button type="button" class="rail-edit__reset" id="bar-reset" title="Reset the bar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 4.5v4h4"/></svg><span>Reset</span></button>
+    <button type="button" class="rail-edit__done" id="bar-done" title="Done"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span>Done</span></button>
+  </div>
 </nav>
 
 <main class="contents">
@@ -110,9 +116,15 @@
         <div class="h-weather__text"><span class="h-weather__temp" id="h-weather-temp"></span><span class="h-weather__what" id="h-weather-what"></span></div>
         <div class="h-weather__details"><span id="h-weather-city"></span><span id="h-weather-details"></span></div>
       </div>
+      <button type="button" class="h-customize" id="h-customize" title="Choose the cards of Home and their order"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></svg><span>Customize</span></button>
+    </div>
+    <div class="h-editing" id="h-editing" hidden>
+      <p>Drag a block or a card to move it. A click hides a block or unpins a card.</p>
+      <button type="button" class="button" id="h-reset">Reset Home</button>
+      <button type="button" class="button button--accent" id="h-done">Done</button>
     </div>
     <div class="h-main">
-      <div class="h-stage">
+      <div class="h-stage" data-block="stage">
         <button class="h-wallpaper" id="h-wallpaper" aria-label="Wallpaper">
           <div class="preview" id="h-wallpaper-preview"></div>
           <div class="h-desktop" id="h-desktop" aria-hidden="true"></div>
@@ -125,11 +137,11 @@
         </div>
         <div class="h-modes" id="h-moods"></div>
       </div>
-      <div class="h-pc">
+      <div class="h-pc" data-block="pc">
         <div class="h-pc__head"><h2>This PC</h2></div>
         <div class="security h-pc__dials security--high"><div class="dials dials--small" id="h-dials"></div><div class="h-instruments" id="h-instruments"></div></div>
       </div>
-      <div class="h-quickset">
+      <div class="h-quickset" data-block="quick">
         <div class="h-display">
           <h2><button class="h-title-link" id="h-display" data-dock-to="display" aria-pressed="false">Display<svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button></h2>
           <div class="group h-quick" id="h-quick">
@@ -193,6 +205,7 @@
       </div>
     </div>
     <div class="h-shortcuts" id="h-tiles"></div>
+    <div class="h-pin" id="h-pin" hidden><span class="h-pin__title">Pin to Home</span><div class="h-pin__list" id="h-pin-list"></div></div>
   </section>
 
   <section class="view view--modes only-modes" aria-label="Themes">
@@ -1025,6 +1038,7 @@
 <script src="health.js"></script>
 <script src="duplicates.js"></script>
 <script src="home.js"></script>
+<script src="layout.js"></script>
 <script src="panels.js"></script>
 <script src="scrollbars.js"></script>
 </body>

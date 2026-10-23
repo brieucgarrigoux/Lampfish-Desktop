@@ -10,6 +10,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Audio: a keyboard shortcut, off by default, switches to the next output from any app and shows its name in a small bubble. It is Ctrl + Alt + F11 unless other keys are chosen.
 - Health: a Privacy card turns off, for this user, the sharing settings of Windows such as the advertising ID, the suggestions and the typing data, with Undo. A setting locked by an organization is shown and left alone.
 - Themes: a theme also brings back the audio output it was made with, when that device is plugged in.
+- The bar can be arranged: Arrange the bar, at its foot, lets you drag a service inside its family, move the families, and hide a service with a click. Ctrl 1 to 9 follow the new order. Reset puts the bar back, with Undo.
+- Home can be customized: any service can have its card at the bottom, the cards and the three blocks move with a drag or the arrow keys, and a block can be hidden. Reset Home puts it back, with Undo.
 
 ### Changed
 - Folders is now called Storage, the word Windows uses for the space on its drives.

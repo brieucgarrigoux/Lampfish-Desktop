@@ -4,13 +4,18 @@
   let network = null, stats = null, shown = false, timer = 0, keyWallpaper = '', map = null, weather = null, tasks = null;
   const images = new Map(), appIcons = new Map();
 
-  const SHORTCUTS = [
-    ['icons', 'Icons', '<rect x="4" y="4" width="16" height="16" rx="4"/><path d="m12 7.8 1.2 2.6 2.8.3-2.1 1.9.6 2.8-2.5-1.4-2.5 1.4.6-2.8-2.1-1.9 2.8-.3z"/>'],
-    ['arrange', 'Arrange', '<rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><rect x="14" y="14" width="6" height="6" rx="1.2"/>'],
-    ['mouse', 'Mouse', '<path d="M6 3.5 18 12.3l-5.6.8-3.2 4.9z"/><path d="m12.4 13.1 3.6 6.4"/>'],
-    ['station', 'Sounds', '<path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/>'],
-    ['tasks', 'Tasks', '<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M6.5 13h2.5l1.5-4 3 7 1.5-3h2.5"/>'],
-  ];
+  // Every service can have a card on Home; these five are there until the cards are chosen. The others take the icon of the bar.
+  const SHORTCUTS = {
+    icons: ['Icons', '<rect x="4" y="4" width="16" height="16" rx="4"/><path d="m12 7.8 1.2 2.6 2.8.3-2.1 1.9.6 2.8-2.5-1.4-2.5 1.4.6-2.8-2.1-1.9 2.8-.3z"/>'],
+    arrange: ['Arrange', '<rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><rect x="14" y="14" width="6" height="6" rx="1.2"/>'],
+    mouse: ['Mouse', '<path d="M6 3.5 18 12.3l-5.6.8-3.2 4.9z"/><path d="m12.4 13.1 3.6 6.4"/>'],
+    station: ['Sounds', '<path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/>'],
+    tasks: ['Tasks', '<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M6.5 13h2.5l1.5-4 3 7 1.5-3h2.5"/>'],
+    modes: ['Themes'], wallpaper: ['Wallpaper'], create: ['Create'], display: ['Display'], audio: ['Audio'],
+    health: ['Health'], files: ['Storage'], duplicates: ['Duplicates'], hardware: ['Hardware'], network: ['Network'],
+  };
+  const TILES = ['icons', 'arrange', 'mouse', 'station', 'tasks'];
+  const BLOCKS = { stage: 'Wallpaper and themes', pc: 'This PC', quick: 'Quick settings' };
   const ARRANGEMENTS = { left: 'Left', right: 'Right', top: 'Top', bottom: 'Bottom', frame: 'Frame', center: 'Center', corners: 'Corners', blocks: 'Blocks' };
   const UNITS = ['bytes', 'KB', 'MB', 'GB', 'TB'].map(u => tr(u));
   function size(o) {
@@ -21,16 +26,24 @@
 
   const tiles = {};
   const glyph = icon => `<svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${icon}</svg>`;
-  for (const [view, name, icon] of SHORTCUTS) {
+  const iconOf = view => SHORTCUTS[view][1] || (document.querySelector(`.rail .service[data-view="${view}"] svg`) || {}).innerHTML || '';
+  // A service with a side panel opens there, so Home stays in view; the others open their page.
+  const open = view => DOCKS[view] ? dockTo(view) : showView(view);
+  function tile(view) {
+    if (tiles[view]) return tiles[view];
     const b = document.createElement('button');
     b.className = 'h-tile';
-    b.innerHTML = `<header>${glyph(icon)}<span class="h-name"></span></header><span class="h-value"></span><span class="h-visual"></span>`;
-    b.querySelector('.h-name').textContent = tr(name);
+    b.innerHTML = `<header>${glyph(iconOf(view))}<span class="h-name"></span><span class="h-unpin" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m7 7 10 10M17 7 7 17"/></svg></span></header><span class="h-value"></span><span class="h-visual"></span>`;
+    b.querySelector('.h-name').textContent = tr(SHORTCUTS[view][0]);
     b.dataset.view = view;
     b.setAttribute('aria-pressed', 'false');
-    b.addEventListener('click', () => dockTo(view));
-    $('h-tiles').append(b);
-    tiles[view] = { el: b, value: b.querySelector('.h-value'), detail: null, visual: b.querySelector('.h-visual') };
+    b.addEventListener('click', () => {
+      if (b._dragged) return;
+      if (editing) { b.remove(); saveHome(); placeTiles(); return; }
+      open(view);
+    });
+    dragOrder(b, { peers: () => [...$('h-tiles').children], active: () => editing, done: saveHome });
+    return tiles[view] = { el: b, value: b.querySelector('.h-value'), detail: null, visual: b.querySelector('.h-visual') };
   }
   // This PC opens its details in the side panel, like the tiles, so Home stays in view.
   const PARTS = { processor: 'processor', memory: 'memory', disk: 'disk', power: 'battery', heat: 'temperature' };
@@ -52,13 +65,15 @@
 
   const set = (key, value, detail, alert) => {
     const t = tiles[key];
+    if (!t) return;
     t.value.textContent = value || '–';
     if (t.detail) t.detail.textContent = detail || '';
     t.el.title = t.detail ? '' : detail || '';
     t.el.classList.toggle('alert', !!alert);
   };
 
-  const visual = (key, html) => { const v = tiles[key].visual; if (v.dataset.key !== html) { v.dataset.key = html; v.innerHTML = html; } };
+  const visual = (key, html) => { if (!tiles[key]) return; const v = tiles[key].visual; if (v.dataset.key !== html) { v.dataset.key = html; v.innerHTML = html; } };
+  const bar = part => `<span class="h-bar"><i style="width:${Math.max(0, Math.min(100, Math.round(part)))}%"></i></span>`;
   const urlIcon = a => `/app/icon-cache/${encodeURIComponent(a.key)}-${a.retro ? 32 : 64}.png`;
   const urlCursor = a => `/app/cursor-cache/${encodeURIComponent(a.key)}-${a.retro ? 32 : 64}.png`;
   $('h-wallpaper').dataset.dockTo = 'wallpaper';
@@ -121,6 +136,17 @@
     $('h-pause').setAttribute('aria-pressed', String(!!e.paused));
     $('h-next').disabled = $('h-previous').disabled = !e.wallpapers || e.wallpapers.length < 2;
     renderQuick(e);
+    if (wallpaper) set('wallpaper', wallpaper.name.replace(/\.[^.]+$/, ''), TYPES[wallpaper.type] + (paused ? ' · ' + tr('Paused') : ''));
+    const made = (e.wallpapers || []).filter(w => w.custom && !w.bundled).length;
+    set('create', tr('Make a wallpaper'), made === 1 ? tr('1 made') : made ? tr('{0} made', made) : '');
+    const screens = e.displays || [];
+    set('display', screens.length === 1 ? tr('1 screen') : tr('{0} screens', screens.length), e.display && e.display.warmOn ? tr('Warm screen on') : '');
+    visual('display', '<span class="h-screens">' + screens.map(d => `<i class="${d.primary ? 'main' : ''}" style="aspect-ratio:${d.w} / ${d.h}"></i>`).join('') + '</span>');
+    if (e.audio) {
+      set('audio', e.audioOutput || tr('No output plugged in'), e.audio.volume == null ? '' : e.audio.muted ? tr('Muted') : tr('Volume {0} %', e.audio.volume));
+      visual('audio', e.audio.volume == null ? '' : bar(e.audio.muted ? 0 : e.audio.volume));
+    }
+    set('duplicates', tr('Find extra copies'), tr('Files of 1 MB or more'));
 
     const s = e.station;
     if (s) {
@@ -144,9 +170,25 @@
         details: { title: tr('Memory'), value: Math.round(ram) + ' %', lines: [[tr('In use'), size(stats.memory.used)], [tr('Available'), size(stats.memory.total - stats.memory.used)],
           [tr('Installed'), size(stats.memory.total)], [tr('Heaviest'), heavy ? heavy.name + ' · ' + size(heavy.memory) : '']] } });
     }
+    if (stats) {
+      set('hardware', tr('Processor {0} %', Math.round(stats.processor.total)), stats.temperature != null ? Math.round(stats.temperature) + ' °C' : '');
+      visual('hardware', bar(stats.processor.total));
+    }
+    if (network) {
+      const sig = network.wifi && network.signal >= 0 ? network.signal : network.connected ? 100 : 0;
+      set('network', !network.connected ? tr('Offline') : network.network || tr('Cable'), network.wifi && network.connected ? tr('Wi-Fi {0} %', sig) : '', !network.connected);
+      tiles.network && (tiles.network.value.translate = false);
+      visual('network', bar(sig));
+    }
+    if (lastHealth) {
+      set('health', lastHealth.text, lastHealth.protection, lastHealth.level === 'bad');
+      visual('health', `<span class="h-leds"><i class="lamp--${LAMPS[lastHealth.level]}"></i><i class="lamp--${LAMPS[lastHealth.protectionLevel]}"></i></span>`);
+    }
     const fi = e.files;
     if (fi && fi.disks && fi.disks[0]) {
       const d = fi.disks[0], used = (d.size - d.free) / d.size * 100;
+      set('files', tr('{0} free', size(d.free)), tr('Disk {0}', (d.path || '').slice(0, 2)), d.free / d.size < 0.1);
+      visual('files', bar(used));
       pc.push({ key: 'disk', part: used, value: Math.round(used) + ' %', label: tr('Disk {0}', (d.path || '').slice(0, 2)), sub: tr('{0} free', size(d.free)), level: d.free / d.size < 0.1 ? 'low' : 'high',
         details: { title: tr('Disk {0}', (d.path || '').slice(0, 2)), value: Math.round(used) + ' %', lines: [[tr('In use'), size(d.size - d.free)], [tr('Free'), size(d.free)], [tr('Size'), size(d.size)]] } });
     }
@@ -181,7 +223,15 @@
     }
   }
 
+  function renderModesTile(moods) {
+    const active = moods.find(m => m.current);
+    set('modes', active ? active.name : moods.length === 1 ? tr('1 theme') : moods.length ? tr('{0} themes', moods.length) : tr('None yet'), active ? tr('Active') : '');
+    if (tiles.modes) tiles.modes.value.translate = !active;
+    if (Bramble.moods) visual('modes', '<span class="h-glyphs">' + moods.slice(0, 5).map(m => Bramble.moods.icon(m.icon)).join('') + '</span>');
+  }
+
   function renderMoods(moods) {
+    renderModesTile(moods);
     const zone = $('h-moods');
     const key = moods.map(m => m.id + (m.current ? '*' : '') + m.name + m.icon).join('|');
     if (zone.dataset.key === key && zone.children.length) return;
@@ -360,7 +410,9 @@
     for (const key of order) if (instruments[key]) $('h-instruments').append(instruments[key].el);
   }
 
+  let lastHealth = null;
   function health(h) {
+    lastHealth = h;
     const b = $('h-health');
     b.hidden = !h;
     if (!h) return;
@@ -386,10 +438,100 @@
     if (shown) render();
   }
 
+  // Customize: the three blocks and the cards move with the pointer or the arrows; a click hides a block or unpins a card.
+  let editing = false, layoutKey = '', layoutNow = {};
+  const main = document.querySelector('.h-main');
+  const blocks = () => [...main.children].sort((a, b) => (Number(a.style.order) || 0) - (Number(b.style.order) || 0));
+  const ordered = (saved, all) => [...(saved || []).filter(x => all.includes(x)), ...all.filter(x => !(saved || []).includes(x))];
+  function layout(l) {
+    layoutNow = l || {};
+    const next = JSON.stringify([layoutNow.Blocks, layoutNow.HiddenBlocks, layoutNow.Tiles, editing]);
+    if (next === layoutKey) return;
+    layoutKey = next;
+    // The order is a style, not a move in the page: moving the block of the wallpaper would reload its live preview.
+    const order = ordered(layoutNow.Blocks, Object.keys(BLOCKS)), off = layoutNow.HiddenBlocks || [];
+    for (const el of main.children) {
+      const hidden = off.includes(el.dataset.block);
+      el.style.order = order.indexOf(el.dataset.block);
+      el.classList.toggle('is-off', hidden);
+      el.hidden = hidden && !editing;
+      const cover = el.querySelector(':scope > .h-cover');
+      cover.setAttribute('aria-pressed', String(!hidden));
+      cover.querySelector('.h-cover__state').textContent = tr(hidden ? 'Hidden' : 'Shown');
+    }
+    main.dataset.count = blocks().filter(el => !el.hidden).length;
+    const list = (layoutNow.Tiles || TILES).filter(v => SHORTCUTS[v]);
+    const zone = $('h-tiles'), els = list.map(v => tile(v).el);
+    if (els.some((el, i) => zone.children[i] !== el) || zone.children.length !== els.length) zone.replaceChildren(...els);
+    placeTiles();
+    if (shown) render();
+  }
+  function placeTiles() {
+    const zone = $('h-tiles'), pinned = [...zone.children].map(t => t.dataset.view);
+    zone.hidden = !pinned.length && !editing;
+    zone.classList.toggle('is-empty', !pinned.length);
+    $('h-pin').hidden = !editing;
+    $('h-pin-list').replaceChildren(...Object.keys(SHORTCUTS).filter(v => !pinned.includes(v)).map(v => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'tool-chip';
+      b.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${iconOf(v)}</svg><span></span><svg class="h-pin__plus" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6v12M6 12h12"/></svg>`;
+      b.querySelector('span').textContent = tr(SHORTCUTS[v][0]);
+      b.title = tr('Pin to Home');
+      b.addEventListener('click', () => { zone.append(tile(v).el); saveHome(); placeTiles(); if (shown) render(); });
+      return b;
+    }));
+  }
+  function saveHome() {
+    const all = blocks();
+    const message = { blocks: all.map(el => el.dataset.block), hiddenBlocks: all.filter(el => el.classList.contains('is-off')).map(el => el.dataset.block), tiles: [...$('h-tiles').children].map(t => t.dataset.view) };
+    layoutNow = { Blocks: message.blocks, HiddenBlocks: message.hiddenBlocks, Tiles: message.tiles };
+    layoutKey = JSON.stringify([layoutNow.Blocks, layoutNow.HiddenBlocks, layoutNow.Tiles, editing]);
+    send('layout.home', message);
+  }
+  for (const el of main.children) {
+    const cover = document.createElement('button');
+    cover.type = 'button';
+    cover.className = 'h-cover';
+    cover.innerHTML = '<span class="h-cover__label"><svg class="h-cover__eye" viewBox="0 0 24 24" aria-hidden="true"><path class="open" d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle class="open" cx="12" cy="12" r="3"/><path class="shut" d="M3.5 12s3.2 4.5 8.5 4.5 8.5-4.5 8.5-4.5M6.5 15l-1.5 2M12 16.5V19M17.5 15l1.5 2"/></svg><span class="h-cover__name"></span><span class="h-cover__state"></span></span>';
+    cover.querySelector('.h-cover__name').textContent = tr(BLOCKS[el.dataset.block]);
+    cover.title = tr('Click to show or hide it, drag or use the arrows to move it');
+    cover.addEventListener('click', () => {
+      if (el._dragged) return;
+      el.classList.toggle('is-off');
+      saveHome();
+      layoutKey = '';
+      layout(layoutNow);
+    });
+    el.append(cover);
+    const swap = (a, b, after) => {
+      const list = blocks().filter(x => x !== a);
+      list.splice(list.indexOf(b) + (after ? 1 : 0), 0, a);
+      list.forEach((x, i) => { x.style.order = i; });
+    };
+    dragOrder(el, { peers: blocks, active: () => editing, done: saveHome, move: swap, focus: cover });
+  }
+  function edit(on) {
+    if (on === editing) return;
+    editing = on;
+    document.body.classList.toggle('home-editing', on);
+    if (on && document.body.dataset.dock) setDock(null);
+    $('h-editing').hidden = !on;
+    $('h-customize').hidden = on;
+    layoutKey = '';
+    layout(layoutNow);
+    if (on) main.querySelector('.h-cover').focus();
+    else if (shown) $('h-customize').focus();
+  }
+  $('h-customize').addEventListener('click', () => edit(true));
+  $('h-done').addEventListener('click', () => edit(false));
+  $('h-reset').addEventListener('click', () => send('layout.reset', { what: 'home' }));
+  addEventListener('keydown', e => { if (e.key === 'Escape' && editing && !document.body.classList.contains('bar-editing')) edit(false); });
+
   function visible(yes) {
     shown = yes;
     clearInterval(timer);
-    if (!yes) return;
+    if (!yes) { edit(false); return; }
     render();
     send('network.infos');
     send('hardware.stats');
@@ -407,5 +549,5 @@
     }, 2000);
   }
 
-  Bramble.home = { state: () => { if (shown) render(); }, event, visible, health };
+  Bramble.home = { state: () => { if (shown) render(); }, event, visible, health, layout };
 })();

@@ -1,0 +1,94 @@
+/* Edit mode of the bar: a click shows or hides a service, a drag or the arrows move it inside its family. */
+.rail-edit { flex: none; display: flex; flex-direction: column; align-items: center; gap: 2px; width: 100%; margin-top: 4px; }
+.rail-edit button { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 68px; padding: 5px 0; border: 0; border-radius: var(--radius-control); background: none; color: var(--text-pale); font-size: var(--text-badge); cursor: pointer; transition: color var(--fast), background var(--fast); }
+.rail-edit button:hover { color: var(--accent); background: rgba(255, 255, 255, .05); }
+.rail-edit svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.rail-edit .rail-edit__reset, .rail-edit .rail-edit__done { display: none; }
+.bar-editing .rail-edit .rail-edit__start { display: none; }
+.bar-editing .rail-edit .rail-edit__reset, .bar-editing .rail-edit .rail-edit__done { display: flex; }
+.rail-edit .rail-edit__done { color: var(--accent); }
+@container rail (min-width: 140px) {
+  .rail-edit { flex-direction: row; flex-wrap: wrap; width: calc(100% - 20px); }
+  .rail-edit button { flex-direction: row; gap: 8px; width: auto; padding: 6px 12px; font-size: var(--text-caption); }
+  .rail-edit .rail-edit__start { width: 100%; }
+  .bar-editing .rail-edit .rail-edit__done { margin-left: auto; }
+}
+
+.rail-eye { display: none; }
+.rail-eye svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.rail-eye .shut, .service[hidden] .rail-eye .open { display: none; }
+.service[hidden] .rail-eye .shut { display: inline; }
+body.bar-editing .rail .service[hidden] { display: flex !important; opacity: .4; }
+body.bar-editing .rail .service.is-folded { display: flex; }
+body.bar-editing .rail .service[aria-pressed] { cursor: grab; touch-action: none; user-select: none; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent); }
+body.bar-editing .rail .service[aria-pressed] .rail-eye { position: absolute; top: 3px; right: 4px; display: grid; color: var(--text-soft); }
+body.bar-editing .rail .service.grabbed { z-index: 1; cursor: grabbing; background: var(--group-up); box-shadow: inset 0 0 0 1px var(--accent); }
+@container rail (min-width: 140px) {
+  body.bar-editing .rail .service[aria-pressed] .rail-eye { position: static; margin-left: auto; }
+}
+body.bar-editing .rail .rail-title { cursor: grab; touch-action: none; user-select: none; }
+body.bar-editing .rail .rail-title.grabbed { cursor: grabbing; color: var(--accent); }
+body.bar-editing .rail .rail-title:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+body.bar-editing .rail[data-wide="true"] .rail-title::before { opacity: 0; }
+/* With icons only the family line is 1 px: it gets a grip to be caught. */
+body.bar-editing .rail:not([data-wide="true"]) .rail-title { height: 12px; margin: 1px 0; pointer-events: auto; background: linear-gradient(var(--accent), var(--accent)) center / 100% 2px no-repeat; opacity: .6; }
+body.bar-editing .rail[data-wide="true"] .rail-fold-all { display: none; }
+
+/* Edit mode of Home. */
+.h-customize { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; padding: 6px 10px; border: 0; border-radius: var(--radius-control); background: none; color: var(--text-pale); font-size: var(--text-caption); cursor: pointer; transition: color var(--fast), background var(--fast); }
+.h-weather:not([hidden]) + .h-customize { margin-left: 0; }
+.h-customize:hover { color: var(--accent); background: var(--hover); }
+.h-customize svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.h-editing { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 0 0 12px; padding: 10px 12px 10px 16px; border-radius: var(--radius-card); background: color-mix(in srgb, var(--accent) 14%, var(--wallpaper)); box-shadow: var(--chosen); }
+.h-editing p { flex: 1 1 260px; margin: 0; font-size: var(--text-body); color: var(--text-soft); }
+
+.h-main > [data-block] { position: relative; }
+.h-cover { display: none; }
+.home-editing .h-cover { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; padding: 0; border: 1.5px dashed color-mix(in srgb, var(--accent) 55%, transparent); border-radius: var(--radius-card); background: rgba(8, 8, 14, .4); color: var(--text); cursor: grab; touch-action: none; user-select: none; transition: background var(--fast), border-color var(--fast); }
+.home-editing .h-cover:hover { background: rgba(8, 8, 14, .25); border-color: var(--accent); }
+.home-editing .h-cover:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.home-editing [data-block].grabbed { z-index: 4; }
+.home-editing [data-block].grabbed .h-cover { cursor: grabbing; border-style: solid; border-color: var(--accent); background: rgba(8, 8, 14, .15); }
+.home-editing [data-block].is-off > :not(.h-cover) { opacity: .2; }
+.h-cover__label { display: inline-flex; align-items: center; gap: 8px; max-width: calc(100% - 20px); padding: 8px 14px; border-radius: 99px; background: var(--raised); box-shadow: 0 4px 14px rgba(0, 0, 0, .45); font-size: var(--text-body); font-weight: 600; white-space: nowrap; }
+.h-cover__name { overflow: hidden; text-overflow: ellipsis; }
+.h-cover__state { font-weight: 400; color: var(--text-pale); }
+.h-cover__eye { flex: none; width: 18px; height: 18px; fill: none; stroke: var(--accent); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.h-cover__eye .shut, .is-off .h-cover__eye .open { display: none; }
+.is-off .h-cover__eye .shut { display: inline; }
+.is-off .h-cover__eye { stroke: var(--text-pale); }
+
+/* Fewer blocks share the width instead of leaving a hole. */
+@container home (min-width: 900px) {
+  .h-main[data-count="2"] { grid-template-columns: minmax(0, 1.25fr) minmax(310px, 1fr); }
+  .h-main[data-count="1"] { grid-template-columns: minmax(0, 900px); justify-content: center; }
+}
+@container home (min-width: 761px) and (max-width: 899.98px) {
+  .h-main[data-count="2"] .h-quickset { grid-column: auto; grid-template-columns: minmax(0, 1fr); }
+  .h-main[data-count="1"] { grid-template-columns: minmax(0, 1fr); }
+}
+
+.h-unpin { display: none; }
+.h-unpin svg { width: 11px; height: 11px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+.home-editing .h-tile { cursor: grab; touch-action: none; user-select: none; box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--accent) 40%, transparent); }
+.home-editing .h-tile .h-unpin { flex: none; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--raised); color: var(--text-soft); transition: color var(--fast); }
+.home-editing .h-tile:hover .h-unpin { color: var(--danger); }
+.home-editing .h-tile.grabbed { z-index: 1; cursor: grabbing; background: var(--group-up); box-shadow: inset 0 0 0 1.5px var(--accent); }
+.home-editing .h-shortcuts.is-empty { min-height: 64px; border: 1.5px dashed var(--hairline-strong); border-radius: var(--radius-card); }
+.h-pin { margin-top: 12px; padding: 12px 14px 14px; border-radius: var(--radius-card); background: var(--group); }
+.h-pin__title { display: block; margin-bottom: 10px; font-size: var(--text-caption); font-weight: 600; color: var(--text-soft); }
+.h-pin__list { display: flex; flex-wrap: wrap; gap: 8px; }
+.h-pin__list .h-pin__plus { width: 13px; height: 13px; stroke: var(--text-pale); }
+.h-pin__list .tool-chip:hover .h-pin__plus { stroke: var(--accent); }
+
+/* What the new cards of Home show. */
+.h-bar { position: relative; display: block; width: 100%; height: 6px; overflow: hidden; border-radius: 3px; background: var(--meter); }
+.h-bar i { position: absolute; inset: 0 auto 0 0; border-radius: 3px; background: var(--accent); }
+.h-screens { display: flex; align-items: flex-end; gap: 6px; height: 22px; }
+.h-screens i { height: 20px; box-sizing: border-box; border: 1.5px solid var(--hairline-strong); border-radius: 3px; background: var(--screen); }
+.h-screens i.main { border-color: var(--accent); }
+.h-glyphs { display: flex; gap: 8px; align-items: center; color: var(--text-soft); }
+.h-glyphs .mode-icon { width: 18px; height: 18px; }
+.h-leds i.lamp--high { background: var(--accent); box-shadow: 0 0 5px color-mix(in srgb, var(--accent) 80%, transparent); }
+.h-leds i.lamp--medium { background: var(--warn); box-shadow: 0 0 5px color-mix(in srgb, var(--warn) 70%, transparent); }
+.h-leds i.lamp--low { background: var(--danger); box-shadow: 0 0 5px color-mix(in srgb, var(--danger) 70%, transparent); }

@@ -177,6 +177,7 @@ function render(state) {
   $('weather').checked = state.weather;
   $('allow-test').checked = state.speedTest !== false;
   showViews(state.hiddenViews || []);
+  if (Bramble.layout) Bramble.layout.state(state.layout || {});
   $('allow-ip').checked = state.publicIp !== false;
   $('place-row').hidden = !state.weather;
   if (!state.weather) $('place-results').hidden = true;
@@ -311,11 +312,11 @@ $('startup').addEventListener('change', () => send('startup'));
 $('weather').addEventListener('change', () => { send('weather'); send('home.weather'); });
 $('allow-test').addEventListener('change', () => send('speedTest', { value: $('allow-test').checked }));
 
-// A service can leave the bar and the shortcuts of Home; it keeps working, and Settings brings it back.
+// A service can leave the bar; it keeps working, and Settings or the edit mode of the bar bring it back. Its card on Home is pinned apart.
 let hiddenViews = [];
 function showViews(list) {
   hiddenViews = list;
-  for (const b of document.querySelectorAll('.rail .service[data-view], .h-tile[data-view]')) b.hidden = list.includes(b.dataset.view);
+  for (const b of document.querySelectorAll('.rail .service[data-view]')) b.hidden = list.includes(b.dataset.view);
   for (const input of document.querySelectorAll('.tr-row [data-show]')) input.checked = !list.includes(input.dataset.show);
 }
 for (const row of document.querySelectorAll('.tr-row[data-view]')) {
@@ -519,6 +520,62 @@ function dials(zone, list) {
     if (detailFor === el && g.details) showDetails(el);
   });
   while (zone.children.length > list.length) zone.lastChild.remove();
+}
+
+// In an edit mode an item moves among its peers with the pointer, or with the arrow keys while it has the focus.
+// move(item, other, after) places it, done() saves the order; a click that ends a drag is flagged so it does not count.
+function dragOrder(item, { peers, active, done, move, focus }) {
+  let start = null, dragging = false, last = null;
+  const place = move || ((a, b, after) => b.parentElement.insertBefore(a, after ? b.nextSibling : b));
+  // The page listens rather than the item: moving the item in the page would release a pointer capture.
+  item.addEventListener('pointerdown', e => {
+    if (e.button !== 0 || !active()) return;
+    start = { x: e.clientX, y: e.clientY, id: e.pointerId };
+    dragging = false;
+    last = null;
+    addEventListener('pointermove', follow);
+    addEventListener('pointerup', end);
+    addEventListener('pointercancel', end);
+  });
+  const follow = e => {
+    if (!start || e.pointerId !== start.id) return;
+    if (!dragging) {
+      if (Math.hypot(e.clientX - start.x, e.clientY - start.y) < 6) return;
+      dragging = true;
+      item.classList.add('grabbed');
+    }
+    const list = peers();
+    const under = list.find(x => { const r = x.getBoundingClientRect(); return e.clientX >= r.left && e.clientX < r.right && e.clientY >= r.top && e.clientY < r.bottom; });
+    if (!under || under === item) { last = null; return; }
+    if (under === last) return;
+    last = under;
+    place(item, under, list.indexOf(under) > list.indexOf(item));
+  };
+  const end = e => {
+    if (!start || e.pointerId !== start.id) return;
+    removeEventListener('pointermove', follow);
+    removeEventListener('pointerup', end);
+    removeEventListener('pointercancel', end);
+    const moved = dragging;
+    start = null;
+    dragging = false;
+    item.classList.remove('grabbed');
+    if (!moved) return;
+    item._dragged = true;
+    setTimeout(() => { item._dragged = false; }, 0);
+    done();
+  };
+  item.addEventListener('keydown', e => {
+    const step = { ArrowUp: -1, ArrowLeft: -1, ArrowDown: 1, ArrowRight: 1 }[e.key];
+    if (!step || !active() || e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const list = peers(), other = list[list.indexOf(item) + step];
+    if (!other) return;
+    place(item, other, step > 0);
+    (focus || item).focus();
+    done();
+  });
 }
 
 // Rows that depend on an option open and close smoothly: a row that pops in or out makes everything under it jump.
@@ -951,13 +1008,15 @@ addEventListener('keydown', e => {
 addEventListener('keydown', e => {
   if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
   const view = document.body.dataset.view, digit = /^(?:Digit|Numpad)([1-9])$/.exec(e.code);
-  if (digit && !e.shiftKey) { e.preventDefault(); showView(VIEWS[Number(digit[1]) - 1]); }
-  else if (e.key === 'Tab') { e.preventDefault(); showView(VIEWS[(VIEWS.indexOf(view) + (e.shiftKey ? VIEWS.length - 1 : 1)) % VIEWS.length]); }
+  // The order of the bar as arranged, without the services it hides.
+  const bar = [...document.querySelectorAll('.rail .service[data-view]')].filter(b => !b.hidden).map(b => b.dataset.view);
+  if (digit && !e.shiftKey) { e.preventDefault(); if (bar[Number(digit[1]) - 1]) showView(bar[Number(digit[1]) - 1]); }
+  else if (e.key === 'Tab') { e.preventDefault(); showView(bar[(bar.indexOf(view) + (e.shiftKey ? bar.length - 1 : 1)) % bar.length]); }
   else if (e.key === ',') { e.preventDefault(); showView('settings'); }
   else if (e.key.toLowerCase() === 'f' && view === 'tasks' && $('t-search')) { e.preventDefault(); $('t-search').focus(); $('t-search').select(); }
 });
 addEventListener('keydown', e => {
-  if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+  if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey || document.body.classList.contains('bar-editing')) return;
   const keys = { ArrowUp: -1, ArrowDown: 1, Home: 'first', End: 'last' };
   if (!(e.key in keys)) return;
   const buttons = [...document.querySelectorAll('.rail button.service')].filter(b => b.offsetParent);

@@ -188,6 +188,7 @@ for (const el of document.querySelectorAll('.panel > div[class^="only-"]'))
     for (const t of rail.querySelectorAll('.rail-title')) t.tabIndex = on ? 0 : -1;
   };
   new ResizeObserver(wide).observe(rail);
+  rail.addEventListener('arranged', place);
   wide();
 })();
 

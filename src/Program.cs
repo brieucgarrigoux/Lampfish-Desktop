@@ -151,6 +151,7 @@ namespace Bramble
                 AudioMeter.Set(R.Reactive);
                 Display.Start();
                 AudioDevices.Start();
+                Customize.Load();
                 Moods.Start();
                 if (requestedFolder != null) { Icons.Ask(requestedFolder); requestedView = "icons"; }
 
@@ -783,6 +784,7 @@ namespace Bramble
                 if (AudioDevices.Handles(sub) ? AudioDevices.Receive(sub, m) : AudioMeter.Receive(sub, m)) SendState();
                 return;
             }
+            if (action.StartsWith("layout.")) { if (Customize.Receive(action.Substring(action.IndexOf('.') + 1), m)) { Save(); SendState(); } return; }
             if (action.StartsWith("health.")) { Health.Receive(action.Substring(action.IndexOf('.') + 1), m); return; }
             if (action.StartsWith("duplicates.")) { if (Duplicates.Receive(action.Substring(action.IndexOf('.') + 1), m)) { Save(); SendState(); } return; }
 
@@ -944,6 +946,7 @@ namespace Bramble
                 speedTest = R.SpeedTest,
                 publicIp = R.PublicIp,
                 hiddenViews = R.HiddenViews,
+                layout = Customize.State(),
                 weatherPlace = R.WeatherPlace == null ? null : R.WeatherPlace.Label,
                 reactive = R.Reactive,
                 zoom = R.Zoom,

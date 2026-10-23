@@ -17,7 +17,7 @@ Bramble lives in the system tray and brings together wallpapers, icons, cursors,
 
 | Service | What it does |
 | --- | --- |
-| **Home** | The time and today's weather, your current wallpaper with your real desktop icons on it (previous, pause, next, themes in one click), this PC at a glance (processor, memory, disk, battery, network), quick settings (warm screen, energy saver, screen and sleep delays) and shortcuts to the other services. |
+| **Home** | The time and today's weather, your current wallpaper with your real desktop icons on it (previous, pause, next, themes in one click), this PC at a glance (processor, memory, disk, battery, network), quick settings (warm screen, energy saver, screen and sleep delays) and cards of the other services. Customize picks the cards, their order and the blocks shown. |
 | **Themes** | Each theme shows its own wallpaper, dimmed as on the desktop, with its icon, cursors, sounds and triggers, and can warm the screen. Puts back a wallpaper, cursors, sounds and the audio output in one click, or by itself: at a set time, with a set number of screens, on mains power or battery, when an app opens or when headphones are plugged in (the previous setup comes back when the app closes or the headphones are removed). A theme can also open apps or files, and can be exported and imported. |
 | **Wallpaper** | Animated wallpapers behind the desktop icons, one for every screen or one per screen: videos, GIFs, animated images, HTML pages, optionally pulsing with the sound playing, with fades, a slideshow that can shuffle and a frame rate choice. Pauses on battery, when a window covers the screen or while the session is locked. |
 | **Create** | Builds a wallpaper from your logo and background: themes, particles, glow, a sound reaction and a live preview with snap guides where the logo and the text are placed, typed and resized. Made wallpapers can be edited again. |
@@ -34,7 +34,7 @@ Bramble lives in the system tray and brings together wallpapers, icons, cursors,
 | **Tasks** | What is running, grouped by program with its icon, publisher, memory and processor use, sorted into apps, command-line, background and system programs, with a search and a sheet per program (version, location, start with Windows, open connections). Ends a program on request, and a Memory card shows what closing the programs not in use would free, then closes what you tick. |
 | **Hardware** | Processor, memory, graphics, storage, battery, screens, temperature and connected devices, read live, with a plain-language health summary and a summary to copy. |
 
-The interface is in English, with a French translation (automatic, following the Windows language, or chosen in Settings). Ctrl 1 to 9 open the services, Ctrl Tab the next one, Ctrl comma the settings, and the tray menu skips to the next wallpaper, pauses it or applies a theme. `Bramble.exe --quit` closes a running Bramble.
+The interface is in English, with a French translation (automatic, following the Windows language, or chosen in Settings). The bar can be arranged from its foot: services move inside their family, families move, and a service can be hidden. Ctrl 1 to 9 open the services in the order of the bar, Ctrl Tab the next one, Ctrl comma the settings, and the tray menu skips to the next wallpaper, pauses it or applies a theme. `Bramble.exe --quit` closes a running Bramble.
 
 ## Requirements
 
