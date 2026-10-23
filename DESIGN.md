@@ -59,6 +59,7 @@ Fonts: `--display` for titles and lit text, `--numbers` with `font-variant-numer
 - Spacing: 28 above and 12 below a section title on a page, 18 and 10 in the side panel.
 - Icon tiles: 26, 30 or 44 px.
 - Time: `--fast` (.12 s) for hover and color changes, .2 to .45 s for fades and reveals. Motion stops when the system asks for reduced motion.
+- Movement: nothing jumps. An element that changes place slides from where it was (`slide`, `glide` and `glideRebuilt` of `main.js`); a dragged element follows the pointer, lifted by `--float`, while its neighbors make room, and settles in its slot when released (`dragOrder`).
 
 ## Materials
 
@@ -79,7 +80,7 @@ Fonts: `--display` for titles and lit text, `--numbers` with `font-variant-numer
 - **Slider**: `fill()` of `main.js` paints the filled part from `min` and `max`. A muted slider is dimmed (`.is-muted`), a disabled one too.
 - **Segments**, **time select** (`.time-select`), **chips** (`.tool-chip`), **links** (`.link` with a 14 px icon).
 - **Buttons**: main `.button--accent`, or `.keycap-pill` for the main action of a shell; secondary `.button`; card header action = chip; title line action = link. Armed red (`--danger-dim`, text and ring `--danger`) is the only red button.
-- **Ring dial** (`.dials`, `.dial`, filled by `dials(zone, list)`): a value and its share. `.dials--small` on Home, `.dials--led` with lit figures in Health. Each dial shows details in a bubble on hover or keyboard focus.
+- **Ring dial** (`.dials`, `.dial`, filled by `dials(zone, list)` of `dials.js`, shared by every page): a value and its share. `.dials--small` on Home and in the companion, `.dials--led` with lit figures in Health. Each dial shows details in a bubble on hover or keyboard focus.
 - **Instruments** (`thermometer`, `batteryRelief`, `wifiRelief` in `main.js`): used instead of a ring wherever they exist. A ring is only for what has no instrument.
 - **Bezel** (`.bezel`, `.bezel__glass`): a rectangular screen in a brushed steel frame with a verdict in `.led-text` and a gray line.
 - **Seal** (`.seal`): a round anodized frame with a face or a shield drawn in light (`faceLight`, `shieldLight`). Never in a diagram.
@@ -87,12 +88,15 @@ Fonts: `--display` for titles and lit text, `--numbers` with `font-variant-numer
 - **Bubble** (`.chart-tip`): title, note and label and value lines.
 - **Drawer**: the side panel opens over the page in a narrow window, from the Options button.
 - **Toast**: 8 s, with Undo for any change.
+- **Saved state** (`.n-saved` in Notes): a pill next to the name that says a change is saved by itself, and when it is not written yet. A page that saves on its own shows it this way rather than with a Save button.
+- **Main button with a menu** (`.s-capture` in Shelf): the main action on the left, a narrow arrow on the right that opens the other ways to do it, as rows with a glyph, a title and a gray line.
+- **Floating menu and lifted element**: `--group-up`, a `--hairline-strong` edge and the `--float` shadow. A veil over a block in an edit mode is `--veil`.
 - **Warning note** (`.warning-note`): amber, under the group it is about, only before a reset.
 
 ## Writing
 
 - English in the code, French in `app/ui/locales/fr.json`. Every visible string goes through `tr()` or a translated text node; names typed by the user carry `translate="no"`.
-- No capitals for whole words (`text-transform: uppercase` is never used; only the first letter of the date on Home is raised). No em dash.
+- No capitals for whole words (`text-transform: uppercase` is never used; only the first letter of the date on Home and in the companion is raised). No em dash.
 - As little text as possible, no "you". In French: no "vous", no "votre", no imperative in "-ez".
 - No filler: no sentence that only reassures or repeats the obvious. A footer without useful information keeps only its button.
 - A gray line that does not fit in a 340 px panel is shortened, in both languages.
