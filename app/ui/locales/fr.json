@@ -1773,5 +1773,11 @@
  "Quote": "Citation",
  "Divider": "Séparateur",
  "Not saved": "Non enregistrée",
- "The file could not be written": "Le fichier n'a pas pu être écrit"
+ "The file could not be written": "Le fichier n'a pas pu être écrit",
+ "Drag a file in to keep a copy, drag a card out to drop it in another app.": "Glisser un fichier ici en garde une copie, glisser une carte vers une autre appli l'y dépose.",
+ "Other ways to capture": "Autres façons de capturer",
+ "Open, or drag into another app": "Ouvrir, ou glisser vers une autre appli",
+ "Nothing on the shelf yet": "Rien sur l'étagère pour l'instant",
+ "Another filter shows the rest of the shelf.": "Un autre filtre montre le reste de l'étagère.",
+ "Drop files here to keep a copy, or take a capture: it lands here, already copied.": "Déposer des fichiers ici pour en garder une copie, ou faire une capture : elle arrive ici, déjà copiée."
 }

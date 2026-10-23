@@ -137,18 +137,29 @@ namespace Bramble
                 {
                     string path = PathOf(name);
                     if (path == null) return false;
-                    var list = new StringCollection { path };
-                    Clipboard.SetFileDropList(list);
+                    // The file and, for an image, its pixels: File Explorer and a chat take the file, Word or Paint the picture.
+                    var data = new DataObject();
+                    data.SetFileDropList(new StringCollection { path });
+                    if (Images.Contains(Path.GetExtension(path).ToLowerInvariant()))
+                        try { using (var image = Image.FromFile(path)) data.SetImage(new Bitmap(image)); } catch (Exception ex) { Program.Log(ex); }
+                    Clipboard.SetDataObject(data, true);
                     Program.Announce("Copied, ready to paste");
                     return true;
                 }
-                case "copyImage":
+                case "dragOut":
                 {
                     string path = PathOf(name);
-                    if (path == null) return false;
-                    using (var image = Image.FromFile(path)) Clipboard.SetImage(new Bitmap(image));
-                    Program.Announce("Image copied");
-                    return true;
+                    // Windows runs the drag while the button is still down; the page is told when it ends, to take drops again.
+                    var window = Program.SettingsWindow;
+                    if (path == null || window == null) { Program.Send(new { type = "shelf.dragged" }); return false; }
+                    window.BeginInvoke((Action)(() =>
+                    {
+                        if (Control.MouseButtons == MouseButtons.Left)
+                            try { window.DoDragDrop(new DataObject(DataFormats.FileDrop, new[] { path }), DragDropEffects.Copy); }
+                            catch (Exception ex) { Program.Log(ex); }
+                        Program.Send(new { type = "shelf.dragged" });
+                    }));
+                    return false;
                 }
                 case "remove":
                 {

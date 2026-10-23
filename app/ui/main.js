@@ -249,7 +249,8 @@ const carriesFiles = e => [...e.dataTransfer.types].includes('Files');
 const DROP_HINTS = { wallpaper: 'Videos, GIFs, images or HTML pages', icons: 'ICO files or images', mouse: 'Cursor files, .cur or .ani', station: 'MP3, AAC, OGG, FLAC or WAV sounds', shelf: 'Any file: a copy goes on the shelf' };
 addEventListener('dragenter', e => {
   const view = document.body.dataset.view;
-  if (!carriesFiles(e) || !DROP_HINTS[view]) return;
+  // A card of Shelf on its way out to another app is not a file coming in.
+  if (!carriesFiles(e) || !DROP_HINTS[view] || (Bramble.shelf && Bramble.shelf.out)) return;
   e.preventDefault();
   $('drop-hint').textContent = tr(DROP_HINTS[view]);
   if (++depth === 1) document.body.classList.add('drag');
@@ -263,7 +264,7 @@ addEventListener('drop', e => {
   depth = 0;
   document.body.classList.remove('drag');
   const files = e.dataTransfer.files;
-  if (!files.length) return;
+  if (!files.length || (Bramble.shelf && Bramble.shelf.out)) return;
   const view = document.body.dataset.view;
   const action = { icons: 'icons.drop', mouse: 'mouse.drop', wallpaper: 'drop', shelf: 'shelf.drop' }[view];
   if (view === 'station' && Bramble.station) Bramble.station.ingest([...files]);
