@@ -34,7 +34,6 @@ namespace Bramble
         static Notifications notifications;
         static List<Device> devices = new List<Device>();
         static Timer timer, changed;
-        static Hotkey hotkey;
         static Bubble bubble;
         static bool watching;
         static string sent, levels, shortcutError;
@@ -61,13 +60,12 @@ namespace Bramble
             changed.Tick += (s, e) => { changed.Stop(); if (watching) { Reload(); Send(); } Program.SendState(); };
             timer = new Timer { Interval = 60 };
             timer.Tick += (s, e) => Tick();
-            hotkey = new Hotkey(Next);
             Register();
         }
 
         public static void Stop()
         {
-            if (hotkey != null) hotkey.Unregister();
+            Hotkeys.Unregister(Hotkeys.AudioOutput);
             try { if (enumerator != null && notifications != null) enumerator.UnregisterEndpointNotificationCallback(notifications); } catch { }
             Release();
         }
@@ -81,9 +79,9 @@ namespace Bramble
         static void Register()
         {
             shortcutError = null;
-            hotkey.Unregister();
+            Hotkeys.Unregister(Hotkeys.AudioOutput);
             if (!S.Shortcut) return;
-            if (!hotkey.Register(S.Modifiers, S.Key)) shortcutError = "taken";
+            if (!Hotkeys.Register(Hotkeys.AudioOutput, S.Modifiers, S.Key, Next)) shortcutError = "taken";
         }
 
         public static bool Receive(string action, Dictionary<string, object> m)
@@ -429,39 +427,6 @@ namespace Bramble
         static readonly PropertyKey DeviceFormat = new PropertyKey { Format = new Guid("f19f064d-082c-4e27-bc73-6882a1bb8e4c"), Id = 0 };
 
         [DllImport("ole32.dll")] static extern int PropVariantClear(IntPtr value);
-
-        class Hotkey : NativeWindow
-        {
-            readonly Action pressed;
-            bool registered;
-
-            public Hotkey(Action pressed)
-            {
-                this.pressed = pressed;
-                CreateHandle(new CreateParams());
-            }
-
-            public bool Register(int modifiers, int key)
-            {
-                registered = RegisterHotKey(Handle, 1, modifiers | 0x4000, key);
-                return registered;
-            }
-
-            public void Unregister()
-            {
-                if (registered) UnregisterHotKey(Handle, 1);
-                registered = false;
-            }
-
-            protected override void WndProc(ref Message m)
-            {
-                if (m.Msg == 0x0312) try { pressed(); } catch (Exception ex) { Program.Log(ex); }
-                base.WndProc(ref m);
-            }
-
-            [DllImport("user32.dll")] static extern bool RegisterHotKey(IntPtr hwnd, int id, int modifiers, int key);
-            [DllImport("user32.dll")] static extern bool UnregisterHotKey(IntPtr hwnd, int id);
-        }
 
         class Bubble : Form
         {

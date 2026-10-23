@@ -38,6 +38,3 @@
 .a-mute[aria-pressed="true"] { color: var(--danger); }
 .a-mute svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .a-state { flex: none; padding: 3px 9px; border-radius: 99px; background: var(--accent-dim); color: var(--accent); font-size: var(--text-badge); font-weight: 600; }
-.a-keys { min-width: 140px; font-variant-numeric: tabular-nums; }
-.a-keys.is-recording { color: var(--accent); box-shadow: var(--pressed); background: var(--accent-dim); }
-#a-keys-help.is-error { color: var(--warn); }

@@ -1,52 +1,7 @@
 'use strict';
 
-const webview = window.chrome.webview;
-const send = (action, data = {}) => webview.postMessage({ action, ...data });
-const $ = id => document.getElementById(id);
-
-addEventListener('error', e => { if (/ResizeObserver loop/.test(e.message)) return;  try { send('pageError', { text: e.message + ' · ' + (e.filename || '').replace(/^.*\//, '') + ':' + e.lineno }); } catch (x) { } });
-addEventListener('unhandledrejection', e => { try { send('pageError', { text: String(e.reason) }); } catch (x) { } });
-
-const LANGUAGE = window.LANGUAGE || 'en';
-const LOCALE = LANGUAGE === 'fr' ? 'fr-FR' : 'en-US';
-const DICT = window.TRANSLATION || {};
-function tr(text, ...values) {
-  let r = DICT[text] || text;
-  values.forEach((v, i) => { r = r.split('{' + i + '}').join(v); });
-  return r;
-}
-const ATTRIBUTES_TRANSLATED = ['title', 'aria-label', 'placeholder', 'alt'];
-function translateAttributes(e) {
-  if (!e.translate) return;
-  for (const a of ATTRIBUTES_TRANSLATED) {
-    const v = e.getAttribute(a), c = v && v.trim();
-    if (c && DICT[c] && DICT[c] !== c) e.setAttribute(a, DICT[c]);
-  }
-}
-function translateNode(n) {
-  if (n.nodeType === 3) {
-    if (n.parentElement && !n.parentElement.translate) return;
-    const v = n.nodeValue, c = v.trim();
-    if (c && DICT[c] && DICT[c] !== c) n.nodeValue = v.replace(c, DICT[c]);
-    return;
-  }
-  if (n.nodeType !== 1 || n.tagName === 'SCRIPT' || n.tagName === 'STYLE' || !n.translate) return;
-  translateAttributes(n);
-  for (const e of n.childNodes) translateNode(e);
-}
-if (LANGUAGE !== 'en') {
-  document.documentElement.lang = LANGUAGE;
-  translateNode(document.body);
-  new MutationObserver(list => {
-    for (const m of list) {
-      if (m.type === 'childList') m.addedNodes.forEach(translateNode);
-      else if (m.type === 'characterData') translateNode(m.target);
-      else translateAttributes(m.target);
-    }
-  }).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRIBUTES_TRANSLATED });
-}
 const Bramble = { state: null, station: null, icons: null, arrange: null, mouse: null, network: null, files: null, hardware: null, tasks: null, moods: null, creator: null };
-const VIEWS = ['home', 'modes', 'wallpaper', 'create', 'icons', 'mouse', 'station', 'display', 'audio', 'arrange', 'health', 'tasks', 'files', 'duplicates', 'hardware', 'network', 'settings'];
+const VIEWS = ['home', 'modes', 'wallpaper', 'create', 'icons', 'mouse', 'station', 'display', 'audio', 'arrange', 'notes', 'shelf', 'health', 'tasks', 'files', 'duplicates', 'hardware', 'network', 'settings'];
 
 const scrolls = {}, narrowLayout = matchMedia('(max-width: 900px)');
 const scrollZones = () => narrowLayout.matches ? [document.scrollingElement] : [document.querySelector('.contents'), document.querySelector('.panel')];
@@ -578,6 +533,51 @@ function dragOrder(item, { peers, active, done, move, focus }) {
     (focus || item).focus();
     done();
   });
+}
+
+// A button that records a global shortcut: a click, then the keys; Escape cancels. Ctrl or Alt is needed, except with an F key.
+// save({ mods, key, label }) gets the Windows modifiers (Alt 1, Ctrl 2, Shift 4) and virtual key; show(label, error) paints the saved state.
+const KEY_NAMED = { Space: 0x20, PageUp: 0x21, PageDown: 0x22, End: 0x23, Home: 0x24, ArrowLeft: 0x25, ArrowUp: 0x26, ArrowRight: 0x27, ArrowDown: 0x28, Insert: 0x2D, Delete: 0x2E,
+  Semicolon: 0xBA, Equal: 0xBB, Comma: 0xBC, Minus: 0xBD, Period: 0xBE, Slash: 0xBF, Backquote: 0xC0, BracketLeft: 0xDB, Backslash: 0xDC, BracketRight: 0xDD, Quote: 0xDE };
+const KEY_SHOWN = { Space: 'Space', PageUp: 'Page Up', PageDown: 'Page Down', ArrowLeft: 'Left', ArrowUp: 'Up', ArrowRight: 'Right', ArrowDown: 'Down' };
+function virtualKey(code) {
+  let x;
+  if ((x = /^Key([A-Z])$/.exec(code))) return [x[1].charCodeAt(0), x[1]];
+  if ((x = /^Digit(\d)$/.exec(code))) return [0x30 + Number(x[1]), x[1]];
+  if ((x = /^Numpad(\d)$/.exec(code))) return [0x60 + Number(x[1]), 'Num ' + x[1]];
+  if ((x = /^F(\d{1,2})$/.exec(code)) && x[1] >= 1 && x[1] <= 24) return [0x6F + Number(x[1]), code];
+  if (code in KEY_NAMED) return [KEY_NAMED[code], KEY_SHOWN[code] || null];
+  return null;
+}
+function shortcutKeys(button, help, save) {
+  let recording = false, label = '', error = null;
+  button.classList.add('shortcut-keys');
+  button.translate = false;
+  help.classList.add('shortcut-help');
+  const paint = () => {
+    button.classList.toggle('is-recording', recording);
+    button.textContent = recording ? tr('Press the keys…') : label;
+    help.classList.toggle('is-error', error === 'taken' && !recording);
+    help.textContent = recording ? tr('Press the keys, or Escape') : tr(error === 'taken' ? 'Already used by another app, choose other keys' : 'Click, then press the new keys');
+  };
+  const stop = () => { if (!recording) return; recording = false; paint(); };
+  button.addEventListener('click', () => { recording = !recording; paint(); });
+  button.addEventListener('blur', stop);
+  addEventListener('keydown', e => {
+    if (!recording) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    if (e.key === 'Escape') { stop(); return; }
+    if (['Control', 'Alt', 'Shift', 'Meta', 'AltGraph'].includes(e.key)) return;
+    const found = virtualKey(e.code);
+    if (!found) return;
+    if (!e.ctrlKey && !e.altKey && !/^F\d/.test(e.code)) { help.textContent = tr('Add Ctrl or Alt to the key'); return; }
+    const mods = (e.altKey ? 1 : 0) | (e.ctrlKey ? 2 : 0) | (e.shiftKey ? 4 : 0);
+    const text = [e.ctrlKey && 'Ctrl', e.altKey && 'Alt', e.shiftKey && 'Shift', found[1] || e.key.toUpperCase()].filter(Boolean).join(' + ');
+    stop();
+    save({ mods, key: found[0], label: text });
+  }, true);
+  return { show(l, e) { label = l; error = e; if (!recording) paint(); }, stop };
 }
 
 // Rows that depend on an option open and close smoothly: a row that pops in or out makes everything under it jump.

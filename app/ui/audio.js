@@ -1,7 +1,7 @@
 'use strict';
 
 (function () {
-  let devices = null, info = {}, shown = false, recording = false;
+  let devices = null, info = {}, shown = false;
   const meters = new Map(), tiles = new Map(), opened = {};
   const GLYPHS = {
     speakers: '<rect x="6" y="3.5" width="12" height="17" rx="2.5"/><circle cx="12" cy="14" r="3"/><circle cx="12" cy="7.5" r=".8"/>',
@@ -105,10 +105,7 @@
       } else list.forEach(d => { const el = tiles.get(d.id); if (el) update(el, d); });
     }
     $('a-shortcut').checked = !!info.shortcut;
-    if (!recording) $('a-keys').textContent = info.label || 'Ctrl + Alt + F11';
-    const help = $('a-keys-help');
-    help.classList.toggle('is-error', info.error === 'taken' && !recording);
-    help.textContent = recording ? tr('Press the keys, or Escape') : tr(info.error === 'taken' ? 'Already used by another app, choose other keys' : 'Click, then press the new keys');
+    keys.show(info.label || 'Ctrl + Alt + F11', info.error);
   }
 
   function event(m) {
@@ -128,54 +125,10 @@
     if (yes === shown) return;
     shown = yes;
     send('audio.watch', { on: yes });
-    if (!yes) stopRecording();
+    if (!yes) keys.stop();
   }
 
-  const NAMED = { Space: 0x20, PageUp: 0x21, PageDown: 0x22, End: 0x23, Home: 0x24, ArrowLeft: 0x25, ArrowUp: 0x26, ArrowRight: 0x27, ArrowDown: 0x28, Insert: 0x2D, Delete: 0x2E,
-    Semicolon: 0xBA, Equal: 0xBB, Comma: 0xBC, Minus: 0xBD, Period: 0xBE, Slash: 0xBF, Backquote: 0xC0, BracketLeft: 0xDB, Backslash: 0xDC, BracketRight: 0xDD, Quote: 0xDE };
-  const SHOWN = { Space: 'Space', PageUp: 'Page Up', PageDown: 'Page Down', ArrowLeft: 'Left', ArrowUp: 'Up', ArrowRight: 'Right', ArrowDown: 'Down' };
-  function keyCode(code) {
-    let x;
-    if ((x = /^Key([A-Z])$/.exec(code))) return [x[1].charCodeAt(0), x[1]];
-    if ((x = /^Digit(\d)$/.exec(code))) return [0x30 + Number(x[1]), x[1]];
-    if ((x = /^Numpad(\d)$/.exec(code))) return [0x60 + Number(x[1]), 'Num ' + x[1]];
-    if ((x = /^F(\d{1,2})$/.exec(code)) && x[1] >= 1 && x[1] <= 24) return [0x6F + Number(x[1]), code];
-    if (code in NAMED) return [NAMED[code], SHOWN[code] || null];
-    return null;
-  }
-
-  function onKey(e) {
-    if (!recording) return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    if (e.key === 'Escape') { stopRecording(); return; }
-    if (['Control', 'Alt', 'Shift', 'Meta', 'AltGraph'].includes(e.key)) return;
-    const found = keyCode(e.code);
-    if (!found) return;
-    const fkey = /^F\d/.test(e.code);
-    if (!e.ctrlKey && !e.altKey && !fkey) { $('a-keys-help').textContent = tr('Add Ctrl or Alt to the key'); return; }
-    const mods = (e.altKey ? 1 : 0) | (e.ctrlKey ? 2 : 0) | (e.shiftKey ? 4 : 0);
-    const label = [e.ctrlKey && 'Ctrl', e.altKey && 'Alt', e.shiftKey && 'Shift', found[1] || e.key.toUpperCase()].filter(Boolean).join(' + ');
-    stopRecording();
-    send('audio.shortcutKeys', { mods, key: found[0], label });
-  }
-
-  function stopRecording() {
-    if (!recording) return;
-    recording = false;
-    $('a-keys').classList.remove('is-recording');
-    render();
-  }
-
-  $('a-keys').addEventListener('click', () => {
-    if (recording) { stopRecording(); return; }
-    recording = true;
-    $('a-keys').classList.add('is-recording');
-    $('a-keys').textContent = tr('Press the keys…');
-    render();
-  });
-  $('a-keys').addEventListener('blur', stopRecording);
-  addEventListener('keydown', onKey, true);
+  const keys = shortcutKeys($('a-keys'), $('a-keys-help'), k => send('audio.shortcutKeys', k));
   $('a-shortcut').addEventListener('change', e => send('audio.shortcut', { on: e.target.checked }));
   $('a-settings').addEventListener('click', () => send('audio.settings'));
 

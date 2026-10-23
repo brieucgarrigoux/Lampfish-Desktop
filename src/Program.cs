@@ -1130,6 +1130,7 @@ namespace Bramble
             Sounds.Stop();
             Display.Stop();
             AudioDevices.Stop();
+            Hotkeys.Stop();
             Discard();
             if (settingsWindow != null) settingsWindow.Shutdown();
             Destroy();
