@@ -11,25 +11,26 @@
 </head>
 <body class="annotate">
   <header class="an-bar">
-    <div class="an-tools" role="radiogroup" aria-label="Tool">
-      <button type="button" data-tool="arrow" aria-pressed="true" title="Arrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M10 5h9v9"/></svg><span>Arrow</span></button>
-      <button type="button" data-tool="box" aria-pressed="false" title="Frame"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="6" width="16" height="12" rx="2"/></svg><span>Frame</span></button>
-      <button type="button" data-tool="marker" aria-pressed="false" title="Highlighter"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 4.5 5 5L10 19H5v-5z"/><path d="M4 21h16"/></svg><span>Highlighter</span></button>
-      <button type="button" data-tool="text" aria-pressed="false" title="Text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6V4.5h14V6M12 4.5v15M9 19.5h6"/></svg><span>Text</span></button>
-      <button type="button" data-tool="pixelate" aria-pressed="false" title="Pixelate"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h5v5H4zM15 4h5v5h-5zM9.5 9.5h5v5h-5zM4 15h5v5H4zM15 15h5v5h-5z"/></svg><span>Pixelate</span></button>
-    </div>
+    <div class="segments an-tools" id="an-tools" role="radiogroup" aria-label="Tool"></div>
     <div class="an-colors" role="radiogroup" aria-label="Color">
-      <button type="button" data-color="#9561f3" aria-pressed="true" aria-label="Violet"></button>
-      <button type="button" data-color="#ff5c6c" aria-pressed="false" aria-label="Red"></button>
-      <button type="button" data-color="#f0b955" aria-pressed="false" aria-label="Yellow"></button>
-      <button type="button" data-color="#ffffff" aria-pressed="false" aria-label="White"></button>
+      <button type="button" role="radio" data-color="#9561f3" aria-checked="true" aria-label="Violet" title="Violet"></button>
+      <button type="button" role="radio" data-color="#ff5c6c" aria-checked="false" aria-label="Red" title="Red"></button>
+      <button type="button" role="radio" data-color="#f0b955" aria-checked="false" aria-label="Yellow" title="Yellow"></button>
+      <button type="button" role="radio" data-color="#4aa8ff" aria-checked="false" aria-label="Blue" title="Blue"></button>
+      <button type="button" role="radio" data-color="#ffffff" aria-checked="false" aria-label="White" title="White"></button>
     </div>
-    <button type="button" class="button" id="an-undo" title="Ctrl + Z" disabled>Undo</button>
+    <div class="segments an-sizes" role="radiogroup" aria-label="Thickness">
+      <button type="button" role="radio" data-size=".6" aria-checked="false" aria-label="Thin" title="Thin"><i></i></button>
+      <button type="button" role="radio" data-size="1" aria-checked="true" aria-label="Medium" title="Medium"><i></i></button>
+      <button type="button" role="radio" data-size="1.7" aria-checked="false" aria-label="Thick" title="Thick"><i></i></button>
+    </div>
+    <button type="button" class="an-undo" id="an-undo" title="Undo (Ctrl + Z)" aria-label="Undo" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7 5 11l4 4"/><path d="M5 11h9.5a4.5 4.5 0 0 1 0 9H12"/></svg></button>
     <span class="an-space"></span>
-    <button type="button" class="link an-delete" id="an-delete">Delete the capture</button>
-    <button type="button" class="button" id="an-close">Close</button>
+    <button type="button" class="link an-delete" id="an-delete"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/></svg>Delete the capture</button>
+    <button type="button" class="button" id="an-close" title="Escape">Close</button>
     <button type="button" class="button button--accent" id="an-done" title="Ctrl + S">Copy and close</button>
   </header>
+  <div class="an-hint" id="an-hint" aria-live="polite"></div>
   <main class="an-stage" id="an-stage">
     <canvas id="an-canvas" aria-label="Capture"></canvas>
     <input type="text" class="an-text" id="an-text" hidden aria-label="Text to add" spellcheck="false">

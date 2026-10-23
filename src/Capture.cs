@@ -33,6 +33,8 @@ namespace Bramble
         {
             if (overlay != null) return;
             if (Busy != null) Busy(true);
+            // The card of the last capture would land in the next one.
+            if (note != null && !note.IsDisposed && note.Visible) note.Hide();
             var window = Program.SettingsWindow;
             bool hide = window != null && window.Visible && window.WindowState != FormWindowState.Minimized && window.ContainsFocus;
             if (hide) { shape = window.WindowState; window.WindowState = FormWindowState.Minimized; }
@@ -125,7 +127,8 @@ namespace Bramble
             var screen = Screen.FromPoint(Cursor.Position).WorkingArea;
             Size size;
             using (var image = Image.FromFile(path)) size = image.Size;
-            int w = Math.Min(screen.Width * 9 / 10, Math.Max(760, size.Width + 40)), h = Math.Min(screen.Height * 9 / 10, Math.Max(520, size.Height + 120));
+            // Room for the tools on one line and a capture seen large, without covering the whole screen.
+            int w = Math.Min(screen.Width * 92 / 100, Math.Max(screen.Width * 3 / 4, size.Width + 60)), h = Math.Min(screen.Height * 92 / 100, Math.Max(screen.Height * 3 / 4, size.Height + 160));
             annotate = new PageForm("annotate.html?name=" + Uri.EscapeDataString(Path.GetFileName(path)), Annotated)
             {
                 Text = Language.T("Annotate"), StartPosition = FormStartPosition.Manual,
