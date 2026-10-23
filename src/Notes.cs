@@ -123,20 +123,22 @@ namespace Bramble
         }
 
         // Vaults Obsidian knows, read from its own list; nothing is written there.
-        static object[] Vaults()
+        class Vault { public string name, path; }
+
+        static Vault[] Vaults()
         {
             try
             {
                 string file = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "obsidian", "obsidian.json");
-                if (!File.Exists(file)) return new object[0];
+                if (!File.Exists(file)) return new Vault[0];
                 var data = json.Deserialize<Dictionary<string, object>>(File.ReadAllText(file));
                 var vaults = data.ContainsKey("vaults") ? data["vaults"] as IDictionary : null;
-                if (vaults == null) return new object[0];
+                if (vaults == null) return new Vault[0];
                 return vaults.Values.OfType<Dictionary<string, object>>().Select(v => v.ContainsKey("path") ? Convert.ToString(v["path"]) : null)
                     .Where(p => !string.IsNullOrEmpty(p) && Directory.Exists(p)).Distinct(StringComparer.OrdinalIgnoreCase)
-                    .Select(p => (object)new { name = Path.GetFileName(p.TrimEnd('\\')), path = p }).ToArray();
+                    .Select(p => new Vault { name = Path.GetFileName(p.TrimEnd('\\')), path = p }).ToArray();
             }
-            catch (Exception ex) { Program.Log(ex); return new object[0]; }
+            catch (Exception ex) { Program.Log(ex); return new Vault[0]; }
         }
 
         // For the card of Home: a count and the last note, without reading every file.
@@ -151,10 +153,20 @@ namespace Bramble
             catch { return new { count = 0, last = (string)null }; }
         }
 
+        // The vault that holds a folder, if any: its notes can then be opened in Obsidian.
+        static Vault VaultOf(string folder, Vault[] vaults)
+        {
+            string full = Path.GetFullPath(folder).TrimEnd('\\') + "\\";
+            return vaults.FirstOrDefault(v => full.StartsWith(Path.GetFullPath(v.path).TrimEnd('\\') + "\\", StringComparison.OrdinalIgnoreCase));
+        }
+
         public static void SendList()
         {
             string folder = Folder;
-            Program.Send(new { type = "notes.list", folder, isDefault = folder.Equals(DefaultFolder, StringComparison.OrdinalIgnoreCase), vaults = Vaults(), items = Items() });
+            var vaults = Vaults();
+            // A chosen folder that is gone (deleted, drive unplugged, not synced yet) is said, never replaced in silence.
+            string missing = !string.IsNullOrEmpty(S.Folder) && !Directory.Exists(S.Folder) ? S.Folder : null;
+            Program.Send(new { type = "notes.list", folder, isDefault = folder.Equals(DefaultFolder, StringComparison.OrdinalIgnoreCase), missing, vault = VaultOf(folder, vaults), vaults, items = Items() });
         }
 
         static string Text(Dictionary<string, object> m, string key) { return m.ContainsKey(key) && m[key] != null ? Convert.ToString(m[key]) : ""; }
@@ -262,8 +274,20 @@ namespace Bramble
                     return true;
                 }
                 case "reveal":
-                    System.Diagnostics.Process.Start("explorer.exe", "\"" + Folder + "\"");
+                {
+                    string path = m.ContainsKey("name") ? PathOf(Text(m, "name")) : null;
+                    if (path != null && File.Exists(path)) System.Diagnostics.Process.Start("explorer.exe", "/select,\"" + path + "\"");
+                    else System.Diagnostics.Process.Start("explorer.exe", "\"" + Folder + "\"");
                     return false;
+                }
+                case "obsidian":
+                {
+                    string path = PathOf(Text(m, "name"));
+                    if (path == null || !File.Exists(path) || VaultOf(Folder, Vaults()) == null) return false;
+                    try { System.Diagnostics.Process.Start("obsidian://open?path=" + Uri.EscapeDataString(path)); }
+                    catch (Exception ex) { Program.Log(ex); Program.Announce("Obsidian did not open"); }
+                    return true;
+                }
                 case "link":
                 {
                     Uri uri;

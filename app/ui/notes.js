@@ -1,20 +1,29 @@
 'use strict';
 
 (function () {
-  let items = [], info = {}, current = null, modified = 0, mode = 'write', dirty = false, timer = 0, shown = false, wanted = null;
+  let items = [], info = {}, current = null, modified = 0, mode = 'write', dirty = false, timer = 0, shown = false, wanted = null, limit = 50;
   const text = $('n-text'), title = $('n-title');
+  const PAGE = 50;
 
-  // The bar writes Markdown around the selection, as one would type it.
+  // The bar writes Markdown around the selection, as one would type it. A null entry leaves a gap between groups.
   const TOOLS = [
     ['Title', '<path d="M6 5v14M18 5v14M6 12h12"/>', () => prefix('# ')],
     ['Bold', '<path d="M7 5h6a3.5 3.5 0 0 1 0 7H7zM7 12h7a3.5 3.5 0 0 1 0 7H7z"/>', () => wrap('**')],
     ['Italic', '<path d="M10 5h8M6 19h8M15 5 9 19"/>', () => wrap('*')],
+    ['Strikethrough', '<path d="M4.5 12h15M16 7.5c-.6-1.6-2.1-2.5-4-2.5-2.4 0-4 1.3-4 3 0 1.4.9 2.3 2.6 2.9M8 16.5c.6 1.6 2.1 2.5 4 2.5 2.4 0 4-1.3 4-3 0-.7-.2-1.3-.6-1.8"/>', () => wrap('~~')],
+    null,
     ['List', '<path d="M9 7h11M9 12h11M9 17h11"/><circle cx="4.5" cy="7" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="17" r="1"/>', () => prefix('- ')],
+    ['Numbered list', '<path d="M10 7h10M10 12h10M10 17h10M4 5.5 5.5 5v4M4 9h3M4 14.5c.4-.6 2.6-.8 2.6.5 0 1-2.6 1.6-2.6 3h2.8"/>', () => prefix('1. ')],
     ['Task', '<rect x="3.5" y="5" width="7" height="7" rx="1.5"/><path d="m5 8.5 1.5 1.5 2.5-3M13.5 8.5h7M3.5 16.5h17"/>', () => prefix('- [ ] ')],
+    ['Quote', '<path d="M5 6v12M9 8h10M9 12h10M9 16h6"/>', () => prefix('> ')],
+    null,
     ['Link', '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>', () => wrap('[', '](https://)')],
     ['Code', '<path d="m8.5 8-4 4 4 4M15.5 8l4 4-4 4"/>', () => wrap('`')],
+    ['Divider', '<path d="M4 12h16M8 7h8M8 17h8"/>', () => insertLine('---')],
   ];
-  for (const [name, icon, run] of TOOLS) {
+  for (const tool of TOOLS) {
+    if (!tool) { $('n-bar').append(Object.assign(document.createElement('span'), { className: 'n-gap' })); continue; }
+    const [name, icon, run] = tool;
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'n-tool';
@@ -37,50 +46,105 @@
     const block = value.slice(start, end).split('\n').map(l => l.startsWith(mark) ? l.slice(mark.length) : mark + l).join('\n');
     text.setRangeText(block, start, end, 'end');
   }
+  function insertLine(line) {
+    const { selectionEnd: b, value } = text;
+    const before = b === 0 || value[b - 1] === '\n' ? '' : '\n';
+    text.setRangeText(before + line + '\n', b, b, 'end');
+  }
 
   const when = iso => {
     const d = new Date(iso), today = new Date();
     return d.toDateString() === today.toDateString() ? d.toLocaleTimeString(LOCALE, { hour: '2-digit', minute: '2-digit' }) : d.toLocaleDateString(LOCALE, { day: 'numeric', month: 'short' });
   };
 
+  function remove(name) {
+    if (name === current) { clearTimeout(timer); dirty = false; current = null; }
+    send('notes.remove', { name });
+    items = items.filter(n => n.name !== name);
+    renderList();
+  }
+
   function renderList() {
     const query = $('n-search').value.trim().toLowerCase();
     const list = items.filter(n => !query || n.name.toLowerCase().includes(query) || n.preview.toLowerCase().includes(query));
-    $('n-list').replaceChildren(...list.map(n => {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'n-item';
-      b.setAttribute('role', 'listitem');
-      b.setAttribute('aria-current', String(n.name === current));
-      b.innerHTML = '<span class="n-item__top"><span class="n-item__name" translate="no"></span><span class="n-item__when"></span></span><span class="n-item__preview" translate="no"></span>';
-      b.querySelector('.n-item__name').textContent = n.name;
-      b.querySelector('.n-item__when').textContent = when(n.when);
-      b.querySelector('.n-item__preview').textContent = n.preview;
-      b.addEventListener('click', () => open(n.name));
-      return b;
+    $('n-count').textContent = !items.length ? '' : query ? tr(list.length === 1 ? '1 note found' : '{0} notes found', list.length) : tr(items.length === 1 ? '1 note' : '{0} notes', items.length);
+    $('n-list').replaceChildren(...list.slice(0, limit).map(n => {
+      const row = document.createElement('div');
+      row.className = 'n-item';
+      row.setAttribute('role', 'listitem');
+      row.setAttribute('aria-current', String(n.name === current));
+      row.innerHTML = '<button type="button" class="n-item__open"><span class="n-item__top"><span class="n-item__name" translate="no"></span><span class="n-item__when"></span></span><span class="n-item__preview" translate="no"></span></button>'
+        + '<button type="button" class="n-item__remove"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/></svg></button>';
+      row.querySelector('.n-item__name').textContent = n.name;
+      row.querySelector('.n-item__when').textContent = when(n.when);
+      row.querySelector('.n-item__preview').textContent = n.preview || tr('Empty');
+      const del = row.querySelector('.n-item__remove');
+      del.title = tr('Delete');
+      del.setAttribute('aria-label', tr('Delete') + ', ' + n.name);
+      del.addEventListener('click', () => remove(n.name));
+      const open_ = row.querySelector('.n-item__open');
+      open_.addEventListener('click', () => open(n.name));
+      open_.addEventListener('keydown', e => { if (e.key === 'Delete') { e.preventDefault(); remove(n.name); } });
+      return row;
     }));
     if (!list.length && items.length) $('n-list').append(Object.assign(document.createElement('p'), { className: 'n-none', textContent: tr('No note matches') }));
+    const rest = list.length - limit;
+    $('n-more').hidden = rest <= 0;
+    if (rest > 0) $('n-more').textContent = tr('Show {0} more', Math.min(rest, PAGE));
     $('n-empty').hidden = !!current;
     $('n-editor').hidden = !current;
+    renderThis();
   }
 
+  // The folder is chosen in a list that stays folded: the place in use is enough most of the time.
+  const ICONS = {
+    bramble: '<path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/>',
+    vault: '<path d="M12 3.5 6.5 8 8 17.5l4 3 4-3L17.5 8z"/><path d="M12 3.5 10 12l2 8.5M10 12l-3.5-4M10 12l6 5.5"/>',
+    folder: '<path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/><path d="M12 11v5M9.5 13.5h5"/>',
+  };
+  const short = path => { const parts = (path || '').split('\\').filter(Boolean); return parts.length > 3 ? '…\\' + parts.slice(-2).join('\\') : path; };
+
   function renderPlaces() {
-    $('n-where').textContent = info.folder || '';
-    const places = [{ label: tr('Bramble notes folder'), detail: tr('In the profile of this user'), path: '', vault: false, on: info.isDefault }]
-      .concat((info.vaults || []).map(v => ({ label: tr('Obsidian: {0}', v.name), detail: v.path + '\\Bramble', path: v.path, vault: true, on: !info.isDefault && (info.folder || '').toLowerCase() === (v.path + '\\Bramble').toLowerCase() })))
-      .concat([{ label: tr('Choose a folder'), detail: tr('Any folder, a vault or a synced one'), path: 'pick', vault: false, on: false }]);
+    const vault = info.vault;
+    $('n-here-icon').innerHTML = info.isDefault ? ICONS.bramble : vault ? ICONS.vault : ICONS.folder;
+    $('n-here-name').textContent = info.isDefault ? tr('Bramble notes folder') : vault ? tr('Obsidian: {0}', vault.name) : short(info.folder);
+    $('n-where').textContent = short(info.folder);
+    $('n-where').title = info.folder || '';
+    $('n-missing').hidden = !info.missing;
+    if (info.missing) $('n-missing-text').textContent = tr('{0} cannot be found, so notes go to the Bramble folder until it is back', short(info.missing));
+
+    const places = [{ label: tr('Bramble notes folder'), detail: tr('In the profile of this user'), path: '', vault: false, icon: 'bramble', on: info.isDefault && !info.missing }]
+      .concat((info.vaults || []).map(v => ({ label: tr('Obsidian: {0}', v.name), detail: short(v.path + '\\Bramble'), path: v.path, vault: true, icon: 'vault', on: !info.isDefault && (info.folder || '').toLowerCase() === (v.path + '\\Bramble').toLowerCase() })))
+      .concat([{ label: tr('Choose a folder'), detail: tr('Any folder, a vault or a synced one'), path: 'pick', vault: false, icon: 'folder', on: false }]);
     const custom = !info.isDefault && !places.some(p => p.on);
     $('n-places').replaceChildren(...places.map(p => {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'row action';
-      b.setAttribute('aria-pressed', String(p.on || (custom && p.path === 'pick')));
-      b.innerHTML = '<span class="caption"><span><span class="n-place"></span><small translate="no"></small></span></span>';
+      b.setAttribute('role', 'radio');
+      b.setAttribute('aria-checked', String(p.on || (custom && p.path === 'pick')));
+      b.innerHTML = `<span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${ICONS[p.icon]}</svg><span><span class="n-place"></span><small translate="no"></small></span></span>`;
       b.querySelector('.n-place').textContent = p.label;
-      b.querySelector('small').textContent = p.path === 'pick' && custom ? info.folder : p.detail;
-      b.addEventListener('click', () => { if (!p.on) send('notes.folder', { path: p.path, vault: p.vault, move: $('n-move').checked }); });
+      b.querySelector('small').textContent = p.path === 'pick' && custom ? short(info.folder) : p.detail;
+      b.addEventListener('click', () => { if (!p.on || p.path === 'pick') { send('notes.folder', { path: p.path, vault: p.vault, move: $('n-move').checked }); choices(false); } });
       return b;
     }));
+  }
+
+  function choices(open_) {
+    $('n-change').setAttribute('aria-expanded', String(open_));
+    reveal($('n-choices'), open_);
+  }
+
+  function renderThis() {
+    const on = !!current;
+    $('n-this-title').hidden = $('n-this').hidden = !on;
+    if (!on) return;
+    const words = (text.value.match(/\S+/g) || []).length;
+    $('n-words').textContent = tr(words === 1 ? '1 word' : '{0} words', words);
+    const item = items.find(n => n.name === current);
+    $('n-when').textContent = item ? when(item.when) : '';
+    $('n-obsidian').hidden = !info.vault;
   }
 
   function setMode(m) {
@@ -101,20 +165,26 @@
     }));
   }
 
+  // The pill next to the name says that saving is automatic, and when a change is not written yet.
+  const SAVED = { saved: 'Saved automatically', saving: 'Saving', error: 'Not saved', conflict: 'Not saved' };
+  function saved(state) {
+    $('n-saved').dataset.state = state;
+    $('n-saved-text').textContent = tr(SAVED[state]);
+  }
   function status(t) { $('n-status').textContent = t ? tr(t) : ''; }
 
   function edited() {
     dirty = true;
-    status('Editing');
+    saved('saving');
     clearTimeout(timer);
     timer = setTimeout(save, 600);
+    renderThis();
   }
 
   function save(force) {
     clearTimeout(timer);
     if (!current || !dirty) return;
     dirty = false;
-    status('Saving');
     send('notes.save', { name: current, text: text.value, modified, force: !!force });
   }
 
@@ -136,10 +206,11 @@
       title.value = m.name;
       text.value = m.text;
       status('');
+      saved('saved');
       setMode(m.text.trim() ? mode : 'write');
       renderList();
     } else if (m.type === 'notes.saved') {
-      if (m.name === current) { modified = m.modified; status(dirty ? 'Editing' : 'Saved'); }
+      if (m.name === current) { modified = m.modified; if (!dirty) { saved('saved'); status(''); } }
     } else if (m.type === 'notes.created') {
       wanted = m.name;
       setMode('write');
@@ -151,13 +222,14 @@
     } else if (m.type === 'notes.conflict') {
       if (m.name !== current) return;
       dirty = true;
+      saved('conflict');
       $('n-status').replaceChildren(tr('Changed in another app since it was opened') + ' ');
       const keep = Object.assign(document.createElement('button'), { type: 'button', className: 'link', textContent: tr('Keep mine') });
       const reload = Object.assign(document.createElement('button'), { type: 'button', className: 'link', textContent: tr('Load theirs') });
       keep.addEventListener('click', () => { dirty = true; save(true); });
       reload.addEventListener('click', () => { dirty = false; const n = current; current = null; open(n); });
       $('n-status').append(keep, ' · ', reload);
-    } else if (m.type === 'notes.error') status('Not saved: the file could not be written');
+    } else if (m.type === 'notes.error') { saved('error'); status('The file could not be written'); }
     else if (m.type === 'notes.open') { current = null; open(m.name); }
   }
 
@@ -173,21 +245,27 @@
   title.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); text.focus(); } if (e.key === 'Escape') { title.value = current; text.focus(); } });
   title.addEventListener('change', () => { const to = title.value.trim(); if (current && to && to !== current) { save(); send('notes.rename', { name: current, to }); } else title.value = current || ''; });
   for (const b of document.querySelectorAll('.n-mode button')) b.addEventListener('click', () => setMode(b.dataset.mode));
-  $('n-search').addEventListener('input', renderList);
-  $('n-new').addEventListener('click', () => { save(); send('notes.create', {}); });
-  $('n-first').addEventListener('click', () => send('notes.create', {}));
-  $('n-remove').addEventListener('click', () => { if (!current) return; clearTimeout(timer); dirty = false; const n = current; current = null; send('notes.remove', { name: n }); renderList(); });
+  $('n-search').addEventListener('input', () => { limit = PAGE; renderList(); });
+  $('n-more').addEventListener('click', () => { limit += PAGE; renderList(); });
+  const create = () => { save(); send('notes.create', {}); };
+  $('n-new').addEventListener('click', create);
+  $('n-first').addEventListener('click', create);
+  addEventListener('keydown', e => { if (shown && e.ctrlKey && !e.altKey && !e.shiftKey && e.code === 'KeyN') { e.preventDefault(); create(); } });
+  $('n-remove').addEventListener('click', () => { if (current) remove(current); });
   $('n-reveal').addEventListener('click', () => send('notes.reveal'));
+  $('n-file').addEventListener('click', () => { if (current) send('notes.reveal', { name: current }); });
+  $('n-obsidian').addEventListener('click', () => { if (current) { save(); send('notes.obsidian', { name: current }); } });
+  $('n-change').addEventListener('click', () => choices($('n-change').getAttribute('aria-expanded') !== 'true'));
   addEventListener('beforeunload', () => save());
 
   function visible(yes) {
     if (yes === shown) return;
     shown = yes;
-    if (yes) send('notes.list'); else save();
+    if (yes) send('notes.list'); else { save(); choices(false); }
   }
 
   // The bot and Home open a note by its name.
   function show(name) { showView('notes'); if (name) { current = null; open(name); } }
 
-  Bramble.notes = { event, visible, show };
+  Bramble.notes = { event, visible, show, choose: () => choices(true) };
 })();

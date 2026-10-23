@@ -453,24 +453,28 @@
     <div class="n-layout">
       <aside class="n-side">
         <div class="n-tools">
-          <input type="search" id="n-search" placeholder="Search the notes" aria-label="Search the notes">
-          <button type="button" class="button button--accent" id="n-new">New note</button>
+          <label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg><input type="search" id="n-search" placeholder="Search the notes" aria-label="Search the notes"></label>
+          <button type="button" class="button button--accent n-new" id="n-new" title="Ctrl + N"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>New note</button>
         </div>
-        <div class="n-list" id="n-list" role="list"></div>
+        <div class="n-count" id="n-count"></div>
+        <div class="n-list" id="n-list" role="list" aria-label="Notes"></div>
+        <button type="button" class="link n-more" id="n-more" hidden></button>
       </aside>
       <article class="n-note" id="n-note">
         <div class="n-empty" id="n-empty">
-          <p>Notes are Markdown files, readable by any app, and by Obsidian when they are saved in a vault.</p>
+          <svg class="n-empty__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.5 8V5a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 5v14A1.5 1.5 0 0 0 6 20.5h4.5"/><path d="M8 8h5M8 11.5h3.5"/><path d="m13.5 20.5.5-2.5 5.5-5.5a1.5 1.5 0 0 1 2 2L16 20z"/></svg>
+          <p>Each note is a Markdown file, readable by any app and by Obsidian. They save themselves at each change: there is no button to press.</p>
           <button type="button" class="button button--accent" id="n-first">Write a note</button>
         </div>
         <div class="n-editor" id="n-editor" hidden>
           <div class="n-head">
             <input type="text" class="n-title" id="n-title" aria-label="Name of the note" spellcheck="false" translate="no">
+            <span class="n-saved" id="n-saved" data-state="saved" title="Each change is written to the file right away" aria-live="polite"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="n-saved__check" d="m5.5 12.5 4 4 9-9"/><circle class="n-saved__dot" cx="12" cy="12" r="3.5"/></svg><span id="n-saved-text">Saved automatically</span></span>
             <div class="segments n-mode" role="radiogroup" aria-label="Mode"><button type="button" role="radio" data-mode="write" aria-checked="true">Write</button><button type="button" role="radio" data-mode="read" aria-checked="false">Read</button></div>
-            <button type="button" class="link n-remove" id="n-remove">Remove</button>
+            <button type="button" class="tool-chip n-delete" id="n-remove" title="Delete"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12M10.5 10.5v5.5M13.5 10.5v5.5"/></svg>Delete</button>
           </div>
           <div class="n-bar" id="n-bar" role="toolbar" aria-label="Formatting"></div>
-          <textarea class="n-text" id="n-text" spellcheck="true" aria-label="Text of the note"></textarea>
+          <textarea class="n-text" id="n-text" spellcheck="true" aria-label="Text of the note" placeholder="Write here. # for a title, - for a list, [ ] for a task"></textarea>
           <div class="n-read md" id="n-read" hidden></div>
           <div class="n-status" id="n-status" aria-live="polite"></div>
         </div>
@@ -1082,15 +1086,27 @@
   </div>
 
   <div class="only-notes">
-    <h2>Where notes are saved</h2>
-    <p class="help-section n-where" id="n-where" translate="no"></p>
-    <div class="group" id="n-places"></div>
+    <h2 id="n-this-title" hidden>This note</h2>
+    <div class="group" id="n-this" hidden>
+      <div class="row"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h9"/></svg><span>Length</span></span><span class="value" id="n-words"></span></div>
+      <div class="row"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg><span>Changed</span></span><span class="value" id="n-when"></span></div>
+      <button class="row action" id="n-obsidian" hidden><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4.5h5.5V10M19.5 4.5 11 13M17 13.5v5a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 4 18.5v-10A1.5 1.5 0 0 1 5.5 7h5"/></svg><span>Open in Obsidian<small>The same file, in its vault</small></span></span><svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+      <button class="row action" id="n-file"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/></svg><span>Show the file<small>In File Explorer</small></span></span><svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+    </div>
+    <h2>Saved in</h2>
+    <p class="warning-note" id="n-missing" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 3 19.5h18z"/><path d="M12 10v4M12 17h.01"/></svg><span id="n-missing-text"></span></p>
     <div class="group">
-      <label class="toggle">
-        <input type="checkbox" id="n-move" checked>
-        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h12M12 7l5 5-5 5"/><path d="M20 5v14"/></svg><span>Bring the notes along<small>Moving the folder moves the notes already written</small></span></span>
-      </label>
+      <button class="row action n-here" id="n-change" aria-expanded="false" aria-controls="n-choices"><span class="caption"><svg class="glyph" id="n-here-icon" viewBox="0 0 24 24" aria-hidden="true"></svg><span><span class="n-place" id="n-here-name" translate="no"></span><small id="n-where" translate="no"></small></span></span><span class="n-change-label">Change</span><svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
       <button class="row action" id="n-reveal"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/></svg><span>Open the folder<small>In File Explorer</small></span></span><svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+    </div>
+    <div class="n-choices" id="n-choices" hidden>
+      <div class="group" id="n-places" role="radiogroup" aria-label="Where notes are saved"></div>
+      <div class="group">
+        <label class="toggle">
+          <input type="checkbox" id="n-move" checked>
+          <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h12M12 7l5 5-5 5"/><path d="M20 5v14"/></svg><span>Bring the notes along<small>Notes already written move too</small></span></span>
+        </label>
+      </div>
     </div>
   </div>
 
