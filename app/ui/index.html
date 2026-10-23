@@ -466,7 +466,7 @@
         <div class="n-editor" id="n-editor" hidden>
           <div class="n-head">
             <input type="text" class="n-title" id="n-title" aria-label="Name of the note" spellcheck="false" translate="no">
-            <div class="segments n-mode" role="group" aria-label="Mode"><button type="button" data-mode="write" aria-pressed="true">Write</button><button type="button" data-mode="read" aria-pressed="false">Read</button></div>
+            <div class="segments n-mode" role="radiogroup" aria-label="Mode"><button type="button" role="radio" data-mode="write" aria-checked="true">Write</button><button type="button" role="radio" data-mode="read" aria-checked="false">Read</button></div>
             <button type="button" class="link n-remove" id="n-remove">Remove</button>
           </div>
           <div class="n-bar" id="n-bar" role="toolbar" aria-label="Formatting"></div>
@@ -481,7 +481,7 @@
   <section class="view view--shelf only-shelf" aria-label="Shelf">
     <h1>Shelf</h1>
     <div class="s-tools">
-      <div class="segments" id="s-filters" role="group" aria-label="Show"><button type="button" data-kind="all" aria-pressed="true">All</button><button type="button" data-kind="capture" aria-pressed="false">Captures</button><button type="button" data-kind="image" aria-pressed="false">Images</button><button type="button" data-kind="pdf" aria-pressed="false">PDF</button><button type="button" data-kind="other" aria-pressed="false">Other</button></div>
+      <div class="segments" id="s-filters" role="radiogroup" aria-label="Show"><button type="button" role="radio" data-kind="all" aria-checked="true">All</button><button type="button" role="radio" data-kind="capture" aria-checked="false">Captures</button><button type="button" role="radio" data-kind="image" aria-checked="false">Images</button><button type="button" role="radio" data-kind="pdf" aria-checked="false">PDF</button><button type="button" role="radio" data-kind="other" aria-checked="false">Other</button></div>
       <button type="button" class="button" id="s-capture">Capture</button>
       <button type="button" class="button" id="s-add">Add files</button>
       <button type="button" class="link" id="s-folder">Open folder</button>

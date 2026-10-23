@@ -46,7 +46,7 @@
 
   function render() {
     const list = items.filter(i => kind === 'all' || i.kind === kind);
-    for (const b of $('s-filters').children) b.setAttribute('aria-pressed', String(b.dataset.kind === kind));
+    for (const b of $('s-filters').children) b.setAttribute('aria-checked', String(b.dataset.kind === kind));
     if (!items.length) { $('s-grid').replaceChildren(Object.assign(document.createElement('div'), { className: 's-empty', textContent: tr('Nothing on the shelf yet: drop files here or take a capture') })); return; }
     if (!list.length) { $('s-grid').replaceChildren(Object.assign(document.createElement('div'), { className: 's-empty', textContent: tr('Nothing of this kind') })); return; }
     $('s-grid').replaceChildren(...list.map(card));

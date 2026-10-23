@@ -85,7 +85,7 @@
 
   function setMode(m) {
     mode = m;
-    for (const b of document.querySelectorAll('.n-mode button')) b.setAttribute('aria-pressed', String(b.dataset.mode === m));
+    for (const b of document.querySelectorAll('.n-mode button')) b.setAttribute('aria-checked', String(b.dataset.mode === m));
     text.hidden = $('n-bar').hidden = m !== 'write';
     $('n-read').hidden = m !== 'read';
     if (m === 'read') paintRead();
