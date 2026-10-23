@@ -238,7 +238,8 @@ namespace Bramble
             [PreserveSig] int GetMute([MarshalAs(UnmanagedType.Bool)] out bool mute);
         }
 
-        [ComImport, Guid("BCDE0395-E52F-467C-8E3D-C4579291692E")] class MMDeviceEnumerator { }
+        // The only class for it in Bramble: Windows gives one enumerator per process, and .NET refuses it to a second class with the same identifier.
+        [ComImport, Guid("BCDE0395-E52F-467C-8E3D-C4579291692E")] internal class MMDeviceEnumerator { }
 
         [ComImport, Guid("A95664D2-9614-4F35-A746-DE8DB63617E6"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
         interface IMMDeviceEnumerator

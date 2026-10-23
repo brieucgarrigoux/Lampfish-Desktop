@@ -11,7 +11,7 @@ namespace Bramble
 {
     class MoodSetting
     {
-        public string Id, Name, Wallpaper, Fit, Theme, Time, LastRun, Power, App, Icon;
+        public string Id, Name, Wallpaper, Fit, Theme, Time, LastRun, Power, App, Icon, Output, OutputName;
         public int Light, Speed, Blur, Saturation, Dim, Volume, Screens;
         public bool SoundsActive, Silence, Headset;
         public List<string> Opens;
@@ -80,6 +80,7 @@ namespace Bramble
                 Light = r.Light, Speed = r.Speed, Blur = r.Blur, Saturation = r.Saturation, Dim = r.Dim,
                 SoundsActive = r.Dock.Active, Silence = r.Dock.Silence, Volume = r.Dock.Volume, Time = "", Power = "",
                 Reactive = r.Reactive, Warm = Display.WarmStrength, Dark = Display.Dark(), ScreenWallpapers = Copy(r.ScreenWallpapers),
+                Output = AudioDevices.DefaultOutput(), OutputName = AudioDevices.NameOf(AudioDevices.DefaultOutput()),
             };
         }
 
@@ -105,6 +106,7 @@ namespace Bramble
                 && (!m.Reactive.HasValue || m.Reactive.Value == r.Reactive)
                 && (!m.Warm.HasValue || m.Warm.Value == Display.WarmStrength)
                 && (!m.Dark.HasValue || m.Dark == Display.Dark())
+                && (string.IsNullOrEmpty(m.Output) || !AudioDevices.IsActive(m.Output) || m.Output == AudioDevices.DefaultOutput())
                 && (string.IsNullOrEmpty(m.Theme) || m.Theme == Mouse.ThemeName);
         }
 
@@ -124,6 +126,7 @@ namespace Bramble
             if (mood.Reactive.HasValue && mood.Reactive.Value != r.Reactive) { r.Reactive = mood.Reactive.Value; AudioMeter.Set(r.Reactive); }
             if (mood.Warm.HasValue && mood.Warm.Value != Display.WarmStrength) Display.SetWarm(mood.Warm.Value);
             if (mood.Dark.HasValue && mood.Dark != Display.Dark()) Display.SetDark(mood.Dark.Value);
+            if (!string.IsNullOrEmpty(mood.Output)) AudioDevices.Use(mood.Output);
             if (!string.IsNullOrEmpty(mood.Theme) && mood.Theme != Mouse.ThemeName) Mouse.SetTheme(mood.Theme);
             Program.WallpaperChanged();
             Program.UpdateMenu();
@@ -381,7 +384,7 @@ namespace Bramble
             {
                 id = m.Id, name = m.Name, icon = m.Icon, warm = m.Warm, wallpaper = m.Wallpaper, fit = m.Fit, dim = m.Dim, light = m.Light, speed = m.Speed, blur = m.Blur, saturation = m.Saturation,
                 screenWallpapers = m.ScreenWallpapers == null ? 0 : m.ScreenWallpapers.Count, reactive = m.Reactive,
-                theme = m.Theme, look,
+                theme = m.Theme, look, output = string.IsNullOrEmpty(m.Output) ? null : m.OutputName ?? "",
                 sounds = m.SoundsActive && !m.Silence ? "on" : "off", volume = m.Volume, time = m.Time, screens = m.Screens, power = m.Power ?? "",
                 app = string.IsNullOrEmpty(m.App) ? null : Path.GetFileNameWithoutExtension(m.App), appIcon = IconOf(m.App), headset = m.Headset,
                 opens = (m.Opens ?? new List<string>()).Select(o => new { name = Path.GetFileNameWithoutExtension(o), icon = IconOf(o) }).ToArray(),

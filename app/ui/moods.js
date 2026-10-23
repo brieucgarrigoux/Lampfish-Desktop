@@ -33,6 +33,7 @@
     warm: '<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/>',
     dim: '<path d="M19.5 14.6A7.6 7.6 0 0 1 9.4 4.5a7.6 7.6 0 1 0 10.1 10.1z"/>',
     react: '<path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/>',
+    output: '<rect x="6" y="3.5" width="12" height="17" rx="2.5"/><circle cx="12" cy="14" r="3"/><circle cx="12" cy="7.5" r=".8"/>',
     time: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
     screens: '<rect x="3.5" y="4.5" width="17" height="12" rx="1.5"/><path d="M9 20h6M12 16.5V20"/>',
     mains: '<path d="M9 3.5v4M15 3.5v4M7 7.5h10v3a5 5 0 0 1-10 0zM12 15.5v5"/>',
@@ -363,6 +364,7 @@
       row(ICONS[m.sounds] || ICONS.on, tr('Sounds'), '', value(m.sounds === 'on' ? tr('On · {0} %', m.volume) : tr('Off'))));
     if (m.warm != null) brings.append(row(ICONS.warm, tr('Warm screen'), '', value(m.warm > 0 ? m.warm + ' %' : tr('Off'))));
     if (m.reactive != null) brings.append(row(ICONS.react, tr('React to sound'), '', value(tr(m.reactive ? 'On' : 'Off'))));
+    if (m.output != null) { const v = value(m.output || tr('Unchanged')); v.translate = false; brings.append(row(ICONS.output, tr('Audio output'), tr('When it is plugged in'), v)); }
 
     const auto = el('div', 'group');
     const time = Object.assign(el('input', 'm-time'), { type: 'time', value: m.time || '' });

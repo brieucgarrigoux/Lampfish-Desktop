@@ -139,5 +139,8 @@ procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 begin
   if (CurUninstallStep = usPostUninstall) and not UninstallSilent then
     if MsgBox(CustomMessage('DeleteData'), mbConfirmation, MB_YESNO or MB_DEFBUTTON2) = IDYES then
+    begin
       DelTree(ExpandConstant('{app}'), True, True, True);
+      DelTree(ExpandConstant('{localappdata}\Bramble'), True, True, True);
+    end;
 end;

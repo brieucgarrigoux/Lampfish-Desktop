@@ -20,6 +20,7 @@
 <link rel="stylesheet" href="creator.css">
 <link rel="stylesheet" href="home.css">
 <link rel="stylesheet" href="display.css">
+<link rel="stylesheet" href="audio.css">
 <link rel="stylesheet" href="health.css">
 <link rel="stylesheet" href="duplicates.css">
 <link rel="stylesheet" href="panels.css">
@@ -58,6 +59,10 @@
   <button class="service" data-view="display">
     <svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="12" rx="1.5"/><path d="M9 20h6M12 16.5V20"/></svg>
     Display
+  </button>
+  <button class="service" data-view="audio">
+    <svg viewBox="0 0 24 24"><path d="M4 10v4h3.5l4.5 3.5v-11L7.5 10z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6M18 6.8a7.4 7.4 0 0 1 0 10.4"/></svg>
+    Audio
   </button>
   <button class="service" data-view="arrange">
     <svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><rect x="14" y="14" width="6" height="6" rx="1.2"/></svg>
@@ -350,6 +355,31 @@
     </div>
   </section>
 
+  <section class="view view--audio only-audio" aria-label="Audio">
+    <h1>Audio</h1>
+    <h2 class="settings-title a-title">Outputs</h2>
+    <div class="a-zone" id="a-outputs"><div class="waiting loading">Reading the audio devices</div></div>
+    <h2 class="settings-title a-title">Inputs</h2>
+    <p class="help-section a-help">The level moves when an app uses the microphone</p>
+    <div class="a-zone" id="a-inputs"></div>
+
+    <h2 class="settings-title">Shortcut</h2>
+    <div class="group">
+      <label class="toggle">
+        <input type="checkbox" id="a-shortcut">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6.5" width="18" height="11" rx="2"/><path d="M7 10h.01M10 10h.01M13 10h.01M16 10h.01M8 14h8"/></svg><span>Switch output with a shortcut<small>Goes to the next output, from any app</small></span></span>
+      </label>
+      <div class="row row--setting">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="3"/><path d="M9.5 14.5h5"/></svg><span>Keys<small id="a-keys-help">Click, then press the new keys</small></span></span>
+        <button class="button a-keys" id="a-keys" translate="no"></button>
+      </div>
+      <button class="row action" id="a-settings">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.2M12 18.3v2.2M20.5 12h-2.2M5.7 12H3.5M18 6l-1.6 1.6M7.6 16.4 6 18M18 18l-1.6-1.6M7.6 7.6 6 6"/></svg><span>Sound settings of Windows<small>Output per app and advanced options</small></span></span>
+        <svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+      </button>
+    </div>
+  </section>
+
   <section class="view view--icons only-icons" aria-label="Icons">
     <h1>Icons</h1>
     <div class="target" id="target">
@@ -593,12 +623,16 @@
         <dl class="tr-body"><dt>Reads</dt><dd>The cursor settings of Windows</dd><dt>Changes</dt><dd>The cursors, the cursor size and the pointer settings of Windows</dd><dt>To undo</dt><dd>Back to original, or uninstalling Bramble for the cursors</dd></dl>
       </details>
       <details class="tr-row" data-view="station">
-        <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/></svg><span>Sounds<small>Plays sounds, sets the volume when asked</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
-        <dl class="tr-body"><dt>Reads</dt><dd>Windows events: lock, sleep, power, USB devices</dd><dt>Changes</dt><dd>The volume of Windows and whether the microphone is muted, only from their controls</dd><dt>To undo</dt><dd>The same control, and Undo for the microphone</dd></dl>
+        <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/></svg><span>Sounds<small>Plays a sound on Windows events</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
+        <dl class="tr-body"><dt>Reads</dt><dd>Windows events: lock, sleep, power, USB devices</dd><dt>Changes</dt><dd>Nothing in Windows: it only plays its own sounds</dd><dt>To undo</dt><dd>Nothing to undo</dd></dl>
       </details>
       <details class="tr-row" data-view="display">
         <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="12" rx="1.5"/><path d="M9 20h6M12 16.5V20"/></svg><span>Display<small>Screen, brightness and power</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
         <dl class="tr-body"><dt>Reads</dt><dd>The screens, their brightness and the power settings</dd><dt>Changes</dt><dd>Warm screen through the accessibility color filter, which goes away with Bramble, brightness, the main screen, dark mode, sleep delays and energy saver</dd><dt>To undo</dt><dd>Undo in the toast after each change</dd></dl>
+      </details>
+      <details class="tr-row" data-view="audio">
+        <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3.5l4.5 3.5v-11L7.5 10z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6M18 6.8a7.4 7.4 0 0 1 0 10.4"/></svg><span>Audio<small>Chooses the default devices when asked</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
+        <dl class="tr-body"><dt>Reads</dt><dd>The audio devices, their format, volume and level</dd><dt>Changes</dt><dd>The default output and input, the volume and mute of each device and of the microphone, and a keyboard shortcut when it is on</dd><dt>To undo</dt><dd>Undo for 8 seconds, or the same control</dd></dl>
       </details>
       <details class="tr-row" data-view="arrange">
         <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><rect x="14" y="14" width="6" height="6" rx="1.2"/></svg><span>Arrange<small>Moves the desktop icons</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
@@ -743,21 +777,6 @@
       <label class="toggle">
         <input type="checkbox" id="power">
         <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v8"/><path d="M7 6.3a7 7 0 1 0 10 0"/></svg><span>Sounds on<small>Plays the events that are on</small></span></span>
-      </label>
-    </div>
-    <h2>Windows</h2>
-    <div class="group">
-      <label class="toggle" data-win-row="volume">
-        <input type="checkbox" data-win="sound">
-        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3.5l4.5 3.5v-11L7.5 10z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6M18 6.8a7.4 7.4 0 0 1 0 10.4"/></svg><span>Sound of Windows<small>Every app, on the default output</small></span></span>
-      </label>
-      <div class="setting" data-win-row="volume">
-        <label for="s-win-volume"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18.5h16M4 18.5 20 6.5v12"/></svg><span>Volume<small>Same as the taskbar</small></span></span><output data-win-text="level"></output></label>
-        <input type="range" id="s-win-volume" data-win="volume" min="0" max="100" step="2">
-      </div>
-      <label class="toggle" data-win-row="mic">
-        <input type="checkbox" data-win="mic">
-        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3.5" width="6" height="10.5" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5v3"/></svg><span>Microphone<small data-win-text="mic"></small></span></span>
       </label>
     </div>
     <h2>Status</h2>
@@ -1000,6 +1019,7 @@
 <script src="moods.js"></script>
 <script src="creator.js"></script>
 <script src="display.js"></script>
+<script src="audio.js"></script>
 <script src="health.js"></script>
 <script src="duplicates.js"></script>
 <script src="home.js"></script>

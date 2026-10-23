@@ -5,7 +5,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+- Audio: a new service that shows every output and input of the PC as a tile, with its format, live level, volume and mute. A click makes a device the default for every app, with Undo. Devices that are not plugged in are folded under one line.
+- Audio: a keyboard shortcut, off by default, switches to the next output from any app and shows its name in a small bubble. It is Ctrl + Alt + F11 unless other keys are chosen.
+- Themes: a theme also brings back the audio output it was made with, when that device is plugged in.
+
 ### Changed
+- Sounds: the volume and the microphone of Windows moved to Audio.
 - Network: the top card shows the connection on the glass of a round seal, the Wi-Fi lit in violet, instead of an icon and separate signal bars. The security level is three lit arcs instead of three bars.
 - The frames of seals, ring dials and screens are brushed steel, like the dial of the speed test.
 - Home: the face and the shield each have their own bubble, and the shield opens Protection.

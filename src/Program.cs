@@ -150,6 +150,7 @@ namespace Bramble
                 Hardware.Start();
                 AudioMeter.Set(R.Reactive);
                 Display.Start();
+                AudioDevices.Start();
                 Moods.Start();
                 if (requestedFolder != null) { Icons.Ask(requestedFolder); requestedView = "icons"; }
 
@@ -224,6 +225,14 @@ namespace Bramble
             }
             catch (Exception ex) { Log(ex); }
             return false;
+        }
+
+        // Data of the modules added since 0.5 lives in the user profile, not beside the exe.
+        public static string DataFolder(string module)
+        {
+            string folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Bramble", module);
+            Directory.CreateDirectory(folder);
+            return folder;
         }
 
         public static void OnInterface(Action action)
@@ -768,7 +777,12 @@ namespace Bramble
                 return;
             }
 
-            if (action.StartsWith("audio.")) { if (AudioMeter.Receive(action.Substring(action.IndexOf('.') + 1), m)) SendState(); return; }
+            if (action.StartsWith("audio."))
+            {
+                string sub = action.Substring(action.IndexOf('.') + 1);
+                if (AudioDevices.Handles(sub) ? AudioDevices.Receive(sub, m) : AudioMeter.Receive(sub, m)) SendState();
+                return;
+            }
             if (action.StartsWith("health.")) { Health.Receive(action.Substring(action.IndexOf('.') + 1), m); return; }
             if (action.StartsWith("duplicates.")) { if (Duplicates.Receive(action.Substring(action.IndexOf('.') + 1), m)) { Save(); SendState(); } return; }
 
@@ -938,6 +952,7 @@ namespace Bramble
                 display = Display.State(),
                 power = Power.State(),
                 audio = AudioMeter.Endpoints(),
+                audioOutput = AudioDevices.NameOf(AudioDevices.DefaultOutput()),
                 language = R.Language,
                 about = new
                 {
@@ -1107,6 +1122,7 @@ namespace Bramble
             Tray.Hide();
             Sounds.Stop();
             Display.Stop();
+            AudioDevices.Stop();
             Discard();
             if (settingsWindow != null) settingsWindow.Shutdown();
             Destroy();
