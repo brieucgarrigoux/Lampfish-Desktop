@@ -97,12 +97,12 @@
 .button-sort--large { grid-column: 1 / -1; }
 .button-sort:disabled { opacity: .4; pointer-events: none; }
 
-.category { justify-content: flex-start; cursor: grab; touch-action: none; transition: background var(--fast); }
+.category { justify-content: flex-start; cursor: grab; touch-action: none; user-select: none; transition: background var(--fast); }
 .category .name-cat { flex: 1; }
 .category:hover { background: var(--group-up); }
 .category:first-child { border-radius: var(--radius-group) var(--radius-group) 0 0; }
 .category:last-child { border-radius: 0 0 var(--radius-group) var(--radius-group); }
-.category.grabbed { cursor: grabbing; background: var(--group-up); box-shadow: inset 0 0 0 1px var(--accent); border-radius: var(--radius-group); z-index: 1; }
+.category.grabbed { position: relative; cursor: grabbing; background: var(--group-up); box-shadow: inset 0 0 0 1px var(--accent), var(--float); border-radius: var(--radius-group); z-index: 2; }
 .handle-cat { display: grid; place-items: center; width: 18px; }
 .handle-cat svg { width: 16px; height: 16px; fill: var(--text-pale); }
 .category:hover .handle-cat svg { fill: var(--text-soft); }

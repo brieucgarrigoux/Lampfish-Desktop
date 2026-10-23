@@ -516,34 +516,59 @@ function dials(zone, list) {
   while (zone.children.length > list.length) zone.lastChild.remove();
 }
 
+// An element moved in the page slides from where it was instead of jumping. `from` is its old place on screen.
+function slide(el, from, duration = 200) {
+  if (!from || calm.matches || !el.isConnected) return;
+  if (el._slide) el._slide.cancel();
+  const now = el.getBoundingClientRect(), dx = from.left - now.left, dy = from.top - now.top;
+  if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
+  el._slide = el.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }], { duration, easing: 'cubic-bezier(.2, .7, .3, 1)' });
+  el._slide.onfinish = el._slide.oncancel = () => { el._slide = null; };
+}
+const sliding = el => !!el._slide;
+
+// Runs change(), then lets each element glide from its old place to its new one.
+function glide(elements, change) {
+  const before = new Map(elements.map(el => [el, el.getBoundingClientRect()]));
+  change();
+  for (const [el, from] of before) slide(el, from);
+}
+
+// For a list rebuilt from scratch: the new elements glide from the places of the old ones with the same key.
+function glideRebuilt(zone, key, rebuild) {
+  const before = new Map([...zone.children].map(el => [el.dataset[key], el.getBoundingClientRect()]));
+  rebuild();
+  for (const el of zone.children) slide(el, before.get(el.dataset[key]));
+}
+
 // In an edit mode an item moves among its peers with the pointer, or with the arrow keys while it has the focus.
-// move(item, other, after) places it, done() saves the order; a click that ends a drag is flagged so it does not count.
-function dragOrder(item, { peers, active, done, move, focus }) {
-  let start = null, dragging = false, last = null;
+// The grabbed item follows the pointer and its peers glide out of its way; at the end it settles in its place.
+// move(item, other, after) places it, done() saves the order, group() lists every element that may shift (peers by default),
+// skip is a selector of parts that do not start a drag. A click that ends a drag is flagged so it does not count.
+function dragOrder(item, { peers, active, done, move, focus, group, skip }) {
+  let start = null, dragging = false, last = null, home = null, origin = null;
   const place = move || ((a, b, after) => b.parentElement.insertBefore(a, after ? b.nextSibling : b));
-  // The page listens rather than the item: moving the item in the page would release a pointer capture.
-  item.addEventListener('pointerdown', e => {
-    if (e.button !== 0 || !active()) return;
-    start = { x: e.clientX, y: e.clientY, id: e.pointerId };
-    dragging = false;
-    last = null;
-    addEventListener('pointermove', follow);
-    addEventListener('pointerup', end);
-    addEventListener('pointercancel', end);
-  });
+  const shifting = group || peers;
+  // Where the item sits in the layout, without the offset that makes it follow the pointer.
+  const spot = () => { const t = item.style.transform; item.style.transform = ''; const r = item.getBoundingClientRect(); item.style.transform = t; return r; };
   const follow = e => {
     if (!start || e.pointerId !== start.id) return;
     if (!dragging) {
       if (Math.hypot(e.clientX - start.x, e.clientY - start.y) < 6) return;
       dragging = true;
+      if (item._slide) item._slide.cancel();
+      origin = home = spot();
       item.classList.add('grabbed');
     }
     const list = peers();
-    const under = list.find(x => { const r = x.getBoundingClientRect(); return e.clientX >= r.left && e.clientX < r.right && e.clientY >= r.top && e.clientY < r.bottom; });
-    if (!under || under === item) { last = null; return; }
-    if (under === last) return;
-    last = under;
-    place(item, under, list.indexOf(under) > list.indexOf(item));
+    const under = list.find(x => { if (x === item || sliding(x)) return false; const r = x.getBoundingClientRect(); return e.clientX >= r.left && e.clientX < r.right && e.clientY >= r.top && e.clientY < r.bottom; });
+    if (!under) last = null;
+    else if (under !== last) {
+      last = under;
+      glide(shifting().filter(x => x !== item), () => place(item, under, list.indexOf(under) > list.indexOf(item)));
+      home = spot();
+    }
+    item.style.transform = `translate(${e.clientX - start.x - (home.left - origin.left)}px, ${e.clientY - start.y - (home.top - origin.top)}px) scale(1.02)`;
   };
   const end = e => {
     if (!start || e.pointerId !== start.id) return;
@@ -555,10 +580,23 @@ function dragOrder(item, { peers, active, done, move, focus }) {
     dragging = false;
     item.classList.remove('grabbed');
     if (!moved) return;
+    const from = item.getBoundingClientRect();
+    item.style.transform = '';
+    slide(item, from, 180);
     item._dragged = true;
     setTimeout(() => { item._dragged = false; }, 0);
     done();
   };
+  // The page listens rather than the item: moving the item in the page would release a pointer capture.
+  item.addEventListener('pointerdown', e => {
+    if (e.button !== 0 || !active() || (skip && e.target.closest(skip))) return;
+    start = { x: e.clientX, y: e.clientY, id: e.pointerId };
+    dragging = false;
+    last = null;
+    addEventListener('pointermove', follow);
+    addEventListener('pointerup', end);
+    addEventListener('pointercancel', end);
+  });
   item.addEventListener('keydown', e => {
     const step = { ArrowUp: -1, ArrowLeft: -1, ArrowDown: 1, ArrowRight: 1 }[e.key];
     if (!step || !active() || e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
@@ -566,7 +604,7 @@ function dragOrder(item, { peers, active, done, move, focus }) {
     e.stopPropagation();
     const list = peers(), other = list[list.indexOf(item) + step];
     if (!other) return;
-    place(item, other, step > 0);
+    glide(shifting(), () => place(item, other, step > 0));
     (focus || item).focus();
     done();
   });

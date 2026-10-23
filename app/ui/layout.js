@@ -50,7 +50,7 @@
       const block = [a, ...servicesOf(fa)], anchor = after ? (servicesOf(fb).pop() || b).nextSibling : b;
       for (const el of block) rail.insertBefore(el, anchor);
     };
-    dragOrder(f.title, { peers: titles, active: () => editing, done: save, move: moveFamily });
+    dragOrder(f.title, { peers: titles, active: () => editing, done: save, move: moveFamily, group: () => [...rail.children] });
   }
 
   // In the edit mode a click shows or hides a service instead of opening it.

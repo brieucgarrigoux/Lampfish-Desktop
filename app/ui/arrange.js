@@ -322,7 +322,7 @@
       return b;
     }));
 
-    $('categories').replaceChildren(...r.categories.map((c, i) => {
+    glideRebuilt($('categories'), 'cat', () => $('categories').replaceChildren(...r.categories.map((c, i) => {
       const l = document.createElement('div');
       l.className = 'row category';
       l.dataset.cat = c;
@@ -330,44 +330,21 @@
         <button aria-label="Move up"><svg viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></svg></button>
         <button aria-label="Move down"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button></span>`;
       l.querySelector('.name-cat').textContent = CATEGORIES[c] || c;
-      l.addEventListener('pointerdown', e => { if (!e.target.closest('button')) grabCategory(e, l); });
+      dragOrder(l, { peers: () => [...$('categories').children], active: () => true, done: saveCategories, skip: 'button' });
       const [up, down] = l.querySelectorAll('button');
       up.disabled = i === 0;
       down.disabled = i === r.categories.length - 1;
       up.addEventListener('click', () => send('arrange.category', { cat: c, direction: -1 }));
       down.addEventListener('click', () => send('arrange.category', { cat: c, direction: 1 }));
       return l;
-    }));
+    })));
     $('r-restore').checked = r.restoreAuto;
     for (const b of document.querySelectorAll('[data-sort]')) b.setAttribute('aria-pressed', String(b.dataset.sort === r.lastSort));
     $('arrange-undo').disabled = !r.canUndo;
     $('arrange-original').disabled = !r.hasOriginal;
   }
 
-  let dragCat = null;
-  function grabCategory(e, row) {
-    if (e.button !== 0) return;
-    e.preventDefault();
-    row.setPointerCapture(e.pointerId);
-    dragCat = row;
-    row.classList.add('grabbed');
-    row.addEventListener('pointermove', moveCategory);
-    row.addEventListener('pointerup', releaseCategory, { once: true });
-  }
-  function moveCategory(e) {
-    const zone = $('categories');
-    let before = null;
-    for (const x of zone.children) {
-      if (x === dragCat) continue;
-      const r = x.getBoundingClientRect();
-      if (e.clientY < r.top + r.height / 2) { before = x; break; }
-    }
-    if (before !== dragCat.nextSibling && before !== dragCat) zone.insertBefore(dragCat, before);
-  }
-  function releaseCategory() {
-    dragCat.removeEventListener('pointermove', moveCategory);
-    dragCat.classList.remove('grabbed');
-    dragCat = null;
+  function saveCategories() {
     const order = [...$('categories').children].map(x => x.dataset.cat);
     if (order.join() !== r.categories.join()) send('arrange.order', { categories: order });
   }
