@@ -47,3 +47,13 @@
 .h-step.is-done { color: var(--text-pale); }
 .h-step.is-done .h-step__ring { stroke: var(--accent); fill: var(--accent-dim); }
 .h-step.is-done .h-step__tick { stroke: var(--accent); }
+
+/* Once, for those who used Bramble before the companion. */
+.h-new { display: flex; align-items: center; gap: 12px; margin-top: 12px; padding: 12px 14px; border-radius: var(--radius-card); background: var(--accent-tint); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent); }
+.h-new[hidden] { display: none; }
+.h-new > svg { flex: none; width: 30px; height: 30px; padding: 6px; box-sizing: border-box; border-radius: 50%; background: var(--accent-dim); fill: none; stroke: var(--accent); stroke-width: 1.8; }
+.h-new > span { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: var(--text-body); }
+.h-new small { font-size: var(--text-caption); color: var(--text-soft); }
+.h-new__close { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: var(--radius-small); background: none; color: var(--text-soft); cursor: pointer; }
+.h-new__close:hover { background: var(--hover); color: var(--text); }
+.h-new__close svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }

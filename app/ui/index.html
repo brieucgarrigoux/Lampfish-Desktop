@@ -216,6 +216,7 @@
         </div>
       </div>
     </div>
+    <div class="h-new" id="h-new" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.2"/></svg><span><b>New: the companion</b><small>A round button at the edge of the screen for a note or a capture, from any app.</small></span><button type="button" class="button button--accent" id="h-new-on">Turn it on</button><button type="button" class="h-new__close" id="h-new-close" aria-label="Not now" title="Not now"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg></button></div>
     <div class="h-steps" id="h-steps" hidden></div>
     <div class="h-shortcuts" id="h-tiles"></div>
     <div class="h-pin" id="h-pin" hidden><span class="h-pin__title">Pin to Home</span><div class="h-pin__list" id="h-pin-list"></div></div>
@@ -637,6 +638,29 @@
       <div class="row"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6.5" width="18" height="11" rx="2"/><path d="M7 10h.01M10.5 10h.01M14 10h.01M17.5 10h.01M7.5 14h9"/></svg><span>Keyboard<small>Ctrl + 1 to 9 opens a service in the order of the bar, Ctrl + Tab the next one, Ctrl + comma these settings</small></span></span></div>
     </div>
 
+    <h2 class="settings-title">Companion</h2>
+    <div class="group" id="companion-settings">
+      <label class="toggle">
+        <input type="checkbox" id="companion-on">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.2"/></svg><span>Companion on the desktop<small>A round button at the edge of the screen for a note, a capture or a glance at the PC</small></span></span>
+      </label>
+      <div class="row row--setting" data-companion-key="capture">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16"/></svg><span>Capture<small></small></span></span>
+        <span class="toggler"><input type="checkbox" aria-label="Capture"></span>
+        <button type="button" class="button"></button>
+      </div>
+      <div class="row row--setting" data-companion-key="note">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h9l3.5 3.5v13.5H6z"/><path d="M15 3.5V7h3.5M9 11h6M9 14.5h6"/></svg><span>New note<small></small></span></span>
+        <span class="toggler"><input type="checkbox" aria-label="New note"></span>
+        <button type="button" class="button"></button>
+      </div>
+      <div class="row row--setting" data-companion-key="toggle">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.2"/></svg><span>Show or hide the companion<small></small></span></span>
+        <span class="toggler"><input type="checkbox" aria-label="Show or hide the companion"></span>
+        <button type="button" class="button"></button>
+      </div>
+    </div>
+
     <h2 class="settings-title">Connections</h2>
     <div class="group">
       <label class="toggle">
@@ -661,6 +685,13 @@
         <input type="checkbox" id="allow-ip">
         <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 3.5 5.4 3.5 8.5s-1 5.9-3.5 8.5c-2.5-2.6-3.5-5.4-3.5-8.5s1-5.9 3.5-8.5z"/></svg><span>Public IP<small>ipify shows the address the Internet sees, in Network</small></span></span>
       </label>
+    </div>
+    <div class="group">
+      <label class="toggle">
+        <input type="checkbox" id="allow-claude">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17a8 8 0 1 1 16 0"/><path d="m12 17 4.5-5"/><path d="M8 20h8"/></svg><span>Claude usage<small>Reads the Claude Code sign-in of this PC and asks api.anthropic.com every 3 minutes how much of the plan is used</small></span></span>
+      </label>
+      <div class="row" id="claude-row" hidden><span class="caption"><span>Now<small id="claude-state"></small></span></span></div>
     </div>
     <p class="help-section">Nothing else leaves this PC: no account, no analytics, nothing collected.</p>
 
@@ -742,6 +773,7 @@
       </details>
       <details class="tr-row" data-view="settings">
         <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.2M12 18.3v2.2M20.5 12h-2.2M5.7 12H3.5M18 6l-1.6 1.6M7.6 16.4 6 18M18 18l-1.6-1.6M7.6 7.6 6 6"/><circle cx="12" cy="12" r="6.3"/></svg><span>Settings<small>Start with Windows and the window</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
+        <dl class="tr-body"><dt>Reads</dt><dd>Its own settings file</dd><dt>Changes</dt><dd>Start with Windows when it is on, the right-click menu of Icons, and the shortcuts of the companion when it is on</dd><dt>To undo</dt><dd>Turn the option off, or uninstall Bramble</dd></dl>
       </details>
     </div>
     </details>
@@ -1116,6 +1148,7 @@
       <div class="group" id="welcome-choices">
         <label class="toggle"><input type="checkbox" id="welcome-startup"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v8"/><path d="M7 6.3a7 7 0 1 0 10 0"/></svg><span>Open with Windows<small>Bramble starts on its own with the computer, without opening its window</small></span></span></label>
         <label class="toggle"><input type="checkbox" id="welcome-updates"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.5 4.5v4h-4"/></svg><span>Check for updates<small>Asks GitHub once a day for the number of the latest version</small></span></span></label>
+        <label class="toggle"><input type="checkbox" id="welcome-companion" checked><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.2"/></svg><span>Companion on the desktop<small>A round button for notes and captures, from any app</small></span></span></label>
         <label class="toggle"><input type="checkbox" id="welcome-weather"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18.5a4.5 4.5 0 0 1-.6-9 6 6 0 0 1 11.4 1.6 3.8 3.8 0 0 1-.3 7.4z"/></svg><span>Weather on Home<small>Your approximate location comes from your IP address</small></span></span></label>
       </div>
     </section>

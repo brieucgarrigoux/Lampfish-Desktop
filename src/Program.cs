@@ -155,6 +155,8 @@ namespace Bramble
                 Customize.Load();
                 Welcome.Start(firstRun);
                 Notes.Start();
+                ClaudeUsage.Start();
+                Companion.Start();
                 Moods.Start();
                 if (requestedFolder != null) { Icons.Ask(requestedFolder); requestedView = "icons"; }
 
@@ -742,6 +744,14 @@ namespace Bramble
             catch (Exception ex) { Log(ex); }
         }
 
+        // Opens the window on a service, from the companion or a shortcut.
+        public static void OpenView(string view)
+        {
+            requestedView = view;
+            OpenSettings();
+            SendState();
+        }
+
         public static async void OpenSettings()
         {
             if (environment == null) return;
@@ -794,6 +804,8 @@ namespace Bramble
                 if (AudioDevices.Handles(sub) ? AudioDevices.Receive(sub, m) : AudioMeter.Receive(sub, m)) SendState();
                 return;
             }
+            if (action.StartsWith("companion.")) { if (Companion.Receive(action.Substring(action.IndexOf('.') + 1), m)) SendState(); return; }
+            if (action.StartsWith("claude.")) { if (ClaudeUsage.Receive(action.Substring(action.IndexOf('.') + 1), m)) SendState(); return; }
             if (action.StartsWith("capture.")) { Capture.Receive(action.Substring(action.IndexOf('.') + 1), m); return; }
             if (action.StartsWith("notes.")) { if (Notes.Receive(action.Substring(action.IndexOf('.') + 1), m)) SendState(); return; }
             if (action.StartsWith("shelf.")) { if (Shelf.Receive(action.Substring(action.IndexOf('.') + 1), m, files)) SendState(); return; }
@@ -962,6 +974,8 @@ namespace Bramble
                 hiddenViews = R.HiddenViews,
                 layout = Customize.State(),
                 welcome = Welcome.State(),
+                claude = ClaudeUsage.State(),
+                companion = Companion.State(),
                 notes = Notes.Summary(),
                 shelf = Shelf.Summary(),
                 weatherPlace = R.WeatherPlace == null ? null : R.WeatherPlace.Label,
@@ -1143,6 +1157,7 @@ namespace Bramble
             Sounds.Stop();
             Display.Stop();
             AudioDevices.Stop();
+            Companion.Stop();
             Hotkeys.Stop();
             Discard();
             if (settingsWindow != null) settingsWindow.Shutdown();

@@ -28,7 +28,7 @@
   const glyph = icon => `<svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${icon}</svg>`;
   const iconOf = view => SHORTCUTS[view][1] || (document.querySelector(`.rail .service[data-view="${view}"] svg`) || {}).innerHTML || '';
   // A service with a side panel opens there, so Home stays in view; the others open their page.
-  const open = view => DOCKS[view] ? dockTo(view) : showView(view);
+  const open = view => view === 'claude' ? showView('settings') : DOCKS[view] ? dockTo(view) : showView(view);
   function tile(view) {
     if (tiles[view]) return tiles[view];
     const b = document.createElement('button');
@@ -147,6 +147,10 @@
       visual('audio', e.audio.volume == null ? '' : bar(e.audio.muted ? 0 : e.audio.volume));
     }
     set('duplicates', tr('Find extra copies'), tr('Files of 1 MB or more'));
+    const c = e.claude, u = c && c.usage;
+    if (!c || !c.on) { set('claude', tr('Off'), tr('Turn it on in Settings, Connections')); visual('claude', ''); }
+    else if (c.status === 'ok' && u && u.session) { set('claude', tr('Session {0} %', u.session.percent), claudeText(c), u.session.percent >= 90); visual('claude', bar(u.session.percent)); }
+    else { set('claude', tr('Unknown'), claudeText(c)); visual('claude', ''); }
     if (e.notes) {
       set('notes', e.notes.count === 1 ? tr('1 note') : e.notes.count ? tr('{0} notes', e.notes.count) : tr('No note yet'), e.notes.last || '');
       if (tiles.notes) tiles.notes.el.title = e.notes.last || '';

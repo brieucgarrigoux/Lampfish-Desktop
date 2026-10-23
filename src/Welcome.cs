@@ -8,7 +8,7 @@ namespace Bramble
 {
     class WelcomeSettings
     {
-        public bool Welcomed, StepsHidden;
+        public bool Welcomed, StepsHidden, CompanionNoted;
         public List<string> Seen = new List<string>();
     }
 
@@ -29,7 +29,7 @@ namespace Bramble
                 if (System.IO.File.Exists(File)) { S = json.Deserialize<WelcomeSettings>(System.IO.File.ReadAllText(File)) ?? new WelcomeSettings(); return; }
             }
             catch (Exception ex) { Program.Log(ex); return; }
-            S = new WelcomeSettings { Welcomed = !firstRun, StepsHidden = !firstRun };
+            S = new WelcomeSettings { Welcomed = !firstRun, StepsHidden = !firstRun, CompanionNoted = firstRun };
             Save();
         }
 
@@ -39,7 +39,7 @@ namespace Bramble
             catch (Exception ex) { Program.Log(ex); }
         }
 
-        public static object State() { return new { show = !S.Welcomed, steps = !S.StepsHidden, seen = S.Seen }; }
+        public static object State() { return new { show = !S.Welcomed, steps = !S.StepsHidden, seen = S.Seen, companionNote = !S.CompanionNoted && S.Welcomed }; }
 
         public static bool Receive(string action, Dictionary<string, object> m)
         {
@@ -57,6 +57,10 @@ namespace Bramble
                     Save();
                     return true;
                 }
+                case "note":
+                    S.CompanionNoted = true;
+                    Save();
+                    return true;
                 case "hide":
                     S.StepsHidden = true;
                     Save();

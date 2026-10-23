@@ -71,6 +71,7 @@
     $('welcome-startup').checked = !!s.startup;
     $('welcome-updates').checked = !!(s.updates && s.updates.auto);
     $('welcome-weather').checked = !!s.weather;
+    if (s.companion) $('welcome-companion').checked = s.companion.on;
     if (!w.show) { if (open) { open = false; box.hidden = true; } return; }
     walls(s);
     if (open) return;
@@ -78,6 +79,8 @@
     before = document.activeElement;
     families();
     box.hidden = false;
+    // Proposed on: the switch says so, and Start or Skip keeps the companion as shown.
+    if (s.companion && !s.companion.on) send('companion.set', { on: true });
     go(0);
   }
 
@@ -87,6 +90,7 @@
   // Each switch sends the action Settings sends, so both always agree.
   $('welcome-startup').addEventListener('change', e => { if (e.target.checked !== !!Bramble.state.startup) send('startup'); });
   $('welcome-updates').addEventListener('change', e => send('updates.auto', { value: e.target.checked }));
+  $('welcome-companion').addEventListener('change', e => send('companion.set', { on: e.target.checked }));
   $('welcome-weather').addEventListener('change', e => { if (e.target.checked !== !!Bramble.state.weather) { send('weather'); send('home.weather'); } });
   // The focus stays inside the welcome while it is open; Escape skips it.
   box.addEventListener('keydown', e => {
@@ -107,6 +111,14 @@
     ['customize', 'Choose the cards of Home', s => !!(s.layout && (s.layout.Tiles || s.layout.Blocks))],
   ];
   let stepsKey = '';
+  // Once, for someone who used Bramble before the companion: a line on Home to turn it on.
+  function companionNote(s) {
+    const show = !!(s.welcome && s.welcome.companionNote && s.companion && !s.companion.on);
+    $('h-new').hidden = !show;
+  }
+  $('h-new-on').addEventListener('click', () => { send('companion.set', { on: true }); send('welcome.note'); });
+  $('h-new-close').addEventListener('click', () => send('welcome.note'));
+
   function firstSteps(s) {
     const zone = $('h-steps');
     if (!s.welcome || !s.welcome.steps || s.welcome.show) { zone.hidden = true; stepsKey = ''; return; }
@@ -141,5 +153,5 @@
     if (s && s.welcome && s.welcome.steps && ['wallpaper', 'health', 'arrange'].includes(view) && !(s.welcome.seen || []).includes(view)) send('welcome.seen', { view });
   }
 
-  Bramble.welcome = { state: s => { state(s); firstSteps(s); }, viewed };
+  Bramble.welcome = { state: s => { state(s); firstSteps(s); companionNote(s); }, viewed };
 })();

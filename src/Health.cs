@@ -17,6 +17,8 @@ namespace Bramble
 
         static bool running, stale;
         static object last;
+        // The program that used the processor the most at the last reading, for the companion.
+        public static string Busiest;
         static DateTime when = DateTime.MinValue;
 
         static readonly Dictionary<string, string> Targets = new Dictionary<string, string>
@@ -422,6 +424,7 @@ namespace Bramble
                 .Select(g => new { id = owners[g.First().Key], name = g.Key, share = g.Sum(p => (p.Value.Item2 - before[p.Key].Item2) / (15.0 * Environment.ProcessorCount)) })
                 .OrderByDescending(p => p.share).FirstOrDefault();
             string top = busiest != null ? Tasks.NameOf(busiest.id, busiest.name) : null;
+            Busiest = top;
             if (processor >= 80)
             {
                 list.Add(new Finding { Icon = "processor", Level = processor >= 95 ? "bad" : "warn", Title = top == null ? Language.T("Processor {0} % busy", Math.Round(processor)) : Language.T("Processor {0} % busy, mostly {1}", Math.Round(processor), top), Detail = Language.T("Every other program waits its turn"), Action = "view:tasks",

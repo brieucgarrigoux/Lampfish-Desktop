@@ -140,6 +140,10 @@ function render(state) {
   if (Bramble.layout) Bramble.layout.state(state.layout || {});
   if (Bramble.welcome) Bramble.welcome.state(state);
   $('allow-ip').checked = state.publicIp !== false;
+  $('allow-claude').checked = !!(state.claude && state.claude.on);
+  $('claude-row').hidden = !(state.claude && state.claude.on);
+  $('claude-state').textContent = claudeText(state.claude);
+  renderCompanion(state.companion);
   $('place-row').hidden = !state.weather;
   if (!state.weather) $('place-results').hidden = true;
   $('place-state').textContent = state.weatherPlace || tr('Automatic, from the IP address');
@@ -295,6 +299,35 @@ for (const row of document.querySelectorAll('.tr-row[data-view]')) {
   row.querySelector('summary .chevron').before(box);
 }
 $('allow-ip').addEventListener('change', () => send('publicIp', { value: $('allow-ip').checked }));
+$('allow-claude').addEventListener('change', e => send('claude.toggle', { on: e.target.checked }));
+
+// Companion: on or off, and its three shortcuts, each with its own switch and keys.
+$('companion-on').addEventListener('change', e => send('companion.set', { on: e.target.checked }));
+const companionKeys = {};
+for (const row of document.querySelectorAll('[data-companion-key]')) {
+  const which = row.dataset.companionKey;
+  row.querySelector('input').addEventListener('change', e => send('companion.keyOn', { which, on: e.target.checked }));
+  companionKeys[which] = shortcutKeys(row.querySelector('button'), row.querySelector('small'), k => send('companion.key', Object.assign({ which }, k)));
+}
+function renderCompanion(c) {
+  if (!c) return;
+  $('companion-on').checked = c.on;
+  for (const row of document.querySelectorAll('[data-companion-key]')) {
+    const k = c[row.dataset.companionKey];
+    row.hidden = !c.on;
+    row.querySelector('input').checked = k.on;
+    companionKeys[row.dataset.companionKey].show(k.label, k.on ? k.error : null);
+  }
+}
+
+// What the Claude usage line says, shared by Settings, Home and the companion.
+const CLAUDE_STATES = { missing: 'Claude Code is not signed in on this PC', expired: 'The sign-in of Claude Code has expired: open Claude Code to renew it', offline: 'No answer from Anthropic for now', unknown: 'Anthropic answered in a way Bramble does not know yet', reading: 'Reading' };
+function claudeText(c) {
+  if (!c || !c.on) return '';
+  const u = c.usage;
+  if (c.status !== 'ok' || !u) return tr(CLAUDE_STATES[c.status] || 'Reading');
+  return [u.session && tr('Session {0} %, resets in {1}', u.session.percent, resetIn(u.session.resets)), u.week && tr('Week {0} %', u.week.percent)].filter(Boolean).join(' · ');
+}
 
 const PIN = '<svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-6.5-5.6-6.5-10.5a6.5 6.5 0 0 1 13 0c0 4.9-6.5 10.5-6.5 10.5z"/><circle cx="12" cy="10" r="2.3"/></svg>';
 let placeTimer = 0;

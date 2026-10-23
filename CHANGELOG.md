@@ -14,6 +14,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Notes: a new service for notes in Markdown, with a formatting bar, a reading view where tasks can be ticked, and search. The notes are plain .md files, in Bramble's folder or in a folder of an Obsidian vault, picked from the vaults Obsidian knows; a change made in Obsidian shows up, and Bramble never overwrites it without asking.
 - Shelf: a new service that keeps copies of files dropped on it and every capture, with filters, Open, Copy, Copy the image, Show in File Explorer and Remove with Undo.
 - Capture: a zone, a window or a whole screen, now or in 3 seconds. The image goes to the shelf and the clipboard, and a click on the note that follows opens it with an arrow, a frame, a highlighter, text and pixelation.
+- Companion: a round button at the edge of the screen, off until turned on, opens a small window to write a note, take a capture or glance at the processor, memory, theme, audio output and last notes. Ctrl Alt S captures, Ctrl Alt N writes a note and Ctrl Alt B shows or hides it, each shortcut can be changed or turned off.
+- Claude usage: when turned on in Settings, Connections, Bramble reads the sign-in of Claude Code and shows the session and the week used of a Claude plan, on Home and in the companion. The answer comes from a call Anthropic does not document, so an unexpected answer is shown as unknown.
+- Home: the cards of Notes, Shelf and Claude usage can be pinned.
+- A short welcome on the very first start: what Bramble does, a wallpaper to pick, and four choices (start with Windows, check for updates, the companion, weather on Home). Home then keeps a First steps card until its five steps are done or it is hidden.
 - Home can be customized: any service can have its card at the bottom, the cards and the three blocks move with a drag or the arrow keys, and a block can be hidden. Reset Home puts it back, with Undo.
 
 ### Changed

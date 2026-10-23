@@ -1,0 +1,54 @@
+body.companion { display: flex; flex-direction: column; gap: 10px; height: 100vh; box-sizing: border-box; padding: 12px 14px; overflow: hidden; background: var(--wallpaper); }
+.c-head { display: flex; align-items: center; gap: 10px; }
+.c-logo { width: 28px; height: 28px; object-fit: contain; }
+.c-time { flex: 1; min-width: 0; font-size: var(--text-caption); color: var(--text-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.c-time::first-letter { text-transform: uppercase; }
+.c-close { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: var(--radius-small); background: none; color: var(--text-soft); cursor: pointer; }
+.c-close:hover { background: var(--hover); color: var(--text); }
+.c-close svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.c-tabs { flex: none; }
+.c-tabs button[aria-selected="true"] { background: var(--raised); color: var(--accent); }
+.c-pane { flex: 1; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+.c-pane[hidden] { display: none; }
+.c-title { padding: 8px 10px; border: 0; border-radius: var(--radius-control); background: var(--group); color: var(--text); font: 600 var(--text-body) var(--display); }
+.c-text { flex: 1; min-height: 0; padding: 10px; border: 0; border-radius: var(--radius-control); background: var(--group); color: var(--text); font: var(--text-body)/1.55 "Segoe UI Variable Text", "Segoe UI", sans-serif; resize: none; user-select: text; }
+.c-title:focus, .c-text:focus { outline: none; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 60%, transparent); }
+.c-row { display: flex; align-items: center; gap: 10px; }
+.c-hint { flex: 1; min-width: 0; font-size: var(--text-caption); color: var(--text-pale); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.c-big { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; border: 0; border-radius: var(--radius-card); background: var(--group); color: var(--text); text-align: left; cursor: pointer; transition: background var(--fast); }
+.c-big:hover { background: var(--group-up); }
+.c-big svg { flex: none; width: 34px; height: 34px; padding: 7px; box-sizing: border-box; border-radius: var(--radius-control); background: var(--accent-dim); fill: none; stroke: var(--accent); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.c-big span { display: flex; flex-direction: column; gap: 1px; font-size: var(--text-body); font-weight: 600; }
+.c-big small { font-size: var(--text-caption); font-weight: 400; color: var(--text-pale); }
+.c-subhead { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; font-size: var(--text-caption); font-weight: 600; color: var(--text-soft); }
+.c-shots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.c-shot { padding: 0; border: 0; border-radius: var(--radius-group); background: var(--screen); aspect-ratio: 4 / 3; overflow: hidden; cursor: pointer; }
+.c-shot img { width: 100%; height: 100%; object-fit: cover; transition: transform .2s; }
+.c-shot:hover img { transform: scale(1.05); }
+.c-empty { grid-column: 1 / -1; margin: 4px 2px; font-size: var(--text-caption); color: var(--text-pale); }
+.c-gauges { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.c-gauge { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 8px 10px; border-radius: var(--radius-card); background: var(--group); }
+.c-ring { --part: 0; position: relative; display: grid; place-items: center; width: 66px; height: 66px; border-radius: 50%; background: conic-gradient(var(--accent) calc(var(--part) * 1%), var(--meter) 0); }
+.c-ring::before { content: ""; position: absolute; inset: 7px; border-radius: 50%; background: var(--group); }
+.c-ring b { position: relative; font: 600 var(--text-value) var(--numbers); font-variant-numeric: tabular-nums; }
+.c-gauge.is-high .c-ring { background: conic-gradient(var(--danger) calc(var(--part) * 1%), var(--meter) 0); }
+.c-label { font-size: var(--text-caption); font-weight: 600; }
+.c-gauge small { min-height: 1.2em; max-width: 100%; font-size: var(--text-badge); color: var(--text-pale); text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.c-lines { display: flex; flex-direction: column; border-radius: var(--radius-card); background: var(--group); }
+.c-line { display: flex; align-items: center; gap: 10px; padding: 8px 12px; min-width: 0; }
+.c-line + .c-line { box-shadow: inset 0 1px 0 var(--hairline); }
+.c-line svg { flex: none; width: 16px; height: 16px; fill: none; stroke: var(--text-soft); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.c-line__label { flex: none; font-size: var(--text-caption); color: var(--text-soft); }
+.c-line__value { flex: 1; min-width: 0; font-size: var(--text-caption); font-weight: 600; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.c-notes { display: flex; flex-direction: column; gap: 4px; min-height: 0; overflow-y: auto; }
+.c-note { display: flex; flex-direction: column; gap: 1px; padding: 7px 10px; border: 0; border-radius: var(--radius-group); background: var(--group); color: inherit; text-align: left; cursor: pointer; }
+.c-note:hover { background: var(--group-up); }
+.c-note__name { font-size: var(--text-caption); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.c-note__preview { font-size: var(--text-badge); color: var(--text-pale); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.c-claude { flex: none; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 4px 10px; padding: 9px 12px; border-radius: var(--radius-card); background: var(--group); cursor: pointer; }
+.c-claude[hidden] { display: none; }
+.c-claude__name { font-size: var(--text-caption); font-weight: 600; }
+.c-bar { position: relative; height: 6px; overflow: hidden; border-radius: 3px; background: var(--meter); }
+.c-bar i { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: 3px; background: var(--accent); transition: width .3s; }
+.c-claude.is-high .c-bar i { background: var(--danger); }
+.c-claude__text { grid-column: 1 / -1; font-size: var(--text-badge); color: var(--text-pale); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
