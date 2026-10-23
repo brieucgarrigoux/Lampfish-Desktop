@@ -163,6 +163,8 @@ namespace Bramble
         public static void SendList()
         {
             string folder = Folder;
+            // A chosen folder that comes back (drive plugged in, sync done) is watched again.
+            if (watcher == null || !watcher.Path.Equals(folder, StringComparison.OrdinalIgnoreCase)) Watch();
             var vaults = Vaults();
             // A chosen folder that is gone (deleted, drive unplugged, not synced yet) is said, never replaced in silence.
             string missing = !string.IsNullOrEmpty(S.Folder) && !Directory.Exists(S.Folder) ? S.Folder : null;
