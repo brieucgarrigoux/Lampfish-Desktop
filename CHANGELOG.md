@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Added
 - Audio: a new service that shows every output and input of the PC as a tile, with its format, live level, volume and mute. A click makes a device the default for every app, with Undo. Devices that are not plugged in are folded under one line.
 - Audio: a keyboard shortcut, off by default, switches to the next output from any app and shows its name in a small bubble. It is Ctrl + Alt + F11 unless other keys are chosen.
+- Health: a Privacy card turns off, for this user, the sharing settings of Windows such as the advertising ID, the suggestions and the typing data, with Undo. A setting locked by an organization is shown and left alone.
 - Themes: a theme also brings back the audio output it was made with, when that device is plugged in.
 
 ### Changed

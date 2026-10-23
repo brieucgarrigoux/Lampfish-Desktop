@@ -198,6 +198,62 @@
     return row;
   }
 
+  const EYE = '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>';
+  const PRIVACY = {
+    ads: ['Advertising ID', 'Lets apps show ads based on activity', '<path d="M4 9.5h4l7-4v13l-7-4H4z"/><path d="M8 14.5 9.5 20"/><path d="M18.5 9.5a3.5 3.5 0 0 1 0 5"/>'],
+    tailored: ['Tailored experiences', 'Tips and ads drawn from diagnostic data', '<path d="m12 3.5 2.4 5 5.1.6-3.8 3.5 1 5.2-4.7-2.6-4.7 2.6 1-5.2-3.8-3.5 5.1-.6z"/>'],
+    suggestions: ['Suggestions in Windows', 'Tips and app ads in Start, Settings and the lock screen', '<path d="M9 18h6M10 21h4M12 3.5a6 6 0 0 0-3.5 10.9V16h7v-1.6A6 6 0 0 0 12 3.5z"/>'],
+    typing: ['Inking and typing data', 'Sends typing and handwriting to improve recognition', '<rect x="3" y="6.5" width="18" height="11" rx="2"/><path d="M7 10h.01M10 10h.01M13 10h.01M16 10h.01M8 14h8"/>'],
+    languages: ['Language list for websites', 'Websites can read the languages of Windows', '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 3.5 5.4 3.5 8.5s-1 5.9-3.5 8.5c-2.5-2.6-3.5-5.4-3.5-8.5s1-5.9 3.5-8.5z"/>'],
+    launches: ['App launch tracking', 'Windows notes the apps opened to sort Start and search', '<rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><path d="M17 14v6M14 17h6"/>'],
+    speech: ['Online speech recognition', 'The voice goes to Microsoft to be recognized', '<rect x="9" y="3.5" width="6" height="10.5" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5v3"/>'],
+    feedback: ['Feedback requests', 'Windows asks for an opinion from time to time', '<path d="M4.5 5.5h15v10h-9l-4 3.5v-3.5h-2z"/>'],
+    cloudSearch: ['Cloud search', 'Windows Search also looks in Microsoft accounts', '<path d="M7 18.5a4.5 4.5 0 0 1-.6-9 6 6 0 0 1 11.4 1.6 3.8 3.8 0 0 1-.3 7.4z"/>'],
+  };
+  let privacy = null;
+  function renderPrivacy() {
+    const zone = $('health-privacy');
+    if (!privacy) { zone.replaceChildren(); return; }
+    const focused = zone.contains(document.activeElement) ? document.activeElement.dataset.privacy : null;
+    const on = privacy.filter(p => p.on).length;
+    const card = document.createElement('div');
+    card.className = 'health-startup check--' + (on ? 'warn' : 'ok');
+    card.innerHTML = `<div class="health-startup__head"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${EYE}</svg><span class="health-startup__title"></span><span class="health-startup__state"></span></div>`
+      + '<p class="health-startup__help"></p><div class="readouts health-startup__apps"></div><div class="health-startup__foot"><span></span></div>';
+    card.querySelector('.health-startup__title').textContent = on === 0 ? tr('Windows shares nothing extra') : on === 1 ? tr('1 kind of sharing is on') : tr('{0} kinds of sharing are on', on);
+    card.querySelector('.health-startup__state').textContent = tr('{0} of {1}', on, privacy.length);
+    card.querySelector('.health-startup__help').textContent = tr('What Windows sends or shows about how this PC is used. Each switch is the one of the Windows settings, for this user only.');
+    card.querySelector('.health-startup__apps').append(...privacy.filter(p => PRIVACY[p.id]).map(privacyRow));
+    card.querySelector('.health-startup__foot span').textContent = tr('Turned off, Windows works the same, with fewer ads and suggestions.');
+    const open = Object.assign(document.createElement('button'), { className: 'button', textContent: tr('Privacy settings of Windows') });
+    open.addEventListener('click', () => act('privacy'));
+    card.querySelector('.health-startup__foot').append(open);
+    zone.replaceChildren(card);
+    if (focused) { const box = card.querySelector(`[data-privacy="${focused}"]`); if (box) box.focus(); }
+  }
+
+  function privacyRow(p) {
+    const [title, detail, icon] = PRIVACY[p.id];
+    const row = document.createElement('div');
+    row.className = 'readout health-app' + (p.on ? '' : ' health-app--off');
+    row.innerHTML = `<span class="health-app__logo"><svg viewBox="0 0 24 24" aria-hidden="true">${icon}</svg></span><span class="readout__what"><span class="readout__title"></span><span class="readout__detail"></span></span><span class="readout__end"></span>`;
+    row.querySelector('.readout__title').textContent = tr(title);
+    row.querySelector('.readout__detail').textContent = tr(detail);
+    const end = row.querySelector('.readout__end');
+    if (p.managed) {
+      end.append(Object.assign(document.createElement('span'), { className: 'health-app__lock', textContent: tr(p.on ? 'On, set by the organization' : 'Off, set by the organization') }));
+      return row;
+    }
+    const toggle = Object.assign(document.createElement('label'), { className: 'toggler' });
+    const box = Object.assign(document.createElement('input'), { type: 'checkbox', checked: p.on });
+    box.dataset.privacy = p.id;
+    box.setAttribute('aria-label', tr(title));
+    box.addEventListener('change', () => { row.classList.toggle('health-app--off', !box.checked); send('health.privacySet', { id: p.id, on: box.checked, title: tr(title) }); });
+    toggle.append(box);
+    end.append(toggle);
+    return row;
+  }
+
   function next(tip, again) {
     const n = document.createElement('div');
     n.className = 'security__next';
@@ -231,9 +287,11 @@
     }
     renderSlow();
     renderRadar();
+    renderPrivacy();
   }
 
   function event(m) {
+    if (m.type === 'health.privacy') { privacy = m.items; if (shown) renderPrivacy(); return; }
     if (m.type === 'health.scanning') { checking = true; render(); return; }
     if (m.type !== 'health.report') return;
     checking = false;
@@ -244,7 +302,7 @@
 
   function visible(yes) {
     shown = yes;
-    if (yes) { render(); send('health.scan', { again: false }); }
+    if (yes) { render(); send('health.scan', { again: false }); send('health.privacy'); }
   }
 
   Bramble.health = { event, visible };

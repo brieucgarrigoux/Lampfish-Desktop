@@ -25,6 +25,7 @@ namespace Bramble
             { "firewall", "windowsdefender://network/" },
             { "updates", "ms-settings:windowsupdate" },
             { "startup", "ms-settings:startupapps" },
+            { "privacy", "ms-settings:privacy" },
             { "saver", "ms-settings:batterysaver" },
             { "encryption", "control.exe /name Microsoft.BitLockerDriveEncryption" },
             { "uac", "UserAccountControlSettings.exe" },
@@ -50,6 +51,9 @@ namespace Bramble
                     Scan();
                     return false;
                 }
+                case "privacy":
+                case "privacySet":
+                    return Privacy.Receive(action, m);
                 case "open":
                     string target;
                     if (!Targets.TryGetValue(m.ContainsKey("target") ? m["target"] as string ?? "" : "", out target)) return false;
