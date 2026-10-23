@@ -12,6 +12,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Themes: a theme also brings back the audio output it was made with, when that device is plugged in.
 
 ### Changed
+- Folders is now called Storage, the word Windows uses for the space on its drives.
 - Sounds: the volume and the microphone of Windows moved to Audio.
 - Network: the top card shows the connection on the glass of a round seal, the Wi-Fi lit in violet, instead of an icon and separate signal bars. The security level is three lit arcs instead of three bars.
 - The frames of seals, ring dials and screens are brushed steel, like the dial of the speed test.

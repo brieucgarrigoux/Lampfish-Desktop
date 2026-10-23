@@ -1581,5 +1581,6 @@
  "Off, set by the organization": "Désactivé, réglé par l'organisation",
  "{0}: on": "{0} : activé",
  "{0}: off": "{0} : désactivé",
- "Whether a program of this user starts with Windows, as the startup apps of Windows do, and the privacy switches of Windows for this user": "Le lancement d'un programme de cet utilisateur avec Windows, comme les applications de démarrage de Windows, et les interrupteurs de confidentialité de Windows pour cet utilisateur"
+ "Whether a program of this user starts with Windows, as the startup apps of Windows do, and the privacy switches of Windows for this user": "Le lancement d'un programme de cet utilisateur avec Windows, comme les applications de démarrage de Windows, et les interrupteurs de confidentialité de Windows pour cet utilisateur",
+ "Open Storage": "Ouvrir Stockage"
 }

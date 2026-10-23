@@ -24,7 +24,7 @@
     heat: '<path d="M10 14.5V5a2 2 0 0 1 4 0v9.5a4 4 0 1 1-4 0z"/><path d="M12 11v5"/>',
   };
   const MEASURES = { processor: 'Processor', memory: 'Memory', disk: 'Disk activity', uptime: 'Since restart', startup: 'At startup', free: 'Free space', heat: 'Heat' };
-  const ACTIONS = { 'view:files': 'Open Folders', 'view:tasks': 'Open Tasks', 'view:hardware': 'Open Hardware', free: 'Free up memory', startup: 'Open the startup apps', power: 'Choose the power mode' };
+  const ACTIONS = { 'view:files': 'Open Storage', 'view:tasks': 'Open Tasks', 'view:hardware': 'Open Hardware', free: 'Free up memory', startup: 'Open the startup apps', power: 'Choose the power mode' };
   const STATES = { ok: 'Fine', warn: 'Be careful', bad: 'Risky', neutral: 'Not reported' };
   const LAMPS = { ok: 'high', warn: 'medium', bad: 'low' };
   const worst = list => list.some(x => x.level === 'bad') ? 'bad' : list.some(x => x.level === 'warn') ? 'warn' : 'ok';
