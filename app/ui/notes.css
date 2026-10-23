@@ -1,10 +1,11 @@
 .view--notes { container: notes / inline-size; }
 .n-layout { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); gap: 16px; align-items: start; }
 @container notes (max-width: 640px) { .n-layout { grid-template-columns: minmax(0, 1fr); } .n-list { max-height: 280px; } }
-.n-side { display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 10px; border-radius: var(--radius-card); background: var(--group); }
+.n-side { container: nside / inline-size; display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 10px; border-radius: var(--radius-card); background: var(--group); }
 .n-tools { display: flex; gap: 8px; }
 .n-tools .search { flex: 1 1 auto; max-width: none; }
 .n-new { display: inline-flex; align-items: center; gap: 6px; flex: none; }
+@container nside (max-width: 290px) { .n-new { padding-inline: 9px; } .n-new span { display: none; } }
 .n-new svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 .n-count { min-height: 16px; padding: 0 4px; font-size: var(--text-caption); color: var(--text-pale); font-variant-numeric: tabular-nums; }
 .n-list { display: flex; flex-direction: column; gap: 2px; max-height: calc(100vh - 250px); overflow-y: auto; }
