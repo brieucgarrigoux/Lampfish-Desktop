@@ -1058,8 +1058,23 @@ namespace Bramble
             }
         }
 
+        // Explorer keeps the icon of a program in a cache: a shortcut shows the old one after an update until Explorer is told that icons changed.
+        static void RefreshIcons()
+        {
+            try
+            {
+                string stamp = Path.Combine(DataFolder("Shell"), "icon-stamp.txt"), now = File.GetLastWriteTimeUtc(Application.ExecutablePath).Ticks.ToString();
+                if (File.Exists(stamp) && File.ReadAllText(stamp) == now) return;
+                SHChangeNotify(0x08000000, 0, IntPtr.Zero, IntPtr.Zero);
+                File.WriteAllText(stamp, now);
+            }
+            catch (Exception ex) { Log(ex); }
+        }
+        [System.Runtime.InteropServices.DllImport("shell32.dll")] static extern void SHChangeNotify(int eventId, uint flags, IntPtr item1, IntPtr item2);
+
         static void FollowFolder()
         {
+            RefreshIcons();
             string exe = Application.ExecutablePath;
             try
             {
