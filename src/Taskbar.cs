@@ -59,14 +59,23 @@ namespace Bramble
             catch { return null; }
         }
 
-        static void Write(string key, string name, int? value)
+        // Windows 11 builds that protect a value refuse the write: the setting is then left to Windows Settings.
+        static bool Write(string key, string name, int? value)
         {
-            using (var k = Registry.CurrentUser.CreateSubKey(key))
+            try
             {
-                if (value == null) k.DeleteValue(name, false);
-                else k.SetValue(name, value.Value, RegistryValueKind.DWord);
+                using (var k = Registry.CurrentUser.CreateSubKey(key))
+                {
+                    if (value == null) k.DeleteValue(name, false);
+                    else k.SetValue(name, value.Value, RegistryValueKind.DWord);
+                }
+                return true;
             }
+            catch (UnauthorizedAccessException) { return false; }
+            catch (System.Security.SecurityException) { return false; }
         }
+
+        static readonly HashSet<string> refused = new HashSet<string>();
 
         [StructLayout(LayoutKind.Sequential)]
         struct APPBARDATA { public int cbSize; public IntPtr hWnd; public uint uCallbackMessage, uEdge; public Native.RECT rc; public IntPtr lParam; }
@@ -104,7 +113,7 @@ namespace Bramble
                 type = "taskbar.state",
                 windows11 = Native.Build >= Windows11,
                 autoHide = AutoHide(),
-                items = Settings.Where(Supports).Select(s => new { id = s.Id, value = Read(s.Key, s.Name), fallback = s.Default }).ToArray(),
+                items = Settings.Where(Supports).Select(s => new { id = s.Id, value = Read(s.Key, s.Name), fallback = s.Default, locked = refused.Contains(s.Id) }).ToArray(),
                 changed = original.Count > 0,
             };
         }
@@ -151,14 +160,22 @@ namespace Bramble
                     if (s == null || !Supports(s)) return false;
                     int value = Math.Max(0, Math.Min(3, Convert.ToInt32(m["value"])));
                     int? before1 = Read(s.Key, s.Name), before2 = s.Name2 == null ? null : Read(s.Key2, s.Name2);
-                    Remember(s.Id, before1);
-                    if (s.Name2 != null) Remember(s.Id + "2", before2);
+                    bool wrote;
                     try
                     {
-                        Write(s.Key, s.Name, value);
-                        if (s.Name2 != null) Write(s.Key2, s.Name2, value);
+                        wrote = Write(s.Key, s.Name, value);
+                        if (wrote && s.Name2 != null) Write(s.Key2, s.Name2, value);
                     }
-                    catch (Exception ex) { Program.Log(ex); }
+                    catch (Exception ex) { Program.Log(ex); wrote = false; }
+                    if (!wrote)
+                    {
+                        refused.Add(s.Id);
+                        Program.Send(State());
+                        Program.Send(new { type = "taskbar.refused", id = s.Id });
+                        return false;
+                    }
+                    Remember(s.Id, before1);
+                    if (s.Name2 != null) Remember(s.Id + "2", before2);
                     Notify();
                     Program.Undoable(Language.T("{0}: changed", title), () =>
                     {
@@ -174,6 +191,9 @@ namespace Bramble
                     Program.Send(State());
                     return false;
                 }
+                case "open":
+                    try { System.Diagnostics.Process.Start("ms-settings:taskbar"); } catch (Exception ex) { Program.Log(ex); }
+                    return false;
                 case "reset":
                 {
                     var saved = ReadOriginal();

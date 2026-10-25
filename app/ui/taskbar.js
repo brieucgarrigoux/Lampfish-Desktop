@@ -16,7 +16,11 @@
       const box = $('tb-' + id);
       box.closest('.toggle').hidden = !by[id];
       box.checked = value(id) === 1;
+      box.disabled = !!(by[id] && by[id].locked);
     }
+    const locked = state.items.filter(i => i.locked && TOGGLES[i.id]);
+    $('tb-lockbox').hidden = !locked.length;
+    if (locked.length) $('tb-lock-text').textContent = locked.map(i => tr(TOGGLES[i.id])).join(', ') + ': ' + tr('Windows refuses the change on this version');
     for (const id of Object.keys(CHOICES)) {
       const group = $('tb-' + id);
       group.closest('.row').hidden = !by[id];
@@ -34,6 +38,7 @@
     for (const b of $('tb-' + id).children) b.addEventListener('click', () => send('taskbar.set', { id, value: Number(b.dataset.value), title: tr(CHOICES[id]) }));
   }
   $('tb-reset').addEventListener('click', () => send('taskbar.reset'));
+  $('tb-lock-open').addEventListener('click', () => send('taskbar.open'));
 
   Bramble.taskbar = {
     event(m) { if (m.type === 'taskbar.state') { state = m; paint(); } },

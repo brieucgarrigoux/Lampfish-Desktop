@@ -1,4 +1,4 @@
 .tb-help { margin: 14px 2px 10px; line-height: 1.5; }
-.tb-help[hidden], .view--taskbar .toggle[hidden], .view--taskbar .row[hidden] { display: none; }
+.tb-help[hidden], .tb-lockbox[hidden], .view--taskbar .toggle[hidden], .view--taskbar .row[hidden] { display: none; }
 .tb-choice { flex: none; }
 .view--taskbar { max-width: 760px; }
