@@ -34,7 +34,7 @@ namespace Bramble
 
         public static string Script()
         {
-            return "window.LANGUAGE = " + json.Serialize(Code) + "; window.TRANSLATION = " + json.Serialize(strings) + ";";
+            return "window.LANGUAGE = " + json.Serialize(Code) + "; window.TRANSLATION = " + json.Serialize(strings) + ";" + Appearance.Script();
         }
     }
 }

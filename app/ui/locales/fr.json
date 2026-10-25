@@ -1981,5 +1981,10 @@
  "Windows changes its own wallpaper every {0} minutes": "Windows change aussi son fond toutes les {0} minutes",
  "Each change makes a live wallpaper blink. Slowing it down keeps the wallpaper still.": "Chaque changement fait clignoter un fond animé. Le ralentir laisse le fond tranquille.",
  "Windows slideshow slowed down": "Diaporama de Windows ralenti",
- "{0} days": "{0} jours"
+ "{0} days": "{0} jours",
+ "Appearance": "Apparence",
+ "Dark by default; Day is light with the fish in black": "Sombre par défaut ; Jour est clair, avec le poisson en noir",
+ "Dark": "Sombre",
+ "Day": "Jour",
+ "Like Windows": "Comme Windows"
 }

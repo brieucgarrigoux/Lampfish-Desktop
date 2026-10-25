@@ -18,7 +18,7 @@ namespace Bramble
         {
             Text = "lampfish";
             Icon = Program.AppIcon;
-            BackColor = Color.FromArgb(9, 12, 13);
+            BackColor = Appearance.Back;
             MinimumSize = new Size(LogicalToDeviceUnits(720), LogicalToDeviceUnits(560));
             var w = Program.R.Window;
             var saved = w == null ? Rectangle.Empty : new Rectangle(w.X, w.Y, w.Width, w.Height);
@@ -35,6 +35,15 @@ namespace Bramble
             }
             view = new WebView2 { Dock = DockStyle.Fill, DefaultBackgroundColor = BackColor };
             Controls.Add(view);
+            Appearance.Changed += Restyle;
+        }
+
+        void Restyle()
+        {
+            BackColor = Appearance.Back;
+            view.DefaultBackgroundColor = BackColor;
+            if (IsHandleCreated) Native.DarkFrame(Handle, Appearance.Light);
+            Send(new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(Appearance.Message()));
         }
 
         public async Task Initialize(CoreWebView2Environment environment, Action<string, List<string>> receive)
@@ -89,7 +98,7 @@ namespace Bramble
         protected override void OnHandleCreated(EventArgs e)
         {
             base.OnHandleCreated(e);
-            Native.DarkFrame(Handle);
+            Native.DarkFrame(Handle, Appearance.Light);
         }
 
         FormWindowState shape = FormWindowState.Normal;

@@ -107,6 +107,7 @@ function levelFrame() {
 
 webview.addEventListener('message', e => {
   const m = e.data;
+  if (m.type === 'appearance') return;
   if (m.type === 'audio.level') {
     levelTarget.push(m.level); levelTarget.shift();
     const previews = Bramble.state && Bramble.state.reactive ? '#hero-preview iframe, .cr-stage iframe, .wallpaper-map iframe, #h-wallpaper iframe' : '.cr-stage iframe';
@@ -165,6 +166,8 @@ function render(state) {
   $('place-auto').hidden = !state.weatherPlace;
   check('language', state.language || 'auto');
   check('zoom', String(state.zoom || 100));
+  check('skin', state.skin || 'dark');
+  if (state.day !== undefined) applyLight(state.day);
   if (zoomAsked == null) { zoomNow = state.zoom || 100; settleZoom(); }
   renderUpdates(state.updates);
   if (state.about) {
@@ -1021,6 +1024,7 @@ addEventListener('resize', () => {
 });
 zoomRules();
 for (const b of $('zoom').children) b.addEventListener('click', () => zoomTo(Number(b.dataset.value)));
+for (const b of $('skin').children) b.addEventListener('click', () => send('skin', { value: b.dataset.value }));
 $('zoom-out').addEventListener('click', () => zoomBy(-1));
 $('zoom-in').addEventListener('click', () => zoomBy(1));
 $('zoom-value').addEventListener('click', () => zoomTo(100));

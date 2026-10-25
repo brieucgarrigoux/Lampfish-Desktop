@@ -48,6 +48,7 @@ namespace Bramble
         public int Slideshow = 0;
         public bool Reactive = false;
         public int Zoom = 100;
+        public string Skin = "dark";
         public List<MoodSetting> Moods = new List<MoodSetting>();
         public string CurrentMood;
         public MoodSetting MoodBefore;
@@ -137,6 +138,7 @@ namespace Bramble
                 bool firstRun = !File.Exists(SettingsFile);
                 Load();
                 Language.Choose(R.Language);
+                Appearance.Start(R.Skin);
                 FollowFolder();
 
                 using (var stream = typeof(Program).Assembly.GetManifestResourceStream("icon.ico"))
@@ -893,6 +895,7 @@ namespace Bramble
                     if (Convert.ToBoolean(m["hidden"])) R.HiddenViews.Add(view);
                     break;
                 }
+                case "skin": R.Skin = Appearance.Clean(Convert.ToString(m["value"])); Appearance.Choose(R.Skin); break;
                 case "zoom": R.Zoom = Math.Max(70, Math.Min(200, Convert.ToInt32(m["value"]))); if (settingsWindow != null) settingsWindow.SetZoom(R.Zoom); break;
                 case "reactive": R.Reactive = (bool)m["value"]; AudioMeter.Set(R.Reactive); break;
                 case "audioPreview": AudioMeter.Preview((bool)m["value"]); return;
@@ -988,6 +991,7 @@ namespace Bramble
                 weatherPlace = R.WeatherPlace == null ? null : R.WeatherPlace.Label,
                 reactive = R.Reactive,
                 zoom = R.Zoom,
+                skin = R.Skin, day = Appearance.Light,
                 moods = Moods.State(),
                 moodModels = Moods.Models(),
                 display = Display.State(),

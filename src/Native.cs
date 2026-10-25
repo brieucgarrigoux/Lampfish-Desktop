@@ -56,12 +56,12 @@ namespace Bramble
             catch { return 0; }
         }
 
-        public static void DarkFrame(IntPtr hwnd)
+        public static void DarkFrame(IntPtr hwnd, bool light = false)
         {
-            int on = 1;
+            int on = light ? 0 : 1;
             if (DwmSetWindowAttribute(hwnd, 20, ref on, 4) != 0) DwmSetWindowAttribute(hwnd, 19, ref on, 4);
             if (Build < 22000) return;
-            int caption = 0x0D0C09, text = 0xFFFFFF, border = 0x2F2E27;
+            int caption = light ? 0xDBDAD4 : 0x0D0C09, text = light ? 0x1D1B14 : 0xFFFFFF, border = light ? 0xC2C0B8 : 0x2F2E27;
             DwmSetWindowAttribute(hwnd, 35, ref caption, 4);
             DwmSetWindowAttribute(hwnd, 36, ref text, 4);
             DwmSetWindowAttribute(hwnd, 34, ref border, 4);

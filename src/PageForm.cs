@@ -22,10 +22,25 @@ namespace Bramble
             this.page = page;
             this.receive = receive;
             Icon = Program.AppIcon;
-            BackColor = Color.FromArgb(9, 12, 13);
+            BackColor = Appearance.Back;
             AutoScaleMode = AutoScaleMode.None;
             view = new WebView2 { Dock = DockStyle.Fill, DefaultBackgroundColor = BackColor };
             Controls.Add(view);
+            Appearance.Changed += Restyle;
+        }
+
+        void Restyle()
+        {
+            BackColor = Appearance.Back;
+            view.DefaultBackgroundColor = BackColor;
+            if (IsHandleCreated) Native.DarkFrame(Handle, Appearance.Light);
+            Send(Appearance.Message());
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing) Appearance.Changed -= Restyle;
+            base.Dispose(disposing);
         }
 
         public async Task Open()
@@ -59,7 +74,7 @@ namespace Bramble
         protected override void OnHandleCreated(EventArgs e)
         {
             base.OnHandleCreated(e);
-            Native.DarkFrame(Handle);
+            Native.DarkFrame(Handle, Appearance.Light);
         }
     }
 }

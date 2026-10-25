@@ -425,7 +425,7 @@ namespace Bramble
         // the margin holds the pulse of a click, the halo while the window is open and the arc that turns while it loads.
         class Dot : Form
         {
-            readonly Image logo;
+            readonly Image logo, logoBlack;
             Point down, start;
             bool moving, hover, pressed, busy;
 
@@ -459,6 +459,8 @@ namespace Bramble
                 TopMost = true;
                 AutoScaleMode = AutoScaleMode.None;
                 try { logo = Image.FromFile(Path.Combine(Program.Root, "brand", "logo", "mark-lampfish-white.png")); } catch (Exception ex) { Program.Log(ex); }
+                try { logoBlack = Image.FromFile(Path.Combine(Program.Root, "brand", "logo", "mark-lampfish-black.png")); } catch (Exception ex) { Program.Log(ex); }
+                Appearance.Changed += () => { if (!IsDisposed) Draw(); };
                 Cursor = Cursors.Hand;
                 new ToolTip { InitialDelay = 700 }.SetToolTip(this, Language.T("lampfish: click to open, drag to move, right-click for the app"));
                 glide.Tick += (s, e) =>
@@ -513,7 +515,8 @@ namespace Bramble
                 int side = Width;
                 if (side < 16) return;
                 float k = side / (float)(Diameter + 2 * Pad), pad = Pad * k, dia = Diameter * k, centre = side / 2f, r = dia / 2f * (float)scale;
-                bool bright = hover || halo > .5 || busy;
+                bool bright = hover || halo > .5 || busy, day = Appearance.Light;
+                var mark = day && logoBlack != null ? logoBlack : logo;
                 using (var bmp = new Bitmap(side, side, PixelFormat.Format32bppArgb))
                 {
                     using (var g = Graphics.FromImage(bmp))
@@ -532,12 +535,13 @@ namespace Bramble
                         }
                         using (var shadow = new SolidBrush(Color.FromArgb(70, 0, 0, 0))) g.FillEllipse(shadow, centre - r, centre - r + 1.5f * k, r * 2, r * 2 - 1.5f * k);
                         var disc = new RectangleF(centre - r + 1.5f * k, centre - r + 1.5f * k, r * 2 - 3 * k, r * 2 - 3 * k);
-                        using (var body = new LinearGradientBrush(disc, Color.FromArgb(0x19, 0x1e, 0x1f), Color.FromArgb(0x0b, 0x0f, 0x10), 90f)) g.FillEllipse(body, disc);
-                        using (var ring = new Pen(bright ? accent : Color.FromArgb(110, accent), Math.Max(1.5f, dia / 34f))) g.DrawEllipse(ring, disc);
+                        using (var body = new LinearGradientBrush(disc, day ? Color.FromArgb(0xee, 0xf2, 0xf2) : Color.FromArgb(0x19, 0x1e, 0x1f), day ? Color.FromArgb(0xd6, 0xdd, 0xde) : Color.FromArgb(0x0b, 0x0f, 0x10), 90f)) g.FillEllipse(body, disc);
+                        var tone = day ? Color.FromArgb(0x0b, 0x85, 0x79) : accent;
+                        using (var ring = new Pen(bright ? tone : Color.FromArgb(day ? 150 : 110, tone), Math.Max(1.5f, dia / 34f))) g.DrawEllipse(ring, disc);
                         if (busy)
                             using (var arc = new Pen(accent, Math.Max(2f, 2.6f * k)) { StartCap = LineCap.Round, EndCap = LineCap.Round })
                             { float ra = r + 4.5f * k; g.DrawArc(arc, centre - ra, centre - ra, ra * 2, ra * 2, (float)spin, 100f); }
-                        if (logo != null) { float w = dia * .66f * (float)scale, h = w * logo.Height / logo.Width; g.DrawImage(logo, centre - w / 2, centre - h / 2, w, h); }
+                        if (mark != null) { float w = dia * .66f * (float)scale, h = w * mark.Height / mark.Width; g.DrawImage(mark, centre - w / 2, centre - h / 2, w, h); }
                     }
                     Layered(bmp);
                 }
