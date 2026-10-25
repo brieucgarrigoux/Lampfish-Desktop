@@ -54,6 +54,8 @@ function dials(zone, list) {
     }
     el._action = g.action;
     el.className = 'dial security--' + (g.level || 'high');
+    if (g.color) { el.style.setProperty('--lamp', g.color); el.style.setProperty('--lamp-hi', `color-mix(in srgb, ${g.color} 45%, white)`); el.style.setProperty('--lamp-lo', `color-mix(in srgb, ${g.color} 55%, black)`); }
+    else { el.style.removeProperty('--lamp'); el.style.removeProperty('--lamp-hi'); el.style.removeProperty('--lamp-lo'); }
     if (g.key) el.dataset.key = g.key;
     el.querySelector('.seal').style.setProperty('--part', Math.max(0, Math.min(100, g.part || 0)).toFixed(1));
     const [number, unit] = String(g.value).split(/\s+(?=\S+$)/);

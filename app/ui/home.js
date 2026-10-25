@@ -35,6 +35,7 @@
     b.className = 'h-tile';
     b.innerHTML = `<header>${glyph(iconOf(view))}<span class="h-name"></span><span class="h-unpin" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m7 7 10 10M17 7 7 17"/></svg></span></header><span class="h-value"></span><span class="h-visual"></span><span class="h-size" role="button" tabindex="-1" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 20h6v-6M10 4H4v6"/></svg></span>`;
     b.querySelector('.h-name').textContent = tr(SHORTCUTS[view][0]);
+    if (view === 'claude') { b.classList.add('h-tile--plugin'); b.querySelector('.h-name').append(Object.assign(document.createElement('span'), { className: 'plugin-tag', textContent: tr('Plugin') })); }
     b.dataset.view = view;
     b.setAttribute('aria-pressed', 'false');
     b.addEventListener('click', () => {

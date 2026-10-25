@@ -29,6 +29,7 @@ The rules every page of Bramble follows. Values live as tokens in `:root` of `ap
 | `--accent-dim`, `--accent-tint`, `--accent-ring` | Pressed, chosen row, focus |
 | `--lit`, `--warn`, `--bad` | Lamp colors: fine (`#2ED9C6`), to watch, to fix |
 | `--danger`, `--danger-dim` | Destructive actions only |
+| `--plugin-claude` | The color of the Claude plugin, only on what the plugin shows (bars, dials, tag); the value is provisional until read in the official kit |
 
 Turquoise marks a state (chosen, active, on). Surfaces are near-neutral dark grays with a hint of cool tint (`--wallpaper` `#090c0d`, `--group` `#121618`), so the turquoise only appears where something is on or chosen; text is white. `#08171A` is the ink for text on turquoise fills and the plate of the application icon. Accent transparencies use `color-mix(in srgb, var(--accent) X%, transparent)`.
 
@@ -90,6 +91,8 @@ Fonts: `--display` for titles and lit text, `--numbers` with `font-variant-numer
 - **Toast**: 8 s, with Undo for any change.
 - **Zoom pill** (`.zoom-pill`): bottom right, invisible until the pointer or the keyboard reaches it, shown for a moment after a zoom.
 - **Bar on the left** (`.rail`): Home, a Go to search (Ctrl K), then one button per family (icon, name, arrow) that opens its services in a flyout next to the bar, on click. The name of every button is always written: under the icon in a narrow bar, beside it from 140 px, and in the flyout when the window is too small for names. The family that holds the page on screen carries a lit bar on the edge of the bar. Arranging the bar shows every family open, one under the other. Two levels at most.
+- **Page help** (`.page-help`): a round question mark after the title of every page (in the header on Home) that opens a bubble (`.page-help__tip`) with the line, the Reads, Changes and To undo of the page, taken from What lampfish reads and changes, and a link to it. Never on a single setting: the gray line is its help.
+- **Plugin tag** (`.plugin-tag`): an outlined word, Plugin, after the name of what a plugin adds. What a plugin shows (its bars, its dials) is drawn in the color of the plugin (`--plugin-claude` for Claude, the one exception to turquoise for a state), never the interface around it.
 - **Actions row** (`.h-actions` on Home): the everyday actions as chips (`.tool-chip` with a 16 px icon), one click each, right under the header. An action that has a page opens it, the others act from Home with their usual toast.
 - **Home cards** (`.h-shortcuts`): a grid of columns that follows the width of the page, a card in any cell, an empty cell left empty, one to three cells across and one or two down. A card dropped on another pushes it down.
 - **Delete in two clicks** (a note): the control arms on the first click, says so in red, and deletes on a second one within 4 seconds. Undo stays for 8 seconds after. A removal that touches one file keeps Undo only; this one was asked for because a note is easy to lose by a stray click.

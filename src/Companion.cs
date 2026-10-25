@@ -26,6 +26,7 @@ namespace Bramble
         public KeyChoice Capture = new KeyChoice { Key = 0x53, Label = "Ctrl + Alt + S" };
         public KeyChoice Note = new KeyChoice { Key = 0x4E, Label = "Ctrl + Alt + N" };
         public KeyChoice Toggle = new KeyChoice { Key = 0x42, Label = "Ctrl + Alt + B" };
+        public List<string> HiddenTabs = new List<string>();
     }
 
     // The companion: a round button on the desktop, wherever it is put. A click opens a small window to write a note,
@@ -42,6 +43,7 @@ namespace Bramble
         static string tab = "dashboard";
         static DateTime hiddenAt, asideAt;
         static bool aside, opening, retried;
+        static readonly string[] Tabs = { "dashboard", "note", "capture", "shelf", "audio", "notes", "convert", "desktop" };
         static DateTime shownAt;
         static int slide;
 
@@ -133,7 +135,7 @@ namespace Bramble
         public static object State()
         {
             Func<string, KeyChoice, object> key = (name, k) => new { on = k.On, label = k.Label, error = errors.ContainsKey(name) ? errors[name] : null };
-            return new { on = S.On, hidden = S.Hidden, capture = key("capture", S.Capture), note = key("note", S.Note), toggle = key("toggle", S.Toggle) };
+            return new { on = S.On, hidden = S.Hidden, hiddenTabs = S.HiddenTabs, capture = key("capture", S.Capture), note = key("note", S.Note), toggle = key("toggle", S.Toggle) };
         }
 
         public static bool Receive(string action, Dictionary<string, object> m)
@@ -142,6 +144,15 @@ namespace Bramble
             {
                 case "set": Enable(Convert.ToBoolean(m["on"])); return true;
                 case "show": S.Hidden = false; Save(); Apply(); return true;
+                case "tabs":
+                {
+                    var list = m.ContainsKey("hidden") ? m["hidden"] as System.Collections.IEnumerable : null;
+                    var hidden = list == null ? new List<string>() : list.OfType<object>().Select(Convert.ToString).Where(x => Tabs.Contains(x)).Distinct().ToList();
+                    S.HiddenTabs = hidden.Count >= Tabs.Length ? new List<string>() : hidden;
+                    Save();
+                    SendData();
+                    return true;
+                }
                 case "key":
                 case "keyOn":
                 {
@@ -317,7 +328,7 @@ namespace Bramble
                 type = "companion.data", tab, open, language = Language.Code,
                 processor = Math.Round(processor), memory = Math.Round(memory), busiest = Health.Busiest,
                 theme = theme == null ? null : theme.Name, output = AudioDevices.NameOf(AudioDevices.DefaultOutput()), disk = Disk(), origin = open ? Origin() : null,
-                claude = ClaudeUsage.State(), desktop = DesktopState(), notes = Notes.Items().Take(40).ToArray(), shelf = Shelf.Items().Take(8).ToArray(),
+                claude = ClaudeUsage.State(), desktop = DesktopState(), hiddenTabs = S.HiddenTabs, notes = Notes.Items().Take(40).ToArray(), shelf = Shelf.Items().Take(8).ToArray(),
             });
         }
 

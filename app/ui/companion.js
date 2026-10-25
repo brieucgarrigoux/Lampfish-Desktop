@@ -106,7 +106,7 @@
     if (!(c && c.on)) { $('c-claude-note').hidden = true; return []; }
     const ok = c.status === 'ok' && u && (u.session || u.week);
     const dial = (w, label, key) => ({
-      key, part: w ? w.percent : 0, value: w ? Math.round(w.percent) + ' %' : '-', label: tr(label), sub: w ? tr('resets in {0}', resetIn(w.resets)) : '',
+      key, part: w ? w.percent : 0, value: w ? Math.round(w.percent) + ' %' : '-', label: tr(label), sub: w ? tr('resets in {0}', resetIn(w.resets)) : '', color: 'var(--plugin-claude)',
       level: !w ? 'high' : w.percent >= 90 ? 'low' : w.percent >= 75 ? 'medium' : 'high', action: () => send('companion.open', { view: 'settings' }),
       details: w ? { title: tr(label), value: Math.round(w.percent) + ' %', lines: [[tr('Resets in'), resetIn(w.resets)], ...(key === 'week' ? (u.rows || []).map(r => [r.name, Math.round(r.percent) + ' %']) : [])] } : null,
     });
@@ -272,6 +272,9 @@
     const m = e.data;
     if (m.type === 'companion.data') {
       data = m;
+      const off = m.hiddenTabs || [];
+      for (const b of document.querySelectorAll('[data-tab]')) b.hidden = off.includes(b.dataset.tab);
+      if (off.includes(tab)) { const first = [...document.querySelectorAll('[data-tab]')].find(b => !b.hidden); if (first) show(first.dataset.tab, false); }
       if (m.tab && m.tab !== tab && GO[m.tab]) show(m.tab, false);
       if (m.open) {
         // The window itself slides and fades in: the page only has to say when its data is drawn.

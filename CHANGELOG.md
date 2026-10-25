@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- A question mark next to the title of every page opens a short note on what the page is for, what it reads and what it changes, with a link to the full list in Settings.
+- Settings: a Plugins section lists what is added to lampfish, starting with Claude usage. What comes from a plugin carries its tag and its own color, on Home and in the companion.
+- Settings, Companion: the tabs of the companion window can be hidden or shown one by one.
 - Home: a row of actions under the header, each one a single click: Capture, Note, Convert, Free up memory, Refresh icons and Straighten. The Desktop tab of the companion also refreshes the folder icons.
 - Audio: a new service that shows every output and input of the PC as a tile, with its format, live level, volume and mute. A click makes a device the default for every app, with Undo. Devices that are not plugged in are folded under one line.
 - Audio: a keyboard shortcut, off by default, switches to the next output from any app and shows its name in a small bubble. It is Ctrl + Alt + F11 unless other keys are chosen.
