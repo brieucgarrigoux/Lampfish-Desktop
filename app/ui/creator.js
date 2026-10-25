@@ -76,8 +76,8 @@
   const ICONS = {
     'Logo': '<circle cx="9" cy="11" r="2.7"/><circle cx="15" cy="11" r="2.7"/><circle cx="12" cy="16" r="2.7"/><path d="M12 8.3V4.5"/>',
     'Size': GROW,
-    'Horizontal position': '<path d="M4 12h16M7.5 8.5 4 12l3.5 3.5M16.5 8.5 20 12l-3.5 3.5"/>',
-    'Vertical position': '<path d="M12 4v16M8.5 7.5 12 4l3.5 3.5M8.5 16.5 12 20l3.5-3.5"/>',
+    'Left to right': '<path d="M4 12h16M7.5 8.5 4 12l3.5 3.5M16.5 8.5 20 12l-3.5 3.5"/>',
+    'Top to bottom': '<path d="M12 4v16M8.5 7.5 12 4l3.5 3.5M8.5 16.5 12 20l3.5-3.5"/>',
     'Soft shadow': '<rect x="4.5" y="4.5" width="11" height="11" rx="2"/><path d="M19.5 9v8.5a2 2 0 0 1-2 2H9" stroke-dasharray="2 2"/>',
     'Gentle float': '<circle cx="12" cy="8" r="3"/><path d="M3.5 16.5c1.4-1.6 2.8-1.6 4.2 0s2.8 1.6 4.3 0 2.9-1.6 4.3 0 2.8 1.6 4.2 0"/>',
     'Text': '<path d="M5 6h14M12 6v13M9 19h6"/>',
@@ -96,7 +96,7 @@
     'Amount': '<circle cx="7" cy="8" r="1.4"/><circle cx="16.5" cy="6.5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="6.5" cy="16.5" r="1.4"/><circle cx="17" cy="16.5" r="1.4"/>',
     'Speed': '<path d="M4.5 16.5a7.5 7.5 0 1 1 15 0"/><path d="m12 16.5 3.5-4.5"/>',
     'Glow': '<circle cx="12" cy="12" r="3.5"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/>',
-    'Glow strength': '<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7.5" stroke-dasharray="2 2.6"/>',
+    'Strength': '<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7.5" stroke-dasharray="2 2.6"/>',
     'React to sound': '<path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/>',
     'Pulse': '<path d="M3 12h4l2-5 4 10 2-5h6"/>',
     'Particles': '<path d="M12 3.5 13.6 10 20 12l-6.4 2L12 20.5 10.4 14 4 12l6.4-2z"/>',
@@ -326,10 +326,10 @@
   titleInput.addEventListener('input', () => { st.title.text = titleInput.value; push(); });
 
   const logoCard = card('Logo',
-    row('Logo', picker('logo', 'Choose a logo'), 'A transparent PNG works best'),
+    row('Logo', picker('logo', 'Choose a logo'), 'PNG with transparency'),
     row('Size', slider('logoSize', 5, 70, () => st.logo.size, v => { st.logo.size = v; }, ' %', 28)),
-    row('Horizontal position', slider('logoX', 0, 100, () => st.logo.x, v => { st.logo.x = v; }, ' %', 50)),
-    row('Vertical position', slider('logoY', 0, 100, () => st.logo.y, v => { st.logo.y = v; }, ' %', 44)),
+    row('Left to right', slider('logoX', 0, 100, () => st.logo.x, v => { st.logo.x = v; }, ' %', 50)),
+    row('Top to bottom', slider('logoY', 0, 100, () => st.logo.y, v => { st.logo.y = v; }, ' %', 44)),
     row('Soft shadow', slider('logoShadow', 0, 100, () => st.logo.shadow, v => { st.logo.shadow = v; }, ' %', 60)),
     row('Gentle float', toggle('logoFloat', () => st.logo.float, v => { st.logo.float = v; })));
 
@@ -377,11 +377,11 @@
     tagged('gradient', row('Second color', color('bgColor2', () => st.bg.color2, v => { st.bg.color2 = v; }))),
     tagged('gradient', row('Angle', slider('bgAngle', 0, 360, () => st.bg.angle, v => { st.bg.angle = v; }, '°', 165))),
     tagged('gradient', row('Direction', directions())),
-    tagged('gradient', row('Drift speed', slider('bgDrift', 0, 100, () => st.bg.drift, v => { st.bg.drift = v; }, ' %', 0), 'The gradient slowly turns')),
+    tagged('gradient', row('Drift speed', slider('bgDrift', 0, 100, () => st.bg.drift, v => { st.bg.drift = v; }, ' %', 0), 'Turns slowly')),
     tagged('image', row('Picture', picker('background', 'Choose a picture'))),
     tagged('image', row('Framing', segments('bgFit', [['cover', 'Fill'], ['contain', 'Fit']], () => st.bg.fit, v => { st.bg.fit = v; }))),
     row('Darken', slider('bgDim', 0, 80, () => st.bg.dim, v => { st.bg.dim = v; }, ' %', 0)),
-    row('Edge shade', slider('bgVignette', 0, 100, () => st.bg.vignette, v => { st.bg.vignette = v; }, ' %', 35), 'Darkens the corners'));
+    row('Edge shade', slider('bgVignette', 0, 100, () => st.bg.vignette, v => { st.bg.vignette = v; }, ' %', 35), 'Darker corners'));
 
   const typeGrid = (() => {
     const grid = el('div', 'cr-types');
@@ -405,9 +405,9 @@
     tagged('particles', row('Speed', slider('pSpeed', 20, 250, () => st.particles.speed, v => { st.particles.speed = v; }, ' %', 100))));
 
   const glowCard = card('Glow',
-    row('Glow', toggle('glowOn', () => st.glow.on, v => { st.glow.on = v; syncRows(); }), 'A soft halo around the logo'),
+    row('Glow', toggle('glowOn', () => st.glow.on, v => { st.glow.on = v; syncRows(); }), 'A halo around the logo'),
     tagged('glow', row('Glow color', color('glowColor', () => st.glow.color, v => { st.glow.color = v; }))),
-    tagged('glow', row('Glow strength', slider('glowStrength', 10, 100, () => st.glow.strength, v => { st.glow.strength = v; }, ' %', 55))));
+    tagged('glow', row('Strength', slider('glowStrength', 10, 100, () => st.glow.strength, v => { st.glow.strength = v; }, ' %', 55))));
 
   const effectColor = (() => {
     const wrap = el('div', 'cr-pick cr-pick--inline');
@@ -425,14 +425,14 @@
   })();
 
   const soundCard = card('React to sound',
-    row('React to sound', toggle('soundOn', () => st.sound.on, v => { st.sound.on = v; syncRows(); }), 'Choose one effect or several'),
-    tagged('sound', row('Pulse', toggle('soundPulse', () => st.sound.pulse, v => { st.sound.pulse = v; }), 'The logo and the glow breathe')),
-    tagged('sound', row('Particles', toggle('soundParticles', () => st.sound.particles, v => { st.sound.particles = v; }), 'The particles speed up and shine')),
-    tagged('sound', row('Wave ring', toggle('soundRing', () => st.sound.ring, v => { st.sound.ring = v; }), 'A ring that follows the sound')),
-    tagged('sound', row('Ripples', toggle('soundRipples', () => st.sound.ripples, v => { st.sound.ripples = v; }), 'Rings spread out on each beat')),
-    tagged('sound', row('Vibration', toggle('soundVibe', () => st.sound.vibe, v => { st.sound.vibe = v; syncRows(); }), 'The logo trembles with the bass')),
+    row('React to sound', toggle('soundOn', () => st.sound.on, v => { st.sound.on = v; syncRows(); }), 'One effect or several'),
+    tagged('sound', row('Pulse', toggle('soundPulse', () => st.sound.pulse, v => { st.sound.pulse = v; }), 'Logo and glow breathe')),
+    tagged('sound', row('Particles', toggle('soundParticles', () => st.sound.particles, v => { st.sound.particles = v; }), 'Faster and brighter')),
+    tagged('sound', row('Wave ring', toggle('soundRing', () => st.sound.ring, v => { st.sound.ring = v; }), 'A ring around the logo')),
+    tagged('sound', row('Ripples', toggle('soundRipples', () => st.sound.ripples, v => { st.sound.ripples = v; }), 'A ring on each beat')),
+    tagged('sound', row('Vibration', toggle('soundVibe', () => st.sound.vibe, v => { st.sound.vibe = v; syncRows(); }), 'Shakes with the bass')),
     tagged('vibe', row('Vibration strength', slider('soundVibeAmount', 5, 100, () => st.sound.vibeAmount, v => { st.sound.vibeAmount = v; }, ' %', 50))),
-    tagged('sound', row('Effects color', effectColor, 'For the rings and ripples')));
+    tagged('sound', row('Effects color', effectColor, 'Rings and ripples')));
 
   const stage = el('div', 'cr-stage');
   frame = document.createElement('iframe');

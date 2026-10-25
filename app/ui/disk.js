@@ -334,7 +334,7 @@
   function renderSources() {
     const sources = $('f-sources');
     const same = (a, b) => a && b && a.replace(/\\$/, '').toLowerCase() === b.replace(/\\$/, '').toLowerCase();
-    const rows = f.disks.map(d => ({ icon: 'disk', name: d.name, note: tr('Whole drive, Windows included'), value: size(d.size), action: () => send('files.source', { value: d.path }), active: same(f.source, d.path) }));
+    const rows = f.disks.map(d => ({ icon: 'disk', name: d.name, note: tr('Windows included'), value: size(d.size), action: () => send('files.source', { value: d.path }), active: same(f.source, d.path) }));
     rows.push({ icon: 'bramble', name: 'Personal folder', note: f.custom, value: '', action: () => send('files.source', { value: 'custom' }), active: same(f.source, f.custom) });
     const other = !rows.some(l => l.active);
     rows.push({ icon: 'folder', name: other ? f.sourceName : 'Choose a folder', note: other ? f.source : tr('Pick any folder'), value: '', action: () => send('files.browse'), active: other, choose: true });
