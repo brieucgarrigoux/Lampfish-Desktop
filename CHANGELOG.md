@@ -21,7 +21,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Home can be customized: any service can have its card at the bottom, the cards and the three blocks move with a drag or the arrow keys, and a block can be hidden. Reset Home puts it back, with Undo.
 - What is dragged follows the pointer and the rest slides out of its way, in the bar, on Home and in the categories of Arrange, instead of jumping.
 
+- Taskbar: a new service that shows and changes what Windows lets a user set for the taskbar (alignment, search, Task View, Widgets, the show desktop corner, seconds in the clock, combining windows, the taskbar on every screen, automatic hiding), with Undo and a button that puts everything back as it was.
+- Convert: a new service that changes the kind of a file on the PC, with nothing sent anywhere. Images become PNG, JPG, BMP, GIF, TIFF, an icon or a PDF; a PDF becomes images, is merged, cut or turned; text and Office documents become a PDF. The results go to the Shelf, and any card of the Shelf can be sent to it.
+- Go to: Ctrl K opens a search that goes to any service by name. Home is an item of the bar.
+- Home: the cards sit in any cell of a grid, an empty cell stays empty, and a button in the corner of a card changes its size.
+- Arrange: Straighten the icons seats every desktop icon in the nearest cell of the grid, with Undo.
+- Companion: tabs for the Shelf, Audio, Notes and Convert, a dashboard with the dials, the disk, the theme (changed with arrows) and the audio output, and the window grows out of the button.
+
 ### Changed
+- The bar on the left: each family is one button that opens its services beside it, and the arrow keys walk its buttons.
+- A state is a lamp and a word instead of a tinted capsule, and a state that is normal says nothing: the Up to 10 pill of Startup and the All good pill of Hardware are gone.
+- Shelf is called Dépôt in French.
 - The interface moves from violet to turquoise on dark gray surfaces, the application is now called lampfish, and the bar, the window and the application icon carry the new fish mark.
 - Folders is now called Storage, the word Windows uses for the space on its drives.
 - Sounds: the volume and the microphone of Windows moved to Audio.
@@ -38,6 +48,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Home: in a narrow window, the wallpaper controls sit in one row beside the preview, and two columns put them under it.
 
 ### Fixed
+- Shelf: a file added from an old folder landed at the end of the list and looked as if nothing had happened; Open the folder did nothing; the Mouse folder button also opened the Shelf.
+- Audio: the highlight of a card stopped at the volume.
+- Desktop icons: the last row of a full column stops 8 px above the taskbar instead of 23.
+- Notes: Delete, the bin of a row and the Delete key ask for a second click, within 4 seconds, before a note goes.
+- Companion: the button could vanish while it was dragged, or move on a plain click, or stay hidden after a failed capture. It now stays in front, except for a game, a film or a presentation.
 - Health: the program named as the busiest could be the page engine of Bramble itself, Microsoft Edge WebView2. Its processes now count for the app that shows them.
 - Sounds: Reset everything turned on the dock sounds. Only the sound of the speed test is on by default.
 - Home: HTML wallpapers filled a quarter of their thumbnail in the side panel.
