@@ -58,8 +58,8 @@
 .h-instrument__value span { max-width: 100%; font-size: var(--text-caption); color: var(--text-pale); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .h-instrument.alert .h-instrument__value b { color: var(--danger); }
 
-.h-shortcuts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-top: 12px; }
-.h-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; min-width: 0; padding: 10px 12px 11px; border: 0; border-radius: var(--radius-card); background: var(--group); text-align: left; transition: background var(--fast); }
+.h-shortcuts { display: grid; grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr)); grid-auto-rows: 118px; gap: 12px; margin-top: 12px; }
+.h-tile { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 5px; min-width: 0; min-height: 0; overflow: hidden; padding: 10px 12px 11px; border: 0; border-radius: var(--radius-card); background: var(--group); text-align: left; transition: background var(--fast); }
 .h-tile:hover { background: var(--group-up); }
 .h-tile[aria-pressed="true"] { background: var(--accent-tint); box-shadow: var(--chosen); }
 .h-tile:active { transform: scale(.98); }
@@ -88,7 +88,6 @@
 .h-q__night { font-size: var(--text-caption); color: var(--text-soft); }
 .h-q__night:hover { color: var(--accent); }
 
-@container home (max-width: 760px) { .h-shortcuts { display: flex; flex-wrap: wrap; } .h-shortcuts > .h-tile { flex: 1 1 calc(33.333% - 8px); min-width: 0; } }
 @container home (max-width: 760px) {
   .h-main { grid-template-columns: minmax(0, 1fr); }
   .h-quickset { grid-template-columns: minmax(0, 1fr); }
@@ -135,7 +134,8 @@
 .h-icon i { flex: none; max-width: 100%; font: normal 9px/1.2 "Segoe UI", system-ui, sans-serif; color: #fff; text-align: center; text-shadow: 0 1px 2px rgba(0, 0, 0, .9); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .h-desktop.hidden .h-icon { display: none; }
 
-.h-tile .h-visual { display: flex; align-items: center; width: 100%; min-height: 24px; }
+.h-tile .h-visual { display: flex; align-items: center; flex: 1; width: 100%; min-height: 24px; }
+.h-tile[data-size="2x2"] .h-value, .h-tile[data-size="1x2"] .h-value { font-size: var(--text-title); }
 .h-images { display: flex; gap: 8px; align-items: center; }
 .h-images img { width: 24px; height: 24px; object-fit: contain; }
 .h-images img.retro { image-rendering: pixelated; }

@@ -73,6 +73,13 @@ body.bar-editing .rail-title { box-shadow: inset 0 0 0 1px var(--hairline-strong
 .home-editing .h-tile { cursor: grab; touch-action: none; user-select: none; box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--accent) 40%, transparent); }
 .home-editing .h-tile .h-unpin { flex: none; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--raised); color: var(--text-soft); transition: color var(--fast); }
 .home-editing .h-tile:hover .h-unpin { color: var(--text); }
+.h-tile.grabbed { transition: none; }
+/* The cells of the grid show while the cards are arranged. */
+.h-cell { border-radius: var(--radius-card); background: color-mix(in srgb, var(--hover) 55%, transparent); box-shadow: inset 0 0 0 1px var(--hairline); pointer-events: none; }
+.h-size { display: none; position: absolute; right: 6px; bottom: 6px; place-items: center; width: 24px; height: 24px; border-radius: var(--radius-small); background: var(--raised); color: var(--text-soft); cursor: pointer; }
+.h-size:hover { color: var(--text); background: var(--hover); }
+.h-size svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.home-editing .h-size { display: grid; }
 .home-editing .h-tile.grabbed { position: relative; z-index: 2; cursor: grabbing; background: var(--group-up); box-shadow: inset 0 0 0 1.5px var(--accent), var(--float); }
 .home-editing .h-shortcuts.is-empty { min-height: 64px; border: 1.5px dashed var(--hairline-strong); border-radius: var(--radius-card); }
 .h-pin { margin-top: 12px; padding: 12px 14px 14px; border-radius: var(--radius-card); background: var(--group); }

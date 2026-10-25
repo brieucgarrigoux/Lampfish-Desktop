@@ -33,18 +33,169 @@
     if (tiles[view]) return tiles[view];
     const b = document.createElement('button');
     b.className = 'h-tile';
-    b.innerHTML = `<header>${glyph(iconOf(view))}<span class="h-name"></span><span class="h-unpin" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m7 7 10 10M17 7 7 17"/></svg></span></header><span class="h-value"></span><span class="h-visual"></span>`;
+    b.innerHTML = `<header>${glyph(iconOf(view))}<span class="h-name"></span><span class="h-unpin" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m7 7 10 10M17 7 7 17"/></svg></span></header><span class="h-value"></span><span class="h-visual"></span><span class="h-size" role="button" tabindex="-1" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 20h6v-6M10 4H4v6"/></svg></span>`;
     b.querySelector('.h-name').textContent = tr(SHORTCUTS[view][0]);
     b.dataset.view = view;
     b.setAttribute('aria-pressed', 'false');
     b.addEventListener('click', () => {
       if (b._dragged) return;
-      if (editing) { b.remove(); saveHome(); placeTiles(); return; }
+      if (editing) { b.remove(); arrangeTiles(); saveHome(); placeTiles(); return; }
       open(view);
     });
-    dragOrder(b, { peers: () => [...$('h-tiles').children], active: () => editing, done: saveHome });
+    b.querySelector('.h-size').addEventListener('click', e => { e.stopPropagation(); if (editing) resizeTile(b); });
+    dragTile(b);
     return tiles[view] = { el: b, value: b.querySelector('.h-value'), detail: null, visual: b.querySelector('.h-visual') };
   }
+
+  // The cards sit on a grid of cells: any cell can hold one, a card takes one to three cells across and one or two down, and an empty cell stays empty.
+  // What a card is dropped on is pushed down. The columns follow the width of the page.
+  const CELL_MIN = 150, GAP = 12, SIZES = [[1, 1], [2, 1], [1, 2], [2, 2]];
+  let cols = 4, spots = {};
+  const tileEls = () => [...$('h-tiles').children].filter(el => el.classList.contains('h-tile'));
+
+  // Where every card goes: `first` is placed where it is wanted, the others keep theirs when they can, and a card that does not have a place yet takes the first free one.
+  function solveGrid(views, wanted, first) {
+    const used = new Set(), out = {};
+    const free = (c, r, w, h) => { if (c < 0 || c + w > cols) return false; for (let i = 0; i < w; i++) for (let j = 0; j < h; j++) if (used.has((c + i) + ',' + (r + j))) return false; return true; };
+    const take = (v, c, r, w, h) => { for (let i = 0; i < w; i++) for (let j = 0; j < h; j++) used.add((c + i) + ',' + (r + j)); out[v] = { col: c, row: r, w, h }; };
+    const order = views.slice().sort((a, b) => {
+      if (a === first) return -1;
+      if (b === first) return 1;
+      const A = wanted[a], B = wanted[b];
+      if (A && B) return A.row - B.row || A.col - B.col;
+      return A ? -1 : B ? 1 : views.indexOf(a) - views.indexOf(b);
+    });
+    for (const v of order) {
+      const want = wanted[v], w = Math.min(cols, (want && want.w) || 1), h = (want && want.h) || 1;
+      if (want) {
+        const c = Math.max(0, Math.min(cols - w, want.col));
+        let r = Math.max(0, want.row);
+        while (!free(c, r, w, h)) r++;
+        take(v, c, r, w, h);
+      } else {
+        let r = 0, found = false;
+        for (; !found; r++) for (let c = 0; c <= cols - w && !found; c++) if (free(c, r, w, h)) { take(v, c, r, w, h); found = true; }
+      }
+    }
+    return out;
+  }
+
+  // Puts every card where the grid says. `want` overrides the wish of some cards (a card being moved or resized).
+  function arrangeTiles(want = {}, first = null) {
+    const zone = $('h-tiles'), els = tileEls();
+    const saved = {};
+    for (const p of (layoutNow.TilePlaces || [])) saved[p.Id] = { col: p.Col, row: p.Row, w: p.W, h: p.H };
+    const wanted = {};
+    for (const el of els) { const v = el.dataset.view; wanted[v] = want[v] || spots[v] || saved[v] || null; }
+    spots = solveGrid(els.map(el => el.dataset.view), wanted, first);
+    let rows = 1;
+    for (const el of els) {
+      const s = spots[el.dataset.view];
+      el.style.gridColumn = (s.col + 1) + ' / span ' + s.w;
+      el.style.gridRow = (s.row + 1) + ' / span ' + s.h;
+      el.dataset.size = s.w + 'x' + s.h;
+      rows = Math.max(rows, s.row + s.h);
+    }
+    // While arranging, every empty cell shows, and one more row to drop a card into.
+    for (const cell of [...zone.querySelectorAll('.h-cell')]) cell.remove();
+    if (editing) {
+      const taken = new Set();
+      for (const el of els) { const s = spots[el.dataset.view]; for (let i = 0; i < s.w; i++) for (let j = 0; j < s.h; j++) taken.add((s.col + i) + ',' + (s.row + j)); }
+      for (let r = 0; r <= rows; r++) for (let c = 0; c < cols; c++) if (!taken.has(c + ',' + r)) {
+        const cell = document.createElement('i');
+        cell.className = 'h-cell';
+        cell.style.gridColumn = String(c + 1);
+        cell.style.gridRow = String(r + 1);
+        zone.append(cell);
+      }
+    }
+  }
+
+  // The columns that fit, at least two.
+  function fitColumns() {
+    const zone = $('h-tiles'), width = zone.clientWidth;
+    if (!width) return;
+    const next = Math.max(2, Math.min(8, Math.floor((width + GAP) / (CELL_MIN + GAP))));
+    if (next === cols && zone.style.getPropertyValue('--cols')) return;
+    cols = next;
+    zone.style.setProperty('--cols', String(cols));
+    spots = {};
+    arrangeTiles();
+  }
+
+  // A card follows the pointer in the edit mode; the cards in its way glide down, it settles in the cell it was left over.
+  function dragTile(b) {
+    let start = null, dragging = false, home = null, origin = null, last = '';
+    const view = () => b.dataset.view;
+    const spot = () => { const t = b.style.transform; b.style.transform = ''; const r = b.getBoundingClientRect(); b.style.transform = t; return r; };
+    const follow = e => {
+      if (!start || e.pointerId !== start.id) return;
+      if (!dragging) {
+        if (Math.hypot(e.clientX - start.x, e.clientY - start.y) < 6) return;
+        dragging = true;
+        if (b._slide) b._slide.cancel();
+        origin = home = spot();
+        start.dx = start.x - origin.left; start.dy = start.y - origin.top;
+        b.classList.add('grabbed');
+      }
+      const zone = $('h-tiles').getBoundingClientRect(), cw = (zone.width - GAP * (cols - 1)) / cols, rh = parseFloat(getComputedStyle($('h-tiles')).gridAutoRows) || 118;
+      const col = Math.round((e.clientX - start.dx - zone.left) / (cw + GAP)), row = Math.round((e.clientY - start.dy - zone.top) / (rh + GAP));
+      const key = col + ',' + row;
+      if (key !== last) {
+        last = key;
+        const s = spots[view()];
+        glide(tileEls().filter(x => x !== b), () => arrangeTiles({ [view()]: { col, row, w: s.w, h: s.h } }, view()));
+        home = spot();
+      }
+      b.style.transform = `translate(${e.clientX - start.x - (home.left - origin.left)}px, ${e.clientY - start.y - (home.top - origin.top)}px) scale(1.02)`;
+    };
+    const end = e => {
+      if (!start || e.pointerId !== start.id) return;
+      removeEventListener('pointermove', follow);
+      removeEventListener('pointerup', end);
+      removeEventListener('pointercancel', end);
+      const moved = dragging;
+      start = null; dragging = false;
+      b.classList.remove('grabbed');
+      if (!moved) return;
+      const from = b.getBoundingClientRect();
+      b.style.transform = '';
+      slide(b, from, 180);
+      b._dragged = true;
+      setTimeout(() => { b._dragged = false; }, 0);
+      saveHome();
+    };
+    b.addEventListener('pointerdown', e => {
+      if (e.button !== 0 || !editing || e.target.closest('.h-size')) return;
+      start = { x: e.clientX, y: e.clientY, id: e.pointerId };
+      dragging = false; last = '';
+      addEventListener('pointermove', follow);
+      addEventListener('pointerup', end);
+      addEventListener('pointercancel', end);
+    });
+    // The arrows move a card by one cell.
+    b.addEventListener('keydown', e => {
+      const step = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+      if (!step || !editing || e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const s = spots[view()];
+      glide(tileEls().filter(x => x !== b), () => arrangeTiles({ [view()]: { col: s.col + step[0], row: Math.max(0, s.row + step[1]), w: s.w, h: s.h } }, view()));
+      b.focus();
+      saveHome();
+    });
+  }
+
+  // The size button turns a card through 1 x 1, 2 x 1, 1 x 2 and 2 x 2 cells.
+  function resizeTile(b) {
+    const s = spots[b.dataset.view];
+    let at = SIZES.findIndex(z => z[0] === s.w && z[1] === s.h);
+    let next = SIZES[(at + 1) % SIZES.length];
+    if (next[0] > cols) next = SIZES.find(z => z[0] <= cols && z[1] !== s.h) || [1, 1];
+    glide(tileEls().filter(x => x !== b), () => arrangeTiles({ [b.dataset.view]: { col: s.col, row: s.row, w: next[0], h: next[1] } }, b.dataset.view));
+    saveHome();
+  }
+
   // This PC opens its details in the side panel, like the tiles, so Home stays in view.
   const PARTS = { processor: 'processor', memory: 'memory', disk: 'disk', power: 'battery', heat: 'temperature' };
   let rowShown = null, memoryHigh = false;
@@ -456,9 +607,10 @@
   const ordered = (saved, all) => [...(saved || []).filter(x => all.includes(x)), ...all.filter(x => !(saved || []).includes(x))];
   function layout(l) {
     layoutNow = l || {};
-    const next = JSON.stringify([layoutNow.Blocks, layoutNow.HiddenBlocks, layoutNow.Tiles, editing]);
+    const next = JSON.stringify([layoutNow.Blocks, layoutNow.HiddenBlocks, layoutNow.Tiles, layoutNow.TilePlaces, editing]);
     if (next === layoutKey) return;
     layoutKey = next;
+    spots = {};
     // The order is a style, not a move in the page: moving the block of the wallpaper would reload its live preview.
     const order = ordered(layoutNow.Blocks, Object.keys(BLOCKS)), off = layoutNow.HiddenBlocks || [];
     for (const el of main.children) {
@@ -473,12 +625,15 @@
     main.dataset.count = blocks().filter(el => !el.hidden).length;
     const list = (layoutNow.Tiles || TILES).filter(v => SHORTCUTS[v]);
     const zone = $('h-tiles'), els = list.map(v => tile(v).el);
-    if (els.some((el, i) => zone.children[i] !== el) || zone.children.length !== els.length) zone.replaceChildren(...els);
+    const now = tileEls();
+    if (els.some((el, i) => now[i] !== el) || now.length !== els.length) { spots = {}; zone.replaceChildren(...els); }
     placeTiles();
+    fitColumns();
+    arrangeTiles();
     if (shown) render();
   }
   function placeTiles() {
-    const zone = $('h-tiles'), pinned = [...zone.children].map(t => t.dataset.view);
+    const zone = $('h-tiles'), pinned = tileEls().map(t => t.dataset.view);
     zone.hidden = !pinned.length && !editing;
     zone.classList.toggle('is-empty', !pinned.length);
     $('h-pin').hidden = !editing;
@@ -489,15 +644,16 @@
       b.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${iconOf(v)}</svg><span></span><svg class="h-pin__plus" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6v12M6 12h12"/></svg>`;
       b.querySelector('span').textContent = tr(SHORTCUTS[v][0]);
       b.title = tr('Pin to Home');
-      b.addEventListener('click', () => { zone.append(tile(v).el); saveHome(); placeTiles(); if (shown) render(); });
+      b.addEventListener('click', () => { zone.append(tile(v).el); arrangeTiles(); saveHome(); placeTiles(); if (shown) render(); });
       return b;
     }));
   }
   function saveHome() {
     const all = blocks();
-    const message = { blocks: all.map(el => el.dataset.block), hiddenBlocks: all.filter(el => el.classList.contains('is-off')).map(el => el.dataset.block), tiles: [...$('h-tiles').children].map(t => t.dataset.view) };
-    layoutNow = { Blocks: message.blocks, HiddenBlocks: message.hiddenBlocks, Tiles: message.tiles };
-    layoutKey = JSON.stringify([layoutNow.Blocks, layoutNow.HiddenBlocks, layoutNow.Tiles, editing]);
+    const message = { blocks: all.map(el => el.dataset.block), hiddenBlocks: all.filter(el => el.classList.contains('is-off')).map(el => el.dataset.block), tiles: tileEls().map(t => t.dataset.view) };
+    message.places = message.tiles.filter(v => spots[v]).map(v => ({ id: v, col: spots[v].col, row: spots[v].row, w: spots[v].w, h: spots[v].h }));
+    layoutNow = { Blocks: message.blocks, HiddenBlocks: message.hiddenBlocks, Tiles: message.tiles, TilePlaces: message.places.map(p => ({ Id: p.id, Col: p.col, Row: p.row, W: p.w, H: p.h })) };
+    layoutKey = JSON.stringify([layoutNow.Blocks, layoutNow.HiddenBlocks, layoutNow.Tiles, layoutNow.TilePlaces, editing]);
     send('layout.home', message);
   }
   for (const el of main.children) {
@@ -535,6 +691,8 @@
     else if (shown) $('h-customize').focus();
   }
   $('h-customize').addEventListener('click', () => edit(true));
+  // The grid follows the width of the page.
+  new ResizeObserver(() => { if (shown) fitColumns(); }).observe($('h-tiles'));
   $('h-done').addEventListener('click', () => edit(false));
   $('h-reset').addEventListener('click', () => send('layout.reset', { what: 'home' }));
   addEventListener('keydown', e => { if (e.key === 'Escape' && editing && !document.body.classList.contains('bar-editing')) edit(false); });
