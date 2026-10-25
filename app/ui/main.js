@@ -29,6 +29,16 @@ $('dock-open').addEventListener('click', () => { const view = document.body.data
 addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.dataset.dock && !(e.target.matches && e.target.matches('input:not([type="checkbox"]), select, textarea'))) setDock(null); });
 
 // In a narrow window the side panel would fall far below the page: it opens as a drawer from the Options button instead.
+// A Windows slideshow that changes the picture often makes a live wallpaper blink: the note offers to slow it down.
+function slideshowNote(s) {
+  const show = !!(s && s.active && !s.slowed && s.minutes > 0 && s.minutes < 1440);
+  $('w-slide').hidden = !show;
+  if (!show) return;
+  const title = $('w-slide-text').firstChild;
+  if (title && title.nodeType === 3) title.nodeValue = tr('Windows changes its own wallpaper every {0} minutes', s.minutes);
+}
+$('w-slide-go').addEventListener('click', () => send('winbg.slow'));
+
 const OWN_PANEL = ['home', 'settings', 'display', 'audio', 'taskbar', 'convert', 'shelf', 'health', 'tasks', 'modes'];
 const setPanel = open => document.body.classList.toggle('panel-open', open);
 $('panel-toggle').addEventListener('click', () => setPanel(true));
@@ -169,6 +179,7 @@ function render(state) {
   if (Bramble.mouse && state.mouse) Bramble.mouse.state(state.mouse);
   if (Bramble.arrange && state.arrange) Bramble.arrange.state(state.arrange);
   if (Bramble.arrange && state.grid) Bramble.arrange.grid(state.grid);
+  slideshowNote(state.windowsSlideshow);
   if (Bramble.files && state.files) Bramble.files.state(state.files);
   if (Bramble.duplicates && state.duplicates) Bramble.duplicates.state(state.duplicates);
   if (Bramble.moods && state.moods) Bramble.moods.state(state.moods);

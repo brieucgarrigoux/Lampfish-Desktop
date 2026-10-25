@@ -540,3 +540,6 @@ body.resizing .rail-scrollable { pointer-events: none; }
 .shortcut-keys { min-width: 140px; font-variant-numeric: tabular-nums; }
 .shortcut-keys.is-recording { color: var(--accent); box-shadow: var(--pressed); background: var(--accent-dim); }
 .shortcut-help.is-error { color: var(--warn); }
+
+.w-slide { margin: 12px 0 0; }
+.w-slide[hidden] { display: none; }

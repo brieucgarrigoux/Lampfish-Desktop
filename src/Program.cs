@@ -806,6 +806,7 @@ namespace Bramble
                 return;
             }
             if (action.StartsWith("companion.")) { if (Companion.Receive(action.Substring(action.IndexOf('.') + 1), m)) SendState(); return; }
+            if (action.StartsWith("winbg.")) { if (WindowsSlideshow.Receive(action.Substring(action.IndexOf('.') + 1), m)) SendState(); return; }
             if (action.StartsWith("grid.")) { if (DesktopGrid.Receive(action.Substring(action.IndexOf('.') + 1), m)) SendState(); return; }
             if (action.StartsWith("claude.")) { if (ClaudeUsage.Receive(action.Substring(action.IndexOf('.') + 1), m)) SendState(); return; }
             if (action.StartsWith("capture.")) { Capture.Receive(action.Substring(action.IndexOf('.') + 1), m); return; }
@@ -981,6 +982,7 @@ namespace Bramble
                 claude = ClaudeUsage.State(),
                 companion = Companion.State(),
                 grid = DesktopGrid.State(),
+                windowsSlideshow = WindowsSlideshow.State(),
                 notes = Notes.Summary(),
                 shelf = Shelf.Summary(),
                 weatherPlace = R.WeatherPlace == null ? null : R.WeatherPlace.Label,
@@ -1138,6 +1140,7 @@ namespace Bramble
 
             Load();
             try { Mouse.Uninstall(); } catch (Exception ex) { Log(ex); }
+            try { WindowsSlideshow.Restore(); } catch (Exception ex) { Log(ex); }
             try { Icons.Uninstall(); } catch (Exception ex) { Log(ex); }
             try
             {
