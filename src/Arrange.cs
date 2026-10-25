@@ -140,7 +140,7 @@ namespace Bramble
             readonly Size cell;
             // Windows draws the icon 5 px below the item position (measured at 100 and 125 %).
             const int lead = 5;
-            readonly int icon, line, frame;
+            readonly int icon, line, frame, edge;
             readonly Font font;
             double originX, originY, stepX, stepY;
             readonly Dictionary<int, double> shift = new Dictionary<int, double>();
@@ -150,6 +150,7 @@ namespace Bramble
                 Zone = zone;
                 cell = c;
                 icon = (int)Math.Round(iconSize * scale);
+                edge = (int)Math.Round(8 * scale);
                 frame = Frame(c, scale);
                 var title = SystemFonts.IconTitleFont;
                 font = new Font(title.FontFamily, (float)(title.SizeInPoints * 96 / 72 * scale), title.Style, GraphicsUnit.Pixel);
@@ -163,11 +164,13 @@ namespace Bramble
 
             int Visual(int lines) { return icon + lead + lines * line; }
 
-            // Like the columns, the rows keep half the space between two rows above the first one and below the last one.
+            // The first row keeps half the space between two rows above it, as the columns do on the sides, so a title is never cut.
+            // The last row sits a few pixels above the edge of the work area (the taskbar), so a full column reads as touching the bottom.
             void Spread(int bottom)
             {
-                stepY = Math.Max(cell.Height, (Zone.Height + Visual(1) - bottom) / (double)Rows);
-                originY = Zone.Y + (stepY - Visual(1)) / 2 - lead;
+                double step = Math.Max(cell.Height, (Zone.Height + Visual(1) - bottom) / (double)Rows), top = (step - Visual(1)) / 2;
+                stepY = Rows > 1 ? Math.Max(step, (Zone.Height - top - edge - bottom) / (Rows - 1)) : step;
+                originY = Zone.Y + top - lead;
             }
 
             int Lines(string name)
