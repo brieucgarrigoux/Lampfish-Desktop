@@ -56,8 +56,10 @@
   for (const f of families) {
     const title = titleOf(f);
     title.addEventListener('click', () => { if (open === f) close(false); else show(f, false); });
-    // Once a flyout is open, the others open as the pointer passes over their button, as in a menu bar.
-    title.addEventListener('pointerenter', () => { if (open && open !== f) show(f, false); });
+    // Crossing another button on the way to the flyout must not swap it: the pointer has to rest there first.
+    let rest = 0;
+    title.addEventListener('pointerenter', () => { clearTimeout(rest); if (open && open !== f) rest = setTimeout(() => { if (open && open !== f) show(f, false); }, 350); });
+    title.addEventListener('pointerleave', () => clearTimeout(rest));
     title.addEventListener('keydown', e => {
       if (e.key === 'ArrowRight' || e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show(f, true); }
       else if (e.key === 'ArrowLeft' || e.key === 'Escape') { e.preventDefault(); close(false); }

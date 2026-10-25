@@ -15,7 +15,7 @@
 .rail-family.is-open > .rail-title .rail-chev { opacity: 1; }
 .rail-search kbd { display: none; margin-left: auto; padding: 1px 6px; border-radius: var(--radius-small); background: var(--raised); font: var(--text-badge) var(--numbers); color: var(--text-pale); }
 .rail-family.has-current > .rail-title { color: var(--text); }
-.rail-family.has-current > .rail-title::after { content: ""; position: absolute; top: 7px; right: 14px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+.rail-family.has-current > .rail-title::before { content: ""; position: absolute; left: -9px; top: 50%; width: 3px; height: 18px; margin-top: -9px; border-radius: 0 3px 3px 0; background: var(--lit); box-shadow: 0 0 8px var(--lit); }
 .rail-family:not(.is-open):not(:has(.service:not([hidden]))) { display: none; }
 body.bar-editing .rail-family:not(:has(.service:not([hidden]))) { display: flex; }
 
@@ -34,7 +34,7 @@ body.bar-editing .rail-family:not(:has(.service:not([hidden]))) { display: flex;
   .rail-title > span::after { content: none; }
   .rail-search kbd { display: inline-block; }
   .rail-title .rail-chev { display: block; }
-  .rail-family.has-current > .rail-title::after { top: 50%; right: 34px; margin-top: -3px; }
+  .rail-family.has-current > .rail-title::before { left: -10px; }
 }
 
 /* The flyout sits in the page, next to the bar. */
