@@ -101,7 +101,14 @@
   }
 
   function event(m) {
-    if (m.type === 'shelf.list') { items = m.items; render(); }
+    if (m.type === 'shelf.list') {
+      items = m.items;
+      // A filter that hides what was just added would look like nothing happened.
+      if (m.added && m.added.length && kind !== 'all' && !m.added.some(n => items.some(i => i.name === n && i.kind === kind))) kind = 'all';
+      render();
+      const first = m.added && m.added.length ? $('s-grid').querySelector(`.s-card[data-name="${CSS.escape(m.added[0])}"]`) : null;
+      if (first) { first.scrollIntoView({ block: 'nearest', behavior: calm.matches ? 'auto' : 'smooth' }); if (!calm.matches) first.animate([{ boxShadow: '0 0 0 2px var(--accent)' }, { boxShadow: '0 0 0 2px transparent' }], { duration: 1400, easing: 'ease-out' }); }
+    }
     else if (m.type === 'shelf.dragged') Bramble.shelf.out = false;
   }
 
@@ -113,7 +120,7 @@
 
   for (const b of $('s-filters').children) b.addEventListener('click', () => { kind = b.dataset.kind; render(); });
   $('s-add').addEventListener('click', () => send('shelf.add'));
-  $('s-folder').addEventListener('click', () => send('shelf.reveal', {}));
+  $('shelf-folder').addEventListener('click', () => send('shelf.reveal', {}));
   $('s-capture').addEventListener('click', () => send('capture.start', { delay: 0 }));
   $('s-capture-more').addEventListener('click', e => { e.stopPropagation(); menu($('s-menu').hidden); });
   for (const b of $('s-menu').querySelectorAll('[data-capture]')) b.addEventListener('click', () => {

@@ -28,8 +28,9 @@ namespace Bramble
         static string IconFor(FileInfo f)
         {
             string icon;
-            if (!icons.TryGetValue(f.Extension, out icon)) icons[f.Extension] = icon = Tasks.IconOf(f.FullName);
-            return icon;
+            if (icons.TryGetValue(f.Extension, out icon)) return icon;
+            try { icon = Tasks.IconOf(f.FullName); } catch (Exception ex) { Program.Log(ex); icon = null; }
+            return icons[f.Extension] = icon;
         }
 
         public static object[] Items()
@@ -61,7 +62,10 @@ namespace Bramble
             catch { return new { count = 0, captures = 0 }; }
         }
 
-        public static void SendList() { Program.Send(new { type = "shelf.list", items = Items() }); }
+        public static void SendList() { SendList(null); }
+
+        // `added` names the files that just arrived, so the page can bring them into view.
+        static void SendList(IEnumerable<string> added) { Program.Send(new { type = "shelf.list", items = Items(), added = added == null ? new string[0] : added.ToArray() }); }
 
         static string Unique(string name)
         {
@@ -77,18 +81,29 @@ namespace Bramble
             return File.Exists(path) ? path : null;
         }
 
-        static int Copy(IEnumerable<string> files)
+        // The list is newest first, so a copy is dated now: an old file would otherwise land at the very end and look like it was never added.
+        static List<string> Copy(IEnumerable<string> files)
         {
-            int count = 0;
+            var added = new List<string>();
             foreach (string file in files)
                 try
                 {
                     if (!File.Exists(file)) continue;
-                    File.Copy(file, Path.Combine(Folder, Unique(Path.GetFileName(file))));
-                    count++;
+                    string name = Unique(Path.GetFileName(file)), path = Path.Combine(Folder, name);
+                    File.Copy(file, path);
+                    File.SetAttributes(path, File.GetAttributes(path) & ~(FileAttributes.ReadOnly | FileAttributes.Hidden));
+                    File.SetLastWriteTimeUtc(path, DateTime.UtcNow);
+                    added.Add(name);
                 }
                 catch (Exception ex) { Program.Log(ex); }
-            return count;
+            return added;
+        }
+
+        static void Added(List<string> added, int asked)
+        {
+            if (added.Count > 0) Program.Announce(added.Count == 1 ? "1 file added to the shelf" : "{0} files added to the shelf", added.Count);
+            else if (asked > 0) Program.Announce("Nothing could be added to the shelf");
+            SendList(added);
         }
 
         // A capture lands here as a PNG named after the moment it was taken.
@@ -108,18 +123,17 @@ namespace Bramble
                 case "list": SendList(); return false;
                 case "drop":
                 {
-                    int count = Copy(files ?? new List<string>());
-                    if (count > 0) Program.Announce(count == 1 ? "1 file added to the shelf" : "{0} files added to the shelf", count);
-                    SendList();
-                    return count > 0;
+                    var dropped = files ?? new List<string>();
+                    var added = Copy(dropped);
+                    Added(added, dropped.Count);
+                    return added.Count > 0;
                 }
                 case "add":
                     using (var dialog = new OpenFileDialog { Multiselect = true, Title = Language.T("Add to the shelf") })
                     {
                         if (dialog.ShowDialog(Program.SettingsWindow) != DialogResult.OK) return false;
-                        Copy(dialog.FileNames);
+                        Added(Copy(dialog.FileNames), dialog.FileNames.Length);
                     }
-                    SendList();
                     return false;
                 case "open":
                 {
