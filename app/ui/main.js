@@ -1,7 +1,7 @@
 'use strict';
 
 const Bramble = { state: null, station: null, icons: null, arrange: null, mouse: null, network: null, files: null, hardware: null, tasks: null, moods: null, creator: null };
-const VIEWS = ['home', 'modes', 'wallpaper', 'create', 'icons', 'mouse', 'station', 'display', 'audio', 'arrange', 'notes', 'shelf', 'health', 'tasks', 'files', 'duplicates', 'hardware', 'network', 'settings'];
+const VIEWS = ['home', 'modes', 'wallpaper', 'create', 'icons', 'mouse', 'station', 'display', 'audio', 'taskbar', 'arrange', 'notes', 'shelf', 'health', 'tasks', 'files', 'duplicates', 'hardware', 'network', 'settings'];
 
 const scrolls = {}, narrowLayout = matchMedia('(max-width: 900px)');
 const scrollZones = () => narrowLayout.matches ? [document.scrollingElement] : [document.querySelector('.contents'), document.querySelector('.panel')];
@@ -29,7 +29,7 @@ $('dock-open').addEventListener('click', () => { const view = document.body.data
 addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.dataset.dock && !(e.target.matches && e.target.matches('input:not([type="checkbox"]), select, textarea'))) setDock(null); });
 
 // In a narrow window the side panel would fall far below the page: it opens as a drawer from the Options button instead.
-const OWN_PANEL = ['home', 'settings', 'display', 'audio', 'shelf', 'health', 'tasks', 'modes'];
+const OWN_PANEL = ['home', 'settings', 'display', 'audio', 'taskbar', 'shelf', 'health', 'tasks', 'modes'];
 const setPanel = open => document.body.classList.toggle('panel-open', open);
 $('panel-toggle').addEventListener('click', () => setPanel(true));
 $('panel-close').addEventListener('click', () => setPanel(false));
@@ -59,6 +59,7 @@ function showView(view) {
   if (Bramble.creator) Bramble.creator.visible(view === 'create');
   if (Bramble.display) Bramble.display.visible(view === 'display');
   if (Bramble.audio) Bramble.audio.visible(view === 'audio');
+  if (Bramble.taskbar) Bramble.taskbar.visible(view === 'taskbar');
   if (Bramble.notes) Bramble.notes.visible(view === 'notes');
   if (Bramble.shelf) Bramble.shelf.visible(view === 'shelf');
   if (Bramble.health) Bramble.health.visible(view === 'health');
@@ -123,6 +124,7 @@ webview.addEventListener('message', e => {
   if (m.type && m.type.startsWith('shelf.')) { if (Bramble.shelf) Bramble.shelf.event(m); return; }
   if (m.type && m.type.startsWith('health.')) { if (Bramble.health) Bramble.health.event(m); return; }
   if (m.type && m.type.startsWith('duplicates.')) { if (Bramble.duplicates) Bramble.duplicates.event(m); return; }
+  if (m.type && m.type.startsWith('taskbar.')) { if (Bramble.taskbar) Bramble.taskbar.event(m); return; }
   if (m.type === 'window.closed') { if (Bramble.creator) Bramble.creator.reset(); return; }
   render(m);
 });

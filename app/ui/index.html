@@ -21,6 +21,7 @@
 <link rel="stylesheet" href="home.css">
 <link rel="stylesheet" href="display.css">
 <link rel="stylesheet" href="audio.css">
+<link rel="stylesheet" href="taskbar.css">
 <link rel="stylesheet" href="health.css">
 <link rel="stylesheet" href="duplicates.css">
 <link rel="stylesheet" href="notes.css">
@@ -82,6 +83,10 @@
     <button class="service" data-view="audio">
       <svg viewBox="0 0 24 24"><path d="M4 10v4h3.5l4.5 3.5v-11L7.5 10z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6M18 6.8a7.4 7.4 0 0 1 0 10.4"/></svg>
       Audio
+    </button>
+    <button class="service" data-view="taskbar">
+      <svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="M3.5 15.5h17M7 17.5h.01M10.5 17.5h.01M14 17.5h.01"/></svg>
+      Taskbar
     </button>
     <button class="service" data-view="arrange">
       <svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><rect x="14" y="14" width="6" height="6" rx="1.2"/></svg>
@@ -452,6 +457,59 @@
     <div class="library" id="library"></div>
   </section>
 
+  <section class="view view--taskbar only-taskbar" aria-label="Taskbar">
+    <h1>Taskbar</h1>
+    <p class="help-section tb-help" id="tb-old" hidden>This PC runs Windows 10: only the settings that Windows 10 has are shown.</p>
+    <h2 class="settings-title">Look</h2>
+    <div class="group">
+      <div class="row row--setting">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M4 12h16M4 17h7"/></svg><span>Alignment<small>Icons at the left or in the middle</small></span></span>
+        <div class="segments tb-choice" id="tb-align" role="radiogroup" aria-label="Alignment"><button type="button" role="radio" data-value="0" aria-checked="false">Left</button><button type="button" role="radio" data-value="1" aria-checked="false">Center</button></div>
+      </div>
+      <div class="row row--setting">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.2-4.2"/></svg><span>Search<small>What the search takes in the taskbar</small></span></span>
+        <div class="segments tb-choice" id="tb-search" role="radiogroup" aria-label="Search"><button type="button" role="radio" data-value="0" aria-checked="false">Hidden</button><button type="button" role="radio" data-value="1" aria-checked="false">Icon</button><button type="button" role="radio" data-value="2" aria-checked="false">Box</button><button type="button" role="radio" data-value="3" aria-checked="false">Icon + text</button></div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="tb-seconds">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="7.5"/><path d="M12 9v4l2.5 1.5M10 3.5h4"/></svg><span>Seconds in the clock<small>Shown next to the time</small></span></span>
+      </label>
+    </div>
+    <h2 class="settings-title">Buttons</h2>
+    <div class="group">
+      <label class="toggle">
+        <input type="checkbox" id="tb-taskView">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="11" height="9" rx="1.5"/><path d="M8 18h9a2 2 0 0 0 2-2V9"/></svg><span>Task View<small>The button that shows the open windows</small></span></span>
+      </label>
+      <label class="toggle">
+        <input type="checkbox" id="tb-widgets">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span>Widgets<small>The news and weather button</small></span></span>
+      </label>
+      <label class="toggle">
+        <input type="checkbox" id="tb-corner">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="M16 19v-4h4.5"/></svg><span>Show desktop corner<small>A click on the far right shows the desktop</small></span></span>
+      </label>
+    </div>
+    <h2 class="settings-title">Behavior</h2>
+    <div class="group">
+      <label class="toggle">
+        <input type="checkbox" id="tb-autoHide">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5h16M12 11v7M9 15l3 3 3-3"/></svg><span>Hide it automatically<small>It slides away and comes back when the pointer reaches the edge</small></span></span>
+      </label>
+      <div class="row row--setting">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="6" width="10" height="8" rx="1.5"/><rect x="8" y="10" width="12" height="8" rx="1.5"/></svg><span>Combine windows<small>Buttons of the same app, on one button</small></span></span>
+        <div class="segments tb-choice" id="tb-combine" role="radiogroup" aria-label="Combine windows"><button type="button" role="radio" data-value="0" aria-checked="false">Always</button><button type="button" role="radio" data-value="1" aria-checked="false">When full</button><button type="button" role="radio" data-value="2" aria-checked="false">Never</button></div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="tb-allScreens">
+        <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5.5" width="10" height="7" rx="1"/><rect x="11.5" y="9.5" width="10" height="7" rx="1"/></svg><span>On every screen<small>The taskbar on each of the screens</small></span></span>
+      </label>
+    </div>
+    <p class="help-section tb-help">Windows 11 has no setting to put the taskbar at the top or on a side, to change its size or to make it transparent. Changing them means injecting code into Explorer, which breaks with Windows updates and is read as malware by antiviruses, so lampfish does not.</p>
+    <button class="row action" id="tb-reset">
+      <span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 4.5v4h4"/></svg><span>Put the taskbar back as it was<small>Every setting lampfish changed goes back to what it was</small></span></span>
+    </button>
+  </section>
   <section class="view view--arrange only-arrange" aria-label="Arrange">
     <h1>Arrange</h1>
     <div class="map" id="map" role="group" aria-label="Screen map"><div class="empty loading">Reading the desktop</div></div>
@@ -773,6 +831,10 @@
       <details class="tr-row" data-view="audio">
         <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3.5l4.5 3.5v-11L7.5 10z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6M18 6.8a7.4 7.4 0 0 1 0 10.4"/></svg><span>Audio<small>Chooses the default devices when asked</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
         <dl class="tr-body"><dt>Reads</dt><dd>The audio devices, their format, volume and level</dd><dt>Changes</dt><dd>The default output and input, the volume and mute of each device and of the microphone, and a keyboard shortcut when it is on</dd><dt>To undo</dt><dd>Undo for 8 seconds, or the same control</dd></dl>
+      </details>
+      <details class="tr-row" data-view="taskbar">
+        <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="M3.5 15.5h17M7 17.5h.01M10.5 17.5h.01M14 17.5h.01"/></svg><span>Taskbar<small>Look and behavior of the taskbar</small></span></span><svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></summary>
+        <dl class="tr-body"><dt>Reads</dt><dd>The taskbar settings of Windows for this user</dd><dt>Changes</dt><dd>The same settings that Windows has in its Taskbar page, and its automatic hiding</dd><dt>To undo</dt><dd>Undo for 8 seconds after a change, or Put the taskbar back as it was</dd></dl>
       </details>
       <details class="tr-row" data-view="arrange">
         <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><rect x="14" y="14" width="6" height="6" rx="1.2"/></svg><span>Arrange<small>Moves the desktop icons</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
@@ -1222,6 +1284,7 @@
 <script src="creator.js"></script>
 <script src="display.js"></script>
 <script src="audio.js"></script>
+<script src="taskbar.js"></script>
 <script src="health.js"></script>
 <script src="duplicates.js"></script>
 <script src="home.js"></script>
