@@ -132,7 +132,8 @@ h2 .count { margin-left: 8px; font: 400 var(--text-caption) var(--numbers); font
 .panel-close svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
 .zoom-pill { position: fixed; right: calc(14px / var(--zoom, 1)); bottom: calc(14px / var(--zoom, 1)); z-index: 40; display: flex; align-items: center; gap: 2px; padding: 4px; border-radius: 99px;
   background: var(--shell); box-shadow: var(--shell-edge), 0 8px 20px rgba(0, 0, 0, .6);
-  transform: scale(calc(1 / var(--zoom, 1))); transform-origin: right bottom; }
+  transform: scale(calc(1 / var(--zoom, 1))); transform-origin: right bottom; opacity: 0; transition: opacity .2s; }
+.zoom-pill:hover, .zoom-pill:focus-within, .zoom-pill.shown { opacity: 1; }
 .zoom-pill button { display: grid; place-items: center; height: 28px; min-width: 28px; padding: 0 6px; border: 0; border-radius: 99px; background: none; color: var(--text-soft); transition: background var(--fast), color var(--fast); }
 .zoom-pill button:hover:not(:disabled) { background: var(--hover); color: var(--text); }
 .zoom-pill button:disabled { opacity: .35; cursor: default; }
@@ -207,7 +208,9 @@ body[data-view="tasks"]:not(.sheet-open) .panel, body[data-view="modes"]:not(.mo
 .fold.collapsed > .fold__body > .fold__inner { padding: 0; margin: 0; }
 @media (prefers-reduced-motion: reduce) { .fold__body { transition: none; } }
 
-.view--settings { max-width: 720px; margin-inline: auto; }
+/* Two page widths: 900 px for settings and lists, 1120 px for a gallery, a plan or instruments; Home has its own. */
+.view--settings, .view--taskbar, .view--notes { max-width: 900px; margin-inline: auto; }
+.view.only-wallpaper, .view--station, .view--shelf, .view--tasks { max-width: 1120px; margin-inline: auto; }
 .settings-title { margin: 28px 0 12px; }
 .time-select { display: inline-flex; align-items: center; gap: 2px; padding-left: 7px; border-radius: var(--radius-small); background: var(--sunken); box-shadow: inset 0 0 0 1px transparent; cursor: pointer; transition: box-shadow var(--fast); }
 .time-select:hover { box-shadow: inset 0 0 0 1px var(--hairline-strong); }

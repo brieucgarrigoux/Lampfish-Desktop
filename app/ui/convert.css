@@ -1,4 +1,4 @@
-.view--convert { max-width: 920px; }
+.view--convert { max-width: 900px; margin-inline: auto; }
 #cv-start[hidden] { display: none; }
 .cv-drop { display: flex; align-items: center; gap: 16px; padding: 18px 20px; border-radius: var(--radius-card); border: 1.5px dashed var(--hairline-strong); color: var(--text-soft); transition: background var(--fast), border-color var(--fast); }
 body.drag .cv-drop { background: var(--accent-tint); border-color: var(--accent); }

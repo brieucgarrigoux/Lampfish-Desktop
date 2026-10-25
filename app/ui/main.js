@@ -1006,7 +1006,14 @@ function paintZoom(zoom) {
   $('zoom-out').disabled = zoom <= ZOOMS[0];
   $('zoom-in').disabled = zoom >= ZOOMS[ZOOMS.length - 1];
 }
+let zoomShown = 0;
+function flashZoom() {
+  $('zoom-value').closest('.zoom-pill').classList.add('shown');
+  clearTimeout(zoomShown);
+  zoomShown = setTimeout(() => $('zoom-value').closest('.zoom-pill').classList.remove('shown'), 1800);
+}
 function zoomTo(value) {
+  flashZoom();
   if (value === zoomNow) return;
   zoomNow = zoomAsked = value;
   paintZoom(value);

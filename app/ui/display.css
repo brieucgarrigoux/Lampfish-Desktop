@@ -1,4 +1,4 @@
-.view--display { max-width: 860px; margin-inline: auto; }
+.view--display { max-width: 900px; margin-inline: auto; }
 .view--display > h1 + .d-map { margin-top: 0; }
 .d-map { display: grid; place-items: center; min-height: 190px; padding: 20px 24px; margin-bottom: 12px; }
 .d-stage { position: relative; }
