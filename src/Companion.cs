@@ -40,7 +40,7 @@ namespace Bramble
         static Timer watch, idle, refresh;
         static PerformanceCounter cpu;
         static string tab = "note";
-        static DateTime hiddenAt;
+        static DateTime hiddenAt, asideAt;
         static bool aside;
 
         static string SettingsFile { get { return Path.Combine(Program.DataFolder("Companion"), "settings.json"); } }
@@ -152,32 +152,38 @@ namespace Bramble
             return false;
         }
 
-        // Stays where it was put; out of the way when a window fills that screen.
+        // Stays where it was put, above everything; out of the way only while a game, a film or a presentation owns the screen.
         // A capture must not show the companion itself.
         static void Aside(bool away)
         {
             aside = away;
+            asideAt = DateTime.Now;
             if (away) { if (dot != null && dot.Visible) dot.Hide(); }
             else Place();
         }
 
+        // The state Windows keeps for "a full-screen application is running" (2), Direct3D full screen (3) and presentation mode (4).
+        static bool FullScreenApp()
+        {
+            int state;
+            return SHQueryUserNotificationState(out state) == 0 && (state == 2 || state == 3 || state == 4);
+        }
+        [DllImport("shell32.dll")] static extern int SHQueryUserNotificationState(out int state);
+
         static void Place()
         {
-            if (dot == null || dot.IsDisposed || !S.On || S.Hidden || aside) return;
+            // A capture that failed halfway must not leave the button hidden for good.
+            if (aside && (DateTime.Now - asideAt).TotalMinutes > 2) aside = false;
+            if (dot == null || dot.IsDisposed || !S.On || S.Hidden || aside || dot.Held) return;
             var screen = Screen.FromPoint(S.X == int.MinValue ? new Point(Screen.PrimaryScreen.WorkingArea.Right - 1, Screen.PrimaryScreen.WorkingArea.Top) : new Point(S.X, S.Y));
             var area = screen.WorkingArea;
             int side = dot.Side;
             if (S.X == int.MinValue) { S.X = area.Right - side - 8; S.Y = area.Top + area.Height * 3 / 5; }
             var at = new Point(Math.Max(area.Left, Math.Min(area.Right - side, S.X)), Math.Max(area.Top, Math.Min(area.Bottom - side, S.Y)));
-            bool covered = false;
-            IntPtr active = Native.GetForegroundWindow();
-            if (active != IntPtr.Zero && !Desktop.IsDesktop(active) && !(popup != null && active == popup.Handle))
-            {
-                Native.RECT r;
-                if (Native.GetWindowRect(active, out r) && Rectangle.FromLTRB(r.Left, r.Top, r.Right, r.Bottom).Contains(screen.Bounds)) covered = true;
-            }
-            if (covered) { if (dot.Visible) dot.Hide(); return; }
+            if (FullScreenApp()) { if (dot.Visible) dot.Hide(); return; }
             if (!dot.Gliding && (!dot.Visible || dot.Location != at || dot.Width != side)) dot.Put(at);
+            // Another window that is always on top (the taskbar after a click, a video player) can end up above the button.
+            else if (!dot.Gliding) dot.Raise();
         }
 
         static void Moved(Point p)
@@ -291,7 +297,7 @@ namespace Bramble
         {
             readonly Image logo;
             Point down, start;
-            bool moving, hover;
+            bool moving, hover, pressed;
 
             const int Diameter = 64;
             readonly Timer glide = new Timer { Interval = 15 };
@@ -300,6 +306,17 @@ namespace Bramble
 
             public int Side { get { return (int)(Diameter * Arrange.Scale(Screen.FromPoint(Location))); } }
             public bool Gliding { get { return glide.Enabled; } }
+            // True from the press to the release, so that nothing moves, hides or redraws the button under the pointer.
+            public bool Held { get { return pressed; } }
+
+            public void Raise() { Native.SetWindowPos(Handle, Native.HWND_TOPMOST, 0, 0, 0, 0, Native.SWP_NOMOVE | Native.SWP_NOSIZE | Native.SWP_NOACTIVATE); }
+
+            // Windows resizes a window that crosses to a screen with another scale, but the picture of this one is drawn at its own size: the button is sized and drawn again when it is let go.
+            protected override void WndProc(ref Message m)
+            {
+                if (m.Msg == 0x02E0) return;
+                base.WndProc(ref m);
+            }
 
             public Dot()
             {
@@ -315,7 +332,7 @@ namespace Bramble
                 {
                     double t = Math.Min(1, (DateTime.Now - glideAt).TotalMilliseconds / 180), k = 1 - Math.Pow(1 - t, 3);
                     Location = new Point(glideFrom.X + (int)Math.Round((glideTo.X - glideFrom.X) * k), glideFrom.Y + (int)Math.Round((glideTo.Y - glideFrom.Y) * k));
-                    if (t >= 1) glide.Stop();
+                    if (t >= 1) { glide.Stop(); Put(glideTo); }
                 };
             }
 
@@ -378,6 +395,7 @@ namespace Bramble
                 down = Cursor.Position;
                 start = Location;
                 moving = false;
+                pressed = true;
                 Capture = true;
             }
 
@@ -386,18 +404,28 @@ namespace Bramble
                 if (!hover) { hover = true; Draw(); }
                 if (e.Button != MouseButtons.Left) return;
                 var p = Cursor.Position;
-                if (!moving && Math.Abs(p.X - down.X) + Math.Abs(p.Y - down.Y) < 5) return;
+                // A click that slips by a few pixels stays a click.
+                if (!moving && Math.Sqrt(Math.Pow(p.X - down.X, 2) + Math.Pow(p.Y - down.Y, 2)) < 10 * Arrange.Scale(Screen.FromPoint(down))) return;
                 moving = true;
                 Location = new Point(start.X + p.X - down.X, start.Y + p.Y - down.Y);
             }
 
             protected override void OnMouseLeave(EventArgs e) { hover = false; Draw(); }
 
+            // Lost while it is held (a lock screen, an Alt + Tab): it is let go where it is, not left stuck.
+            protected override void OnMouseCaptureChanged(EventArgs e)
+            {
+                base.OnMouseCaptureChanged(e);
+                if (pressed && !Capture) { pressed = false; if (moving) { moving = false; Moved(Location); } }
+            }
+
             protected override void OnMouseUp(MouseEventArgs e)
             {
+                bool was = pressed;
+                pressed = false;
                 Capture = false;
                 if (e.Button == MouseButtons.Right) { Program.OpenSettings(); return; }
-                if (e.Button != MouseButtons.Left) return;
+                if (e.Button != MouseButtons.Left || !was) return;
                 if (moving) { moving = false; Moved(Location); return; }
                 // A click on the button while the window is open closes it: the window already hid itself when it lost the focus.
                 if (popup != null && popup.Visible) popup.Hide();

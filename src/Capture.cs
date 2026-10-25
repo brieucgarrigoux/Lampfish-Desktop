@@ -48,13 +48,20 @@ namespace Bramble
         {
             if (!whole) { Freeze(restore); return; }
             var bounds = Screen.FromPoint(Cursor.Position).Bounds;
-            using (var image = new Bitmap(bounds.Width, bounds.Height))
+            try
             {
-                using (var g = Graphics.FromImage(image)) g.CopyFromScreen(bounds.Left, bounds.Top, 0, 0, bounds.Size);
-                Done(image);
+                using (var image = new Bitmap(bounds.Width, bounds.Height))
+                {
+                    using (var g = Graphics.FromImage(image)) g.CopyFromScreen(bounds.Left, bounds.Top, 0, 0, bounds.Size);
+                    Done(image);
+                }
             }
-            if (Busy != null) Busy(false);
-            if (restore) Restore();
+            catch (Exception ex) { Program.Log(ex); }
+            finally
+            {
+                if (Busy != null) Busy(false);
+                if (restore) Restore();
+            }
         }
 
         // The window comes back as it was, maximized included.
@@ -67,9 +74,21 @@ namespace Bramble
         static void Freeze(bool restore)
         {
             Rectangle all = SystemInformation.VirtualScreen;
-            var shot = new Bitmap(all.Width, all.Height);
-            using (var g = Graphics.FromImage(shot)) g.CopyFromScreen(all.Left, all.Top, 0, 0, all.Size);
-            overlay = new Overlay(shot, all, Windows(all));
+            Bitmap shot;
+            try
+            {
+                shot = new Bitmap(all.Width, all.Height);
+                using (var g = Graphics.FromImage(shot)) g.CopyFromScreen(all.Left, all.Top, 0, 0, all.Size);
+                overlay = new Overlay(shot, all, Windows(all));
+            }
+            catch (Exception ex)
+            {
+                Program.Log(ex);
+                overlay = null;
+                if (Busy != null) Busy(false);
+                if (restore) Restore();
+                return;
+            }
             overlay.FormClosed += (s, e) =>
             {
                 var picked = overlay.Picked;
