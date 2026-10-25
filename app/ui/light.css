@@ -1,37 +1,37 @@
 /* Day: the same design on a light page. Only the tokens change; the instruments (dials, screens, the glass of the meters) stay dark, as on a real dashboard. */
 :root[data-theme="light"] {
-  --wallpaper: #d4dadb;
-  --group: #e4e8e8;
-  --group-up: #ecefef;
-  --raised: #d6dcdd;
-  --sunken: #c8d0d1;
-  --track: #b9c3c5;
-  --meter: #c6cecf;
-  --screen: #d0d7d8;
-  --hover: #dbe1e1;
-  --hairline: rgba(18, 38, 44, .12);
-  --hairline-strong: rgba(18, 38, 44, .22);
-  --text: #141b1d;
-  --text-soft: #3b464a;
-  --text-pale: #4d575b;
-  --accent: #0a776d;
+  --wallpaper: #b3bbbd;
+  --group: #c5cccd;
+  --group-up: #ced4d5;
+  --raised: #b0b9bb;
+  --sunken: #a4adaf;
+  --track: #939ea0;
+  --meter: #a3acae;
+  --screen: #aab3b5;
+  --hover: #bac2c4;
+  --hairline: rgba(10, 24, 28, .16);
+  --hairline-strong: rgba(10, 24, 28, .28);
+  --text: #0d1315;
+  --text-soft: #28333a;
+  --text-pale: #36424a;
+  --accent: #06655c;
   --accent-strong: #0f9d8f;
   --on-accent: #ffffff;
   --accent-dim: rgba(15, 157, 143, .18);
   --accent-tint: rgba(15, 157, 143, .13);
-  --accent-ring: rgba(10, 119, 109, .55);
+  --accent-ring: rgba(6, 101, 92, .6);
   --danger: #c32d41;
   --danger-dim: rgba(195, 45, 65, .12);
-  --lit: #0f9d8f;
+  --lit: #0b8b7f;
   --warn: #9a5c08;
   --bad: #bd2a3e;
 
-  --shell: linear-gradient(180deg, #edf0f0, #e4e9e9 60%, #dde2e2);
-  --shell-up: linear-gradient(180deg, #f0f3f3, #e8ecec 60%, #e0e5e5);
+  --shell: linear-gradient(180deg, #cfd5d6, #c4cbcc 60%, #bcc3c4);
+  --shell-up: linear-gradient(180deg, #d4dadb, #c9d0d1 60%, #c0c7c8);
   --shell-edge: inset 0 1px 0 rgba(255, 255, 255, .6), inset 0 0 0 1px rgba(18, 38, 44, .07), 0 0 0 1px rgba(18, 38, 44, .16);
   --shell-lift: 0 1px 2px rgba(18, 38, 44, .16), 0 8px 14px -8px rgba(18, 38, 44, .3);
   --float: 0 10px 24px rgba(18, 38, 44, .26);
-  --veil: rgba(205, 212, 213, .65);
+  --veil: rgba(150, 158, 160, .6);
   --chosen: 0 0 0 2px var(--accent), 0 0 18px rgba(15, 157, 143, .2);
   color-scheme: light;
 }
@@ -45,4 +45,4 @@
 :root[data-theme="light"] .mood__remove { color: #eef1f1; }
 :root[data-theme="light"] .strip .hero-screens button[aria-checked="true"] { color: #0f1617; }
 :root[data-theme="light"] .security__next { border-top-color: rgba(18, 38, 44, .12); box-shadow: none; background: rgba(18, 38, 44, .05); }
-:root[data-theme="light"] .drop { background: rgba(205, 212, 213, .9); }
+:root[data-theme="light"] .drop { background: rgba(160, 168, 170, .92); }

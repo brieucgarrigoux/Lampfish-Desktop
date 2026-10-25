@@ -61,7 +61,7 @@ namespace Bramble
             int on = light ? 0 : 1;
             if (DwmSetWindowAttribute(hwnd, 20, ref on, 4) != 0) DwmSetWindowAttribute(hwnd, 19, ref on, 4);
             if (Build < 22000) return;
-            int caption = light ? 0xDBDAD4 : 0x0D0C09, text = light ? 0x1D1B14 : 0xFFFFFF, border = light ? 0xC2C0B8 : 0x2F2E27;
+            int caption = light ? 0xBDBBB3 : 0x0D0C09, text = light ? 0x15130D : 0xFFFFFF, border = light ? 0x9E9C94 : 0x2F2E27;
             DwmSetWindowAttribute(hwnd, 35, ref caption, 4);
             DwmSetWindowAttribute(hwnd, 36, ref text, 4);
             DwmSetWindowAttribute(hwnd, 34, ref border, 4);

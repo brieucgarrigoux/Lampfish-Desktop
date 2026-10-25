@@ -12,7 +12,7 @@ namespace Bramble
         public static bool Light { get; private set; }
         public static event Action Changed;
 
-        public static Color Back { get { return Light ? Color.FromArgb(212, 218, 219) : Color.FromArgb(9, 12, 13); } }
+        public static Color Back { get { return Light ? Color.FromArgb(179, 187, 189) : Color.FromArgb(9, 12, 13); } }
 
         public static void Start(string value)
         {

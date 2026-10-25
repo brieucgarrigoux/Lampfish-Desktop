@@ -535,7 +535,7 @@ namespace Bramble
                         }
                         using (var shadow = new SolidBrush(Color.FromArgb(70, 0, 0, 0))) g.FillEllipse(shadow, centre - r, centre - r + 1.5f * k, r * 2, r * 2 - 1.5f * k);
                         var disc = new RectangleF(centre - r + 1.5f * k, centre - r + 1.5f * k, r * 2 - 3 * k, r * 2 - 3 * k);
-                        using (var body = new LinearGradientBrush(disc, day ? Color.FromArgb(0xee, 0xf2, 0xf2) : Color.FromArgb(0x19, 0x1e, 0x1f), day ? Color.FromArgb(0xd6, 0xdd, 0xde) : Color.FromArgb(0x0b, 0x0f, 0x10), 90f)) g.FillEllipse(body, disc);
+                        using (var body = new LinearGradientBrush(disc, day ? Color.FromArgb(0xcf, 0xd6, 0xd7) : Color.FromArgb(0x19, 0x1e, 0x1f), day ? Color.FromArgb(0xb4, 0xbc, 0xbe) : Color.FromArgb(0x0b, 0x0f, 0x10), 90f)) g.FillEllipse(body, disc);
                         var tone = day ? Color.FromArgb(0x0b, 0x85, 0x79) : accent;
                         using (var ring = new Pen(bright ? tone : Color.FromArgb(day ? 150 : 110, tone), Math.Max(1.5f, dia / 34f))) g.DrawEllipse(ring, disc);
                         if (busy)
