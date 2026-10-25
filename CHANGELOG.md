@@ -6,6 +6,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Home: a row of actions under the header, each one a single click: Capture, Note, Convert, Free up memory, Refresh icons and Straighten. The Desktop tab of the companion also refreshes the folder icons.
 - Audio: a new service that shows every output and input of the PC as a tile, with its format, live level, volume and mute. A click makes a device the default for every app, with Undo. Devices that are not plugged in are folded under one line.
 - Audio: a keyboard shortcut, off by default, switches to the next output from any app and shows its name in a small bubble. It is Ctrl + Alt + F11 unless other keys are chosen.
 - Health: a Privacy card turns off, for this user, the sharing settings of Windows such as the advertising ID, the suggestions and the typing data, with Undo. A setting locked by an organization is shown and left alone.

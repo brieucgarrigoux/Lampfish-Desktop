@@ -1,5 +1,9 @@
 .view--home { max-width: 1560px; margin-inline: auto; container: home / inline-size; }
 .home-header { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 0 0 10px; }
+/* The everyday actions: one row of chips, each a single click, under the header. */
+.h-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+.h-actions .tool-chip svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+body.home-editing .h-actions { display: none; }
 
 .h-main { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(260px, 1fr); gap: 16px; align-items: start; }
 .h-stage { display: flex; flex-direction: column; gap: 12px; min-width: 0; padding: 10px 10px 12px; border-radius: var(--radius-card); background: var(--group); container: stage / inline-size; }

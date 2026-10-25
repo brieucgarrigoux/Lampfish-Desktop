@@ -363,6 +363,7 @@ namespace Bramble
                     return;
                 case "companion.grid": DesktopGrid.Enable(Convert.ToBoolean(m["on"]), true); Program.SendState(); SendData(); return;
                 case "companion.straighten": Arrange.Receive("align", m); SendData(); return;
+                case "companion.refresh": Icons.Receive("refresh", m, null); return;
                 case "companion.icons": Arrange.Receive("hide", new Dictionary<string, object> { { "value", Convert.ToBoolean(m["hidden"]) } }); SendData(); return;
                 case "companion.wallpaper":
                 {

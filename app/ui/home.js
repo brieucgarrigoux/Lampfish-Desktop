@@ -232,6 +232,16 @@
   $('h-display').addEventListener('click', () => dockTo('display'));
   $('h-sound').addEventListener('click', () => dockTo('station'));
   const CHEVRON = '<svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>';
+  // The actions row: each chip does one thing, the one that has a page opens it, the others act from Home.
+  const ACTIONS = {
+    capture: () => send('capture.start', { delay: 0 }),
+    note: () => { showView('notes'); setTimeout(() => { const b = $('n-new'); if (b) b.click(); }, 60); },
+    convert: () => showView('convert'),
+    memory: () => dockTo('tasks'),
+    refresh: () => send('icons.refresh'),
+    straighten: () => send('arrange.align'),
+  };
+  for (const b of $('h-actions').querySelectorAll('[data-act]')) b.addEventListener('click', () => ACTIONS[b.dataset.act]());
   $('h-previous').addEventListener('click', () => send('previous'));
   $('h-pause').addEventListener('click', () => send('pause'));
   $('h-next').addEventListener('click', () => send('next'));

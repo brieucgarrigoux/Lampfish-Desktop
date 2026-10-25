@@ -313,6 +313,7 @@
   $('c-grid').addEventListener('change', e => send('companion.grid', { on: e.target.checked }));
   $('c-hide').addEventListener('change', e => send('companion.icons', { hidden: e.target.checked }));
   $('c-straighten').addEventListener('click', () => send('companion.straighten'));
+  $('c-refresh').addEventListener('click', () => send('companion.refresh'));
   $('c-wp-prev').addEventListener('click', () => send('companion.wallpaper', { op: 'previous' }));
   $('c-wp-next').addEventListener('click', () => send('companion.wallpaper', { op: 'next' }));
   $('c-wp-pause').addEventListener('click', () => send('companion.wallpaper', { op: 'pause' }));
