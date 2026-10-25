@@ -37,7 +37,7 @@ Turquoise marks a state (chosen, active, on). Surfaces are near-neutral dark gra
 | Token | Size | Role |
 | --- | --- | --- |
 | `--text-micro` | 10.5 | Tick labels, screen numbers on a card |
-| `--text-badge` | 11.5 | Pills and badges |
+| `--text-badge` | 11.5 | Small labels and counts |
 | `--text-caption` | 12 | Gray explanation lines, captions |
 | `--text-value` | 12.5 | Commands, values in a row |
 | `--text-body` | 13 | Buttons, row titles, list values |
@@ -55,7 +55,7 @@ Fonts: `--display` for titles and lit text, `--numbers` with `font-variant-numer
 
 ### Shape and time
 
-- Radius: `--radius-shell` 16 (relief shells), `--radius-card` 12 (flat cards, previews, toasts), `--radius-group` 10 (lists, wells), `--radius-control` 8 (buttons, fields, tiles), `--radius-small` 6 (inner parts), 99px for pills. A nested element keeps a concentric radius. Only bars and strokes of 1 to 4 px may use a raw radius.
+- Radius: `--radius-shell` 16 (relief shells), `--radius-card` 12 (flat cards, previews, toasts), `--radius-group` 10 (lists, wells), `--radius-control` 8 (buttons, fields, tiles), `--radius-small` 6 (inner parts), 99px for switches, scroll bars and round controls only. A nested element keeps a concentric radius. Only bars and strokes of 1 to 4 px may use a raw radius.
 - Spacing: 28 above and 12 below a section title on a page, 18 and 10 in the side panel.
 - Icon tiles: 26, 30 or 44 px.
 - Time: `--fast` (.12 s) for hover and color changes, .2 to .45 s for fades and reveals. Motion stops when the system asks for reduced motion.
@@ -88,7 +88,8 @@ Fonts: `--display` for titles and lit text, `--numbers` with `font-variant-numer
 - **Bubble** (`.chart-tip`): title, note and label and value lines.
 - **Drawer**: the side panel opens over the page in a narrow window, from the Options button.
 - **Toast**: 8 s, with Undo for any change.
-- **Saved state** (`.n-saved` in Notes): a pill next to the name that says a change is saved by itself, and when it is not written yet. A page that saves on its own shows it this way rather than with a Save button.
+- **State** (`.state`): a lamp (`--lit`, `--warn`, `--bad`, or gray for waiting) and a gray word, no background and no capsule. A state that is normal says nothing; only what is on, chosen, to watch or to fix gets a lamp. Never a tinted capsule.
+- **Saved state** (`.n-saved` in Notes): a state next to the name that says a change is saved by itself, and when it is not written yet. A page that saves on its own shows it this way rather than with a Save button.
 - **Main button with a menu** (`.s-capture` in Shelf): the main action on the left, a narrow arrow on the right that opens the other ways to do it, as rows with a glyph, a title and a gray line.
 - **Floating menu and lifted element**: `--group-up`, a `--hairline-strong` edge and the `--float` shadow. A veil over a block in an edit mode is `--veil`.
 - **Warning note** (`.warning-note`): amber, under the group it is about, only before a reset.

@@ -138,3 +138,11 @@ button.dial:active { transform: scale(.98); }
 .check--ok .readout__value i { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
 .check--warn .readout__value i { background: var(--warn); box-shadow: 0 0 6px var(--warn); }
 .check--bad .readout__value i { background: var(--danger); box-shadow: 0 0 6px var(--danger); }
+
+/* A state is a lamp and a word, never a capsule. Lit is the normal case; warn and bad say what to watch or fix; idle is waiting. */
+.state { display: inline-flex; align-items: center; gap: 7px; flex: none; font-size: var(--text-caption); color: var(--text-soft); white-space: nowrap; }
+.state::before { content: ''; flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--lit); box-shadow: 0 0 6px color-mix(in srgb, var(--lit) 55%, transparent); }
+.state--warn::before { background: var(--warn); box-shadow: 0 0 6px color-mix(in srgb, var(--warn) 55%, transparent); }
+.state--bad::before { background: var(--bad); box-shadow: 0 0 6px color-mix(in srgb, var(--bad) 55%, transparent); }
+.state--idle::before { background: var(--text-pale); box-shadow: none; }
+.state[hidden] { display: none; }

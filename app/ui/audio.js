@@ -23,7 +23,7 @@
     const el = document.createElement('div');
     el.className = 'a-tile';
     el.dataset.id = d.id;
-    el.innerHTML = `<button type="button" class="a-pick"><span class="a-top"><svg class="a-icon" viewBox="0 0 24 24" aria-hidden="true">${GLYPHS[d.kind] || GLYPHS.speakers}</svg><span class="a-state" hidden></span></span>`
+    el.innerHTML = `<button type="button" class="a-pick"><span class="a-top"><svg class="a-icon" viewBox="0 0 24 24" aria-hidden="true">${GLYPHS[d.kind] || GLYPHS.speakers}</svg><span class="a-state state" hidden></span></span>`
       + '<span class="a-what"><span class="a-name" translate="no"></span><span class="a-adapter" translate="no"></span><span class="a-format"></span></span><span class="a-meter"><i></i></span></button>';
     el.querySelector('.a-name').textContent = el.querySelector('.a-name').title = d.name;
     el.querySelector('.a-adapter').textContent = el.querySelector('.a-adapter').title = d.adapter;

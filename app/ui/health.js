@@ -165,7 +165,9 @@
     card.innerHTML = `<div class="health-startup__head"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${ICONS.startup}</svg><span class="health-startup__title"></span><span class="health-startup__state"></span></div>`
       + '<p class="health-startup__help"></p><div class="readouts health-startup__apps"></div><div class="health-startup__foot"><span></span></div>';
     card.querySelector('.health-startup__title').textContent = on === 1 ? tr('1 program starts with Windows') : tr('{0} programs start with Windows', on);
-    card.querySelector('.health-startup__state').textContent = tr(c.level === 'ok' ? 'Up to 10 is fine' : 'More than 10 slows the start');
+    // Fewer than eleven needs no word; more than that gets a lamp and the reason.
+    const warning = card.querySelector('.health-startup__state');
+    if (c.level === 'ok') warning.remove(); else { warning.classList.add('state', 'state--warn'); warning.textContent = tr('More than 10 slows the start'); }
     card.querySelector('.health-startup__help').textContent = tr('They open by themselves at every start, before anything is clicked. Each one makes the start longer and keeps some memory afterwards.');
     card.querySelector('.health-startup__apps').append(...items.map(startupRow));
     card.querySelector('.health-startup__foot span').textContent = tr('Turned off, a program stays installed and still opens when launched.');

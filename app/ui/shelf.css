@@ -38,7 +38,7 @@
 .s-card[data-kind="capture"] .s-thumb > img { object-fit: contain; }
 .s-file { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .s-file img { width: 40px; height: 40px; object-fit: contain; }
-.s-ext { padding: 2px 8px; border-radius: 99px; background: var(--raised); font-size: var(--text-badge); font-weight: 600; color: var(--text-soft); }
+.s-ext { font-size: var(--text-badge); font-weight: 600; letter-spacing: .06em; color: var(--text-pale); }
 .s-meta { display: flex; flex-direction: column; gap: 1px; padding: 8px 10px 4px; min-width: 0; }
 .s-name { font-size: var(--text-caption); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .s-size { font-size: var(--text-badge); color: var(--text-pale); font-variant-numeric: tabular-nums; }

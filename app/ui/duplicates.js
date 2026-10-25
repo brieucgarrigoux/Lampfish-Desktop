@@ -141,7 +141,7 @@
     const box = r.querySelector('input');
     box.checked = go;
     box.disabled = !go && g.files.every((f, k) => k === i || goes(g, k));
-    if (i === 0) r.querySelector('.size').before(Object.assign(document.createElement('span'), { className: 'dup-pill', textContent: tr('Kept') }));
+    if (i === 0) r.querySelector('.size').before(Object.assign(document.createElement('span'), { className: 'dup-pill state', textContent: tr('Kept') }));
     if (box.disabled) r.title = tr('The last copy of a file always stays');
     box.addEventListener('change', () => {
       if (box.checked && g.files.every((f, k) => k === i || goes(g, k))) { box.checked = false; return; }

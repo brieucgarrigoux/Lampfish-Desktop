@@ -200,7 +200,7 @@ const Quick = (() => {
         row.innerHTML = `<span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${MONITOR}</svg><span><span translate="no"></span><small></small></span></span>`;
         row.querySelector('[translate]').textContent = name(s);
         row.querySelector('small').textContent = `${s.w} × ${s.h} · ${s.scale} %`;
-        if (s.primary) row.append(Object.assign(document.createElement('span'), { className: 'd-badge', textContent: tr('Main screen') }));
+        if (s.primary) row.append(Object.assign(document.createElement('span'), { className: 'd-badge state', textContent: tr('Main screen') }));
         else if (all.length > 1) {
           const b = Object.assign(document.createElement('button'), { className: 'button', textContent: tr('Make main screen'), title: tr('The Start menu and new windows will open on this screen') });
           b.addEventListener('click', () => { send('display.primary', { key: s.key }); clearTimeout(later); later = setTimeout(() => send('display.screens'), 1500); });

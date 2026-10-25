@@ -340,8 +340,8 @@
 
     const health = $('m-health');
     if (health) {
-      health.textContent = alerts.length ? alerts[0] : tr('All good');
-      health.parentElement.classList.toggle('alert', alerts.length > 0);
+      health.textContent = alerts.length ? alerts[0] : '';
+      health.parentElement.hidden = !alerts.length;
     }
     if (inv) renderPanel();
   }

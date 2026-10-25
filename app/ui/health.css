@@ -11,8 +11,8 @@
 .health-startup { display: flex; flex-direction: column; gap: 12px; padding: 16px 18px; }
 .health-startup__head { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .health-startup__title { flex: 1; min-width: 0; font: 600 var(--text-title)/1.2 var(--display); }
-.health-startup__state { flex: none; padding: 3px 10px; border-radius: 99px; font-size: var(--text-badge); font-weight: 600; background: var(--accent-dim); color: var(--accent); }
-.health-startup.check--warn .health-startup__state { background: color-mix(in srgb, var(--warn) 14%, transparent); color: var(--warn); }
+.health-startup__state { flex: none; font-size: var(--text-caption); color: var(--text-soft); }
+.health-startup__state:empty { display: none; }
 .health-startup__help { margin: 0; font-size: var(--text-caption); line-height: 1.4; color: var(--text-soft); }
 .health-startup__apps { margin: 0; }
 .health-app__logo { display: grid; place-items: center; width: 30px; height: 30px; border-radius: var(--radius-control); background: var(--raised); }

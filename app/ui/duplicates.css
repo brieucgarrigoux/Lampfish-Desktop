@@ -13,7 +13,7 @@
 .dup-group__what { flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .dup-group__title { font-size: var(--text-body); font-weight: 600; }
 .dup-group__what small { font-size: var(--text-caption); color: var(--text-pale); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dup-same { flex: none; padding: 2px 8px; border-radius: 99px; background: var(--raised); color: var(--text-soft); font-size: var(--text-badge); }
+.dup-same { flex: none; color: var(--text-pale); font-size: var(--text-caption); }
 .dup-restore { display: flex; align-items: center; gap: 7px; }
 .dup-restore svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .dup-expected { margin-top: 4px; }
@@ -25,7 +25,6 @@
 .dup-file__name, .dup-file small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dup-file small { font-size: var(--text-caption); color: var(--text-pale); }
 .dup-file .size { flex: none; font: var(--text-value) var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-soft); }
-.dup-pill { flex: none; padding: 2px 8px; border-radius: 99px; background: var(--accent-dim); color: var(--accent); font-size: var(--text-badge); font-weight: 600; }
 .dup-tool { flex: none; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: var(--radius-small); background: none; color: var(--text-pale); transition: color var(--fast), background var(--fast), box-shadow var(--fast); }
 .dup-tool svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .dup-tool:hover:not(:disabled) { color: var(--text); background: var(--hover); }

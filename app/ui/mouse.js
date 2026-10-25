@@ -24,7 +24,7 @@
   function renderDraft() {
     const title = $('s-theme');
     title.textContent = s.themeTitle;
-    if (s.unsaved && s.based) title.append(Object.assign(document.createElement('span'), { className: 'badge-modified', textContent: tr('Modified') }));
+    if (s.unsaved && s.based) title.append(Object.assign(document.createElement('span'), { className: 'badge-modified state state--warn', textContent: tr('Modified') }));
     reveal($('s-draft'), s.unsaved);
     $('s-draft-text').textContent = s.based ? tr('Changes not saved in a theme') : tr('These cursors are not saved in a theme');
     $('s-update').hidden = !s.editable;
