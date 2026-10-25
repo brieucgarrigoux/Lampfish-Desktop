@@ -11,12 +11,13 @@
 .a-more > summary svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform var(--fast); }
 .a-more[open] > summary svg { transform: rotate(90deg); }
 .a-more > .a-grid { margin-top: 10px; }
-.a-tile { display: flex; flex-direction: column; min-width: 0; border-radius: var(--radius-card); background: var(--group); transition: box-shadow var(--fast), opacity var(--fast); }
+.a-tile { display: flex; flex-direction: column; min-width: 0; border-radius: var(--radius-card); background: var(--group); transition: box-shadow var(--fast), opacity var(--fast), background var(--fast); }
 .a-tile.is-default { box-shadow: var(--chosen); }
 .a-tile.is-off { opacity: .45; }
 .a-pick { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; width: 100%; padding: 14px 14px 10px; border: 0; border-radius: var(--radius-card) var(--radius-card) 0 0; background: none; color: inherit; text-align: left; cursor: pointer; transition: background var(--fast), transform .08s; }
 .a-pick:last-child { border-radius: var(--radius-card); }
-.a-pick:hover { background: var(--hover); }
+/* The card lights as a whole, volume row included, because a click on the top part is what picks the device. */
+.a-tile:hover:has(> .a-pick:not(:disabled)) { background: var(--hover); }
 .a-pick:active { transform: scale(.98); }
 .a-pick:disabled { cursor: default; background: none; transform: none; }
 .a-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; }
