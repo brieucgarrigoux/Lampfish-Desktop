@@ -146,6 +146,7 @@ const DURATION_REMOVAL = 8000;
 let removalShown = null;
 
 function render(state) {
+  if (!state || !Array.isArray(state.wallpapers)) return;
   const before = Bramble.state;
   Bramble.state = state;
   $('startup').checked = state.startup;
@@ -417,7 +418,7 @@ const CURSORS = {
   dim: { text: v => v + ' %', normal: 0 },
 };
 const withoutExtension = name => name.replace(/\.[a-z0-9]{2,5}$/i, '');
-const currentWallpaper = () => Bramble.state && Bramble.state.wallpapers.find(f => f.name === Bramble.state.current);
+const currentWallpaper = () => Bramble.state && Bramble.state.wallpapers ? Bramble.state.wallpapers.find(f => f.name === Bramble.state.current) : null;
 function wallpaperFor(key) {
   const state = Bramble.state;
   if (!state || !state.wallpapers) return null;
