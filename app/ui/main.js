@@ -330,9 +330,28 @@ for (const row of document.querySelectorAll('[data-companion-key]')) {
   row.querySelector('input').addEventListener('change', e => send('companion.keyOn', { which, on: e.target.checked }));
   companionKeys[which] = shortcutKeys(row.querySelector('button'), row.querySelector('small'), k => send('companion.key', Object.assign({ which }, k)));
 }
+const COMPANION_TABS = [['dashboard', 'Dashboard'], ['note', 'Note'], ['capture', 'Capture'], ['shelf', 'Shelf'], ['audio', 'Audio'], ['notes', 'Notes'], ['convert', 'Convert'], ['desktop', 'Desktop']];
+let companionHidden = [];
+for (const [id, label] of COMPANION_TABS) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'tool-chip';
+  b.dataset.tab = id;
+  b.textContent = tr(label);
+  b.setAttribute('aria-pressed', 'true');
+  b.addEventListener('click', () => {
+    const hidden = companionHidden.includes(id) ? companionHidden.filter(x => x !== id) : [...companionHidden, id];
+    if (hidden.length >= COMPANION_TABS.length) return;
+    send('companion.tabs', { hidden });
+  });
+  $('companion-tabs').append(b);
+}
 function renderCompanion(c) {
   if (!c) return;
   $('companion-on').checked = c.on;
+  companionHidden = c.hiddenTabs || [];
+  $('companion-tabs-row').hidden = !c.on;
+  for (const b of $('companion-tabs').children) b.setAttribute('aria-pressed', String(!companionHidden.includes(b.dataset.tab)));
   for (const row of document.querySelectorAll('[data-companion-key]')) {
     const k = c[row.dataset.companionKey];
     row.hidden = !c.on;
@@ -970,6 +989,57 @@ $('pauseOnBattery').addEventListener('change', e => send('pauseOnBattery', { val
 $('reactive').addEventListener('change', e => send('reactive', { value: e.target.checked }));
 $('pause').addEventListener('click', () => send('pause'));
 $('folder').addEventListener('click', () => send('folder'));
+
+// A question mark by the title of every page: what the page is for, what it reads and changes, taken from Settings, with a link to the full list.
+(function pageHelp() {
+  const rows = {};
+  for (const r of document.querySelectorAll('.tr-row[data-view]')) rows[r.dataset.view] = r;
+  const tip = document.createElement('div');
+  tip.className = 'page-help__tip';
+  tip.hidden = true;
+  tip.setAttribute('role', 'dialog');
+  document.body.append(tip);
+  let openFor = null;
+  const close = () => { if (!openFor) return; tip.hidden = true; openFor.setAttribute('aria-expanded', 'false'); openFor = null; };
+  const open = (button, view) => {
+    const r = rows[view];
+    if (!r) return;
+    openFor = button;
+    button.setAttribute('aria-expanded', 'true');
+    const title = Object.assign(document.createElement('b'), { textContent: r.querySelector('summary .caption > span').firstChild.textContent.trim() });
+    const line = Object.assign(document.createElement('p'), { textContent: r.querySelector('summary small').textContent });
+    const dl = r.querySelector('.tr-body').cloneNode(true);
+    const more = Object.assign(document.createElement('button'), { type: 'button', className: 'link', textContent: tr('Details in Settings') });
+    more.addEventListener('click', () => { close(); showView('settings'); r.open = true; r.closest('.tr-fold').open = true; r.scrollIntoView({ block: 'center' }); });
+    tip.replaceChildren(title, line, dl, more);
+    tip.hidden = false;
+    const b = button.getBoundingClientRect(), t = tip.getBoundingClientRect();
+    tip.style.left = Math.max(8, Math.min(innerWidth - t.width - 8, b.left)) + 'px';
+    tip.style.top = (b.bottom + 8 + t.height <= innerHeight ? b.bottom + 8 : Math.max(8, b.top - t.height - 8)) + 'px';
+  };
+  const button = view => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'page-help';
+    b.textContent = '?';
+    b.translate = false;
+    b.setAttribute('aria-label', tr('About this page'));
+    b.title = tr('About this page');
+    b.setAttribute('aria-expanded', 'false');
+    b.addEventListener('click', e => { e.stopPropagation(); if (openFor === b) close(); else { close(); open(b, view); } });
+    return b;
+  };
+  for (const section of document.querySelectorAll('.view')) {
+    const view = [...section.classList].map(c => /^only-(\w+)$/.exec(c)).filter(Boolean).map(m => m[1])[0];
+    if (!view || !rows[view]) continue;
+    const h1 = section.querySelector('h1');
+    if (h1) h1.append(button(view));
+    else if (view === 'home') section.querySelector('.home-header').append(button(view));
+  }
+  document.addEventListener('pointerdown', e => { if (openFor && !tip.contains(e.target) && e.target !== openFor) close(); }, true);
+  addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+  addEventListener('scroll', close, true);
+})();
 
 addEventListener('DOMContentLoaded', () => {
   let view = 'home';
