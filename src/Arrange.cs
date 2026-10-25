@@ -162,6 +162,24 @@ namespace Bramble
                 Spread(Visual(1));
             }
 
+            // The grid Windows itself snaps to: its cells from its own origin, with nothing spread over the work area.
+            public Grid(Rectangle zone, Size c, double scale, int iconSize, Point origin)
+            {
+                Zone = zone;
+                cell = c;
+                icon = (int)Math.Round(iconSize * scale);
+                edge = (int)Math.Round(8 * scale);
+                frame = Frame(c, scale);
+                font = SystemFonts.IconTitleFont;
+                line = font.Height;
+                originX = origin.X;
+                originY = origin.Y;
+                stepX = c.Width;
+                stepY = c.Height;
+                Columns = Math.Max(1, (zone.Right - origin.X) / c.Width);
+                Rows = Math.Max(1, (zone.Bottom - origin.Y) / c.Height);
+            }
+
             int Visual(int lines) { return icon + lead + lines * line; }
 
             // The square an icon sits in, a little larger than the icon itself.
@@ -170,12 +188,6 @@ namespace Bramble
                 var p = Pixel(new PointF(cell.X, cell.Y));
                 int pad = Math.Max(3, edge * 3 / 4);
                 return new Rectangle(p.X - pad, p.Y + lead - pad, icon + 2 * pad, icon + 2 * pad);
-            }
-
-            public bool Seated(Point pixel, Point cell)
-            {
-                var p = Pixel(new PointF(cell.X, cell.Y));
-                return Math.Abs(p.X - pixel.X) <= 3 && Math.Abs(p.Y - pixel.Y) <= 3;
             }
 
             // The first row keeps half the space between two rows above it, as the columns do on the sides, so a title is never cut.
@@ -589,7 +601,8 @@ namespace Bramble
             Size c = DesktopIcons.Case();
             if (c.Width <= 0 || c.Height <= 0) return;
             int iconSize = DesktopIcons.IconSize();
-            var grids = Screen.AllScreens.ToDictionary(s => s.DeviceName, s => new Grid(s.WorkingArea, c, Scale(s), iconSize));
+            bool grid = DesktopGrid.On;
+            var grids = grid ? NativeGrids(c, iconSize, now) : Screen.AllScreens.ToDictionary(s => s.DeviceName, s => new Grid(s.WorkingArea, c, Scale(s), iconSize));
             var positions = new Dictionary<string, Point>();
             foreach (var p in now.OrderBy(x => x.X).ThenBy(x => x.Y))
             {
@@ -601,9 +614,14 @@ namespace Bramble
             }
             Place(positions);
             R.Placed = Capture();
+            if (grid) DesktopGrid.Resume();
         }
 
-        // What the grid overlay draws: the slots of each screen, and which slot is the nearest to a point.
+        public static List<IconPosition> Snapshot() { return Capture(); }
+        public static void RememberNow() { Remember(); }
+        public static void UndoLast() { Undo(); }
+
+        // What the grid overlay draws: the cells of Windows' own grid on each screen, and which cell is the nearest to a point.
         public class GridScreen
         {
             public Rectangle Area;
@@ -616,10 +634,10 @@ namespace Bramble
             var result = new List<GridScreen>();
             Size c = DesktopIcons.Case();
             if (c.Width <= 0 || c.Height <= 0) return result;
-            int iconSize = DesktopIcons.IconSize();
+            var grids = NativeGrids(c, DesktopIcons.IconSize(), Capture());
             foreach (var s in Screen.AllScreens)
             {
-                var g = new Grid(s.WorkingArea, c, Scale(s), iconSize);
+                var g = grids[s.DeviceName];
                 var screen = new GridScreen { Area = s.WorkingArea };
                 for (int x = 0; x < g.Columns; x++) for (int y = 0; y < g.Rows; y++) screen.Slots.Add(g.Slot(new Point(x, y)));
                 int rows = g.Rows;
@@ -629,41 +647,22 @@ namespace Bramble
             return result;
         }
 
-        // Icons that sit between two cells go to the nearest free one of their screen; the ones already seated keep theirs.
-        public static int Magnet()
+        // Windows snaps an icon to multiples of its cell size from one origin for the whole desktop. That origin is read from the icons
+        // already seated: the most common remainder of their positions, so the drawn cells are the ones an icon really falls into.
+        static Dictionary<string, Grid> NativeGrids(Size c, int iconSize, List<IconPosition> icons)
         {
-            var items = DesktopIcons.Positions();
-            if (items.Count == 0) return 0;
-            Size c = DesktopIcons.Case();
-            if (c.Width <= 0 || c.Height <= 0) return 0;
-            int iconSize = DesktopIcons.IconSize();
-            var screens = Screen.AllScreens;
-            var grids = screens.ToDictionary(s => s.DeviceName, s => new Grid(s.WorkingArea, c, Scale(s), iconSize));
-            Func<Point, Grid> gridOf = p => grids[(screens.FirstOrDefault(x => x.Bounds.Contains(p)) ?? Screen.PrimaryScreen).DeviceName];
-            var loose = new List<KeyValuePair<string, Point>>();
-            foreach (var item in items)
+            Func<int, int, int> mod = (v, m) => ((v % m) + m) % m;
+            Func<IEnumerable<int>, int> common = values => values.GroupBy(v => v).OrderByDescending(g => g.Count()).ThenBy(g => g.Key).Select(g => g.Key).DefaultIfEmpty(0).First();
+            int ox = common(icons.Select(p => mod(p.X, c.Width))), oy = common(icons.Select(p => mod(p.Y, c.Height)));
+            var grids = new Dictionary<string, Grid>();
+            foreach (var s in Screen.AllScreens)
             {
-                var g = gridOf(item.Value);
-                var cell = g.Cell(item.Value);
-                if (g.Seated(item.Value, cell) && !g.Taken.Contains(cell)) g.Taken.Add(cell);
-                else loose.Add(item);
+                var zone = s.WorkingArea;
+                var origin = new Point(zone.X + mod(ox - zone.X, c.Width), zone.Y + mod(oy - zone.Y, c.Height));
+                grids[s.DeviceName] = new Grid(zone, c, Scale(s), iconSize, origin);
             }
-            if (loose.Count == 0) return 0;
-            var moves = new Dictionary<string, Point>();
-            foreach (var item in loose.OrderBy(x => x.Value.X).ThenBy(x => x.Value.Y))
-            {
-                var g = gridOf(item.Value);
-                var cell = Free(g, g.Cell(item.Value));
-                g.Taken.Add(cell);
-                moves[item.Key] = g.Pixel(new PointF(cell.X, cell.Y));
-            }
-            Place(moves, false);
-            return moves.Count;
+            return grids;
         }
-
-        // Remembers where the icons are, so that the next undo brings them back.
-        public static void RememberNow() { Remember(); }
-        public static void UndoLast() { Undo(); }
 
         static Point Free(Grid g, Point cell)
         {
@@ -738,13 +737,13 @@ namespace Bramble
             Apply(last);
         }
 
-        // Auto arrange and the grid would both pull the icons back to Windows' own layout.
+        // Auto arrange and snapping would both pull the placed icons back to Windows' own cells, so both are lifted, and the grid with them.
         static void Place(Dictionary<string, Point> positions, bool remember = true)
         {
             if (remember && !resizing) Remember();
             uint flags = DesktopIcons.Flags();
             if ((flags & DesktopIcons.FWF_AUTOARRANGE) != 0) DesktopIcons.Flag(DesktopIcons.FWF_AUTOARRANGE, false);
-            if ((flags & DesktopIcons.FWF_SNAPTOGRID) != 0) DesktopIcons.Flag(DesktopIcons.FWF_SNAPTOGRID, false);
+            if ((flags & DesktopIcons.FWF_SNAPTOGRID) != 0) { DesktopIcons.Flag(DesktopIcons.FWF_SNAPTOGRID, false); DesktopGrid.Lifted(); }
             DesktopIcons.Place(Visible(positions));
         }
 
@@ -975,7 +974,6 @@ namespace Bramble
                     }
                     case "align": Align(); Program.Send(Map(false)); return true;
                     case "iconSize": ChangeIconSize(Convert.ToInt32(m["value"])); return false;
-                    case "grid": DesktopIcons.Flag(DesktopIcons.FWF_SNAPTOGRID, Convert.ToBoolean(m["value"])); Program.Send(Map(false)); return false;
                     case "hide": DesktopIcons.Flag(DesktopIcons.FWF_NOICONS, Convert.ToBoolean(m["value"])); Program.Send(Map(false)); return false;
                     case "category":
                     {

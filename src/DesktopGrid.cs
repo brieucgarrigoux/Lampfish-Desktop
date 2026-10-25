@@ -16,18 +16,20 @@ namespace Bramble
     class GridSettings
     {
         public bool On;
+        public bool? SnapBefore;
     }
 
-    // A magnetic grid on the desktop: while it is on, the slots of the grid show on every screen whenever the desktop is in front,
-    // and an icon let go between two slots goes to the nearest free one. Only Windows' own icons list is moved, the way Arrange does it.
+    // A magnetic grid on the desktop: Windows' own Align to grid, turned on with the grid and put back as it was when the grid goes off,
+    // plus the cells of that grid drawn on every screen whenever the desktop is in front. Windows seats every icon let go; nothing here moves an icon.
     static class DesktopGrid
     {
         static readonly JavaScriptSerializer json = new JavaScriptSerializer();
         static GridSettings S = new GridSettings();
         static readonly List<Overlay> overlays = new List<Overlay>();
         static Timer tick;
-        static bool wasDown, dragging, settling, built;
-        static DateTime releasedAt, scannedAt, quietUntil, flashUntil;
+        static bool wasDown, dragging, built;
+        static DateTime quietUntil, flashUntil, checkedAt;
+        static string lookAt;
 
         static string SettingsFile { get { return Path.Combine(Program.DataFolder("Grid"), "settings.json"); } }
 
@@ -41,6 +43,7 @@ namespace Bramble
             tick = new Timer { Interval = 40 };
             tick.Tick += (s, e) => Step();
             SystemEvents.DisplaySettingsChanged += (s, e) => { quietUntil = DateTime.Now.AddSeconds(8); built = false; };
+            if (S.On) Snap(true);
             Apply();
         }
 
@@ -62,23 +65,73 @@ namespace Bramble
             return false;
         }
 
-        public static void Enable(bool on, bool seat)
+        static bool Snapping()
+        {
+            try { return (DesktopIcons.Flags() & DesktopIcons.FWF_SNAPTOGRID) != 0; }
+            catch (Exception ex) { Program.Log(ex); return S.On; }
+        }
+
+        static void Snap(bool on)
+        {
+            try { DesktopIcons.Flag(DesktopIcons.FWF_SNAPTOGRID, on); }
+            catch (Exception ex) { Program.Log(ex); }
+        }
+
+        // Windows seats every icon in its cells the moment its snapping is turned on: that move is remembered, so one Undo takes back the grid and the move.
+        public static void Enable(bool on, bool announce)
         {
             if (S.On == on) return;
+            int moved = 0;
+            if (on)
+            {
+                S.SnapBefore = Snapping();
+                var before = Snapshot();
+                Arrange.RememberNow();
+                Snap(true);
+                var after = Snapshot();
+                moved = after.Count(a => before.Any(b => b.Id == a.Id && (b.X != a.X || b.Y != a.Y)));
+            }
+            else { Snap(S.SnapBefore ?? false); S.SnapBefore = null; }
             S.On = on;
             Save();
             Apply();
-            if (!on || !seat) return;
-            // The icons that are in between slots settle at once, and one undo takes everything back, grid included.
-            int moved = 0;
-            try
+            if (on) flashUntil = DateTime.Now.AddSeconds(4);
+            if (on && announce)
             {
-                Arrange.RememberNow();
-                moved = Arrange.Magnet();
+                string text = moved == 0 ? Language.T("The grid is on") : moved == 1 ? Language.T("The grid is on, 1 icon snapped to it") : Language.T("The grid is on, {0} icons snapped to it", moved);
+                Program.Undoable(text, () => { Enable(false, false); if (moved > 0) Arrange.UndoLast(); Program.SendState(); });
             }
-            catch (Exception ex) { Program.Log(ex); }
-            flashUntil = DateTime.Now.AddSeconds(4);
-            Program.Undoable(Language.T(moved > 0 ? "The icons sit on the grid" : "The grid is on"), () => { Enable(false, false); if (moved > 0) Arrange.UndoLast(); Program.SendState(); });
+        }
+
+        // Straighten placed the icons on the cells of the grid itself: the snapping comes back without a move to remember.
+        public static void Resume()
+        {
+            if (S.On) return;
+            S.On = true;
+            S.SnapBefore = snapBeforeLifted;
+            Snap(true);
+            Save();
+            Apply();
+            Program.SendState();
+        }
+
+        // An arrangement lifted the snapping to place the icons: the grid is off until it is asked for again.
+        static bool? snapBeforeLifted;
+        public static void Lifted()
+        {
+            if (!S.On) return;
+            snapBeforeLifted = S.SnapBefore;
+            S.On = false;
+            S.SnapBefore = null;
+            Save();
+            Apply();
+            Program.SendState();
+        }
+
+        static List<IconPosition> Snapshot()
+        {
+            try { return Arrange.Snapshot(); }
+            catch (Exception ex) { Program.Log(ex); return new List<IconPosition>(); }
         }
 
         static void Apply()
@@ -113,6 +166,7 @@ namespace Bramble
             catch (Exception ex) { Program.Log(ex); screens = new List<Arrange.GridScreen>(); }
             foreach (var s in screens) overlays.Add(new Overlay(s));
             built = true;
+            lookAt = Look();
         }
 
         static void Step()
@@ -130,39 +184,22 @@ namespace Bramble
                 var at = Cursor.Position;
                 foreach (var o in overlays) o.Aim(at);
             }
-            if (!down && wasDown)
-            {
-                foreach (var o in overlays) o.Aim(null);
-                if (dragging) { releasedAt = now; settling = true; }
-                dragging = false;
-            }
+            if (!down && wasDown) { foreach (var o in overlays) o.Aim(null); dragging = false; }
             wasDown = down;
 
-            // Windows has let go of the icon a moment after the button.
-            if (settling && !down && (now - releasedAt).TotalMilliseconds > 250) { settling = false; Seat(); scannedAt = now; }
-            // An icon that Windows puts somewhere itself (a new file) is seated too.
-            else if (!down && (now - scannedAt).TotalSeconds > 3)
+            // The cells follow the size and spacing of the icons, and where Windows seats them; an arrangement that lifted the snapping turns the grid off.
+            if (!down && (now - checkedAt).TotalSeconds > 3)
             {
-                scannedAt = now;
-                // The slots follow the size of the icons and their spacing.
-                string look = Look();
-                if (look != lookAt) { lookAt = look; built = false; }
-                Seat();
+                checkedAt = now;
+                if (!Snapping()) { Enable(false, false); Program.SendState(); return; }
+                if (Look() != lookAt) built = false;
             }
         }
-
-        static string lookAt;
 
         static string Look()
         {
-            try { return DesktopIcons.Case() + " " + DesktopIcons.IconSize(); }
+            try { return DesktopIcons.Case() + " " + DesktopIcons.IconSize() + " " + Arrange.Fingerprint(); }
             catch { return lookAt; }
-        }
-
-        static void Seat()
-        {
-            try { Arrange.Magnet(); }
-            catch (Exception ex) { Program.Log(ex); }
         }
 
         static bool FullScreenApp()
