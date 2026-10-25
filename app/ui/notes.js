@@ -64,6 +64,25 @@
     renderList();
   }
 
+  // A note leaves the list at once, so a first click on a delete control only arms it. A second one within 4 s deletes, and Undo stays after that.
+  let armed = null, armedTimer = 0;
+  function paintArmed() {
+    const on = !!armed;
+    $('n-remove').classList.toggle('armed', on && armed === current);
+    $('n-remove').querySelector('span').textContent = tr(on && armed === current ? 'Click again to delete' : 'Delete');
+    for (const row of $('n-list').children) row.classList.toggle('is-armed', on && row.dataset.name === armed);
+  }
+  function disarm() { clearTimeout(armedTimer); armed = null; paintArmed(); }
+  function ask(name) {
+    if (armed === name) { disarm(); remove(name); return; }
+    armed = name;
+    clearTimeout(armedTimer);
+    armedTimer = setTimeout(disarm, 4000);
+    paintArmed();
+  }
+  addEventListener('keydown', e => { if (armed && e.key === 'Escape') disarm(); });
+  addEventListener('pointerdown', e => { if (armed && !e.target.closest('.n-delete.armed, .n-item.is-armed .n-item__remove')) disarm(); });
+
   function renderList() {
     const query = $('n-search').value.trim().toLowerCase();
     const list = items.filter(n => !query || n.name.toLowerCase().includes(query) || n.preview.toLowerCase().includes(query));
@@ -73,23 +92,26 @@
       row.className = 'n-item';
       row.setAttribute('role', 'listitem');
       row.setAttribute('aria-current', String(n.name === current));
-      row.innerHTML = '<button type="button" class="n-item__open"><span class="n-item__top"><span class="n-item__name" translate="no"></span><span class="n-item__when"></span></span><span class="n-item__preview" translate="no"></span></button>'
+      row.dataset.name = n.name;
+      row.innerHTML = '<button type="button" class="n-item__open"><span class="n-item__top"><span class="n-item__name" translate="no"></span><span class="n-item__when"></span></span><span class="n-item__preview" translate="no"></span><span class="n-item__ask"></span></button>'
         + '<button type="button" class="n-item__remove"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/></svg></button>';
       row.querySelector('.n-item__name').textContent = n.name;
       row.querySelector('.n-item__when').textContent = when(n.when);
       row.querySelector('.n-item__preview').textContent = n.preview || tr('Empty');
+      row.querySelector('.n-item__ask').textContent = tr('Click the bin again to delete this note');
       const del = row.querySelector('.n-item__remove');
       del.title = tr('Delete');
       del.setAttribute('aria-label', tr('Delete') + ', ' + n.name);
-      del.addEventListener('click', () => remove(n.name));
+      del.addEventListener('click', () => ask(n.name));
       const open_ = row.querySelector('.n-item__open');
       open_.addEventListener('click', () => open(n.name));
-      open_.addEventListener('keydown', e => { if (e.key === 'Delete') { e.preventDefault(); remove(n.name); } });
+      open_.addEventListener('keydown', e => { if (e.key === 'Delete') { e.preventDefault(); ask(n.name); } });
       return row;
     }));
     if (!list.length && items.length) $('n-list').append(Object.assign(document.createElement('p'), { className: 'n-none', textContent: tr('No note matches') }));
     const rest = list.length - limit;
     $('n-more').hidden = rest <= 0;
+    paintArmed();
     if (rest > 0) $('n-more').textContent = tr('Show {0} more', Math.min(rest, PAGE));
     $('n-empty').hidden = !!current;
     $('n-editor').hidden = !current;
@@ -251,7 +273,7 @@
   $('n-new').addEventListener('click', create);
   $('n-first').addEventListener('click', create);
   addEventListener('keydown', e => { if (shown && e.ctrlKey && !e.altKey && !e.shiftKey && e.code === 'KeyN') { e.preventDefault(); create(); } });
-  $('n-remove').addEventListener('click', () => { if (current) remove(current); });
+  $('n-remove').addEventListener('click', () => { if (current) ask(current); });
   $('n-reveal').addEventListener('click', () => send('notes.reveal'));
   $('n-file').addEventListener('click', () => { if (current) send('notes.reveal', { name: current }); });
   $('n-obsidian').addEventListener('click', () => { if (current) { save(); send('notes.obsidian', { name: current }); } });
