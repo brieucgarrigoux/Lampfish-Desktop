@@ -23,15 +23,15 @@
 .knob { --v: 0; position: relative; width: 72px; height: 72px; border-radius: 50%; cursor: ew-resize; touch-action: none; }
 .knob::before { content: ""; position: absolute; inset: 11px; border-radius: 50%; background: var(--wallpaper); box-shadow: inset 0 2px 5px rgba(0, 0, 0, .9), 0 1px 0 rgba(255, 255, 255, .06); }
 .knob__ring { position: absolute; inset: 0; }
-.knob__ring i { position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; margin: -2px; border-radius: 50%; background: #2b2c38; box-shadow: inset 0 1px 1px rgba(0, 0, 0, .6); transform: rotate(var(--angle)) translateY(-33px); transition: background .1s, box-shadow .1s; }
-.knob__ring i.lit { background: #b794ff; box-shadow: 0 0 5px 1px color-mix(in srgb, var(--accent) 95%, transparent), 0 0 12px color-mix(in srgb, var(--accent) 50%, transparent); }
+.knob__ring i { position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; margin: -2px; border-radius: 50%; background: #282f30; box-shadow: inset 0 1px 1px rgba(0, 0, 0, .6); transform: rotate(var(--angle)) translateY(-33px); transition: background .1s, box-shadow .1s; }
+.knob__ring i.lit { background: #69bdb0; box-shadow: 0 0 5px 1px color-mix(in srgb, var(--accent) 95%, transparent), 0 0 12px color-mix(in srgb, var(--accent) 50%, transparent); }
 .banner-sound.muted .knob__ring i.lit { background: var(--text-pale); box-shadow: none; }
 .knob__button { position: absolute; inset: 14px; border-radius: 50%;
-  background: conic-gradient(from 0deg, #4a4c58, #8b8e9c 10%, #50525e 22%, #7d808e 36%, #464854 50%, #8b8e9c 64%, #50525e 78%, #7d808e 90%, #4a4c58);
-  box-shadow: 0 0 0 1px #07080b, 0 5px 10px rgba(0, 0, 0, .65), inset 0 1px 1px rgba(255, 255, 255, .45);
+  background: conic-gradient(from 0deg, #4c5355, #8a9092 10%, #515759 22%, #7d8284 36%, #494f51 50%, #8a9092 64%, #515759 78%, #7d8284 90%, #4c5355);
+  box-shadow: 0 0 0 1px #090b0c, 0 5px 10px rgba(0, 0, 0, .65), inset 0 1px 1px rgba(255, 255, 255, .45);
   transform: rotate(calc(-135deg + var(--v) * 270deg)); }
-.knob__button::after { content: ""; position: absolute; inset: 5px; border-radius: 50%; background: radial-gradient(circle at 50% 30%, #3c3e49, #1f2027 75%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .15), 0 0 0 1px rgba(0, 0, 0, .4); }
-.knob__marker { position: absolute; left: 50%; top: 3px; z-index: 1; width: 3px; height: 8px; margin-left: -1.5px; border-radius: 2px; background: #c9adff; box-shadow: 0 0 4px color-mix(in srgb, var(--accent) 90%, transparent); }
+.knob__button::after { content: ""; position: absolute; inset: 5px; border-radius: 50%; background: radial-gradient(circle at 50% 30%, #414849, #1d2122 75%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .15), 0 0 0 1px rgba(0, 0, 0, .4); }
+.knob__marker { position: absolute; left: 50%; top: 3px; z-index: 1; width: 3px; height: 8px; margin-left: -1.5px; border-radius: 2px; background: #8fccc2; box-shadow: 0 0 4px color-mix(in srgb, var(--accent) 90%, transparent); }
 .banner-sound.muted .knob__marker { background: var(--text-pale); box-shadow: none; }
 
 .knob__legend { width: 84px; text-align: center; font-size: var(--text-badge); color: var(--text-pale); white-space: nowrap; }

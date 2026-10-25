@@ -701,7 +701,7 @@ namespace Bramble
         }
 
         // The desktop icons follow the main screen: read before the change, the returned action puts the icons of the old main screen
-        // on the new one cell for cell, and the reverse. An arrangement made by Bramble is made again on the new main screen.
+        // on the new one cell for cell, and the reverse. An arrangement made by lampfish is made again on the new main screen.
         public static Action FollowPrimary(string from, string to)
         {
             try

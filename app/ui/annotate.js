@@ -6,7 +6,7 @@
   const canvas = $('an-canvas'), ctx = canvas.getContext('2d'), input = $('an-text'), stage = $('an-stage');
   const name = new URLSearchParams(location.search).get('name') || '';
   const marks = [];
-  let base = null, tool = 'arrow', color = '#9561f3', size = 1, current = null;
+  let base = null, tool = 'arrow', color = '#0F9D8F', size = 1, current = null;
 
   const TOOLS = [
     ['pen', 'Pen', 'P', '<path d="M4 19c3-1 4-5 7-6s3 3 6 2 2-6 3-8"/>', 'Draw freely'],
@@ -192,7 +192,7 @@
     else if (!e.ctrlKey && !e.altKey) { const t = TOOLS.find(x => x[2] === e.key.toUpperCase()); if (t) pickTool(t[0]); }
   });
 
-  // The capture comes as data from Bramble, so the canvas can be written back as a PNG.
+  // The capture comes as data from lampfish, so the canvas can be written back as a PNG.
   webview.addEventListener('message', e => {
     const m = e.data;
     if (m.type !== 'annotate.image') return;

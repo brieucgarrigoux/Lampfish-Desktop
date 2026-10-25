@@ -84,7 +84,7 @@
   }
 })();
 
-// Every titled section of the side panel folds and stays folded until Bramble is closed: it always starts unfolded.
+// Every titled section of the side panel folds and stays folded until lampfish is closed: it always starts unfolded.
 function foldSections(container, key) {
   const read = () => { try { return JSON.parse(sessionStorage.getItem('folds') || '{}'); } catch (e) { return {}; } };
   const saved = read();

@@ -305,7 +305,7 @@ namespace Bramble
             using (var dialog = new SaveFileDialog())
             {
                 dialog.Title = Language.T("Export a theme");
-                dialog.Filter = Language.T("Bramble theme") + "|*.json";
+                dialog.Filter = Language.T("lampfish theme") + "|*.json";
                 dialog.FileName = string.Join("_", mood.Name.Split(Path.GetInvalidFileNameChars())) + ".json";
                 if (dialog.ShowDialog(Program.SettingsWindow) != DialogResult.OK) return;
                 var data = new Dictionary<string, object>
@@ -340,12 +340,12 @@ namespace Bramble
             using (var dialog = new OpenFileDialog())
             {
                 dialog.Title = Language.T("Import a theme");
-                dialog.Filter = Language.T("Bramble theme") + "|*.json";
+                dialog.Filter = Language.T("lampfish theme") + "|*.json";
                 if (dialog.ShowDialog(Program.SettingsWindow) != DialogResult.OK) return;
                 Dictionary<string, object> d = null;
                 try { if (new FileInfo(dialog.FileName).Length <= 64 * 1024) d = json.Deserialize<Dictionary<string, object>>(File.ReadAllText(dialog.FileName)); }
                 catch (Exception ex) { Program.Log(ex); }
-                if (d == null || Word(d, "bramble", 10) != "mood") { Program.Announce("This file is not a Bramble theme"); Program.SendState(); return; }
+                if (d == null || Word(d, "bramble", 10) != "mood") { Program.Announce("This file is not a lampfish theme"); Program.SendState(); return; }
 
                 string wallpaper = Word(d, "wallpaper", 200), time = Word(d, "time", 5), powerTrigger = Word(d, "power", 10), fit = Word(d, "fit", 4);
                 if (wallpaper != Path.GetFileName(wallpaper) || wallpaper.Contains("..")) wallpaper = "";

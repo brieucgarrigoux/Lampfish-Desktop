@@ -25,12 +25,12 @@ The rules every page of Bramble follows. Values live as tokens in `:root` of `ap
 | `--hover` | Hovered row or card |
 | `--hairline`, `--hairline-strong` | Separators inside a group |
 | `--text`, `--text-soft`, `--text-pale` | Titles, values and icons, explanations |
-| `--accent`, `--accent-strong` | Violet: text and strokes on dark, filled controls |
+| `--accent`, `--accent-strong`, `--on-accent` | Turquoise: `#1EBBAA` for text and strokes on dark, `#0F9D8F` for filled controls, `#08171A` for the text on those fills (white on `#0F9D8F` is only 3.4:1) |
 | `--accent-dim`, `--accent-tint`, `--accent-ring` | Pressed, chosen row, focus |
-| `--lit`, `--warn`, `--bad` | Lamp colors: fine, to watch, to fix |
+| `--lit`, `--warn`, `--bad` | Lamp colors: fine (`#2ED9C6`), to watch, to fix |
 | `--danger`, `--danger-dim` | Destructive actions only |
 
-Violet marks a state (chosen, active, on). Accent transparencies use `color-mix(in srgb, var(--accent) X%, transparent)`.
+Turquoise marks a state (chosen, active, on). Surfaces are near-neutral dark grays with a hint of cool tint (`--wallpaper` `#090c0d`, `--group` `#121618`), so the turquoise only appears where something is on or chosen; text is white. `#08171A` is the ink for text on turquoise fills and the plate of the application icon. Accent transparencies use `color-mix(in srgb, var(--accent) X%, transparent)`.
 
 ### Text
 
@@ -75,7 +75,7 @@ Fonts: `--display` for titles and lit text, `--numbers` with `font-variant-numer
 ## Components
 
 - **Row** (`.row`, `.toggle`, `.setting`): icon in a `.glyph`, title and one gray line, control on the right. Title and line each fit on one line.
-- **Glyph** (`.glyph`): every list icon, stroke in `--text-soft` on `--raised`, 30 px. It turns violet only when its row is on or chosen.
+- **Glyph** (`.glyph`): every list icon, stroke in `--text-soft` on `--raised`, 30 px. It turns turquoise only when its row is on or chosen.
 - **Switch**: one drawing (`.toggle input`, `.toggler input` compact, `.cr-switch`).
 - **Slider**: `fill()` of `main.js` paints the filled part from `min` and `max`. A muted slider is dimmed (`.is-muted`), a disabled one too.
 - **Segments**, **time select** (`.time-select`), **chips** (`.tool-chip`), **links** (`.link` with a 14 px icon).

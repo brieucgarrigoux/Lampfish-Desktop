@@ -202,7 +202,7 @@ namespace Bramble
             {
                 popup = new PageForm("companion.html", FromPage)
                 {
-                    FormBorderStyle = FormBorderStyle.None, ShowInTaskbar = false, TopMost = true, StartPosition = FormStartPosition.Manual, Text = "Bramble",
+                    FormBorderStyle = FormBorderStyle.None, ShowInTaskbar = false, TopMost = true, StartPosition = FormStartPosition.Manual, Text = "lampfish",
                 };
                 popup.Deactivate += (s, e) => { if (popup != null) { popup.Hide(); hiddenAt = DateTime.Now; idle.Start(); refresh.Stop(); } };
                 popup.Shown += (s, e) => Native.Rounded(popup.Handle);
@@ -308,9 +308,9 @@ namespace Bramble
                 ShowInTaskbar = false;
                 TopMost = true;
                 AutoScaleMode = AutoScaleMode.None;
-                try { logo = Image.FromFile(Path.Combine(Program.Root, "brand", "logo", "logo-bramble-192.png")); } catch (Exception ex) { Program.Log(ex); }
+                try { logo = Image.FromFile(Path.Combine(Program.Root, "brand", "logo", "mark-lampfish-white.png")); } catch (Exception ex) { Program.Log(ex); }
                 Cursor = Cursors.Hand;
-                new ToolTip { InitialDelay = 700 }.SetToolTip(this, Language.T("Bramble: click to open, drag to move, right-click for the app"));
+                new ToolTip { InitialDelay = 700 }.SetToolTip(this, Language.T("lampfish: click to open, drag to move, right-click for the app"));
                 glide.Tick += (s, e) =>
                 {
                     double t = Math.Min(1, (DateTime.Now - glideAt).TotalMilliseconds / 180), k = 1 - Math.Pow(1 - t, 3);
@@ -349,9 +349,9 @@ namespace Bramble
                         g.InterpolationMode = InterpolationMode.HighQualityBicubic;
                         var disc = new RectangleF(1.5f, 1.5f, side - 3, side - 3);
                         using (var shadow = new SolidBrush(Color.FromArgb(70, 0, 0, 0))) g.FillEllipse(shadow, 0, 1.5f, side - 1, side - 1.5f);
-                        using (var body = new LinearGradientBrush(disc, Color.FromArgb(0x24, 0x22, 0x30), Color.FromArgb(0x12, 0x12, 0x18), 90f)) g.FillEllipse(body, disc);
-                        using (var ring = new Pen(hover ? Color.FromArgb(0x95, 0x61, 0xf3) : Color.FromArgb(110, 0x95, 0x61, 0xf3), Math.Max(1.5f, side / 34f))) g.DrawEllipse(ring, disc);
-                        if (logo != null) { float l = side * .64f; g.DrawImage(logo, (side - l) / 2, (side - l) / 2 + side * .01f, l, l); }
+                        using (var body = new LinearGradientBrush(disc, Color.FromArgb(0x19, 0x1e, 0x1f), Color.FromArgb(0x0b, 0x0f, 0x10), 90f)) g.FillEllipse(body, disc);
+                        using (var ring = new Pen(hover ? Color.FromArgb(0x1E, 0xBB, 0xAA) : Color.FromArgb(110, 0x1E, 0xBB, 0xAA), Math.Max(1.5f, side / 34f))) g.DrawEllipse(ring, disc);
+                        if (logo != null) { float w = side * .66f, h = w * logo.Height / logo.Width; g.DrawImage(logo, (side - w) / 2, (side - h) / 2, w, h); }
                     }
                     Layered(bmp);
                 }

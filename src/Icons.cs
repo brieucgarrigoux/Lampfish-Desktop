@@ -590,7 +590,7 @@ namespace Bramble
             string exe = System.Windows.Forms.Application.ExecutablePath;
             using (var key = Registry.CurrentUser.CreateSubKey(MenuKey))
             {
-                key.SetValue("MUIVerb", Language.T("Change icon with Bramble"));
+                key.SetValue("MUIVerb", Language.T("Change icon with lampfish"));
                 key.SetValue("Icon", "\"" + exe + "\",0");
                 using (var command = key.CreateSubKey("command"))
                     command.SetValue("", "\"" + exe + "\" --folder \"%1\"");

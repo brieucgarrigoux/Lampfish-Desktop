@@ -16,9 +16,9 @@ namespace Bramble
 
         public SettingsForm()
         {
-            Text = "Bramble";
+            Text = "lampfish";
             Icon = Program.AppIcon;
-            BackColor = Color.FromArgb(10, 11, 15);
+            BackColor = Color.FromArgb(9, 12, 13);
             MinimumSize = new Size(LogicalToDeviceUnits(720), LogicalToDeviceUnits(560));
             var w = Program.R.Window;
             var saved = w == null ? Rectangle.Empty : new Rectangle(w.X, w.Y, w.Width, w.Height);

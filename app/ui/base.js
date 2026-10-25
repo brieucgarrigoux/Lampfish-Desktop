@@ -1,6 +1,6 @@
 'use strict';
 
-// What every page of Bramble needs: the bridge to the app, the translation, and errors sent to the log.
+// What every page of lampfish needs: the bridge to the app, the translation, and errors sent to the log.
 const webview = window.chrome.webview;
 const send = (action, data = {}) => webview.postMessage({ action, ...data });
 const $ = id => document.getElementById(id);

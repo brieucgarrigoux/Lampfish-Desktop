@@ -73,13 +73,13 @@
 
 .cell-relief { display: flex; align-items: center; gap: 0; }
 .cell-relief__segments { display: flex; gap: 3px; padding: 5px; border-radius: var(--radius-small);
-  background: linear-gradient(180deg, #3a3c47, #24252e); box-shadow: 0 0 0 1px var(--ink), inset 0 1px 0 rgba(255, 255, 255, .15), 0 3px 6px rgba(0, 0, 0, .45); }
-.cell-relief__segments i { width: 9px; height: 22px; border-radius: 2px; background: #121219; box-shadow: inset 0 1px 2px rgba(0, 0, 0, .8); }
+  background: linear-gradient(180deg, #404648, #212728); box-shadow: 0 0 0 1px var(--ink), inset 0 1px 0 rgba(255, 255, 255, .15), 0 3px 6px rgba(0, 0, 0, .45); }
+.cell-relief__segments i { width: 9px; height: 22px; border-radius: 2px; background: #0f1315; box-shadow: inset 0 1px 2px rgba(0, 0, 0, .8); }
 .cell-relief__segments i.full { background: var(--accent); box-shadow: 0 0 5px color-mix(in srgb, var(--accent) 90%, transparent); }
 .cell-relief__segments i.low { background: var(--danger); box-shadow: 0 0 5px rgba(255, 92, 108, .7); }
 .m-card.charging .cell-relief__segments i.full:last-of-type { animation: charge 1.2s ease-in-out infinite alternate; }
 @keyframes charge { to { opacity: .35; } }
-.cell-relief__tip { width: 5px; height: 12px; margin-left: -1px; border-radius: 0 3px 3px 0; background: linear-gradient(180deg, #4a4c57, #2a2b33); box-shadow: 0 0 0 1px var(--ink); }
+.cell-relief__tip { width: 5px; height: 12px; margin-left: -1px; border-radius: 0 3px 3px 0; background: linear-gradient(180deg, #4c5355, #272d2e); box-shadow: 0 0 0 1px var(--ink); }
 
 .cell-relief { margin-top: auto; padding-top: 10px; align-self: flex-start; }
 .m-card[data-key="battery"] .m-display, .m-card[data-key="temperature"] .m-display { align-items: center; justify-content: center; }
@@ -88,9 +88,9 @@
 .m-card .m-display:has(> .wifi-relief) { position: relative; }
 .m-card .m-display > .wifi-relief { position: absolute; top: 14px; right: 16px; width: 72px; height: auto; }
 .thermo { width: 120px; height: 72px; overflow: visible; }
-.thermo__ticks path { stroke: #6e6c7d; stroke-width: 1.6; stroke-linecap: round; }
+.thermo__ticks path { stroke: #697072; stroke-width: 1.6; stroke-linecap: round; }
 .thermo__red { fill: none; stroke: var(--danger); stroke-width: 3; stroke-linecap: round; opacity: .75; }
 .thermo__needle { transform-origin: 60px 62px; transform: rotate(-90deg); transition: transform .8s cubic-bezier(.25, .8, .3, 1); }
-.thermo__needle path { fill: #f1edf7; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .7)); }
-.thermo__pivot { fill: #c5c7cf; stroke: #0a0a0e; stroke-width: 1.2; }
+.thermo__needle path { fill: #ecf0f1; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .7)); }
+.thermo__pivot { fill: #c5c8c9; stroke: #0b0e0f; stroke-width: 1.2; }
 .thermo { margin-top: auto; align-self: center; }

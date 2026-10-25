@@ -22,7 +22,7 @@ namespace Bramble
             this.page = page;
             this.receive = receive;
             Icon = Program.AppIcon;
-            BackColor = Color.FromArgb(10, 11, 15);
+            BackColor = Color.FromArgb(9, 12, 13);
             AutoScaleMode = AutoScaleMode.None;
             view = new WebView2 { Dock = DockStyle.Fill, DefaultBackgroundColor = BackColor };
             Controls.Add(view);

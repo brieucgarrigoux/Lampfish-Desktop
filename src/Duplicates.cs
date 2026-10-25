@@ -459,7 +459,7 @@ namespace Bramble
             return (File.GetAttributes(path) & FileAttributes.System) != 0;
         }
 
-        // Only files Bramble found can go, only to the Recycle Bin, once the 8 s of Undo are over, and never the last copy of a group.
+        // Only files lampfish found can go, only to the Recycle Bin, once the 8 s of Undo are over, and never the last copy of a group.
         static void Recycle(List<string> paths)
         {
             var live = Live();

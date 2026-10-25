@@ -8,7 +8,7 @@ using System.Web.Script.Serialization;
 
 namespace Bramble
 {
-    // An empty list keeps the order Bramble ships with, so a service added later still finds its place.
+    // An empty list keeps the order lampfish ships with, so a service added later still finds its place.
     class CustomizeSettings
     {
         public List<string> Bar, Groups, Blocks, HiddenBlocks, Tiles;

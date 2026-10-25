@@ -29,7 +29,7 @@ namespace Bramble
         }
 
         // The color filter of Windows accessibility: documented and safe, unlike Night light whose only switch is an undocumented registry blob.
-        // The filter belongs to the process, so it disappears with Bramble.
+        // The filter belongs to the process, so it disappears with lampfish.
         static void Warm(int strength)
         {
             try

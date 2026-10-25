@@ -351,7 +351,7 @@ namespace Bramble
             {
                 var request = (HttpWebRequest)WebRequest.Create("https://speed.cloudflare.com/meta");
                 request.Timeout = 6000;
-                request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Bramble";
+                request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) lampfish";
                 request.Referer = "https://speed.cloudflare.com/";
                 using (var response = request.GetResponse())
                 using (var player = new StreamReader(response.GetResponseStream()))
@@ -447,7 +447,7 @@ namespace Bramble
                         }
                         else request = (HttpWebRequest)WebRequest.Create(urlDown);
                         request.Timeout = 15000;
-                        request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Bramble";
+                        request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) lampfish";
                         request.Referer = "https://speed.cloudflare.com/";
                         if (upload)
                         {

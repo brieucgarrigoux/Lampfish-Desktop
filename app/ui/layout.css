@@ -44,7 +44,7 @@ body.bar-editing .rail[data-wide="true"] .rail-fold-all { display: none; }
 
 .h-main > [data-block] { position: relative; }
 .h-cover { display: none; }
-.home-editing .h-cover { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; padding: 0; border: 1.5px dashed color-mix(in srgb, var(--accent) 55%, transparent); border-radius: var(--radius-card); background: rgba(8, 8, 14, .4); color: var(--text); cursor: grab; touch-action: none; user-select: none; transition: background var(--fast), border-color var(--fast); }
+.home-editing .h-cover { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; padding: 0; border: 1.5px dashed color-mix(in srgb, var(--accent) 55%, transparent); border-radius: var(--radius-card); background: rgba(6, 9, 11, .4); color: var(--text); cursor: grab; touch-action: none; user-select: none; transition: background var(--fast), border-color var(--fast); }
 .home-editing .h-cover:hover { background: var(--veil); border-color: var(--accent); }
 .home-editing .h-cover:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .home-editing [data-block].grabbed { z-index: 4; }

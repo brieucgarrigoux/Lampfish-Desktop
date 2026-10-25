@@ -84,7 +84,7 @@ namespace Bramble
                     var request = (HttpWebRequest)WebRequest.Create(Address);
                     request.Headers["Authorization"] = "Bearer " + token;
                     request.Headers["anthropic-beta"] = "oauth-2025-04-20";
-                    request.UserAgent = "Bramble/" + Program.Version;
+                    request.UserAgent = "lampfish/" + Program.Version;
                     request.Timeout = 15000;
                     using (var response = (HttpWebResponse)request.GetResponse())
                     using (var reader = new StreamReader(response.GetResponseStream()))

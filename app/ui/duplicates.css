@@ -33,7 +33,7 @@
 .dup-bin:hover:not(:disabled) { color: var(--danger); }
 .dup-bin.armed, .dup-bin.armed:hover { background: var(--danger-dim); box-shadow: inset 0 0 0 1px var(--danger); color: var(--danger); }
 .dup-dialog { width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 48px); padding: 22px; border: 0; border-radius: var(--radius-shell); background: var(--shell); box-shadow: var(--shell-edge), 0 24px 60px rgba(0, 0, 0, .65); color: var(--text); }
-.dup-dialog::backdrop { background: rgba(5, 6, 10, .62); backdrop-filter: blur(3px); }
+.dup-dialog::backdrop { background: rgba(4, 7, 8, .62); backdrop-filter: blur(3px); }
 .dup-dialog[open] { animation: dup-dialog-in .2s ease-out; }
 @keyframes dup-dialog-in { from { opacity: 0; transform: translateY(8px) scale(.98); } }
 @media (prefers-reduced-motion: reduce) { .dup-dialog[open] { animation: none; } }

@@ -27,7 +27,7 @@
 .skeleton.analysis::after {
   content: ""; position: absolute; left: 50%; top: 50%; width: var(--ring, 200px); height: var(--ring, 200px);
   margin: calc(var(--ring, 200px) / -2) 0 0 calc(var(--ring, 200px) / -2); border-radius: 50%;
-  border: 2px solid rgba(190, 200, 255, .08); border-top-color: var(--accent); animation: turning 1.1s linear infinite;
+  border: 2px solid rgba(205, 220, 224, .08); border-top-color: var(--accent); animation: turning 1.1s linear infinite;
 }
 .footer-files {
   display: flex; align-items: center; gap: 7px; width: fit-content; max-width: 100%; box-sizing: border-box; margin: 12px 0 0; padding: 6px 12px 6px 9px;
@@ -49,7 +49,7 @@
 .element:only-child { border-radius: var(--radius-group); }
 .element .name-element { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .element .size { flex: none; font: var(--text-value) var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-soft); }
-.element i { position: absolute; left: 50px; bottom: 7px; height: 2px; border-radius: 1px; background: #34364a; transition: background var(--fast); }
+.element i { position: absolute; left: 50px; bottom: 7px; height: 2px; border-radius: 1px; background: #3c4244; transition: background var(--fast); }
 button.element:hover:not(:disabled), .element.hover { background: var(--group-up); }
 button.element:hover:not(:disabled) i, .element.hover i { background: var(--accent); }
 .element:disabled { color: var(--text-soft); cursor: default; }

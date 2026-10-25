@@ -5,7 +5,7 @@ using System.Windows.Forms;
 
 namespace Bramble
 {
-    // The global shortcuts of Bramble, all on one hidden window. Each feature keeps its own id.
+    // The global shortcuts of lampfish, all on one hidden window. Each feature keeps its own id.
     static class Hotkeys
     {
         public const int AudioOutput = 1, Capture = 2, Note = 3, Companion = 4;

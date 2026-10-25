@@ -15,7 +15,7 @@ namespace Bramble
         public string Folder;
     }
 
-    // Plain Markdown files in one folder: Bramble's own, or a folder of an Obsidian vault so that the notes land there as they are written.
+    // Plain Markdown files in one folder: lampfish's own, or a folder of an Obsidian vault so that the notes land there as they are written.
     static class Notes
     {
         public const string Host = "notes.example";
@@ -53,7 +53,7 @@ namespace Bramble
             catch (Exception ex) { Program.Log(ex); }
         }
 
-        // Edits made in Obsidian or File Explorer show up in Bramble.
+        // Edits made in Obsidian or File Explorer show up in lampfish.
         static void Watch()
         {
             if (watcher != null) { watcher.EnableRaisingEvents = false; watcher.Dispose(); watcher = null; }
@@ -254,7 +254,7 @@ namespace Bramble
                             next = dialog.SelectedPath;
                         }
                     }
-                    // A vault gets the notes in its own Bramble folder, next to the user's notes, never mixed with them.
+                    // A vault gets the notes in its own lampfish folder, next to the user's notes, never mixed with them.
                     if (m.ContainsKey("vault") && Convert.ToBoolean(m["vault"])) next = Path.Combine(next, "Bramble");
                     string before = Folder;
                     try { if (!string.IsNullOrEmpty(next)) Directory.CreateDirectory(next); }

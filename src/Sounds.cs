@@ -89,7 +89,7 @@ namespace Bramble
             save = new System.Windows.Forms.Timer { Interval = 600 };
             save.Tick += (s, e) => { save.Stop(); Program.Save(); };
             station = new Dock(R.Device, Change, present => Trigger(present ? "usb_on" : "usb_off"));
-            WriteLog("Bramble started" + (station.Present ? ", dock connected" : ""));
+            WriteLog("lampfish started" + (station.Present ? ", dock connected" : ""));
 
             mains = System.Windows.Forms.SystemInformation.PowerStatus.PowerLineStatus;
             SystemEvents.SessionSwitch += (s, e) =>

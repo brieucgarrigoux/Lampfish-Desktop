@@ -61,7 +61,7 @@ namespace Bramble
             int on = 1;
             if (DwmSetWindowAttribute(hwnd, 20, ref on, 4) != 0) DwmSetWindowAttribute(hwnd, 19, ref on, 4);
             if (Build < 22000) return;
-            int caption = 0x0F0B0A, text = 0xF0E9E8, border = 0x362B2A;
+            int caption = 0x0D0C09, text = 0xFFFFFF, border = 0x2F2E27;
             DwmSetWindowAttribute(hwnd, 35, ref caption, 4);
             DwmSetWindowAttribute(hwnd, 36, ref text, 4);
             DwmSetWindowAttribute(hwnd, 34, ref border, 4);

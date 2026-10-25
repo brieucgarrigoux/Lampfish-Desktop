@@ -75,7 +75,7 @@ namespace Bramble
         static string[] Fetch()
         {
             var request = (HttpWebRequest)WebRequest.Create(Latest);
-            request.UserAgent = "Bramble/" + Program.Version;
+            request.UserAgent = "lampfish/" + Program.Version;
             request.Accept = "application/vnd.github+json";
             request.Timeout = 10000;
             using (var response = request.GetResponse())
@@ -125,7 +125,7 @@ namespace Bramble
             {
                 using (var web = new WebClient())
                 {
-                    web.Headers[HttpRequestHeader.UserAgent] = "Bramble/" + Program.Version;
+                    web.Headers[HttpRequestHeader.UserAgent] = "lampfish/" + Program.Version;
                     web.DownloadProgressChanged += (s, e) =>
                     {
                         if (e.ProgressPercentage < progress + 5) return;

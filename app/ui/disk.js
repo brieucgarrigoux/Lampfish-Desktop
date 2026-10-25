@@ -69,16 +69,16 @@
   function color(s) {
     const active = hover || chosen;
     if (active) {
-      if (s === active) return '#9561f3';
-      if (isAncestor(s, active)) return `oklch(0.50 0.085 295)`;
-      if (isAncestor(active, s)) return `oklch(0.42 0.06 295)`;
+      if (s === active) return '#1EBBAA';
+      if (isAncestor(s, active)) return `oklch(0.50 0.075 183)`;
+      if (isAncestor(active, s)) return `oklch(0.42 0.055 183)`;
     }
     const n = s.n;
     let l = 0.47 - (s.k - 1) * 0.03 + (s.i % 2 ? 0.04 : 0);
-    if (n.s === 'system') return '#1f2029';
-    if (n.s) return `oklch(${(l - 0.13).toFixed(3)} 0.01 280)`;
-    if (!n.d) return `oklch(${(l - 0.07).toFixed(3)} 0.018 280)`;
-    return `oklch(${l.toFixed(3)} 0.032 280)`;
+    if (n.s === 'system') return '#1c2223';
+    if (n.s) return `oklch(${(l - 0.13).toFixed(3)} 0.005 215)`;
+    if (!n.d) return `oklch(${(l - 0.07).toFixed(3)} 0.007 215)`;
+    return `oklch(${l.toFixed(3)} 0.011 215)`;
   }
 
   function draw() {
@@ -103,7 +103,7 @@
       ctx.fillStyle = color(s);
       ctx.fill();
 
-      ctx.strokeStyle = '#14151b';
+      ctx.strokeStyle = '#121617';
       ctx.lineWidth = 1.5;
       ctx.stroke();
       if (!anim && k <= 2 && r2 - r1 >= 18) labels.push({ s, t0, t1, r: (r1 + r2) / 2 });
@@ -129,7 +129,7 @@
       ctx.save();
       ctx.translate(cx + Math.cos(m) * e.r, cy + Math.sin(m) * e.r);
       ctx.rotate(rot);
-      ctx.fillStyle = (e.s === hover || e.s === chosen) ? '#fff' : 'rgba(232, 233, 240, .9)';
+      ctx.fillStyle = (e.s === hover || e.s === chosen) ? '#fff' : 'rgba(255, 255, 255, .92)';
       ctx.fillText(text, 0, 0);
       ctx.restore();
     }

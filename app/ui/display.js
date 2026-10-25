@@ -131,7 +131,7 @@ const Quick = (() => {
     $('d-name').textContent = name(s);
     $('d-specs').textContent = [`${s.w} × ${s.h}`, s.scale + ' %', s.hz ? s.hz + ' Hz' : '', s.inches ? tr('{0} in', s.inches.toLocaleString(LOCALE)) : '', s.port].filter(Boolean).join(' · ');
     $('d-main').hidden = !s.primary;
-    $('d-help').textContent = screens.length < 2 ? tr('With a second screen plugged in, Bramble can choose which one is the main screen') : tr('A click on a screen makes it the main screen, which shows the Start menu and opens new windows');
+    $('d-help').textContent = screens.length < 2 ? tr('With a second screen plugged in, lampfish can choose which one is the main screen') : tr('A click on a screen makes it the main screen, which shows the Start menu and opens new windows');
   }
 
   function makeMain(s) {

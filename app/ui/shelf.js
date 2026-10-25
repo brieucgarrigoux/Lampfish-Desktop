@@ -12,7 +12,7 @@
   ];
   const TRAY = '<path d="M3.5 13.5V18a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-4.5M3.5 13.5l2-5.5h1.5M20.5 13.5l-2-5.5H17"/><path d="M3.5 13.5h5l1 2h5l1-2h5"/><path d="M12 3.5v8M9 9l3 3 3-3"/>';
 
-  // A card dragged out of the window becomes a file for the app it is dropped on; Bramble hands the file to Windows.
+  // A card dragged out of the window becomes a file for the app it is dropped on; lampfish hands the file to Windows.
   function dragOut(handle, item) {
     let start = null;
     handle.addEventListener('pointerdown', e => { if (e.button === 0) start = { x: e.clientX, y: e.clientY }; });

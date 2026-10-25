@@ -12,8 +12,8 @@ using Microsoft.VisualBasic.FileIO;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Win32;
 
-[assembly: System.Reflection.AssemblyTitle("Bramble")]
-[assembly: System.Reflection.AssemblyProduct("Bramble")]
+[assembly: System.Reflection.AssemblyTitle("lampfish")]
+[assembly: System.Reflection.AssemblyProduct("lampfish")]
 [assembly: System.Reflection.AssemblyVersion("0.4.0.0")]
 [assembly: System.Reflection.AssemblyFileVersion("0.4.0.0")]
 
@@ -269,7 +269,7 @@ namespace Bramble
                 CoreWebView2Environment.SetLoaderDllFolderPath(Path.Combine(Root, "app", "lib"));
                 if (!RuntimeInstalled())
                 {
-                    if (MessageBox.Show(Language.T("Bramble needs the Microsoft Edge WebView2 Runtime, which is not installed on this PC.") + "\n\n" + Language.T("Open the download page?"), "Bramble", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                    if (MessageBox.Show(Language.T("lampfish needs the Microsoft Edge WebView2 Runtime, which is not installed on this PC.") + "\n\n" + Language.T("Open the download page?"), "lampfish", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
                         Process.Start("https://developer.microsoft.com/microsoft-edge/webview2/");
                     Application.Exit();
                     return;
@@ -281,7 +281,7 @@ namespace Bramble
             catch (Exception ex)
             {
                 Log(ex);
-                MessageBox.Show(Language.T("The display engine could not start.") + "\n\n" + ex.Message, "Bramble", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(Language.T("The display engine could not start.") + "\n\n" + ex.Message, "lampfish", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -686,7 +686,7 @@ namespace Bramble
             }
         }
 
-        // commit runs when the toast closes without Undo, or when Bramble quits.
+        // commit runs when the toast closes without Undo, or when lampfish quits.
         public static void UndoableRemoval(string title, Action undo, Action commit = null)
         {
             Discard();
@@ -1064,7 +1064,13 @@ namespace Bramble
             }
             catch (Exception ex) { Log(ex); }
             foreach (var folder in new[] { Environment.SpecialFolder.DesktopDirectory, Environment.SpecialFolder.Programs })
-                FollowShortcut(Path.Combine(Environment.GetFolderPath(folder), "Bramble.lnk"), exe);
+            {
+                string dir = Environment.GetFolderPath(folder), old = Path.Combine(dir, "Bramble.lnk"), now = Path.Combine(dir, "lampfish.lnk");
+                try { if (File.Exists(old) && !File.Exists(now) && ShortcutTarget(old).EndsWith("Bramble.exe", StringComparison.OrdinalIgnoreCase)) File.Move(old, now); }
+                catch (Exception ex) { Log(ex); }
+                FollowShortcut(now, exe);
+                FollowShortcut(old, exe);
+            }
         }
 
         // Windows moves a shortcut's target along with a renamed folder but leaves its icon path behind.
@@ -1139,9 +1145,12 @@ namespace Bramble
             catch (Exception ex) { Log(ex); }
             foreach (var folder in new[] { Environment.SpecialFolder.DesktopDirectory, Environment.SpecialFolder.Programs })
             {
-                string lnk = Path.Combine(Environment.GetFolderPath(folder), "Bramble.lnk");
-                if (File.Exists(lnk) && ShortcutTarget(lnk).Equals(exe, StringComparison.OrdinalIgnoreCase))
-                    try { File.Delete(lnk); } catch (Exception ex) { Log(ex); }
+                foreach (string name in new[] { "lampfish.lnk", "Bramble.lnk" })
+                {
+                    string lnk = Path.Combine(Environment.GetFolderPath(folder), name);
+                    if (File.Exists(lnk) && ShortcutTarget(lnk).Equals(exe, StringComparison.OrdinalIgnoreCase))
+                        try { File.Delete(lnk); } catch (Exception ex) { Log(ex); }
+                }
             }
             Save();
         }

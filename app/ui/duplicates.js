@@ -23,7 +23,7 @@
   const WHY = { oldest: 'Kept in {0}: the first one saved', downloads: 'Kept in {0}: the one outside Downloads', name: 'Kept in {0}: the name without a copy number' };
   const running = () => report && (report.phase === 'listing' || report.phase === 'comparing');
   const groupsShown = () => report && report.phase === 'done' ? report.groups || [] : [];
-  // The first copy of a group is the one Bramble offers to keep. The others are ticked only when the group is safe to clean,
+  // The first copy of a group is the one lampfish offers to keep. The others are ticked only when the group is safe to clean,
   // and a group always keeps one copy.
   const goes = (g, i) => going.has(g.files[i].path) ? going.get(g.files[i].path) : i > 0 && g.safe;
   const ticked = () => groupsShown().flatMap(g => g.files.filter((f, i) => goes(g, i)));
@@ -209,7 +209,7 @@
     const head = document.createElement('div');
     head.className = 'title-section';
     head.innerHTML = `<h2></h2><button class="link">${svg(ICONS.clean)}<span></span></button>`;
-    head.firstChild.textContent = tr('Cleaned by Bramble');
+    head.firstChild.textContent = tr('Cleaned by lampfish');
     head.querySelector('button span').textContent = tr('Open the Recycle Bin');
     head.querySelector('button').addEventListener('click', () => send('duplicates.bin'));
     const group = document.createElement('div');

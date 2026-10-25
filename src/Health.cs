@@ -501,7 +501,7 @@ namespace Bramble
             return times;
         }
 
-        // A WebView2 page runs in msedgewebview2 processes started by the app that shows it: their time goes to that app, Bramble's own included.
+        // A WebView2 page runs in msedgewebview2 processes started by the app that shows it: their time goes to that app, lampfish's own included.
         static Dictionary<int, int> Owners(Dictionary<int, Tuple<string, double>> times)
         {
             var parents = new Dictionary<int, int>();

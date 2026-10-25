@@ -107,13 +107,13 @@
   function renderPlaces() {
     const vault = info.vault;
     $('n-here-icon').innerHTML = info.isDefault ? ICONS.bramble : vault ? ICONS.vault : ICONS.folder;
-    $('n-here-name').textContent = info.isDefault ? tr('Bramble notes folder') : vault ? tr('Obsidian: {0}', vault.name) : short(info.folder);
+    $('n-here-name').textContent = info.isDefault ? tr('lampfish notes folder') : vault ? tr('Obsidian: {0}', vault.name) : short(info.folder);
     $('n-where').textContent = short(info.folder);
     $('n-where').title = info.folder || '';
     $('n-missing').hidden = !info.missing;
-    if (info.missing) $('n-missing-text').textContent = tr('{0} cannot be found, so notes go to the Bramble folder until it is back', short(info.missing));
+    if (info.missing) $('n-missing-text').textContent = tr('{0} cannot be found, so notes go to the lampfish folder until it is back', short(info.missing));
 
-    const places = [{ label: tr('Bramble notes folder'), detail: tr('In the profile of this user'), path: '', vault: false, icon: 'bramble', on: info.isDefault && !info.missing }]
+    const places = [{ label: tr('lampfish notes folder'), detail: tr('In the profile of this user'), path: '', vault: false, icon: 'bramble', on: info.isDefault && !info.missing }]
       .concat((info.vaults || []).map(v => ({ label: tr('Obsidian: {0}', v.name), detail: short(v.path + '\\Bramble'), path: v.path, vault: true, icon: 'vault', on: !info.isDefault && (info.folder || '').toLowerCase() === (v.path + '\\Bramble').toLowerCase() })))
       .concat([{ label: tr('Choose a folder'), detail: tr('Any folder, a vault or a synced one'), path: 'pick', vault: false, icon: 'folder', on: false }]);
     const custom = !info.isDefault && !places.some(p => p.on);

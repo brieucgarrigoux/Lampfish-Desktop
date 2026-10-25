@@ -55,8 +55,8 @@
         const on = k < lit, hold = k === cap && holds[b] > .08;
         if (on || hold) {
           const mix = k / (SEGMENTS - 1);
-          pen.fillStyle = on ? (mix > .82 ? '#f1e8ff' : mix > .55 ? '#c3a1ff' : mix > .28 ? '#9561f3' : '#6f35d8') : '#e9dcff';
-          pen.shadowColor = 'rgba(149, 97, 243, .85)';
+          pen.fillStyle = on ? (mix > .82 ? '#e6eff1' : mix > .55 ? '#7ec6ba' : mix > .28 ? '#1EBBAA' : '#007669') : '#d8e6ea';
+          pen.shadowColor = 'rgba(30, 187, 170, .85)';
           pen.shadowBlur = on ? 7 : 4;
         } else {
           pen.fillStyle = 'rgba(255, 255, 255, .055)';
@@ -70,7 +70,7 @@
     pen.shadowBlur = 0;
     if (playback && playback.duration) {
       const p = Math.min(1, (now - playback.start) / 1000 / playback.duration);
-      pen.fillStyle = 'rgba(149, 97, 243, .9)';
+      pen.fillStyle = 'rgba(30, 187, 170, .9)';
       pen.fillRect(0, box.height - 2, box.width * p, 2);
     }
   }

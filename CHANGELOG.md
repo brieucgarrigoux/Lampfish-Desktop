@@ -22,6 +22,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - What is dragged follows the pointer and the rest slides out of its way, in the bar, on Home and in the categories of Arrange, instead of jumping.
 
 ### Changed
+- The interface moves from violet to turquoise on dark gray surfaces, the application is now called lampfish, and the bar, the window and the application icon carry the new fish mark.
 - Folders is now called Storage, the word Windows uses for the space on its drives.
 - Sounds: the volume and the microphone of Windows moved to Audio.
 - Network: the top card shows the connection on the glass of a round seal, the Wi-Fi lit in violet, instead of an icon and separate signal bars. The security level is three lit arcs instead of three bars.

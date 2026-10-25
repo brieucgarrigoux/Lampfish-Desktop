@@ -117,10 +117,10 @@
 .h-weather__icon { grid-row: 1 / 3; width: 38px; height: 38px; fill: none; stroke: var(--text); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .h-weather__icon .m-sun { stroke: #e8b65a; }
 .h-weather__icon .m-sun circle { fill: rgba(232, 182, 90, .18); }
-.h-weather__icon .m-moon { stroke: #c9b8e6; fill: rgba(201, 184, 230, .12); }
-.h-weather__icon .m-cloud { fill: #1b1c24; stroke: var(--text); }
+.h-weather__icon .m-moon { stroke: #a9cac4; fill: rgba(169, 202, 196, .12); }
+.h-weather__icon .m-cloud { fill: #191e1f; stroke: var(--text); }
 .h-weather__icon .m-drop { stroke: #7fa8e6; }
-.h-weather__icon .m-flake { fill: #e8e9f0; stroke: none; }
+.h-weather__icon .m-flake { fill: #e7eaea; stroke: none; }
 .h-weather__icon .m-lightning { stroke: #e8b65a; }
 .h-weather__icon .m-stroke { stroke: var(--text-soft); }
 .h-weather__text { display: flex; align-items: baseline; gap: 8px; }
@@ -140,7 +140,7 @@
 .h-images img { width: 24px; height: 24px; object-fit: contain; }
 .h-images img.retro { image-rendering: pixelated; }
 .h-leds { display: flex; gap: 4px; overflow: hidden; }
-.h-leds i { flex: none; width: 6px; height: 6px; border-radius: 50%; background: #262733; }
+.h-leds i { flex: none; width: 6px; height: 6px; border-radius: 50%; background: #232a2b; }
 .h-leds i.on { background: var(--accent); box-shadow: 0 0 5px color-mix(in srgb, var(--accent) 80%, transparent); }
 .h-thumbnail svg { width: 52px; height: 35px; }
 .h-thumbnail .screen-v { fill: var(--screen); stroke: var(--hairline-strong); }

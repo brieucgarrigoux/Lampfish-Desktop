@@ -237,21 +237,21 @@ namespace Bramble
                 var g = e.Graphics;
                 g.DrawImageUnscaled(shot, 0, 0);
                 var pick = Selection;
-                using (var veil = new SolidBrush(Color.FromArgb(120, 6, 6, 12)))
+                using (var veil = new SolidBrush(Color.FromArgb(120, 5, 8, 9)))
                 using (var outside = new Region(ClientRectangle))
                 {
                     if (!pick.IsEmpty) outside.Exclude(pick);
                     g.FillRegion(veil, outside);
                 }
                 if (pick.IsEmpty) return;
-                using (var pen = new Pen(Color.FromArgb(0x95, 0x61, 0xf3), 2)) g.DrawRectangle(pen, pick.X, pick.Y, pick.Width - 1, pick.Height - 1);
+                using (var pen = new Pen(Color.FromArgb(0x1E, 0xBB, 0xAA), 2)) g.DrawRectangle(pen, pick.X, pick.Y, pick.Width - 1, pick.Height - 1);
                 string size = pick.Width + " × " + pick.Height;
                 using (var font = new Font("Segoe UI", 9f, FontStyle.Bold))
                 {
                     var box = TextRenderer.MeasureText(size, font);
                     var at = new Rectangle(pick.X, pick.Y >= box.Height + 10 ? pick.Y - box.Height - 8 : pick.Bottom + 6, box.Width + 12, box.Height + 4);
-                    using (var back = new SolidBrush(Color.FromArgb(230, 20, 21, 27))) g.FillRectangle(back, at);
-                    TextRenderer.DrawText(g, size, font, at, Color.FromArgb(0xe8, 0xe9, 0xf0), TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                    using (var back = new SolidBrush(Color.FromArgb(230, 17, 21, 23))) g.FillRectangle(back, at);
+                    TextRenderer.DrawText(g, size, font, at, Color.FromArgb(0xFF, 0xFF, 0xFF), TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
                 }
             }
         }
@@ -267,7 +267,7 @@ namespace Bramble
                 var form = new Form
                 {
                     FormBorderStyle = FormBorderStyle.None, StartPosition = FormStartPosition.Manual, ShowInTaskbar = false, TopMost = true,
-                    BackColor = Color.FromArgb(0x14, 0x15, 0x1b), Size = new Size(side, side), AutoScaleMode = AutoScaleMode.None,
+                    BackColor = Color.FromArgb(0x11, 0x15, 0x17), Size = new Size(side, side), AutoScaleMode = AutoScaleMode.None,
                     Location = new Point(screen.Left + (screen.Width - side) / 2, screen.Bottom - side - (int)(72 * k)),
                 };
                 int left = seconds;
@@ -275,7 +275,7 @@ namespace Bramble
                 {
                     e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
                     using (var font = new Font("Segoe UI", 22f * (float)k / (e.Graphics.DpiY / 96f), FontStyle.Bold))
-                        TextRenderer.DrawText(e.Graphics, left.ToString(), font, form.ClientRectangle, Color.FromArgb(0x95, 0x61, 0xf3), TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                        TextRenderer.DrawText(e.Graphics, left.ToString(), font, form.ClientRectangle, Color.FromArgb(0x1E, 0xBB, 0xAA), TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
                 };
                 form.Shown += (s, e) => Native.Rounded(form.Handle);
                 var timer = new Timer { Interval = 1000 };
@@ -308,7 +308,7 @@ namespace Bramble
                 ShowInTaskbar = false;
                 TopMost = true;
                 AutoScaleMode = AutoScaleMode.None;
-                BackColor = Color.FromArgb(0x14, 0x15, 0x1b);
+                BackColor = Color.FromArgb(0x11, 0x15, 0x17);
                 DoubleBuffered = true;
                 Cursor = Cursors.Hand;
                 fade = new Timer { Interval = 16 };
@@ -358,8 +358,8 @@ namespace Bramble
                 using (var bold = new Font("Segoe UI", 10.5f * points, FontStyle.Bold))
                 using (var small = new Font("Segoe UI", 9f * points))
                 {
-                    TextRenderer.DrawText(g, Language.T("Capture copied"), bold, new Rectangle(left, (int)(18 * k), Width - left - pad, (int)(22 * k)), Color.FromArgb(0xe8, 0xe9, 0xf0), flags);
-                    TextRenderer.DrawText(g, Language.T("On the shelf, click to annotate"), small, new Rectangle(left, (int)(40 * k), Width - left - pad, (int)(20 * k)), Color.FromArgb(0x95, 0x61, 0xf3), flags);
+                    TextRenderer.DrawText(g, Language.T("Capture copied"), bold, new Rectangle(left, (int)(18 * k), Width - left - pad, (int)(22 * k)), Color.FromArgb(0xFF, 0xFF, 0xFF), flags);
+                    TextRenderer.DrawText(g, Language.T("On the shelf, click to annotate"), small, new Rectangle(left, (int)(40 * k), Width - left - pad, (int)(20 * k)), Color.FromArgb(0x1E, 0xBB, 0xAA), flags);
                 }
             }
         }

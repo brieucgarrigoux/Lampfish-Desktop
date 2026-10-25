@@ -3,14 +3,14 @@
 
 .cr-editing { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; padding: 9px 14px; border-radius: var(--radius-group); background: var(--accent-dim); color: var(--accent); font-size: var(--text-body); font-weight: 600; }
 
-.cr-stage { position: relative; aspect-ratio: 16 / 9; border-radius: var(--radius-card); overflow: hidden; background: #05030a; box-shadow: 0 0 0 1px var(--hairline); }
+.cr-stage { position: relative; aspect-ratio: 16 / 9; border-radius: var(--radius-card); overflow: hidden; background: #070c0e; box-shadow: 0 0 0 1px var(--hairline); }
 .cr-stage iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; pointer-events: none; }
 .cr-layer { position: absolute; inset: 0; touch-action: none; }
 .cr-box { position: absolute; border-radius: var(--radius-small); cursor: move; box-shadow: 0 0 0 1px transparent; transition: box-shadow var(--fast); }
 .cr-box.hover, .cr-box.active { box-shadow: 0 0 0 1.5px var(--accent); }
 .cr-box.empty { background: rgba(255, 255, 255, .03); outline: 1px dashed rgba(255, 255, 255, .22); outline-offset: -1px; }
 .cr-box.empty.hover, .cr-box.empty.active { outline-color: var(--accent); }
-.cr-box__tag { position: absolute; left: 0; top: -21px; padding: 2px 7px; border-radius: var(--radius-small); background: var(--accent-strong); color: #fff; font-size: var(--text-badge); opacity: 0; pointer-events: none; transition: opacity var(--fast); white-space: nowrap; }
+.cr-box__tag { position: absolute; left: 0; top: -21px; padding: 2px 7px; border-radius: var(--radius-small); background: var(--accent-strong); color: var(--on-accent); font-size: var(--text-badge); opacity: 0; pointer-events: none; transition: opacity var(--fast); white-space: nowrap; }
 .cr-box.hover .cr-box__tag, .cr-box.active .cr-box__tag { opacity: 1; }
 .cr-box__plus { position: absolute; inset: 0; display: none; place-items: center; text-align: center; font-size: var(--text-caption); white-space: nowrap; color: rgba(255, 255, 255, .7); pointer-events: none; padding: 4px; }
 .cr-box.empty .cr-box__plus { display: grid; }
@@ -24,8 +24,8 @@
 .cr-thirds i:nth-child(1) { left: 33.333%; } .cr-thirds i:nth-child(2) { left: 66.666%; }
 .cr-thirds b { position: absolute; left: 0; right: 0; height: 1px; background: rgba(255, 255, 255, .22); }
 .cr-thirds b:nth-child(3) { top: 33.333%; } .cr-thirds b:nth-child(4) { top: 66.666%; }
-.cr-tag { position: absolute; padding: 3px 8px; border-radius: var(--radius-small); background: rgba(10, 11, 15, .85); color: #fff; font: var(--text-caption) var(--numbers); font-variant-numeric: tabular-nums; white-space: nowrap; pointer-events: none; }
-.cr-inline { position: absolute; padding: 0 8px; border: 0; border-radius: var(--radius-control); background: rgba(8, 9, 12, .55); text-align: center; letter-spacing: -.02em; outline: none; box-shadow: 0 0 0 1.5px var(--accent); font-family: var(--display); }
+.cr-tag { position: absolute; padding: 3px 8px; border-radius: var(--radius-small); background: rgba(9, 12, 13, .85); color: #fff; font: var(--text-caption) var(--numbers); font-variant-numeric: tabular-nums; white-space: nowrap; pointer-events: none; }
+.cr-inline { position: absolute; padding: 0 8px; border: 0; border-radius: var(--radius-control); background: rgba(7, 9, 10, .55); text-align: center; letter-spacing: -.02em; outline: none; box-shadow: 0 0 0 1.5px var(--accent); font-family: var(--display); }
 .cr-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .cr-tool { display: inline-flex; align-items: center; gap: 7px; padding: 6px 11px; border-radius: var(--radius-control); font-size: var(--text-value); }
 .cr-tool svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }

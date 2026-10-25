@@ -689,7 +689,7 @@ namespace Bramble
                     if (Program.R.CursorsOriginal == null) return false;
                     var before = Full();
                     Restore(Program.R.CursorsOriginal);
-                    Program.Undoable(Language.T("Mouse back to how it was before Bramble"), () => Restore(before));
+                    Program.Undoable(Language.T("Mouse back to how it was before lampfish"), () => Restore(before));
                     return true;
                 }
                 case "adjust": Remember(); Adjust(Text(m, "what"), m["value"]); return !(m.ContainsKey("live") && Convert.ToBoolean(m["live"]));

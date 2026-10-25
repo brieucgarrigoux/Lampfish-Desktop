@@ -440,7 +440,7 @@ namespace Bramble
                 ShowInTaskbar = false;
                 StartPosition = FormStartPosition.Manual;
                 TopMost = true;
-                BackColor = Color.FromArgb(0x14, 0x15, 0x1b);
+                BackColor = Color.FromArgb(0x11, 0x15, 0x17);
                 DoubleBuffered = true;
                 fade = new Timer { Interval = 16 };
                 fade.Tick += (s, e) =>
@@ -492,14 +492,14 @@ namespace Bramble
                 string glyph = kind == "headphones" ? "" : kind == "headset" ? "" : kind == "screen" ? "" : "";
                 string family = FontFamily.Families.Any(f => f.Name == "Segoe Fluent Icons") ? "Segoe Fluent Icons" : "Segoe MDL2 Assets";
                 using (var icon = new Font(family, 16f * points))
-                    TextRenderer.DrawText(g, glyph, icon, new Rectangle((int)(16 * k), 0, (int)(40 * k), Height), Color.FromArgb(0x95, 0x61, 0xf3), TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                    TextRenderer.DrawText(g, glyph, icon, new Rectangle((int)(16 * k), 0, (int)(40 * k), Height), Color.FromArgb(0x1E, 0xBB, 0xAA), TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
                 var left = (int)(68 * k);
                 using (var bold = new Font("Segoe UI", 10.5f * points, FontStyle.Bold))
                 using (var small = new Font("Segoe UI", 9f * points))
                 {
                     var flags = TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine;
-                    TextRenderer.DrawText(g, title ?? "", bold, new Rectangle(left, (int)(13 * k), Width - left - (int)(16 * k), (int)(22 * k)), Color.FromArgb(0xe8, 0xe9, 0xf0), flags);
-                    TextRenderer.DrawText(g, string.IsNullOrEmpty(detail) ? Language.T("Output") : detail, small, new Rectangle(left, (int)(34 * k), Width - left - (int)(16 * k), (int)(18 * k)), Color.FromArgb(0x7c, 0x7e, 0x8c), flags);
+                    TextRenderer.DrawText(g, title ?? "", bold, new Rectangle(left, (int)(13 * k), Width - left - (int)(16 * k), (int)(22 * k)), Color.FromArgb(0xFF, 0xFF, 0xFF), flags);
+                    TextRenderer.DrawText(g, string.IsNullOrEmpty(detail) ? Language.T("Output") : detail, small, new Rectangle(left, (int)(34 * k), Width - left - (int)(16 * k), (int)(18 * k)), Color.FromArgb(0x93, 0x99, 0x9b), flags);
                 }
             }
         }

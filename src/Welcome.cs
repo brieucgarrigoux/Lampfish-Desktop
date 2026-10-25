@@ -12,7 +12,7 @@ namespace Bramble
         public List<string> Seen = new List<string>();
     }
 
-    // The welcome shows once, on a PC where Bramble has never run; the first steps then stay on Home until done or hidden.
+    // The welcome shows once, on a PC where lampfish has never run; the first steps then stay on Home until done or hidden.
     static class Welcome
     {
         static readonly JavaScriptSerializer json = new JavaScriptSerializer();
@@ -21,7 +21,7 @@ namespace Bramble
 
         static string File { get { return Path.Combine(Program.DataFolder("Welcome"), "state.json"); } }
 
-        // firstRun: no settings.json was there before this start. Someone who already used Bramble gets neither the welcome nor the steps.
+        // firstRun: no settings.json was there before this start. Someone who already used lampfish gets neither the welcome nor the steps.
         public static void Start(bool firstRun)
         {
             try

@@ -1,6 +1,6 @@
 'use strict';
 
-// The welcome: three short screens, skippable at any time, shown once on a PC where Bramble never ran.
+// The welcome: three short screens, skippable at any time, shown once on a PC where lampfish never ran.
 (function () {
   const box = $('welcome'), steps = [...box.querySelectorAll('.welcome__step')], dots = [...box.querySelectorAll('.welcome__dots i')];
   let step = 0, open = false, wallsKey = '', before = null;
@@ -102,7 +102,7 @@
     else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
   });
 
-  // First steps on Home: each line ticks itself from what Bramble already knows.
+  // First steps on Home: each line ticks itself from what lampfish already knows.
   const STEPS = [
     ['wallpaper', 'Pick a wallpaper', s => (s.welcome.seen || []).includes('wallpaper') || s.current !== 'bramble-logo.html'],
     ['health', 'Check the health of the PC', s => (s.welcome.seen || []).includes('health')],
@@ -111,7 +111,7 @@
     ['customize', 'Choose the cards of Home', s => !!(s.layout && (s.layout.Tiles || s.layout.Blocks))],
   ];
   let stepsKey = '';
-  // Once, for someone who used Bramble before the companion: a line on Home to turn it on.
+  // Once, for someone who used lampfish before the companion: a line on Home to turn it on.
   function companionNote(s) {
     const show = !!(s.welcome && s.welcome.companionNote && s.companion && !s.companion.on);
     $('h-new').hidden = !show;

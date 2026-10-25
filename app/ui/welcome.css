@@ -1,5 +1,5 @@
 /* The welcome sits over the whole window, above the bar. */
-.welcome { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 24px 16px; background: rgba(5, 5, 9, .72); backdrop-filter: blur(6px); }
+.welcome { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 24px 16px; background: rgba(4, 6, 7, .72); backdrop-filter: blur(6px); }
 .welcome[hidden] { display: none; }
 .welcome__card { display: flex; flex-direction: column; gap: 14px; width: min(640px, 100%); min-height: min(430px, 100%); max-height: 100%; overflow-y: auto; padding: 18px 24px 20px; border-radius: var(--radius-card); background: var(--group); box-shadow: 0 0 0 1px var(--hairline-strong), 0 24px 60px rgba(0, 0, 0, .55); }
 .welcome__top { display: flex; align-items: center; justify-content: space-between; }
@@ -9,7 +9,7 @@
 .welcome__step { display: flex; flex-direction: column; gap: 12px; }
 .welcome__step[hidden] { display: none; }
 .welcome__step h1, .welcome__step h2 { margin: 0; font: 600 var(--text-title)/1.2 var(--display); color: var(--text); }
-.welcome__logo { width: 72px; height: 72px; object-fit: contain; }
+.welcome__logo { width: 112px; height: 72px; object-fit: contain; }
 .welcome__lead { margin: 0; font-size: var(--text-body); line-height: 1.5; color: var(--text-soft); }
 .welcome__families { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-top: 4px; }
 .welcome__family { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px 12px; border-radius: var(--radius-group); background: var(--group-up); }
@@ -48,7 +48,7 @@
 .h-step.is-done .h-step__ring { stroke: var(--accent); fill: var(--accent-dim); }
 .h-step.is-done .h-step__tick { stroke: var(--accent); }
 
-/* Once, for those who used Bramble before the companion. */
+/* Once, for those who used lampfish before the companion. */
 .h-new { display: flex; align-items: center; gap: 12px; margin-top: 12px; padding: 12px 14px; border-radius: var(--radius-card); background: var(--accent-tint); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent); }
 .h-new[hidden] { display: none; }
 .h-new > svg { flex: none; width: 30px; height: 30px; padding: 6px; box-sizing: border-box; border-radius: 50%; background: var(--accent-dim); fill: none; stroke: var(--accent); stroke-width: 1.8; }

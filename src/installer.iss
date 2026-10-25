@@ -10,9 +10,9 @@
 
 [Setup]
 AppId={#AppId}
-AppName=Bramble
+AppName=lampfish
 AppVersion={#Version}
-AppVerName=Bramble {#Version}
+AppVerName=lampfish {#Version}
 AppPublisher=Brieuc Garrigoux
 AppPublisherURL=https://github.com/brieucgarrigoux/Bramble-Desktop
 AppSupportURL=https://github.com/brieucgarrigoux/Bramble-Desktop/issues
@@ -32,7 +32,7 @@ WizardImageStretch=no
 WizardSmallImageFile={#Brand}logo-bramble-192.png
 SetupIconFile=icon.ico
 UninstallDisplayIcon={app}\Bramble.exe
-UninstallDisplayName=Bramble
+UninstallDisplayName=lampfish
 RestartApplications=no
 OutputBaseFilename=Bramble-Setup-{#Version}
 Compression=lzma2
@@ -49,29 +49,32 @@ english.DesktopIcon=Shortcut on the desktop
 french.DesktopIcon=Raccourci sur le Bureau
 english.Startup=Start with Windows
 french.Startup=Lancer avec Windows
-english.NeedWebView2=Bramble needs the Microsoft Edge WebView2 Runtime, which is missing on this PC.%n%nOpen the Microsoft download page?
-french.NeedWebView2=Bramble a besoin du runtime Microsoft Edge WebView2, absent de ce PC.%n%nOuvrir la page de téléchargement de Microsoft ?
-english.NeedDotNet=Bramble needs .NET Framework 4.8, part of Windows 10 since version 1903.%n%nOpen the Microsoft download page?
-french.NeedDotNet=Bramble a besoin de .NET Framework 4.8, inclus dans Windows 10 depuis la version 1903.%n%nOuvrir la page de téléchargement de Microsoft ?
-english.DeleteData=Also delete the settings and files of Bramble (added wallpapers, cursors, icons, sounds)?%n%nKeeping them brings everything back after a new install.
-french.DeleteData=Supprimer aussi les réglages et les fichiers de Bramble (fonds ajoutés, curseurs, icônes, sons) ?%n%nLes garder permet de tout retrouver après une nouvelle installation.
+english.NeedWebView2=lampfish needs the Microsoft Edge WebView2 Runtime, which is missing on this PC.%n%nOpen the Microsoft download page?
+french.NeedWebView2=lampfish a besoin du runtime Microsoft Edge WebView2, absent de ce PC.%n%nOuvrir la page de téléchargement de Microsoft ?
+english.NeedDotNet=lampfish needs .NET Framework 4.8, part of Windows 10 since version 1903.%n%nOpen the Microsoft download page?
+french.NeedDotNet=lampfish a besoin de .NET Framework 4.8, inclus dans Windows 10 depuis la version 1903.%n%nOuvrir la page de téléchargement de Microsoft ?
+english.DeleteData=Also delete the settings and files of lampfish (added wallpapers, cursors, icons, sounds)?%n%nKeeping them brings everything back after a new install.
+french.DeleteData=Supprimer aussi les réglages et les fichiers de lampfish (fonds ajoutés, curseurs, icônes, sons) ?%n%nLes garder permet de tout retrouver après une nouvelle installation.
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:DesktopIcon}"; GroupDescription: "{cm:Options}"; Check: not IsUpgrade
 Name: "startup"; Description: "{cm:Startup}"; GroupDescription: "{cm:Options}"; Flags: unchecked; Check: not IsUpgrade
 
+[InstallDelete]
+Type: files; Name: "{autoprograms}\Bramble.lnk"
+
 [Files]
 Source: "{#Source}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{autoprograms}\Bramble"; Filename: "{app}\Bramble.exe"; WorkingDir: "{app}"
-Name: "{autodesktop}\Bramble"; Filename: "{app}\Bramble.exe"; WorkingDir: "{app}"; Tasks: desktopicon
+Name: "{autoprograms}\lampfish"; Filename: "{app}\Bramble.exe"; WorkingDir: "{app}"
+Name: "{autodesktop}\lampfish"; Filename: "{app}\Bramble.exe"; WorkingDir: "{app}"; Tasks: desktopicon
 
 [Registry]
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "Bramble"; ValueData: """{app}\Bramble.exe"" --background"; Tasks: startup
 
 [Run]
-Filename: "{app}\Bramble.exe"; Description: "{cm:LaunchProgram,Bramble}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\Bramble.exe"; Description: "{cm:LaunchProgram,lampfish}"; Flags: nowait postinstall skipifsilent
 Filename: "{app}\Bramble.exe"; Flags: nowait; Check: WizardSilent
 
 [UninstallRun]

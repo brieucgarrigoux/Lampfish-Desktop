@@ -180,8 +180,8 @@ function render(state) {
 }
 
 const UPDATE_STATES = {
-  never: 'Not checked yet', checking: 'Checking…', latest: 'Bramble is up to date', none: 'No published version found yet', failed: 'GitHub could not be reached, try again later',
-  installing: 'Installing, Bramble restarts by itself', damaged: 'The download was damaged, nothing was installed', downloadFailed: 'The download failed, try again later',
+  never: 'Not checked yet', checking: 'Checking…', latest: 'lampfish is up to date', none: 'No published version found yet', failed: 'GitHub could not be reached, try again later',
+  installing: 'Installing, lampfish restarts by itself', damaged: 'The download was damaged, nothing was installed', downloadFailed: 'The download failed, try again later',
 };
 function renderUpdates(u) {
   if (!u) return;
@@ -242,7 +242,7 @@ function confirmReset(button, warning, run) {
 }
 confirmReset($('w-reset'), 'Light, speed, blur, saturation, dim, framing, slideshow, frame rate, pauses and sound reaction go back to default. The wallpaper stays.', () => send('resetWallpaper'));
 confirmReset($('s-reset'), 'Every event gets its first sound back, only the events on by default stay on, and the volume goes back to 100 %.', () => send('station.resetAll'));
-confirmReset($('r-reset'), 'The icons go back to where they were before Bramble first moved them, and the screen, arrangement, sort and category order go back to default.', () => send('arrange.resetAll'));
+confirmReset($('r-reset'), 'The icons go back to where they were before lampfish first moved them, and the screen, arrangement, sort and category order go back to default.', () => send('arrange.resetAll'));
 
 let depth = 0;
 const carriesFiles = e => [...e.dataTransfer.types].includes('Files');
@@ -322,7 +322,7 @@ function renderCompanion(c) {
 }
 
 // What the Claude usage line says, shared by Settings, Home and the companion.
-const CLAUDE_STATES = { missing: 'Claude Code is not signed in on this PC', expired: 'The sign-in of Claude Code has expired: open Claude Code to renew it', offline: 'No answer from Anthropic for now', unknown: 'Anthropic answered in a way Bramble does not know yet', reading: 'Reading' };
+const CLAUDE_STATES = { missing: 'Claude Code is not signed in on this PC', expired: 'The sign-in of Claude Code has expired: open Claude Code to renew it', offline: 'No answer from Anthropic for now', unknown: 'Anthropic answered in a way lampfish does not know yet', reading: 'Reading' };
 function claudeText(c) {
   if (!c || !c.on) return '';
   const u = c.usage;
@@ -889,8 +889,8 @@ const TASKBAR_APPS = [
   '<svg viewBox="0 0 24 24"><path fill="#47a0ff" d="M3 3.5h8.2v8.2H3zM12.8 3.5H21v8.2h-8.2zM3 13.3h8.2v8.2H3zM12.8 13.3H21v8.2h-8.2z"/></svg>',
   '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2.4" fill="#f4c542"/><path d="M3 9.5h18v7.6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#ffd966"/><path d="M3 8.6a2.4 2.4 0 0 1 2.4-2.4h4l1.6 2z" fill="#e0a82e"/></svg>',
   '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#1d7fe6"/><path d="M12 3a9 9 0 0 0-9 9h10a3 3 0 0 0 0-6h-1z" fill="#34d399"/><path d="M5.5 13c2-3.6 6.4-4.4 10-2.6 1.6.8 2.6 2.2 3 3.6-1.8-1.4-3.8-1.8-6-1.4-2.4.4-4.4 2-7 .4z" fill="#0a3a8a" opacity=".55"/></svg>',
-  '<svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="15" rx="3" fill="#1b1c24" stroke="#4a4c5c" stroke-width="1"/><path d="m7.5 9.5 3 2.5-3 2.5M12.5 15h4" fill="none" stroke="#c9b8e6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-  '<svg viewBox="0 0 24 24"><image href="/brand/app-icon/app-icon-violet.png" x="2" y="2" width="20" height="20"/></svg>',
+  '<svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="15" rx="3" fill="#191e1f" stroke="#4d5355" stroke-width="1"/><path d="m7.5 9.5 3 2.5-3 2.5M12.5 15h4" fill="none" stroke="#a9cac4" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  '<svg viewBox="0 0 24 24"><image href="/brand/app-icon/app-icon-lampfish.png" x="2" y="2" width="20" height="20"/></svg>',
 ].map((svg, i) => `<i${i === 4 ? ' class="on"' : ''}>${svg}</i>`).join('');
 const TASKBAR_TRAY = '<svg viewBox="0 0 24 24"><path d="m6 14 6-6 6 6" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><svg viewBox="0 0 24 24"><path d="M3 9a13 13 0 0 1 18 0M6 12.5a8.5 8.5 0 0 1 12 0M9 16a4 4 0 0 1 6 0" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg><svg viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z" fill="#fff"/><path d="M15 9a4 4 0 0 1 0 6" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg><svg viewBox="0 0 24 24"><rect x="3" y="8" width="16" height="8" rx="2" fill="none" stroke="#fff" stroke-width="1.8"/><rect x="5" y="10" width="9" height="4" rx=".8" fill="#fff"/><path d="M21 10.5v3" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>';
 

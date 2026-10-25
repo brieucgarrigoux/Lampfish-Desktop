@@ -193,7 +193,7 @@
           screen.classList.add('can-main');
           screen.title = tr('Click to make it the main screen, the icons follow');
           screen.addEventListener('click', () => {
-            // Windows moves the screens, then Bramble moves the icons: the map waits for both instead of showing each step.
+            // Windows moves the screens, then lampfish moves the icons: the map waits for both instead of showing each step.
             zone.classList.add('switching');
             clearTimeout(switching);
             switching = setTimeout(() => zone.classList.remove('switching'), 3200);

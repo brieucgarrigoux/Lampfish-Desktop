@@ -92,7 +92,7 @@ namespace Bramble
         {
             var request = (HttpWebRequest)WebRequest.Create(url);
             request.Timeout = 8000;
-            request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Bramble";
+            request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) lampfish";
             if (referer != null) request.Referer = referer;
             using (var response = request.GetResponse())
             using (var player = new StreamReader(response.GetResponseStream()))

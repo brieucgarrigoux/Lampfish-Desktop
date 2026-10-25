@@ -30,7 +30,7 @@ namespace Bramble
             menu.HandleCreated += (s, e) => Native.Rounded(menu.Handle);
             menu.Opening += (s, e) => Update();
 
-            icon = new NotifyIcon { Icon = new Icon(Program.AppIcon, SystemInformation.SmallIconSize), Text = "Bramble", ContextMenuStrip = menu, Visible = true };
+            icon = new NotifyIcon { Icon = new Icon(Program.AppIcon, SystemInformation.SmallIconSize), Text = "lampfish", ContextMenuStrip = menu, Visible = true };
             icon.MouseUp += (s, e) => { if (e.Button == MouseButtons.Left) Program.OpenSettings(); };
             Update();
         }
@@ -45,7 +45,7 @@ namespace Bramble
         public static void Update()
         {
             if (icon == null) return;
-            open.Text = Language.T("Open Bramble");
+            open.Text = Language.T("Open lampfish");
             next.Text = Language.T("Next wallpaper");
             next.Enabled = Program.WallpaperCount > 1;
             pause.Text = Language.T(Program.Paused ? "Resume wallpaper" : "Pause wallpaper");
@@ -74,21 +74,21 @@ namespace Bramble
 
         class Colors : ProfessionalColorTable
         {
-            static readonly Color Back = Color.FromArgb(27, 28, 36), Line = Color.FromArgb(42, 43, 54);
+            static readonly Color Back = Color.FromArgb(25, 30, 31), Line = Color.FromArgb(39, 46, 47);
             public override Color ToolStripDropDownBackground { get { return Back; } }
             public override Color ImageMarginGradientBegin { get { return Back; } }
             public override Color ImageMarginGradientMiddle { get { return Back; } }
             public override Color ImageMarginGradientEnd { get { return Back; } }
             public override Color MenuBorder { get { return Line; } }
             public override Color MenuItemBorder { get { return Color.Transparent; } }
-            public override Color MenuItemSelected { get { return Color.FromArgb(42, 43, 54); } }
+            public override Color MenuItemSelected { get { return Color.FromArgb(39, 46, 47); } }
             public override Color SeparatorDark { get { return Line; } }
             public override Color SeparatorLight { get { return Back; } }
         }
 
         class Renderer : ToolStripProfessionalRenderer
         {
-            static readonly Color Text = Color.FromArgb(232, 233, 240), Pale = Color.FromArgb(124, 126, 140), Accent = Color.FromArgb(149, 97, 243);
+            static readonly Color Text = Color.FromArgb(255, 255, 255), Pale = Color.FromArgb(147, 153, 155), Accent = Color.FromArgb(30, 187, 170);
 
             public Renderer() : base(new Colors()) { RoundedEdges = false; }
 
@@ -97,7 +97,7 @@ namespace Bramble
                 if (!e.Item.Selected || !e.Item.Enabled) return;
                 var r = new Rectangle(2, 0, e.Item.Width - 4, e.Item.Height);
                 using (var path = Round(r, 5))
-                using (var brush = new SolidBrush(Color.FromArgb(42, 43, 54)))
+                using (var brush = new SolidBrush(Color.FromArgb(39, 46, 47)))
                 {
                     e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
                     e.Graphics.FillPath(brush, path);
@@ -129,7 +129,7 @@ namespace Bramble
             protected override void OnRenderSeparator(ToolStripSeparatorRenderEventArgs e)
             {
                 int y = e.Item.Height / 2;
-                using (var pen = new Pen(Color.FromArgb(42, 43, 54)))
+                using (var pen = new Pen(Color.FromArgb(39, 46, 47)))
                     e.Graphics.DrawLine(pen, 10, y, e.Item.Width - 10, y);
             }
 

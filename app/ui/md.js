@@ -1,7 +1,7 @@
 'use strict';
 
 // Markdown to page elements, built node by node: the text of a note never goes through innerHTML, so a note that came
-// from a shared vault cannot run anything in Bramble. Covers what Obsidian users write most: titles, lists, tasks, quotes,
+// from a shared vault cannot run anything in lampfish. Covers what Obsidian users write most: titles, lists, tasks, quotes,
 // code, tables, links, [[links]], images and ![[embeds]], highlights. Single line breaks are kept, as in Obsidian.
 const Markdown = (function () {
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
