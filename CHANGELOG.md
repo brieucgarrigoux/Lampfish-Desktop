@@ -26,6 +26,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Go to: Ctrl K opens a search that goes to any service by name. Home is an item of the bar.
 - Home: the cards sit in any cell of a grid, an empty cell stays empty, and a button in the corner of a card changes its size.
 - Arrange: Straighten the icons seats every desktop icon in the nearest cell of the grid, with Undo.
+- Magnetic grid: the slots of the grid show on every screen while the desktop is in front, and an icon let go between two slots falls in the nearest free one. It can be turned on in Arrange or from the Desktop tab of the companion, and replaces the Align to grid switch.
+- Companion: a Desktop tab (grid, straighten, hide the icons, wallpaper previous, pause and next), and the Claude session and week as two dials next to the processor and memory. The Home card of Claude usage shows both as bars.
+- Wallpaper: a note offers to slow down the slideshow of Windows when it changes the picture more than once a day, because each change makes a live wallpaper blink. Undo and uninstalling put the interval back.
 - Companion: tabs for the Shelf, Audio, Notes and Convert, a dashboard with the dials, the disk, the theme (changed with arrows) and the audio output, and the window grows out of the button.
 
 ### Changed
@@ -50,6 +53,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Fixed
 - Shelf: a file added from an old folder landed at the end of the list and looked as if nothing had happened; Open the folder did nothing; the Mouse folder button also opened the Shelf.
 - Audio: the highlight of a card stopped at the volume.
+- Taskbar: a setting that Windows 11 refuses to change (Widgets on 25H2) no longer looks changed with an Undo; the toggle goes back and a note opens Windows Settings.
+- Companion: the button no longer follows the pointer after a release that never reached it, the window shows only once it is drawn instead of a black rectangle, and the button answers a click with a press, a pulse and a halo.
+- Bar: the lamp of a family no longer overlaps its name, the flyout no longer swaps when the pointer crosses another family on its way, and the selected service has the same flat look as the other selections.
+- Convert: the page starts from what there is to do, and keeps the last files made.
 - Desktop icons: the last row of a full column stops 8 px above the taskbar instead of 23.
 - Notes: Delete, the bin of a row and the Delete key ask for a second click, within 4 seconds, before a note goes.
 - Companion: the button could vanish while it was dragged, or move on a plain click, or stay hidden after a failed capture. It now stays in front, except for a game, a film or a presentation.
