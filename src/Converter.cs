@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading;
+using System.Web.Script.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using PdfSharp.Drawing;
@@ -54,7 +55,7 @@ namespace Bramble
             try { window.BeginInvoke((Action)(() => Program.Send(message))); } catch { }
         }
 
-        static object Describe(IEnumerable<string> paths)
+        static object Describe(IEnumerable<string> paths, string tool = null)
         {
             var list = new List<object>();
             foreach (string path in paths)
@@ -68,20 +69,70 @@ namespace Bramble
                 }
                 catch (Exception ex) { Program.Log(ex); }
             }
-            return new { type = "convert.files", files = list.ToArray(), word = Installed("Word.Application"), sheet = Installed("Excel.Application"), slides = Installed("PowerPoint.Application") };
+            return new { type = "convert.files", tool, files = list.ToArray(), word = Installed("Word.Application"), sheet = Installed("Excel.Application"), slides = Installed("PowerPoint.Application") };
+        }
+
+        // The file dialog of each job offers the files that job can take first.
+        static string Filter(string tool)
+        {
+            string all = "|" + Language.T("All files") + "|*.*";
+            switch (tool)
+            {
+                case "image": case "images-pdf": return Language.T("Images") + "|" + string.Join(";", Images.Select(e => "*" + e)) + all;
+                case "pdf-images": case "merge": case "pages": case "rotate": return "PDF|*.pdf" + all;
+                case "text": return Language.T("Text") + "|" + string.Join(";", Texts.Select(e => "*" + e)) + all;
+                case "office": return Language.T("Office documents") + "|" + string.Join(";", Words.Concat(Sheets).Concat(Slides).Select(e => "*" + e)) + all;
+                default: return Language.T("Files that can be converted") + "|" + string.Join(";", Images.Concat(new[] { ".pdf" }).Concat(Texts).Concat(Words).Concat(Sheets).Concat(Slides).Select(e => "*" + e)) + all;
+            }
+        }
+
+        // What was made lately and still sits in the Shelf, newest first.
+        class Made { public string Name, From; public long When; }
+        static string RecentFile { get { return Path.Combine(Program.DataFolder("Convert"), "recent.json"); } }
+        static readonly JavaScriptSerializer json = new JavaScriptSerializer();
+
+        static List<Made> Recent()
+        {
+            try { if (File.Exists(RecentFile)) return (json.Deserialize<List<Made>>(File.ReadAllText(RecentFile)) ?? new List<Made>()).Where(r => r.Name != null && File.Exists(Path.Combine(Shelf.Folder, Path.GetFileName(r.Name)))).ToList(); }
+            catch (Exception ex) { Program.Log(ex); }
+            return new List<Made>();
+        }
+
+        static void Remember(Job job, List<object> outputs, List<string> names)
+        {
+            if (names.Count == 0) return;
+            try
+            {
+                var list = Recent();
+                string from = job.Files[0].Name + (job.Files.Count > 1 ? " +" + (job.Files.Count - 1) : "");
+                long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                list.InsertRange(0, names.Select(n => new Made { Name = n, From = from, When = now }));
+                File.WriteAllText(RecentFile, json.Serialize(list.Take(8).ToList()));
+            }
+            catch (Exception ex) { Program.Log(ex); }
+        }
+
+        static object Caps()
+        {
+            var recent = Enumerable.ToArray(Recent().Select(r => { var info = new FileInfo(Path.Combine(Shelf.Folder, Path.GetFileName(r.Name))); return new { name = info.Name, size = info.Length, from = r.From }; }));
+            return new { type = "convert.caps", word = Installed("Word.Application"), sheet = Installed("Excel.Application"), slides = Installed("PowerPoint.Application"), recent };
         }
 
         public static bool Receive(string action, Dictionary<string, object> m, List<string> dropped)
         {
             switch (action)
             {
+                case "caps": Program.Send(Caps()); return false;
                 case "pick":
-                    using (var dialog = new OpenFileDialog { Multiselect = true, Title = Language.T("Choose files to convert") })
+                {
+                    string tool = m != null && m.ContainsKey("tool") ? Convert.ToString(m["tool"]) : null;
+                    using (var dialog = new OpenFileDialog { Multiselect = true, Title = Language.T("Choose files to convert"), Filter = Filter(tool) })
                     {
                         if (dialog.ShowDialog(Program.SettingsWindow) != DialogResult.OK) return false;
-                        Program.Send(Describe(dialog.FileNames));
+                        Program.Send(Describe(dialog.FileNames, tool));
                     }
                     return false;
+                }
                 case "drop":
                     if (dropped != null && dropped.Count > 0) Program.Send(Describe(dropped));
                     return false;
@@ -151,9 +202,10 @@ namespace Bramble
         {
             var outputs = new List<object>();
             var errors = new List<string>();
+            var made = new List<string>();
             try
             {
-                Action<string> keep = path => { var info = new FileInfo(path); outputs.Add(new { name = info.Name, size = info.Length }); };
+                Action<string> keep = path => { var info = new FileInfo(path); outputs.Add(new { name = info.Name, size = info.Length }); made.Add(info.Name); };
                 switch (job.Target)
                 {
                     case "pdf-from-images": keep(ImagesToPdf(job)); break;
@@ -169,9 +221,11 @@ namespace Bramble
             }
             catch (Exception ex) { Program.Log(ex); errors.Add(Message(ex)); }
             finally { busy = false; }
+            Remember(job, outputs, made);
             Post(new { type = "convert.done", outputs = outputs.ToArray(), errors = errors.ToArray(), cancelled = cancel });
             var window = Program.SettingsWindow;
             if (window != null && !window.IsDisposed) try { window.BeginInvoke((Action)Shelf.SendList); } catch { }
+            Post(Caps());
         }
 
         // Walks the files one by one, telling the page where it is, and stops when asked to.

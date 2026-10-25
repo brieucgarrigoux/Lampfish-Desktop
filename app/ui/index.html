@@ -696,12 +696,18 @@
 
   <section class="view view--convert only-convert" aria-label="Convert">
     <h1>Convert</h1>
-    <div class="cv-drop" id="cv-drop">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4.5M8 8l4-4 4 4"/><path d="M4.5 14.5V18a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-3.5"/></svg>
-      <b>Drop the files here</b>
-      <span>Images, PDF, text and Office documents</span>
-      <button type="button" class="button button--accent" id="cv-pick">Choose files</button>
-      <small>Everything stays on this PC: nothing is sent anywhere.</small>
+    <div id="cv-start">
+      <div class="cv-drop" id="cv-drop">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4.5M8 8l4-4 4 4"/><path d="M4.5 14.5V18a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-3.5"/></svg>
+        <span class="cv-drop__what"><b>Drop the files here</b><small>Everything stays on this PC: nothing is sent anywhere.</small></span>
+        <button type="button" class="button button--accent" id="cv-pick">Choose files</button>
+      </div>
+      <h2 class="settings-title">Or start from what to do</h2>
+      <div class="cv-tiles" id="cv-tiles"></div>
+      <div id="cv-recent-zone" hidden>
+        <h2 class="settings-title">Made recently</h2>
+        <div class="group" id="cv-recent"></div>
+      </div>
     </div>
     <div id="cv-job" hidden>
       <div class="cv-head"><h2 class="settings-title">Files</h2><button type="button" class="link" id="cv-add">Add more</button></div>

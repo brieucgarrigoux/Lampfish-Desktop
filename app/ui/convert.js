@@ -29,24 +29,53 @@
     sheet: [{ id: 'pdf', target: 'office-to-pdf', name: 'PDF', help: 'Made by Excel', opts: [], office: 'sheet' }],
     slides: [{ id: 'pdf', target: 'office-to-pdf', name: 'PDF', help: 'Made by PowerPoint', opts: [], office: 'slides' }],
   };
-  const ORDERED = ['png', 'jpg', 'bmp', 'gif', 'tiff', 'ico', 'pdf'];
-  let files = [], kind = null, office = {}, target = null, running = false;
+  // What a person comes to do: each tile opens the file dialog for that job and leaves the matching choice picked.
+  const TOOLS = [
+    { id: 'image', name: 'Change an image', help: 'PNG, JPG, BMP, GIF, TIFF or an icon', wanted: 'png', icon: '<rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="m4.5 17 4.5-4.5 3.5 3.5 2.5-2.5 4.5 4.5"/>' },
+    { id: 'images-pdf', name: 'Images to PDF', help: 'A page for each picture', wanted: 'pdf', icon: '<path d="M7 3.5h7l4 4V20.5H7z"/><path d="M14 3.5V8h4"/><path d="m9.5 17 2-2.5 1.5 1.5 1.5-2 1.5 3z"/>' },
+    { id: 'pdf-images', name: 'PDF to images', help: 'One picture for each page', wanted: 'png', icon: '<path d="M8 3.5h6.5l3.5 3.5v10H8z"/><path d="M5.5 7v13.5h10"/>' },
+    { id: 'merge', name: 'Merge PDFs', help: 'Several files into one', wanted: 'merge', icon: '<path d="M5 5v3a4 4 0 0 0 4 4h6M19 5v3a4 4 0 0 1-4 4"/><path d="M12 12v8M9.5 17.5 12 20l2.5-2.5"/>' },
+    { id: 'pages', name: 'Keep some pages', help: 'Cut a PDF down to the pages you name', wanted: 'pages', icon: '<path d="M7 3.5h7l4 4V20.5H7z"/><path d="M14 3.5V8h4M9.5 12h5M9.5 15.5h3"/>' },
+    { id: 'rotate', name: 'Turn the pages', help: 'Every page of a PDF, the same way', wanted: 'rotate', icon: '<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.5 4.5v4h-4"/>' },
+    { id: 'text', name: 'Text to PDF', help: 'TXT, Markdown or CSV on A4 pages', wanted: 'pdf', icon: '<path d="M5 6.5h14M12 6.5V19M9 19h6"/>' },
+    { id: 'office', name: 'Office to PDF', help: 'Word, Excel and PowerPoint', wanted: 'pdf', icon: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 10v10"/>', office: true },
+  ];
+  let files = [], kind = null, office = {}, target = null, running = false, wanted = null, recent = [];
   const opt = { maxSide: 0, quality: 85, scale: 2, angle: 90, pages: '' };
   const el = (tag, className, text) => Object.assign(document.createElement(tag), { className: className || '', textContent: text || '' });
 
+  function tiles() {
+    const any = office.word || office.sheet || office.slides;
+    $('cv-tiles').replaceChildren(...TOOLS.map(t => {
+      const b = el('button', 'cv-tile');
+      b.type = 'button';
+      const missing = t.office && !any;
+      b.disabled = missing;
+      b.innerHTML = `<span class="cv-tile__icon"><svg viewBox="0 0 24 24" aria-hidden="true">${t.icon}</svg></span><span class="cv-tile__what"><b></b><small></small></span>`;
+      b.querySelector('b').textContent = tr(t.name);
+      b.querySelector('small').textContent = missing ? tr('Needs Microsoft Office on this PC') : tr(t.help);
+      b.addEventListener('click', () => send('convert.pick', { tool: t.id }));
+      return b;
+    }));
+    $('cv-recent-zone').hidden = !recent.length;
+    $('cv-recent').replaceChildren(...recent.map(o => result(o, true)));
+  }
+
   function ingest(m) {
     office = { word: m.word, sheet: m.sheet, slides: m.slides };
+    const tool = TOOLS.find(t => t.id === m.tool);
+    if (tool) wanted = tool.wanted;
     const fresh = m.files.filter(f => f.kind !== 'other' && !files.some(x => x.path === f.path));
     files = files.concat(fresh);
     $('cv-results').hidden = true;
-    if (!files.length) { $('cv-job').hidden = true; $('cv-drop').hidden = false; return; }
+    if (!files.length) { $('cv-job').hidden = true; $('cv-start').hidden = false; return; }
     if (!kind || !files.some(f => f.kind === kind)) kind = files[0].kind;
     target = null;
     paint();
   }
 
   function paint() {
-    $('cv-drop').hidden = !!files.length;
+    $('cv-start').hidden = !!files.length;
     $('cv-job').hidden = !files.length;
     if (!files.length) return;
     const mine = files.filter(f => f.kind === kind);
@@ -55,7 +84,7 @@
     if (left) $('cv-left').textContent = tr(left === 1 ? '1 file of another kind is left out: convert it separately.' : '{0} files of other kinds are left out: convert them separately.', left);
     $('cv-files').replaceChildren(...files.map((f, i) => row(f, i, f.kind === kind, mine.length)));
     const list = (TARGETS[kind] || []).filter(t => (!t.needs || mine.length >= t.needs));
-    if (!target || !list.some(t => t.id === target.id)) target = list.find(t => !t.office || office[t.office]) || null;
+    if (!target || !list.some(t => t.id === target.id)) target = list.find(t => t.id === wanted && (!t.office || office[t.office])) || list.find(t => !t.office || office[t.office]) || null;
     $('cv-targets').replaceChildren(...list.map(t => {
       const b = el('button', 'cv-target');
       b.type = 'button';
@@ -171,14 +200,14 @@
     $('cv-kept').hidden = !m.outputs.length;
     $('cv-errors').hidden = !m.errors.length;
     $('cv-errors').replaceChildren(...m.errors.map(e => Object.assign(el('span', 'cv-error'), { textContent: e })));
-    files = []; kind = null; target = null;
+    files = []; kind = null; target = null; wanted = null;
   }
 
-  function result(o) {
+  function result(o, old) {
     const r = el('div', 'row cv-file');
     r.innerHTML = `<span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${FILE}</svg><span><span class="cv-name" translate="no"></span><small></small></span></span><span class="cv-tools"></span>`;
     r.querySelector('.cv-name').textContent = o.name;
-    r.querySelector('small').textContent = size(o.size);
+    r.querySelector('small').textContent = old ? size(o.size) + (o.from ? ' · ' + o.from : '') : size(o.size);
     const tools = r.querySelector('.cv-tools');
     for (const [label, action, cls] of [['Open', 'shelf.open', 'link'], ['Show in File Explorer', 'shelf.reveal', 'link'], ['Save as…', 'convert.save', 'link']]) {
       const b = el('button', cls, tr(label));
@@ -190,7 +219,7 @@
   }
 
   function again() {
-    files = []; kind = null; target = null;
+    files = []; kind = null; target = null; wanted = null;
     $('cv-results').hidden = true;
     paint();
   }
@@ -202,9 +231,10 @@
   $('cv-again').addEventListener('click', again);
 
   Bramble.convert = {
-    visible() { },
+    visible(v) { if (v) send('convert.caps'); },
     event(m) {
-      if (m.type === 'convert.files') ingest(m);
+      if (m.type === 'convert.caps') { office = { word: m.word, sheet: m.sheet, slides: m.slides }; recent = m.recent; tiles(); }
+      else if (m.type === 'convert.files') ingest(m);
       else if (m.type === 'convert.progress') $('cv-progress').textContent = tr('{0} of {1}: {2}', m.index, m.count, m.name);
       else if (m.type === 'convert.done') done(m);
     },

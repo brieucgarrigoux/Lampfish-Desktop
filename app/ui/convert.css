@@ -1,10 +1,23 @@
-.view--convert { max-width: 780px; }
-.cv-drop { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 36px 20px 26px; border-radius: var(--radius-card); border: 1.5px dashed var(--hairline-strong); text-align: center; color: var(--text-soft); transition: background var(--fast), border-color var(--fast); }
-.cv-drop[hidden] { display: none; }
-.cv-drop svg { width: 34px; height: 34px; fill: none; stroke: var(--text-soft); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.view--convert { max-width: 920px; }
+#cv-start[hidden] { display: none; }
+.cv-drop { display: flex; align-items: center; gap: 16px; padding: 18px 20px; border-radius: var(--radius-card); border: 1.5px dashed var(--hairline-strong); color: var(--text-soft); transition: background var(--fast), border-color var(--fast); }
+body.drag .cv-drop { background: var(--accent-tint); border-color: var(--accent); }
+.cv-drop > svg { flex: none; width: 30px; height: 30px; fill: none; stroke: var(--text-soft); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.cv-drop__what { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .cv-drop b { font: 600 var(--text-title) var(--display); color: var(--text); }
-.cv-drop .button { margin-top: 8px; }
 .cv-drop small { color: var(--text-pale); font-size: var(--text-caption); }
+.cv-drop .button { flex: none; }
+.cv-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+.cv-tile { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 12px 14px; border: 0; border-radius: var(--radius-card); background: var(--group); color: var(--text); text-align: left; transition: background var(--fast), transform var(--fast); }
+.cv-tile:hover:not(:disabled) { background: var(--group-up); }
+.cv-tile:active:not(:disabled) { transform: scale(.98); }
+.cv-tile:disabled { opacity: .5; cursor: default; }
+.cv-tile__icon { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--radius-control); background: var(--raised); color: var(--text-soft); transition: color var(--fast); }
+.cv-tile:hover:not(:disabled) .cv-tile__icon { color: var(--accent); }
+.cv-tile__icon svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.cv-tile__what { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.cv-tile b { font: 600 var(--text-body) var(--display); }
+.cv-tile small { font-size: var(--text-caption); color: var(--text-pale); line-height: 1.35; }
 .cv-head { display: flex; align-items: baseline; justify-content: space-between; }
 .cv-head .settings-title { margin-bottom: 0; }
 .cv-file .caption small, .cv-file .cv-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
