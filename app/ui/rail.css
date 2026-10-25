@@ -1,0 +1,64 @@
+/* The bar on the left: Home and a search, then one button per family that opens its services in a flyout beside the bar. */
+.logo-home { flex: none; display: flex; align-items: center; justify-content: center; width: 100%; padding: 6px 0; margin-bottom: 6px; border: 0; background: none; cursor: pointer; }
+.logo-home:hover .logo { transform: scale(1.04); }
+
+.rail-family { flex: none; display: flex; flex-direction: column; align-items: center; width: 100%; gap: 2px; }
+
+.rail-title, .rail-search {
+  position: relative; flex: none; width: 68px; padding: 7px 0 6px; border: 0; border-radius: var(--radius-control); background: none;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  color: var(--text-pale); font: inherit; font-size: var(--text-badge); text-align: left; transition: color .18s, background .18s;
+}
+.rail-title svg, .rail-search svg { flex: none; width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.rail-title:hover, .rail-search:hover, .rail-family.is-open > .rail-title { color: var(--accent); background: var(--hover); }
+.rail-title .rail-chev { display: none; width: 14px; height: 14px; margin-left: auto; opacity: .6; stroke-width: 2; transition: transform var(--fast); }
+.rail-family.is-open > .rail-title .rail-chev { opacity: 1; }
+.rail-search kbd { display: none; margin-left: auto; padding: 1px 6px; border-radius: var(--radius-small); background: var(--raised); font: var(--text-badge) var(--numbers); color: var(--text-pale); }
+.rail-family.has-current > .rail-title { color: var(--text); }
+.rail-family.has-current > .rail-title::after { content: ""; position: absolute; top: 7px; right: 14px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+.rail-family:not(.is-open):not(:has(.service:not([hidden]))) { display: none; }
+body.bar-editing .rail-family:not(:has(.service:not([hidden]))) { display: flex; }
+
+/* A narrow bar shows a short name under the icon. */
+.rail-title > span { max-width: 100%; font-size: 0; }
+.rail-title > span::after { content: attr(data-short); font-size: var(--text-badge); }
+@media (max-height: 760px) { .rail-title, .rail-search { padding: 6px 0 5px; gap: 4px; } }
+@media (max-height: 680px) { .rail-title, .rail-search { padding: 4px 0 3px; gap: 3px; } }
+@container rail (min-width: 140px) {
+  .rail-title, .rail-search { flex-direction: row; justify-content: flex-start; gap: 12px; width: calc(100% - 20px); padding: 9px 12px; font-size: var(--text-body); }
+  @media (max-height: 760px) { .rail-title, .rail-search { padding-block: 7px; } }
+  @media (max-height: 680px) { .rail-title, .rail-search { padding-block: 5px; } }
+  .rail-search { background: var(--sunken); color: var(--text-pale); margin-block: 2px 8px; }
+  .rail-search:hover { background: var(--hover); }
+  .rail-title > span { font-size: inherit; }
+  .rail-title > span::after { content: none; }
+  .rail-search kbd { display: inline-block; }
+  .rail-title .rail-chev { display: block; }
+  .rail-family.has-current > .rail-title::after { top: 50%; right: 34px; margin-top: -3px; }
+}
+
+/* The flyout sits in the page, next to the bar. */
+.rail-group {
+  position: fixed; z-index: 40; display: none; flex-direction: column; gap: 2px; width: 220px; padding: 6px; border-radius: var(--radius-card);
+  background: var(--group-up); box-shadow: var(--float), inset 0 0 0 1px var(--hairline-strong);
+}
+.rail-group .service { flex-direction: row; justify-content: flex-start; gap: 12px; width: 100%; padding: 9px 12px; font-size: var(--text-body); }
+.rail-group .service[hidden] { display: none !important; }
+body:not(.bar-editing) .rail-group.is-shown { display: flex; animation: rail-fly .14s ease-out; }
+@keyframes rail-fly { from { opacity: 0; transform: translateX(-6px); } }
+@media (prefers-reduced-motion: reduce) { .rail-group.is-shown { animation: none !important; } }
+
+/* Go to: a small search that opens any service by its name. */
+.goto { position: fixed; inset: 0; z-index: 60; display: flex; align-items: flex-start; justify-content: center; padding-top: 14vh; background: var(--veil); }
+.goto[hidden] { display: none; }
+.goto__box { width: min(520px, calc(100vw - 32px)); max-height: 66vh; display: flex; flex-direction: column; border-radius: var(--radius-card); background: var(--group-up); box-shadow: var(--float), inset 0 0 0 1px var(--hairline-strong); overflow: hidden; }
+.goto__field { display: flex; align-items: center; gap: 10px; padding: 12px 16px; box-shadow: inset 0 -1px 0 var(--hairline); color: var(--text-soft); }
+.goto__field svg { flex: none; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; }
+.goto__input { flex: 1; min-width: 0; border: 0; background: none; color: var(--text); font: var(--text-lead) var(--display); outline: none; user-select: text; }
+.goto__list { overflow-y: auto; padding: 6px; scrollbar-width: thin; }
+.goto__item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 9px 12px; border: 0; border-radius: var(--radius-control); background: none; color: var(--text-soft); font-size: var(--text-body); text-align: left; }
+.goto__item svg { flex: none; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.goto__item[aria-selected="true"] { background: var(--accent-dim); color: var(--text); box-shadow: inset 0 0 0 1px var(--accent-ring); }
+.goto__name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.goto__family { flex: none; font-size: var(--text-caption); color: var(--text-pale); }
+.goto__none { margin: 14px; color: var(--text-pale); font-size: var(--text-body); }

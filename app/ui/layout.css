@@ -19,7 +19,6 @@
 .rail-eye .shut, .service[hidden] .rail-eye .open { display: none; }
 .service[hidden] .rail-eye .shut { display: inline; }
 body.bar-editing .rail .service[hidden] { display: flex !important; opacity: .4; }
-body.bar-editing .rail .service.is-folded { display: flex; }
 body.bar-editing .rail .service[aria-pressed] { cursor: grab; touch-action: none; user-select: none; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent); }
 body.bar-editing .rail .service[aria-pressed] .rail-eye { position: absolute; top: 3px; right: 4px; display: grid; color: var(--text-soft); }
 body.bar-editing .rail .service.grabbed { z-index: 2; cursor: grabbing; background: var(--group-up); box-shadow: inset 0 0 0 1px var(--accent), var(--float); }
@@ -29,10 +28,11 @@ body.bar-editing .rail .service.grabbed { z-index: 2; cursor: grabbing; backgrou
 body.bar-editing .rail .rail-title { cursor: grab; touch-action: none; user-select: none; }
 body.bar-editing .rail .rail-title.grabbed { position: relative; z-index: 2; cursor: grabbing; color: var(--accent); }
 body.bar-editing .rail .rail-title:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-body.bar-editing .rail[data-wide="true"] .rail-title::before { opacity: 0; }
-/* With icons only the family line is 1 px: it gets a grip to be caught. */
-body.bar-editing .rail:not([data-wide="true"]) .rail-title { height: 12px; margin: 1px 0; pointer-events: auto; background: linear-gradient(var(--accent), var(--accent)) center / 100% 2px no-repeat; opacity: .6; }
-body.bar-editing .rail[data-wide="true"] .rail-fold-all { display: none; }
+/* Arranging the bar shows every family open, one under the other, instead of in flyouts. */
+body.bar-editing .rail-family { width: 100%; display: flex; flex-direction: column; align-items: center; padding-bottom: 4px; }
+body.bar-editing .rail-group { position: static; display: flex; flex-direction: column; align-items: center; gap: 2px; width: 100%; padding: 0; background: none; box-shadow: none; animation: none; }
+body.bar-editing .rail-title .rail-chev { display: none; }
+body.bar-editing .rail-title { box-shadow: inset 0 0 0 1px var(--hairline-strong); }
 
 /* Edit mode of Home. */
 .h-customize { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; padding: 6px 10px; border: 0; border-radius: var(--radius-control); background: none; color: var(--text-pale); font-size: var(--text-caption); cursor: pointer; transition: color var(--fast), background var(--fast); }

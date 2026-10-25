@@ -44,13 +44,15 @@
 }
 @media (max-width: 900px) and (max-height: 1000px) {
   body { grid-template-columns: 60px minmax(0, 1fr) !important; }
-  .rail .service { width: 46px; padding-block: 9px; font-size: 0; gap: 0; }
+  .rail .service, .rail .rail-title, .rail .rail-search { width: 46px; padding-block: 9px; font-size: 0; gap: 0; }
+  .rail .rail-title > span::after { content: none; }
   .rail .logo { width: 38px; }
   .rail-edit button { width: 46px; padding-block: 8px; font-size: 0; gap: 0; }
 }
 @media (max-width: 620px) {
   body { grid-template-columns: 54px minmax(0, 1fr) !important; }
-  .rail .service { width: 46px; font-size: 0; gap: 0; }
+  .rail .service, .rail .rail-title, .rail .rail-search { width: 46px; font-size: 0; gap: 0; }
+  .rail .rail-title > span::after { content: none; }
   .rail .logo { width: 38px; }
   .rail-edit button { width: 46px; padding-block: 8px; font-size: 0; gap: 0; }
   .contents { padding-inline: 16px; }

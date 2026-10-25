@@ -88,6 +88,7 @@ Fonts: `--display` for titles and lit text, `--numbers` with `font-variant-numer
 - **Bubble** (`.chart-tip`): title, note and label and value lines.
 - **Drawer**: the side panel opens over the page in a narrow window, from the Options button.
 - **Toast**: 8 s, with Undo for any change.
+- **Bar on the left** (`.rail`): Home, a Go to search (Ctrl K), then one button per family (icon, name, arrow) that opens its services in a flyout next to the bar, on click. The name of every button is always written: under the icon in a narrow bar, beside it from 140 px, and in the flyout when the window is too small for names. The family that holds the page on screen carries a lamp. Arranging the bar shows every family open, one under the other. Two levels at most.
 - **State** (`.state`): a lamp (`--lit`, `--warn`, `--bad`, or gray for waiting) and a gray word, no background and no capsule. A state that is normal says nothing; only what is on, chosen, to watch or to fix gets a lamp. Never a tinted capsule.
 - **Saved state** (`.n-saved` in Notes): a state next to the name that says a change is saved by itself, and when it is not written yet. A page that saves on its own shows it this way rather than with a Save button.
 - **Main button with a menu** (`.s-capture` in Shelf): the main action on the left, a narrow arrow on the right that opens the other ways to do it, as rows with a glyph, a title and a gray line.

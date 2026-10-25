@@ -70,7 +70,7 @@ function showView(view) {
 for (const b of document.querySelectorAll('.service')) b.addEventListener('click', () => showView(b.dataset.view));
 const iconRail = matchMedia('(max-width: 620px), (max-width: 900px) and (max-height: 1000px)');
 function railTitles() {
-  for (const b of document.querySelectorAll('.rail .service:not(.logo-home)')) {
+  for (const b of document.querySelectorAll('.rail .service')) {
     if (iconRail.matches) b.title = b.textContent.trim(); else b.removeAttribute('title');
   }
 }
@@ -1025,22 +1025,7 @@ addEventListener('keydown', e => {
   else if (e.key === ',') { e.preventDefault(); showView('settings'); }
   else if (e.key.toLowerCase() === 'f' && view === 'tasks' && $('t-search')) { e.preventDefault(); $('t-search').focus(); $('t-search').select(); }
 });
-addEventListener('keydown', e => {
-  if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey || document.body.classList.contains('bar-editing')) return;
-  const keys = { ArrowUp: -1, ArrowDown: 1, Home: 'first', End: 'last' };
-  if (!(e.key in keys)) return;
-  const buttons = [...document.querySelectorAll('.rail button.service')].filter(b => b.offsetParent);
-  const active = document.activeElement, inRail = active && active.closest && active.closest('.rail');
-  if (!inRail && active && active !== document.body) return;
-  e.preventDefault();
-  const step = keys[e.key];
-  const current = inRail ? buttons.indexOf(active.closest('button.service')) : buttons.findIndex(b => b.dataset.view === document.body.dataset.view);
-  const next = step === 'first' ? 0 : step === 'last' ? buttons.length - 1 : Math.max(0, Math.min(buttons.length - 1, (current < 0 ? 0 : current) + (inRail || current < 0 ? step : 0)));
-  const target = buttons[next];
-  if (!target) return;
-  target.focus();
-  if (target.dataset.view !== document.body.dataset.view) target.click();
-});
+// The arrow keys of the bar are handled in rail.js.
 let zoomWheel = 0;
 addEventListener('wheel', e => {
   if (!e.ctrlKey) return;

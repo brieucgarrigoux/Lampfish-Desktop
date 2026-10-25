@@ -3,13 +3,9 @@
 // The bar keeps its three families; a service moves inside its own, the families move between them.
 (function () {
   const rail = document.querySelector('.rail'), settings = rail.querySelector('.service--settings');
-  const families = [];
-  let family = null;
-  for (const el of [...rail.children]) {
-    if (el.classList.contains('rail-title')) families.push(family = { id: el.dataset.group, title: el, services: [] });
-    else if (el === settings) family = null;
-    else if (family && el.classList.contains('service')) family.services.push(el);
-  }
+  const families = [...rail.querySelectorAll('.rail-family')].map(section => ({
+    id: section.dataset.group, section, title: section.querySelector('.rail-title'), group: section.querySelector('.rail-group'), services: [...section.querySelectorAll('.service')],
+  }));
   const defaults = { groups: families.map(f => f.id), services: families.flatMap(f => f.services.map(s => s.dataset.view)) };
   let editing = false, key = '';
 
@@ -23,15 +19,15 @@
     if (next === key) return;
     key = next;
     for (const f of sorted(families, l.Groups, f => f.id)) {
-      settings.before(f.title);
-      for (const s of sorted(f.services, l.Bar, s => s.dataset.view)) settings.before(s);
+      settings.before(f.section);
+      for (const s of sorted(f.services, l.Bar, s => s.dataset.view)) f.group.append(s);
     }
     rail.dispatchEvent(new Event('arranged'));
   }
 
   const familyOf = s => families.find(f => f.services.includes(s));
-  const servicesOf = f => [...rail.children].filter(x => f.services.includes(x));
-  const titles = () => [...rail.children].filter(x => x.classList.contains('rail-title'));
+  const servicesOf = f => [...f.group.children].filter(x => f.services.includes(x));
+  const titles = () => [...rail.querySelectorAll(':scope > .rail-family > .rail-title')];
   const save = () => {
     const order = [...rail.querySelectorAll('.service[data-view]')].map(s => s.dataset.view).filter(v => defaults.services.includes(v));
     const groups = titles().map(t => t.dataset.group);
@@ -44,13 +40,12 @@
       dragOrder(s, { peers: () => servicesOf(f), active: () => editing, done: save });
       s.insertAdjacentHTML('beforeend', '<span class="rail-eye" aria-hidden="true"><svg viewBox="0 0 24 24"><path class="open" d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle class="open" cx="12" cy="12" r="3"/><path class="shut" d="M3.5 12s3.2 4.5 8.5 4.5 8.5-4.5 8.5-4.5M6.5 15l-1.5 2M12 16.5V19M17.5 15l1.5 2"/></svg></span>');
     }
-    // A family moves as one block: its title and its services follow each other.
+    // A family moves as one block: its button and its services are in the same section.
     const moveFamily = (a, b, after) => {
       const fa = families.find(x => x.title === a), fb = families.find(x => x.title === b);
-      const block = [a, ...servicesOf(fa)], anchor = after ? (servicesOf(fb).pop() || b).nextSibling : b;
-      for (const el of block) rail.insertBefore(el, anchor);
+      rail.insertBefore(fa.section, after ? fb.section.nextSibling : fb.section);
     };
-    dragOrder(f.title, { peers: titles, active: () => editing, done: save, move: moveFamily, group: () => [...rail.children] });
+    dragOrder(f.title, { peers: titles, active: () => editing, done: save, move: moveFamily, group: () => [...rail.children].filter(x => x !== f.section) });
   }
 
   // In the edit mode a click shows or hides a service instead of opening it.
@@ -68,14 +63,13 @@
     editing = on;
     document.body.classList.toggle('bar-editing', on);
     for (const f of families) {
-      f.title.tabIndex = on || rail.dataset.wide === 'true' ? 0 : -1;
       for (const s of f.services) {
         if (on) { s.setAttribute('aria-pressed', String(!s.hidden)); s.title = tr('Click to show or hide it, drag or use the arrows to move it'); }
         else { s.removeAttribute('aria-pressed'); s.removeAttribute('title'); }
       }
     }
     rail.dispatchEvent(new Event('arranged'));
-    if (on) (rail.querySelector('.service:not(.logo-home)') || rail).focus();
+    if (on) (rail.querySelector('.service') || rail).focus();
     else $('bar-edit').focus();
   }
 

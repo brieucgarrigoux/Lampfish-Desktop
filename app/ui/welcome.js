@@ -8,16 +8,13 @@
   function families() {
     const zone = $('welcome-families');
     if (zone.children.length) return;
-    let family = null;
-    for (const el of document.querySelector('.rail').children) {
-      if (el.classList.contains('rail-title')) {
-        family = document.createElement('div');
-        family.className = 'welcome__family';
-        family.innerHTML = '<strong></strong><span class="welcome__icons"></span>';
-        family.querySelector('strong').textContent = tr(el.textContent.trim());
-        zone.append(family);
-      } else if (el.classList.contains('service--settings')) family = null;
-      else if (family && el.classList.contains('service') && el.dataset.view) {
+    for (const section of document.querySelectorAll('.rail .rail-family')) {
+      const family = document.createElement('div');
+      family.className = 'welcome__family';
+      family.innerHTML = '<strong></strong><span class="welcome__icons"></span>';
+      family.querySelector('strong').textContent = tr(section.querySelector('.rail-title').textContent.trim());
+      zone.append(family);
+      for (const el of section.querySelectorAll('.service[data-view]')) {
         const icon = el.querySelector('svg').cloneNode(true);
         const name = el.textContent.trim();
         icon.setAttribute('aria-hidden', 'true');
