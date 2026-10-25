@@ -1,9 +1,6 @@
 body.companion { display: flex; flex-direction: column; gap: 12px; height: 100vh; padding: 14px 16px; overflow: hidden; background: var(--wallpaper); }
 /* Nothing shows until the window has its data: the last contents never flash. It grows out of the button. */
 body.companion:not(.is-ready) { visibility: hidden; }
-body.companion.is-opening { animation: c-open .2s cubic-bezier(.2, .7, .3, 1); }
-@keyframes c-open { from { opacity: 0; transform: scale(.9); } }
-@media (prefers-reduced-motion: reduce) { body.companion.is-opening { animation: none; } }
 .c-head { display: flex; align-items: center; gap: 10px; }
 .c-logo { width: 40px; height: 32px; object-fit: contain; }
 .c-open { flex: none; display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; font-size: var(--text-caption); }
@@ -16,7 +13,7 @@ body.companion.is-opening { animation: c-open .2s cubic-bezier(.2, .7, .3, 1); }
 .c-icon:hover { background: var(--hover); color: var(--text); }
 .c-icon svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .c-tabs { flex: none; display: flex; gap: 3px; padding: 3px; border-radius: var(--radius-group); background: var(--sunken); }
-.c-tabs button { flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; padding: 0 9px; border: 0; border-radius: var(--radius-control); background: none; color: var(--text-soft); font-size: var(--text-caption); transition: background var(--fast), color var(--fast); }
+.c-tabs button { flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; padding: 0 7px; border: 0; border-radius: var(--radius-control); background: none; color: var(--text-soft); font-size: var(--text-caption); transition: background var(--fast), color var(--fast); }
 .c-tabs button:hover { color: var(--text); background: var(--hover); }
 .c-tabs button span { display: none; }
 .c-tabs button[aria-selected="true"] { flex: 1; background: var(--raised); color: var(--text); font-weight: 600; }
@@ -42,30 +39,24 @@ body.companion.is-opening { animation: c-open .2s cubic-bezier(.2, .7, .3, 1); }
 .c-shot:hover img, .c-shot:focus-visible img { transform: scale(1.05); }
 .c-shot:hover span, .c-shot:focus-visible span { opacity: 1; }
 .c-empty { grid-column: 1 / -1; margin: 4px 2px; font-size: var(--text-caption); color: var(--text-pale); }
-.c-dials { flex: none; display: flex; justify-content: center; padding: 12px 8px 6px; border-radius: var(--radius-card); background: var(--group); }
-.c-dials .dials { gap: 28px; }
+.c-dials { flex: none; display: flex; flex-direction: column; justify-content: center; padding: 12px 8px 8px; border-radius: var(--radius-card); background: var(--group); }
 .c-recent { overflow-y: auto; min-height: 0; }
 .c-recent .row small, #c-lines .value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.c-claude { flex: none; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 4px 10px; padding: 10px 14px; border: 0; border-radius: var(--radius-card); background: var(--group); color: inherit; text-align: left; transition: background var(--fast); }
-.c-claude:hover { background: var(--group-up); }
-.c-claude[hidden] { display: none; }
-.c-claude__name { font-size: var(--text-caption); font-weight: 600; }
-.c-bar { position: relative; height: 6px; overflow: hidden; border-radius: 3px; background: var(--meter); }
-.c-bar i { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: 3px; background: var(--accent); transition: width .3s; }
-.c-claude.is-warn .c-bar i { background: var(--warn); }
-.c-claude.is-high .c-bar i { background: var(--bad); }
-.c-claude__text { grid-column: 1 / -1; font-size: var(--text-badge); color: var(--text-pale); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.c-claude__note { margin: 0; padding: 8px 10px 4px; font-size: var(--text-caption); color: var(--text-pale); text-align: center; }
+.c-claude__note[hidden] { display: none; }
 #c-lines .caption { flex: none; max-width: none; }
 .c-verdict { margin: 2px 2px 0; }
 .c-verdict .state { font-size: var(--text-body); color: var(--text); font-weight: 600; white-space: normal; }
-.c-dials .dials { gap: 36px; }
+.c-dials .dials { flex-wrap: nowrap; gap: 6px; padding: 0; }
+.c-dials .dial { min-width: 0; }
+.c-dials .dial__label { font-size: var(--text-badge); }
+.c-dials .dial__sub { font-size: var(--text-micro); }
 .c-theme { display: inline-flex; align-items: center; gap: 4px; }
 .c-theme__name { min-width: 0; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .c-step, .c-tool { display: grid; place-items: center; width: 26px; height: 26px; padding: 0; border: 0; border-radius: var(--radius-small); background: none; color: var(--text-soft); transition: background var(--fast), color var(--fast); }
 .c-step:hover, .c-tool:hover { background: var(--hover); color: var(--text); }
 .c-step svg, .c-tool svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .c-tool[aria-pressed="true"] { color: var(--accent); }
-.c-claude { text-align: left; cursor: pointer; }
 .c-foot { flex: none; margin-top: auto; padding-top: 2px; }
 .c-foot .link { font-size: var(--text-caption); }
 .c-list { flex: 1 1 0; overflow-y: auto; min-height: 0; scrollbar-width: none; }
@@ -97,6 +88,9 @@ body.companion.is-opening { animation: c-open .2s cubic-bezier(.2, .7, .3, 1); }
 .c-vol input.is-muted { opacity: .45; }
 .c-vol output { flex: none; min-width: 30px; text-align: right; font: var(--text-value) var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-soft); }
 .c-search { flex: none; max-width: none; }
+.c-wall { display: flex; gap: 8px; }
+.c-wall .button { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.c-wall svg { flex: none; width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .c-convert { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 18px; padding: 26px 18px 20px; border-radius: var(--radius-card); background: var(--group); text-align: center; color: var(--text-soft); }
 .c-convert svg { width: 30px; height: 30px; fill: none; stroke: var(--text-soft); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .c-convert b { font: 600 var(--text-title) var(--display); color: var(--text); }

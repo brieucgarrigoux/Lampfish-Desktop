@@ -6,7 +6,7 @@
   const size = n => { let i = 0; while (n >= 1024 && i < UNITS.length - 1) { n /= 1024; i++; } return n.toLocaleString(LOCALE, { maximumFractionDigits: n >= 100 || i === 0 ? 0 : 1 }) + ' ' + tr(UNITS[i]); };
   const GO = {
     dashboard: ['Open Home in lampfish', 'home'], note: ['Open Notes in lampfish', 'notes'], capture: ['Open Shelf in lampfish', 'shelf'],
-    shelf: ['Open Shelf in lampfish', 'shelf'], audio: ['Open Audio in lampfish', 'audio'], notes: ['Open Notes in lampfish', 'notes'], convert: ['Open Convert in lampfish', 'convert'],
+    shelf: ['Open Shelf in lampfish', 'shelf'], audio: ['Open Audio in lampfish', 'audio'], notes: ['Open Notes in lampfish', 'notes'], convert: ['Open Convert in lampfish', 'convert'], desktop: ['Open Arrange in lampfish', 'arrange'],
   };
 
   function show(name, tell) {
@@ -63,6 +63,7 @@
     dials($('c-dials'), [
       { part: d.processor, value: Math.round(d.processor) + ' %', label: tr('Processor'), level: level(d.processor, 80, 95) },
       { part: d.memory, value: Math.round(d.memory) + ' %', label: tr('Memory'), level: level(d.memory, 75, 85) },
+      ...claudeDials(),
     ]);
     const lines = [];
     if (d.disk) lines.push(diskLine(d.disk));
@@ -76,7 +77,6 @@
     out.addEventListener('click', () => show('audio', true));
     lines.push(out);
     $('c-lines').replaceChildren(...lines.filter(Boolean));
-    claude();
   }
 
   function diskLine(disk) {
@@ -100,16 +100,19 @@
     return row;
   }
 
-  function claude() {
+  // The two limits of a plan as two dials: the 5-hour session, which is the one that runs out during a day, and the week.
+  function claudeDials() {
     const c = data.claude, u = c && c.usage;
-    $('c-claude').hidden = !(c && c.on);
-    if (c && c.on) {
-      const ok = c.status === 'ok' && u && u.session, p = ok ? u.session.percent : 0;
-      $('c-claude-bar').style.width = p + '%';
-      $('c-claude').classList.toggle('is-warn', ok && p >= 75 && p < 90);
-      $('c-claude').classList.toggle('is-high', ok && p >= 90);
-      $('c-claude-text').textContent = ok ? tr('Session {0} %, resets in {1}', p, resetIn(u.session.resets)) + (u.week ? ' · ' + tr('Week {0} %', u.week.percent) : '') : tr(c.status === 'expired' ? 'Open Claude Code to renew its sign-in' : c.status === 'missing' ? 'Claude Code is not signed in on this PC' : 'Unknown');
-    }
+    if (!(c && c.on)) { $('c-claude-note').hidden = true; return []; }
+    const ok = c.status === 'ok' && u && (u.session || u.week);
+    const dial = (w, label, key) => ({
+      key, part: w ? w.percent : 0, value: w ? Math.round(w.percent) + ' %' : '-', label: tr(label), sub: w ? tr('resets in {0}', resetIn(w.resets)) : '',
+      level: !w ? 'high' : w.percent >= 90 ? 'low' : w.percent >= 75 ? 'medium' : 'high', action: () => send('companion.open', { view: 'settings' }),
+      details: w ? { title: tr(label), value: Math.round(w.percent) + ' %', lines: [[tr('Resets in'), resetIn(w.resets)], ...(key === 'week' ? (u.rows || []).map(r => [r.name, Math.round(r.percent) + ' %']) : [])] } : null,
+    });
+    $('c-claude-note').hidden = !!ok;
+    $('c-claude-note').textContent = ok ? '' : tr(c.status === 'expired' ? 'Open Claude Code to renew its sign-in' : c.status === 'missing' ? 'Claude Code is not signed in on this PC' : c.status === 'offline' ? 'No connection to read the usage' : 'Reading the usage');
+    return ok ? [dial(u.session, 'Claude 5 h', 'session'), dial(u.week, 'Claude week', 'week')] : [];
   }
 
   // A file kept in the shelf: a click opens it, the buttons copy it or show it, and it can be dragged into another app.
@@ -215,8 +218,41 @@
     $('c-out-other').replaceChildren(...others.map(d => outputRow(d, false)));
   }
 
+  // The same jobs as the Convert page: each one asks for its files and finishes in the app.
+  const TOOLS = [
+    ['image', 'Change an image', 'PNG, JPG, BMP, GIF, TIFF or an icon', '<rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="m4.5 17 4.5-4.5 3.5 3.5 2.5-2.5 4.5 4.5"/>'],
+    ['images-pdf', 'Images to PDF', 'A page for each picture', '<path d="M7 3.5h7l4 4V20.5H7z"/><path d="M14 3.5V8h4"/><path d="m9.5 17 2-2.5 1.5 1.5 1.5-2 1.5 3z"/>'],
+    ['pdf-images', 'PDF to images', 'One picture for each page', '<path d="M8 3.5h6.5l3.5 3.5v10H8z"/><path d="M5.5 7v13.5h10"/>'],
+    ['merge', 'Merge PDFs', 'Several files into one', '<path d="M5 5v3a4 4 0 0 0 4 4h6M19 5v3a4 4 0 0 1-4 4"/><path d="M12 12v8M9.5 17.5 12 20l2.5-2.5"/>'],
+    ['pages', 'Keep some pages', 'Cut a PDF down to the pages you name', '<path d="M7 3.5h7l4 4V20.5H7z"/><path d="M14 3.5V8h4M9.5 12h5M9.5 15.5h3"/>'],
+    ['text', 'Text to PDF', 'TXT, Markdown or CSV on A4 pages', '<path d="M5 6.5h14M12 6.5V19M9 19h6"/>'],
+    ['office', 'Office to PDF', 'Word, Excel and PowerPoint', '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 10v10"/>'],
+  ];
+  function tools() {
+    if ($('c-tools').children.length) return;
+    $('c-tools').replaceChildren(...TOOLS.map(([id, name, help, path]) => {
+      const b = el('button', 'row action');
+      b.type = 'button';
+      b.innerHTML = `<span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${path}</svg><span><span class="c-name"></span><small></small></span></span><svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>`;
+      b.querySelector('.c-name').textContent = tr(name);
+      b.querySelector('small').textContent = tr(help);
+      b.addEventListener('click', () => send('companion.convert', { tool: id }));
+      return b;
+    }));
+  }
+
+  function desktop() {
+    const d = data.desktop || {};
+    $('c-grid').checked = !!d.grid;
+    $('c-hide').checked = !!d.hidden;
+    $('c-wp-pause').querySelector('span').textContent = tr(d.paused ? 'Resume' : 'Pause');
+    $('c-wp-pause').querySelector('svg').innerHTML = d.paused ? '<path d="M8 5.5v13l10.5-6.5z"/>' : '<path d="M9 6v12M15 6v12"/>';
+  }
+
   function render() {
     if (!data) return;
+    if (tab === 'convert') tools();
+    if (tab === 'desktop') desktop();
     if (tab === 'dashboard') dashboard();
     else if (tab === 'shelf') shelf();
     else if (tab === 'capture') captures();
@@ -238,17 +274,17 @@
       data = m;
       if (m.tab && m.tab !== tab && GO[m.tab]) show(m.tab, false);
       if (m.open) {
-        // The window grows out of the button: from the corner of the window that is the nearest to it.
-        document.body.style.transformOrigin = (m.origin ? m.origin.x : 50) + '% ' + (m.origin ? m.origin.y : 50) + '%';
-        document.body.classList.remove('is-opening');
-        void document.body.offsetWidth;
-        document.body.classList.add('is-ready', 'is-opening');
+        // The window itself slides and fades in: the page only has to say when its data is drawn.
+        document.body.classList.add('is-ready');
         if (tab === 'note') $('c-text').focus();
         if (tab === 'notes') $('c-find').focus();
+        render();
+        requestAnimationFrame(() => requestAnimationFrame(() => send('companion.painted')));
+        return;
       }
       render();
     } else if (m.type === 'companion.hidden') {
-      document.body.classList.remove('is-ready', 'is-opening');
+      document.body.classList.remove('is-ready');
     } else if (m.type === 'audio.devices') {
       audio = m;
       if (tab === 'audio') outputs();
@@ -274,11 +310,15 @@
   $('c-title').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('c-text').focus(); } });
   $('c-find').addEventListener('input', notes);
   $('c-add').addEventListener('click', () => send('companion.shelf', { op: 'add' }));
-  $('c-convert').addEventListener('click', () => send('companion.convert'));
+  $('c-grid').addEventListener('change', e => send('companion.grid', { on: e.target.checked }));
+  $('c-hide').addEventListener('change', e => send('companion.icons', { hidden: e.target.checked }));
+  $('c-straighten').addEventListener('click', () => send('companion.straighten'));
+  $('c-wp-prev').addEventListener('click', () => send('companion.wallpaper', { op: 'previous' }));
+  $('c-wp-next').addEventListener('click', () => send('companion.wallpaper', { op: 'next' }));
+  $('c-wp-pause').addEventListener('click', () => send('companion.wallpaper', { op: 'pause' }));
   $('c-go').addEventListener('click', () => { const [, view] = GO[tab]; send(view === 'notes' ? 'companion.openNote' : 'companion.open', view === 'notes' ? { name: '' } : { view }); });
   $('c-open').addEventListener('click', () => send('companion.open', { view: 'home' }));
   $('c-close').addEventListener('click', () => send('companion.close'));
-  $('c-claude').addEventListener('click', () => send('companion.open', { view: 'settings' }));
   addEventListener('keydown', e => { if (e.key === 'Escape') send('companion.close'); });
   $('c-go').textContent = tr(GO[tab][0]);
   clock();

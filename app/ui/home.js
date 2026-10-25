@@ -302,7 +302,12 @@
     set('convert', tr('Images, PDF, text'), tr('On this PC, nothing is sent'));
     const c = e.claude, u = c && c.usage;
     if (!c || !c.on) { set('claude', tr('Off'), tr('Turn it on in Settings, Connections')); visual('claude', ''); }
-    else if (c.status === 'ok' && u && u.session) { set('claude', tr('Session {0} %', u.session.percent), claudeText(c), u.session.percent >= 90); visual('claude', bar(u.session.percent)); }
+    else if (c.status === 'ok' && u && (u.session || u.week)) {
+      const worst = Math.max(u.session ? u.session.percent : 0, u.week ? u.week.percent : 0);
+      set('claude', u.session ? tr('Session {0} %', u.session.percent) : tr('Week {0} %', u.week.percent), claudeText(c), worst >= 90);
+      const twin = (name, w) => w ? `<span class="h-twin__row"><em>${name}</em>${bar(w.percent)}<b>${Math.round(w.percent)} %</b></span>` : '';
+      visual('claude', `<span class="h-twin">${twin(tr('5 hours'), u.session)}${twin(tr('Week'), u.week)}</span>`);
+    }
     else { set('claude', tr('Unknown'), claudeText(c)); visual('claude', ''); }
     if (e.notes) {
       set('notes', e.notes.count === 1 ? tr('1 note') : e.notes.count ? tr('{0} notes', e.notes.count) : tr('No note yet'), e.notes.last || '');

@@ -25,17 +25,13 @@
     <button type="button" role="tab" data-tab="audio" aria-selected="false" title="Audio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3.5l4.5 3.5v-11L7.5 10z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6M18 6.8a7.4 7.4 0 0 1 0 10.4"/></svg><span>Audio</span></button>
     <button type="button" role="tab" data-tab="notes" aria-selected="false" title="Notes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6.5h14M5 12h14M5 17.5h9"/></svg><span>Notes</span></button>
     <button type="button" role="tab" data-tab="convert" aria-selected="false" title="Convert"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h11l-3-3M19 16H8l3 3"/></svg><span>Convert</span></button>
+    <button type="button" role="tab" data-tab="desktop" aria-selected="false" title="Desktop"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="12" rx="1.5"/><path d="M9 20h6M12 16.5V20"/><path d="M8 9h8M8 12h8"/></svg><span>Desktop</span></button>
   </nav>
 
   <section class="c-pane" data-pane="dashboard">
     <p class="c-verdict"><span class="state" id="c-verdict"></span></p>
-    <div class="security security--high c-dials"><div class="dials dials--small" id="c-dials"></div></div>
+    <div class="security security--high c-dials"><div class="dials dials--small" id="c-dials"></div><p class="c-claude__note" id="c-claude-note" hidden></p></div>
     <div class="group" id="c-lines"></div>
-    <button type="button" class="c-claude" id="c-claude" hidden>
-      <span class="c-claude__name">Claude</span>
-      <span class="c-bar"><i id="c-claude-bar"></i></span>
-      <span class="c-claude__text" id="c-claude-text"></span>
-    </button>
   </section>
 
   <section class="c-pane" data-pane="note" hidden>
@@ -79,12 +75,22 @@
   </section>
 
   <section class="c-pane" data-pane="convert" hidden>
-    <div class="c-convert">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h11l-3-3M19 16H8l3 3"/></svg>
-      <b>Change the kind of a file</b>
-      <span>Images into another image or a PDF, a PDF into images, merged or cut, text and Office documents into a PDF.</span>
-      <button type="button" class="button button--accent" id="c-convert">Choose files</button>
-      <small>Everything stays on this PC: nothing is sent anywhere.</small>
+    <div class="group" id="c-tools"></div>
+    <p class="c-hint">Everything stays on this PC: nothing is sent anywhere.</p>
+  </section>
+
+  <section class="c-pane" data-pane="desktop" hidden>
+    <div class="c-subhead"><span>Icons</span></div>
+    <div class="group">
+      <label class="toggle"><input type="checkbox" id="c-grid"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h16M4 15h16M9 4v16M15 4v16"/></svg><span>Magnetic grid<small>Shows the cells, icons fall into them</small></span></span></label>
+      <button type="button" class="row action" id="c-straighten"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="8" cy="7" r="1.4"/><circle cx="14" cy="12" r="1.4"/><circle cx="10" cy="17" r="1.4"/></svg><span>Straighten the icons<small>Each one goes to the nearest cell</small></span></span><svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+      <label class="toggle"><input type="checkbox" id="c-hide"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12s3-6 8.5-6 8.5 6 8.5 6-3 6-8.5 6-8.5-6-8.5-6z"/><circle cx="12" cy="12" r="2.5"/><path d="M4 20 20 4"/></svg><span>Hide the icons<small>An empty desktop, nothing is deleted</small></span></span></label>
+    </div>
+    <div class="c-subhead"><span>Wallpaper</span></div>
+    <div class="c-wall">
+      <button type="button" class="button" id="c-wp-prev"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>Previous</button>
+      <button type="button" class="button" id="c-wp-pause"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6v12M15 6v12"/></svg><span>Pause</span></button>
+      <button type="button" class="button" id="c-wp-next">Next<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
     </div>
   </section>
 

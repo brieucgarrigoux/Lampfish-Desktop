@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -41,7 +41,9 @@ namespace Bramble
         static PerformanceCounter cpu;
         static string tab = "dashboard";
         static DateTime hiddenAt, asideAt;
-        static bool aside;
+        static bool aside, opening, retried;
+        static DateTime shownAt;
+        static int slide;
 
         static string SettingsFile { get { return Path.Combine(Program.DataFolder("Companion"), "settings.json"); } }
 
@@ -56,7 +58,17 @@ namespace Bramble
             idle = new Timer { Interval = 120000 };
             idle.Tick += (s, e) => { idle.Stop(); if (popup != null && !popup.Visible) { popup.Dispose(); popup = null; } };
             refresh = new Timer { Interval = 2000 };
-            refresh.Tick += (s, e) => { if (popup != null && popup.Visible && tab == "dashboard") SendData(); };
+            refresh.Tick += (s, e) =>
+            {
+                if (popup == null || !popup.Visible || opening) return;
+                // Windows can refuse to give the window the focus; it would then never close by itself.
+                if ((DateTime.Now - shownAt).TotalSeconds > 2 && Native.GetForegroundWindow() != popup.Handle && !popup.ContainsFocus)
+                {
+                    if (!retried) { retried = true; popup.Activate(); }
+                    else { popup.Hide(); return; }
+                }
+                if (tab == "dashboard") SendData();
+            };
             Capture.Busy += Aside;
             AudioDevices.Listed += message => { if (popup != null && !popup.IsDisposed && popup.Visible) popup.Send(message); };
             Apply();
@@ -175,11 +187,12 @@ namespace Bramble
         {
             // A capture that failed halfway must not leave the button hidden for good.
             if (aside && (DateTime.Now - asideAt).TotalMinutes > 2) aside = false;
+            if (dot != null && dot.Held && (Control.MouseButtons & MouseButtons.Left) == 0) dot.Settle();
             if (dot == null || dot.IsDisposed || !S.On || S.Hidden || aside || dot.Held) return;
-            var screen = Screen.FromPoint(S.X == int.MinValue ? new Point(Screen.PrimaryScreen.WorkingArea.Right - 1, Screen.PrimaryScreen.WorkingArea.Top) : new Point(S.X, S.Y));
-            var area = screen.WorkingArea;
             int side = dot.Side;
-            if (S.X == int.MinValue) { S.X = area.Right - side - 8; S.Y = area.Top + area.Height * 3 / 5; }
+            var home = S.X == int.MinValue ? new Point(Screen.PrimaryScreen.WorkingArea.Right - 1, Screen.PrimaryScreen.WorkingArea.Top) : new Point(S.X + side / 2, S.Y + side / 2);
+            var area = Screen.FromPoint(home).WorkingArea;
+            if (S.X == int.MinValue) { S.X = area.Right - side; S.Y = area.Top + area.Height * 3 / 5; }
             var at = new Point(Math.Max(area.Left, Math.Min(area.Right - side, S.X)), Math.Max(area.Top, Math.Min(area.Bottom - side, S.Y)));
             if (FullScreenApp()) { if (dot.Visible) dot.Hide(); return; }
             if (!dot.Gliding && (!dot.Visible || dot.Location != at || dot.Width != side)) dot.Put(at);
@@ -190,58 +203,104 @@ namespace Bramble
         static void Moved(Point p)
         {
             int side = dot.Side;
-            var area = Screen.FromPoint(new Point(p.X + side / 2, p.Y + side / 2)).WorkingArea;
-            // It stays where it is let go, kept inside the screen; close to an edge, it settles a few pixels from it.
-            int margin = (int)(8 * Arrange.Scale(Screen.FromPoint(p))), x = Math.Max(area.Left, Math.Min(area.Right - side, p.X)), y = Math.Max(area.Top, Math.Min(area.Bottom - side, p.Y));
-            if (x - area.Left < margin * 3) x = area.Left + margin;
-            if (area.Right - side - x < margin * 3) x = area.Right - side - margin;
-            if (y - area.Top < margin * 3) y = area.Top + margin;
-            if (area.Bottom - side - y < margin * 3) y = area.Bottom - side - margin;
+            var screen = Screen.FromPoint(new Point(p.X + side / 2, p.Y + side / 2));
+            var area = screen.WorkingArea;
+            // It stays where it is let go, kept inside the screen; close to an edge, it settles against it.
+            int near = (int)(24 * Arrange.Scale(screen)), x = Math.Max(area.Left, Math.Min(area.Right - side, p.X)), y = Math.Max(area.Top, Math.Min(area.Bottom - side, p.Y));
+            if (x - area.Left < near) x = area.Left;
+            if (area.Right - side - x < near) x = area.Right - side;
+            if (y - area.Top < near) y = area.Top;
+            if (area.Bottom - side - y < near) y = area.Bottom - side;
             S.X = x; S.Y = y;
             Save();
             dot.GlideTo(new Point(x, y));
         }
 
+        // The window is shown, still invisible, as soon as the button is pressed; it appears when the page says it has painted its data.
         public static async void Open(string which)
         {
             tab = which ?? tab;
-            if (popup == null || popup.IsDisposed)
-            {
-                popup = new PageForm("companion.html", FromPage)
-                {
-                    FormBorderStyle = FormBorderStyle.None, ShowInTaskbar = false, TopMost = true, StartPosition = FormStartPosition.Manual, Text = "lampfish",
-                };
-                popup.Deactivate += (s, e) => { if (popup != null) { popup.Hide(); hiddenAt = DateTime.Now; idle.Start(); refresh.Stop(); } };
-                popup.Shown += (s, e) => Native.Rounded(popup.Handle);
-                // The page forgets what it showed, so the next opening never flashes the last one.
-                popup.VisibleChanged += (s, e) =>
-                {
-                    if (popup == null || popup.IsDisposed || popup.Visible) return;
-                    popup.Send(new { type = "companion.hidden" });
-                    AudioDevices.Watch("companion", false);
-                };
-                Position();
-                popup.Show();
-                await popup.Open();
-            }
-            else { Position(); popup.Show(); }
+            if (opening) return;
+            opening = true;
             idle.Stop();
+            if (dot != null) { dot.Opening(true); dot.Ripple(); }
+            try
+            {
+                if (popup == null || popup.IsDisposed)
+                {
+                    popup = new PageForm("companion.html", FromPage)
+                    {
+                        FormBorderStyle = FormBorderStyle.None, ShowInTaskbar = false, TopMost = true, StartPosition = FormStartPosition.Manual, Text = "lampfish", Opacity = 0,
+                    };
+                    popup.Deactivate += (s, e) => { if (popup != null && !opening) { popup.Hide(); hiddenAt = DateTime.Now; idle.Start(); refresh.Stop(); } };
+                    popup.Shown += (s, e) => Native.Rounded(popup.Handle);
+                    // The page forgets what it showed, so the next opening never flashes the last one.
+                    popup.VisibleChanged += (s, e) =>
+                    {
+                        if (popup == null || popup.IsDisposed || popup.Visible) return;
+                        opening = false;
+                        if (dot != null) { dot.Opening(false); dot.Lit(false); }
+                        popup.Send(new { type = "companion.hidden" });
+                        AudioDevices.Watch("companion", false);
+                    };
+                    Position();
+                    popup.Show();
+                    await popup.Open();
+                }
+                else
+                {
+                    Position();
+                    popup.Opacity = 0;
+                    popup.Show();
+                    SendData(true);
+                }
+            }
+            catch (Exception ex) { Program.Log(ex); opening = false; if (dot != null) dot.Opening(false); return; }
             refresh.Start();
-            popup.Activate();
             AudioDevices.Watch("companion", tab == "audio");
-            SendData(true);
+            // If the page never answers, the window shows anyway.
+            var guard = new Timer { Interval = 2500 };
+            guard.Tick += (s, e) => { guard.Stop(); guard.Dispose(); Reveal(); };
+            guard.Start();
+        }
+
+        // The window slides out of the button while it fades in.
+        static void Reveal()
+        {
+            if (!opening || popup == null || popup.IsDisposed) return;
+            opening = false;
+            shownAt = DateTime.Now;
+            retried = false;
+            var end = popup.Left - slide;
+            var started = DateTime.Now;
+            // A press that is still held keeps its mouse: the window takes the focus after.
+            if (dot == null || !dot.Held) popup.Activate();
+            if (dot != null) { dot.Opening(false); dot.Lit(true); }
+            var timer = new Timer { Interval = 12 };
+            timer.Tick += (s, e) =>
+            {
+                if (popup == null || popup.IsDisposed || !popup.Visible) { timer.Stop(); timer.Dispose(); return; }
+                double t = Math.Min(1, (DateTime.Now - started).TotalMilliseconds / 180), k = 1 - Math.Pow(1 - t, 3);
+                popup.Opacity = k;
+                popup.Left = end + (int)Math.Round(slide * (1 - k));
+                if (t >= 1) { timer.Stop(); timer.Dispose(); popup.Opacity = 1; popup.Left = end; }
+            };
+            timer.Start();
         }
 
         static void Position()
         {
-            var anchor = dot != null && dot.Visible ? dot.Bounds : new Rectangle(Cursor.Position, Size.Empty);
+            var anchor = dot != null && dot.Visible ? dot.Disc : new Rectangle(Cursor.Position, Size.Empty);
             var screen = Screen.FromPoint(anchor.Location);
             double k = Arrange.Scale(screen);
             int w = (int)(380 * k), h = (int)(560 * k), gap = (int)(10 * k);
             var area = screen.WorkingArea;
-            int x = anchor.Left + anchor.Width / 2 > area.Left + area.Width / 2 ? anchor.Left - w - gap : anchor.Right + gap;
+            bool left = anchor.Left + anchor.Width / 2 > area.Left + area.Width / 2;
+            int x = left ? anchor.Left - w - gap : anchor.Right + gap;
             int y = anchor.Top + anchor.Height / 2 - h / 2;
+            slide = (int)((left ? 28 : -28) * k);
             popup.Bounds = new Rectangle(Math.Max(area.Left, Math.Min(area.Right - w, x)), Math.Max(area.Top, Math.Min(area.Bottom - h, y)), w, h);
+            popup.Left += slide;
         }
 
         static void SendData(bool open = false)
@@ -258,8 +317,15 @@ namespace Bramble
                 type = "companion.data", tab, open, language = Language.Code,
                 processor = Math.Round(processor), memory = Math.Round(memory), busiest = Health.Busiest,
                 theme = theme == null ? null : theme.Name, output = AudioDevices.NameOf(AudioDevices.DefaultOutput()), disk = Disk(), origin = open ? Origin() : null,
-                claude = ClaudeUsage.State(), notes = Notes.Items().Take(40).ToArray(), shelf = Shelf.Items().Take(8).ToArray(),
+                claude = ClaudeUsage.State(), desktop = DesktopState(), notes = Notes.Items().Take(40).ToArray(), shelf = Shelf.Items().Take(8).ToArray(),
             });
+        }
+
+        static object DesktopState()
+        {
+            bool hidden = false;
+            try { hidden = (DesktopIcons.Flags() & DesktopIcons.FWF_NOICONS) != 0; } catch { }
+            return new { grid = DesktopGrid.On, hidden, paused = Program.Paused };
         }
 
         static object Disk()
@@ -287,13 +353,26 @@ namespace Bramble
             string action = Text(m, "action");
             switch (action)
             {
-                case "companion.ready": SendData(); return;
+                case "companion.ready": SendData(opening); return;
+                case "companion.painted": Reveal(); return;
                 case "companion.tab": tab = Text(m, "tab"); AudioDevices.Watch("companion", tab == "audio"); SendData(); return;
                 case "companion.convert":
                     popup.Hide();
                     Program.OpenView("convert");
                     if (Program.SettingsWindow != null) Program.SettingsWindow.BeginInvoke((Action)(() => Converter.Receive("pick", m, null)));
                     return;
+                case "companion.grid": DesktopGrid.Enable(Convert.ToBoolean(m["on"]), true); Program.SendState(); SendData(); return;
+                case "companion.straighten": Arrange.Receive("align", m); SendData(); return;
+                case "companion.icons": Arrange.Receive("hide", new Dictionary<string, object> { { "value", Convert.ToBoolean(m["hidden"]) } }); SendData(); return;
+                case "companion.wallpaper":
+                {
+                    string op = Text(m, "op");
+                    if (op == "next") Program.NextWallpaper();
+                    else if (op == "previous") Program.PreviousWallpaper();
+                    else if (op == "pause") Program.TogglePause();
+                    SendData();
+                    return;
+                }
                 case "companion.theme": Moods.Step(Convert.ToInt32(m["step"]) < 0 ? -1 : 1); SendData(); return;
                 case "companion.audio":
                 {
@@ -342,19 +421,23 @@ namespace Bramble
             }
         }
 
-        // A round window drawn with its own alpha, so its edge has no jagged pixels on any wallpaper.
+        // A round window drawn with its own alpha, so its edge has no jagged pixels on any wallpaper. The window is a little larger than the disc:
+        // the margin holds the pulse of a click, the halo while the window is open and the arc that turns while it loads.
         class Dot : Form
         {
             readonly Image logo;
             Point down, start;
-            bool moving, hover, pressed;
+            bool moving, hover, pressed, busy;
 
-            const int Diameter = 64;
-            readonly Timer glide = new Timer { Interval = 15 };
+            const int Diameter = 64, Pad = 10;
+            readonly Timer glide = new Timer { Interval = 15 }, anim = new Timer { Interval = 16 };
             Point glideFrom, glideTo;
-            DateTime glideAt;
+            DateTime glideAt, last, rippleAt = DateTime.MinValue;
+            double scale = 1, velocity, halo, haloTo, spin;
 
-            public int Side { get { return (int)(Diameter * Arrange.Scale(Screen.FromPoint(Location))); } }
+            static double Scale(Point at) { return Arrange.Scale(Screen.FromPoint(at)); }
+            public int Side { get { return (int)((Diameter + 2 * Pad) * Scale(Location)); } }
+            public Rectangle Disc { get { int pad = (int)Math.Round(Width * Pad / (double)(Diameter + 2 * Pad)); return new Rectangle(Left + pad, Top + pad, Width - 2 * pad, Height - 2 * pad); } }
             public bool Gliding { get { return glide.Enabled; } }
             // True from the press to the release, so that nothing moves, hides or redraws the button under the pointer.
             public bool Held { get { return pressed; } }
@@ -384,7 +467,27 @@ namespace Bramble
                     Location = new Point(glideFrom.X + (int)Math.Round((glideTo.X - glideFrom.X) * k), glideFrom.Y + (int)Math.Round((glideTo.Y - glideFrom.Y) * k));
                     if (t >= 1) { glide.Stop(); Put(glideTo); }
                 };
+                anim.Tick += (s, e) => Step();
             }
+
+            // The disc is pressed in under the finger, springs back past its size when let go, and swells a little while it is carried.
+            void Step()
+            {
+                double dt = Math.Min(0.05, (DateTime.Now - last).TotalSeconds), target = pressed ? (moving ? 1.07 : .9) : 1;
+                last = DateTime.Now;
+                velocity += ((target - scale) * 420 - velocity * 22) * dt;
+                scale += velocity * dt;
+                halo += (haloTo - halo) * Math.Min(1, dt * 10);
+                if (busy) spin = (spin + 300 * dt) % 360;
+                bool calm = Math.Abs(scale - target) < .002 && Math.Abs(velocity) < .02 && Math.Abs(halo - haloTo) < .01 && !busy && (DateTime.Now - rippleAt).TotalMilliseconds > 560;
+                if (calm) { scale = target; velocity = 0; halo = haloTo; anim.Stop(); }
+                Draw();
+            }
+
+            void Kick() { if (!anim.Enabled) { last = DateTime.Now; anim.Start(); } }
+            public void Ripple() { rippleAt = DateTime.Now; Kick(); }
+            public void Opening(bool on) { busy = on; Kick(); }
+            public void Lit(bool on) { haloTo = on ? 1 : 0; Kick(); }
 
             // From where it was let go to where it settles, in a short ease instead of a jump.
             public void GlideTo(Point to)
@@ -399,7 +502,7 @@ namespace Bramble
 
             public void Put(Point at)
             {
-                int side = (int)(Diameter * Arrange.Scale(Screen.FromPoint(at)));
+                int side = (int)((Diameter + 2 * Pad) * Scale(at));
                 Bounds = new Rectangle(at, new Size(side, side));
                 if (!Visible) Show();
                 Draw();
@@ -408,17 +511,33 @@ namespace Bramble
             void Draw()
             {
                 int side = Width;
+                if (side < 16) return;
+                float k = side / (float)(Diameter + 2 * Pad), pad = Pad * k, dia = Diameter * k, centre = side / 2f, r = dia / 2f * (float)scale;
+                bool bright = hover || halo > .5 || busy;
                 using (var bmp = new Bitmap(side, side, PixelFormat.Format32bppArgb))
                 {
                     using (var g = Graphics.FromImage(bmp))
                     {
                         g.SmoothingMode = SmoothingMode.AntiAlias;
                         g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                        var disc = new RectangleF(1.5f, 1.5f, side - 3, side - 3);
-                        using (var shadow = new SolidBrush(Color.FromArgb(70, 0, 0, 0))) g.FillEllipse(shadow, 0, 1.5f, side - 1, side - 1.5f);
+                        var accent = Color.FromArgb(0x1E, 0xBB, 0xAA);
+                        // The halo of an open window: a soft ring around the disc.
+                        for (int i = 3; i >= 1 && halo > .02; i--)
+                            using (var pen = new Pen(Color.FromArgb((int)(halo * 34 / i), accent), (i * 1.6f + 1.5f) * k)) g.DrawEllipse(pen, centre - r - 1.5f * k * i, centre - r - 1.5f * k * i, (r + 1.5f * k * i) * 2, (r + 1.5f * k * i) * 2);
+                        double rt = (DateTime.Now - rippleAt).TotalMilliseconds / 520;
+                        if (rt >= 0 && rt < 1)
+                        {
+                            float rr = r + pad * .9f * (float)(1 - Math.Pow(1 - rt, 2));
+                            using (var pen = new Pen(Color.FromArgb((int)(170 * (1 - rt)), accent), Math.Max(1.5f, 2.2f * k * (float)(1 - rt)))) g.DrawEllipse(pen, centre - rr, centre - rr, rr * 2, rr * 2);
+                        }
+                        using (var shadow = new SolidBrush(Color.FromArgb(70, 0, 0, 0))) g.FillEllipse(shadow, centre - r, centre - r + 1.5f * k, r * 2, r * 2 - 1.5f * k);
+                        var disc = new RectangleF(centre - r + 1.5f * k, centre - r + 1.5f * k, r * 2 - 3 * k, r * 2 - 3 * k);
                         using (var body = new LinearGradientBrush(disc, Color.FromArgb(0x19, 0x1e, 0x1f), Color.FromArgb(0x0b, 0x0f, 0x10), 90f)) g.FillEllipse(body, disc);
-                        using (var ring = new Pen(hover ? Color.FromArgb(0x1E, 0xBB, 0xAA) : Color.FromArgb(110, 0x1E, 0xBB, 0xAA), Math.Max(1.5f, side / 34f))) g.DrawEllipse(ring, disc);
-                        if (logo != null) { float w = side * .66f, h = w * logo.Height / logo.Width; g.DrawImage(logo, (side - w) / 2, (side - h) / 2, w, h); }
+                        using (var ring = new Pen(bright ? accent : Color.FromArgb(110, accent), Math.Max(1.5f, dia / 34f))) g.DrawEllipse(ring, disc);
+                        if (busy)
+                            using (var arc = new Pen(accent, Math.Max(2f, 2.6f * k)) { StartCap = LineCap.Round, EndCap = LineCap.Round })
+                            { float ra = r + 4.5f * k; g.DrawArc(arc, centre - ra, centre - ra, ra * 2, ra * 2, (float)spin, 100f); }
+                        if (logo != null) { float w = dia * .66f * (float)scale, h = w * logo.Height / logo.Width; g.DrawImage(logo, centre - w / 2, centre - h / 2, w, h); }
                     }
                     Layered(bmp);
                 }
@@ -447,16 +566,20 @@ namespace Bramble
                 moving = false;
                 pressed = true;
                 Capture = true;
+                Kick();
             }
 
             protected override void OnMouseMove(MouseEventArgs e)
             {
                 if (!hover) { hover = true; Draw(); }
-                if (e.Button != MouseButtons.Left) return;
+                // Only a press that began on the button moves it: a button held down elsewhere and passing over it does nothing.
+                if (!pressed) return;
+                // A release that never reached the button (the focus moved while it was held) must not leave it following the pointer.
+                if ((Control.MouseButtons & MouseButtons.Left) == 0) { Settle(); return; }
                 var p = Cursor.Position;
                 // A click that slips by a few pixels stays a click.
-                if (!moving && Math.Sqrt(Math.Pow(p.X - down.X, 2) + Math.Pow(p.Y - down.Y, 2)) < 10 * Arrange.Scale(Screen.FromPoint(down))) return;
-                moving = true;
+                if (!moving && Math.Sqrt(Math.Pow(p.X - down.X, 2) + Math.Pow(p.Y - down.Y, 2)) < 10 * Scale(down)) return;
+                if (!moving) { moving = true; Kick(); }
                 Location = new Point(start.X + p.X - down.X, start.Y + p.Y - down.Y);
             }
 
@@ -466,7 +589,17 @@ namespace Bramble
             protected override void OnMouseCaptureChanged(EventArgs e)
             {
                 base.OnMouseCaptureChanged(e);
-                if (pressed && !Capture) { pressed = false; if (moving) { moving = false; Moved(Location); } }
+                if (pressed && !Capture) Settle();
+            }
+
+            // The press is over without a release: it ends where it is, and a carried button is put down.
+            public void Settle()
+            {
+                if (!pressed) return;
+                pressed = false;
+                Capture = false;
+                Kick();
+                if (moving) { moving = false; Moved(Location); }
             }
 
             protected override void OnMouseUp(MouseEventArgs e)
@@ -474,9 +607,12 @@ namespace Bramble
                 bool was = pressed;
                 pressed = false;
                 Capture = false;
+                Kick();
                 if (e.Button == MouseButtons.Right) { Program.OpenSettings(); return; }
                 if (e.Button != MouseButtons.Left || !was) return;
                 if (moving) { moving = false; Moved(Location); return; }
+                Ripple();
+                if (opening) return;
                 // A click on the button while the window is open closes it: the window already hid itself when it lost the focus.
                 if (popup != null && popup.Visible) popup.Hide();
                 else if ((DateTime.Now - hiddenAt).TotalMilliseconds > 300) Open(null);

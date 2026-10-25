@@ -47,10 +47,10 @@ if (LANGUAGE !== 'en') {
   }).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRIBUTES_TRANSLATED });
 }
 
-// How long until a usage limit resets: minutes, then hours, then the day.
+// How long until a usage limit resets: minutes, then hours, then days.
 const resetIn = iso => {
   const minutes = Math.max(0, Math.round((new Date(iso) - Date.now()) / 60000));
-  return minutes < 60 ? tr('{0} min', minutes) : minutes < 48 * 60 ? tr('{0} h {1}', Math.floor(minutes / 60), String(minutes % 60).padStart(2, '0')) : new Date(iso).toLocaleDateString(LOCALE, { weekday: 'short', day: 'numeric' });
+  return minutes < 60 ? tr('{0} min', minutes) : minutes < 48 * 60 ? tr('{0} h {1}', Math.floor(minutes / 60), String(minutes % 60).padStart(2, '0')) : tr('{0} days', Math.round(minutes / 1440));
 };
 
 // The filled part of a slider, painted from its own limits.

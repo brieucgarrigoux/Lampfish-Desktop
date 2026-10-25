@@ -134,6 +134,10 @@
 .h-icon i { flex: none; max-width: 100%; font: normal 9px/1.2 "Segoe UI", system-ui, sans-serif; color: #fff; text-align: center; text-shadow: 0 1px 2px rgba(0, 0, 0, .9); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .h-desktop.hidden .h-icon { display: none; }
 
+.h-twin { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.h-twin__row { display: grid; grid-template-columns: 44px 1fr 34px; align-items: center; gap: 8px; }
+.h-twin__row em { font-style: normal; font-size: var(--text-badge); color: var(--text-pale); }
+.h-twin__row b { font: 600 var(--text-badge) var(--numbers); font-variant-numeric: tabular-nums; text-align: right; color: var(--text-soft); }
 .h-tile .h-visual { display: flex; align-items: center; flex: 1; width: 100%; min-height: 24px; }
 .h-tile[data-size="2x2"] .h-value, .h-tile[data-size="1x2"] .h-value { font-size: var(--text-title); }
 .h-images { display: flex; gap: 8px; align-items: center; }
