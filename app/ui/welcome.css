@@ -13,7 +13,8 @@
 .welcome__lead { margin: 0; font-size: var(--text-body); line-height: 1.5; color: var(--text-soft); }
 .welcome__families { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-top: 4px; }
 .welcome__family { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px 12px; border-radius: var(--radius-group); background: var(--group-up); }
-.welcome__family strong { font-size: var(--text-caption); font-weight: 600; color: var(--text-soft); }
+.welcome__family strong { font-size: var(--text-body); font-weight: 600; color: var(--text); }
+.welcome__family small { margin-top: -4px; font-size: var(--text-caption); line-height: 1.3; color: var(--text-pale); }
 .welcome__icons { display: flex; flex-wrap: wrap; gap: 8px; }
 .welcome__icons span { display: grid; place-items: center; width: 30px; height: 30px; border-radius: var(--radius-control); background: var(--raised); }
 .welcome__icons svg { width: 18px; height: 18px; fill: none; stroke: var(--text-soft); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }

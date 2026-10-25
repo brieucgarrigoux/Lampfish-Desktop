@@ -34,6 +34,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Companion: tabs for the Shelf, Audio, Notes and Convert, a dashboard with the dials, the disk, the theme (changed with arrows) and the audio output, and the window grows out of the button.
 
 ### Changed
+- Home: the cards shown until you choose yours are Convert, Notes, Health, Arrange, Sounds and Tasks; Icons and Mouse stay a click away in Pin to Home.
+- Every page has one of two widths: 900 px for settings and lists, 1120 px for a gallery, a plan or instruments; Convert is centered like the others.
+- The interface size control at the bottom right shows only under the pointer, with the keyboard, or for a moment after a zoom, so it no longer covers the page.
+- The first screen of the welcome says in a line what each family holds.
 - The bar on the left: each family is one button that opens its services beside it, and the arrow keys walk its buttons.
 - A state is a lamp and a word instead of a tinted capsule, and a state that is normal says nothing: the Up to 10 pill of Startup and the All good pill of Hardware are gone.
 - Shelf is called Dépôt in French.

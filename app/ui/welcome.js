@@ -5,14 +5,16 @@
   const box = $('welcome'), steps = [...box.querySelectorAll('.welcome__step')], dots = [...box.querySelectorAll('.welcome__dots i')];
   let step = 0, open = false, wallsKey = '', before = null;
 
+  const LINES = { personalization: 'Wallpaper, themes, icons, cursors and sounds', desktop: 'Screens, audio, taskbar and desktop icons', workspace: 'Notes, files, captures and conversions', pc: 'Health, programs, storage, hardware and network' };
   function families() {
     const zone = $('welcome-families');
     if (zone.children.length) return;
     for (const section of document.querySelectorAll('.rail .rail-family')) {
       const family = document.createElement('div');
       family.className = 'welcome__family';
-      family.innerHTML = '<strong></strong><span class="welcome__icons"></span>';
+      family.innerHTML = '<strong></strong><small></small><span class="welcome__icons"></span>';
       family.querySelector('strong').textContent = tr(section.querySelector('.rail-title').textContent.trim());
+      family.querySelector('small').textContent = tr(LINES[section.dataset.group] || '');
       zone.append(family);
       for (const el of section.querySelectorAll('.service[data-view]')) {
         const icon = el.querySelector('svg').cloneNode(true);

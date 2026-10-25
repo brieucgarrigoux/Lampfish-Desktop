@@ -88,6 +88,7 @@ Fonts: `--display` for titles and lit text, `--numbers` with `font-variant-numer
 - **Bubble** (`.chart-tip`): title, note and label and value lines.
 - **Drawer**: the side panel opens over the page in a narrow window, from the Options button.
 - **Toast**: 8 s, with Undo for any change.
+- **Zoom pill** (`.zoom-pill`): bottom right, invisible until the pointer or the keyboard reaches it, shown for a moment after a zoom.
 - **Bar on the left** (`.rail`): Home, a Go to search (Ctrl K), then one button per family (icon, name, arrow) that opens its services in a flyout next to the bar, on click. The name of every button is always written: under the icon in a narrow bar, beside it from 140 px, and in the flyout when the window is too small for names. The family that holds the page on screen carries a lit bar on the edge of the bar. Arranging the bar shows every family open, one under the other. Two levels at most.
 - **Actions row** (`.h-actions` on Home): the everyday actions as chips (`.tool-chip` with a 16 px icon), one click each, right under the header. An action that has a page opens it, the others act from Home with their usual toast.
 - **Home cards** (`.h-shortcuts`): a grid of columns that follows the width of the page, a card in any cell, an empty cell left empty, one to three cells across and one or two down. A card dropped on another pushes it down.
@@ -109,6 +110,7 @@ Fonts: `--display` for titles and lit text, `--numbers` with `font-variant-numer
 
 ## Layout
 
+- Two page widths, both centered: 900 px for pages of settings and lists (Settings, Display, Audio, Taskbar, Notes, Convert, Health, Duplicates), 1120 px for pages with a gallery, a plan or instruments (Themes, Wallpaper, Create, Icons, Mouse, Sounds, Arrange, Shelf, Tasks, Storage, Hardware, Network). Home goes to 1560 px.
 - One narrow breakpoint at 900 px: the page scrolls as a whole and the side panel becomes a drawer. The window of a 125 % laptop is about 780 px wide, so the narrow layout is an everyday layout.
 - Bar of icons only below 620 px wide or when the height is short.
 - Home stacks its columns below 760 px of content (container query `home`).
