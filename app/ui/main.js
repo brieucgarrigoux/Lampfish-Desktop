@@ -168,6 +168,7 @@ function render(state) {
   if (Bramble.icons && state.icons) Bramble.icons.state(state.icons);
   if (Bramble.mouse && state.mouse) Bramble.mouse.state(state.mouse);
   if (Bramble.arrange && state.arrange) Bramble.arrange.state(state.arrange);
+  if (Bramble.arrange && state.grid) Bramble.arrange.grid(state.grid);
   if (Bramble.files && state.files) Bramble.files.state(state.files);
   if (Bramble.duplicates && state.duplicates) Bramble.duplicates.state(state.duplicates);
   if (Bramble.moods && state.moods) Bramble.moods.state(state.moods);

@@ -164,6 +164,20 @@ namespace Bramble
 
             int Visual(int lines) { return icon + lead + lines * line; }
 
+            // The square an icon sits in, a little larger than the icon itself.
+            public Rectangle Slot(Point cell)
+            {
+                var p = Pixel(new PointF(cell.X, cell.Y));
+                int pad = Math.Max(3, edge * 3 / 4);
+                return new Rectangle(p.X - pad, p.Y + lead - pad, icon + 2 * pad, icon + 2 * pad);
+            }
+
+            public bool Seated(Point pixel, Point cell)
+            {
+                var p = Pixel(new PointF(cell.X, cell.Y));
+                return Math.Abs(p.X - pixel.X) <= 3 && Math.Abs(p.Y - pixel.Y) <= 3;
+            }
+
             // The first row keeps half the space between two rows above it, as the columns do on the sides, so a title is never cut.
             // The last row sits a few pixels above the edge of the work area (the taskbar), so a full column reads as touching the bottom.
             void Spread(int bottom)
@@ -588,6 +602,68 @@ namespace Bramble
             Place(positions);
             R.Placed = Capture();
         }
+
+        // What the grid overlay draws: the slots of each screen, and which slot is the nearest to a point.
+        public class GridScreen
+        {
+            public Rectangle Area;
+            public List<Rectangle> Slots = new List<Rectangle>();
+            public Func<Point, int> Nearest;
+        }
+
+        public static List<GridScreen> GridScreens()
+        {
+            var result = new List<GridScreen>();
+            Size c = DesktopIcons.Case();
+            if (c.Width <= 0 || c.Height <= 0) return result;
+            int iconSize = DesktopIcons.IconSize();
+            foreach (var s in Screen.AllScreens)
+            {
+                var g = new Grid(s.WorkingArea, c, Scale(s), iconSize);
+                var screen = new GridScreen { Area = s.WorkingArea };
+                for (int x = 0; x < g.Columns; x++) for (int y = 0; y < g.Rows; y++) screen.Slots.Add(g.Slot(new Point(x, y)));
+                int rows = g.Rows;
+                screen.Nearest = pixel => { var cell = g.Cell(pixel); return cell.X * rows + cell.Y; };
+                result.Add(screen);
+            }
+            return result;
+        }
+
+        // Icons that sit between two cells go to the nearest free one of their screen; the ones already seated keep theirs.
+        public static int Magnet()
+        {
+            var items = DesktopIcons.Positions();
+            if (items.Count == 0) return 0;
+            Size c = DesktopIcons.Case();
+            if (c.Width <= 0 || c.Height <= 0) return 0;
+            int iconSize = DesktopIcons.IconSize();
+            var screens = Screen.AllScreens;
+            var grids = screens.ToDictionary(s => s.DeviceName, s => new Grid(s.WorkingArea, c, Scale(s), iconSize));
+            Func<Point, Grid> gridOf = p => grids[(screens.FirstOrDefault(x => x.Bounds.Contains(p)) ?? Screen.PrimaryScreen).DeviceName];
+            var loose = new List<KeyValuePair<string, Point>>();
+            foreach (var item in items)
+            {
+                var g = gridOf(item.Value);
+                var cell = g.Cell(item.Value);
+                if (g.Seated(item.Value, cell) && !g.Taken.Contains(cell)) g.Taken.Add(cell);
+                else loose.Add(item);
+            }
+            if (loose.Count == 0) return 0;
+            var moves = new Dictionary<string, Point>();
+            foreach (var item in loose.OrderBy(x => x.Value.X).ThenBy(x => x.Value.Y))
+            {
+                var g = gridOf(item.Value);
+                var cell = Free(g, g.Cell(item.Value));
+                g.Taken.Add(cell);
+                moves[item.Key] = g.Pixel(new PointF(cell.X, cell.Y));
+            }
+            Place(moves, false);
+            return moves.Count;
+        }
+
+        // Remembers where the icons are, so that the next undo brings them back.
+        public static void RememberNow() { Remember(); }
+        public static void UndoLast() { Undo(); }
 
         static Point Free(Grid g, Point cell)
         {

@@ -251,7 +251,7 @@
 
     if (!sizing) showSize(map.iconSize);
     for (const b of $('r-size').children) b.disabled = false;
-    for (const [id, key] of [['r-auto', 'auto'], ['r-grid', 'grid'], ['r-hide', 'hidden']]) {
+    for (const [id, key] of [['r-auto', 'auto'], ['r-hide', 'hidden']]) {
       $(id).checked = map[key];
       $(id).disabled = false;
     }
@@ -377,10 +377,11 @@
   for (const b of document.querySelectorAll('[data-sort]'))
     b.addEventListener('click', () => send('arrange.sort', { mode: b.dataset.sort }));
   $('r-align').addEventListener('click', () => send('arrange.align'));
-  for (const [id, action] of [['r-auto', 'auto'], ['r-grid', 'grid'], ['r-hide', 'hide']]) {
+  for (const [id, action] of [['r-auto', 'auto'], ['r-hide', 'hide']]) {
     $(id).disabled = true;
     $(id).addEventListener('change', e => send('arrange.' + action, { value: e.target.checked }));
   }
+  $('r-grid').addEventListener('change', e => send('grid.set', { on: e.target.checked }));
   let sizing = false;
   function showSize(value) {
     const exact = [...$('r-size').children].find(b => Number(b.dataset.value) === Number(value));
@@ -405,5 +406,6 @@
     tile.click();
   });
 
-  Bramble.arrange = { state, event, visible, thumbnail, renderDock };
+  const grid = g => { $('r-grid').checked = !!g.on; };
+  Bramble.arrange = { state, event, visible, thumbnail, renderDock, grid };
 })();

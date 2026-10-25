@@ -157,6 +157,7 @@ namespace Bramble
                 Notes.Start();
                 ClaudeUsage.Start();
                 Companion.Start();
+                DesktopGrid.Start();
                 Moods.Start();
                 if (requestedFolder != null) { Icons.Ask(requestedFolder); requestedView = "icons"; }
 
@@ -805,6 +806,7 @@ namespace Bramble
                 return;
             }
             if (action.StartsWith("companion.")) { if (Companion.Receive(action.Substring(action.IndexOf('.') + 1), m)) SendState(); return; }
+            if (action.StartsWith("grid.")) { if (DesktopGrid.Receive(action.Substring(action.IndexOf('.') + 1), m)) SendState(); return; }
             if (action.StartsWith("claude.")) { if (ClaudeUsage.Receive(action.Substring(action.IndexOf('.') + 1), m)) SendState(); return; }
             if (action.StartsWith("capture.")) { Capture.Receive(action.Substring(action.IndexOf('.') + 1), m); return; }
             if (action.StartsWith("notes.")) { if (Notes.Receive(action.Substring(action.IndexOf('.') + 1), m)) SendState(); return; }
@@ -978,6 +980,7 @@ namespace Bramble
                 welcome = Welcome.State(),
                 claude = ClaudeUsage.State(),
                 companion = Companion.State(),
+                grid = DesktopGrid.State(),
                 notes = Notes.Summary(),
                 shelf = Shelf.Summary(),
                 weatherPlace = R.WeatherPlace == null ? null : R.WeatherPlace.Label,
@@ -1169,6 +1172,7 @@ namespace Bramble
             Display.Stop();
             AudioDevices.Stop();
             Companion.Stop();
+            DesktopGrid.Stop();
             Hotkeys.Stop();
             Discard();
             if (settingsWindow != null) settingsWindow.Shutdown();

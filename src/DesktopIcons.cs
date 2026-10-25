@@ -90,6 +90,31 @@ namespace Bramble
             return list;
         }
 
+        // Where each icon is, without anything else about it: light enough to be read every few seconds.
+        public static List<KeyValuePair<string, Point>> Positions()
+        {
+            var view = View();
+            var list = new List<KeyValuePair<string, Point>>();
+            Point origin = Origin();
+            int n;
+            view.ItemCount(2, out n);
+            for (int i = 0; i < n; i++)
+            {
+                IntPtr pidl;
+                view.Item(i, out pidl);
+                try
+                {
+                    string id;
+                    Native.POINT p;
+                    if (SHGetNameFromIDList(pidl, 0x80028000, out id) != 0 || id == null) continue;
+                    view.GetItemPosition(pidl, out p);
+                    list.Add(new KeyValuePair<string, Point>(id, new Point(p.X + origin.X, p.Y + origin.Y)));
+                }
+                finally { Marshal.FreeCoTaskMem(pidl); }
+            }
+            return list;
+        }
+
         public static Size Case()
         {
             var p = new Native.POINT();
