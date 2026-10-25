@@ -1935,5 +1935,7 @@
  "Take off the list": "Retirer de la liste",
  "Change the kind of a file": "Changer le genre d'un fichier",
  "Images into another image or a PDF, a PDF into images, merged or cut, text and Office documents into a PDF.": "Des images en une autre image ou en PDF, un PDF en images, fusionné ou découpé, du texte et des documents Office en PDF.",
- "Open Convert in lampfish": "Ouvrir Convertir dans lampfish"
+ "Open Convert in lampfish": "Ouvrir Convertir dans lampfish",
+ "Straighten the icons": "Redresser les icônes",
+ "Every icon goes to the nearest cell of the grid": "Chaque icône va dans la case la plus proche de la grille"
 }

@@ -376,6 +376,7 @@
 
   for (const b of document.querySelectorAll('[data-sort]'))
     b.addEventListener('click', () => send('arrange.sort', { mode: b.dataset.sort }));
+  $('r-align').addEventListener('click', () => send('arrange.align'));
   for (const [id, action] of [['r-auto', 'auto'], ['r-grid', 'grid'], ['r-hide', 'hide']]) {
     $(id).disabled = true;
     $(id).addEventListener('change', e => send('arrange.' + action, { value: e.target.checked }));

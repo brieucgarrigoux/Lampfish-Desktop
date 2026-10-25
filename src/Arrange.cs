@@ -567,6 +567,28 @@ namespace Bramble
             return result;
         }
 
+        // Every icon goes to the nearest cell of the grid of its screen, in the order of the screen, so the one that was there first keeps the cell.
+        static void Align()
+        {
+            var now = Capture();
+            if (now.Count == 0) return;
+            Size c = DesktopIcons.Case();
+            if (c.Width <= 0 || c.Height <= 0) return;
+            int iconSize = DesktopIcons.IconSize();
+            var grids = Screen.AllScreens.ToDictionary(s => s.DeviceName, s => new Grid(s.WorkingArea, c, Scale(s), iconSize));
+            var positions = new Dictionary<string, Point>();
+            foreach (var p in now.OrderBy(x => x.X).ThenBy(x => x.Y))
+            {
+                var screen = Screen.AllScreens.FirstOrDefault(x => x.Bounds.Contains(p.X, p.Y)) ?? Screen.PrimaryScreen;
+                var g = grids[screen.DeviceName];
+                var cell = Free(g, g.Cell(new Point(p.X, p.Y)));
+                g.Taken.Add(cell);
+                positions[p.Id] = g.Pixel(cell);
+            }
+            Place(positions);
+            R.Placed = Capture();
+        }
+
         static Point Free(Grid g, Point cell)
         {
             if (!g.Taken.Contains(cell)) return cell;
@@ -875,6 +897,7 @@ namespace Bramble
                         Program.Send(Map(false));
                         return true;
                     }
+                    case "align": Align(); Program.Send(Map(false)); return true;
                     case "iconSize": ChangeIconSize(Convert.ToInt32(m["value"])); return false;
                     case "grid": DesktopIcons.Flag(DesktopIcons.FWF_SNAPTOGRID, Convert.ToBoolean(m["value"])); Program.Send(Map(false)); return false;
                     case "hide": DesktopIcons.Flag(DesktopIcons.FWF_NOICONS, Convert.ToBoolean(m["value"])); Program.Send(Map(false)); return false;
