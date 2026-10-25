@@ -14,7 +14,7 @@
     modes: ['Themes'], wallpaper: ['Wallpaper'], create: ['Create'], display: ['Display'], audio: ['Audio'], taskbar: ['Taskbar'], convert: ['Convert'],
     notes: ['Notes'], shelf: ['Shelf'], claude: ['Claude usage', '<path d="M4 17a8 8 0 1 1 16 0"/><path d="m12 17 4.5-5"/><path d="M8 20h8"/>'], health: ['Health'], files: ['Storage'], duplicates: ['Duplicates'], hardware: ['Hardware'], network: ['Network'],
   };
-  const TILES = ['icons', 'arrange', 'mouse', 'station', 'tasks'];
+  const TILES = ['convert', 'notes', 'health', 'arrange', 'station', 'tasks'];
   const BLOCKS = { stage: 'Wallpaper and themes', pc: 'This PC', quick: 'Quick settings' };
   const ARRANGEMENTS = { left: 'Left', right: 'Right', top: 'Top', bottom: 'Bottom', frame: 'Frame', center: 'Center', corners: 'Corners', blocks: 'Blocks' };
   const UNITS = ['bytes', 'KB', 'MB', 'GB', 'TB'].map(u => tr(u));
