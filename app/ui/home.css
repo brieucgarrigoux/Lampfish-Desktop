@@ -1,5 +1,5 @@
 .view--home { max-width: 1560px; margin-inline: auto; container: home / inline-size; }
-.home-header { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; margin: 0 0 10px; }
+.home-header { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 0 0 10px; }
 
 .h-main { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(260px, 1fr); gap: 16px; align-items: start; }
 .h-stage { display: flex; flex-direction: column; gap: 12px; min-width: 0; padding: 10px 10px 12px; border-radius: var(--radius-card); background: var(--group); container: stage / inline-size; }
@@ -88,6 +88,11 @@
 .h-q__night { font-size: var(--text-caption); color: var(--text-soft); }
 .h-q__night:hover { color: var(--accent); }
 
+/* Under 900 px the header keeps one line: the date and the words of the weather go, Customize stays whole. */
+@container home (max-width: 900px) {
+  .h-weather__what { display: none; }
+  .h-date { display: none; }
+}
 @container home (max-width: 760px) {
   .h-main { grid-template-columns: minmax(0, 1fr); }
   .h-quickset { grid-template-columns: minmax(0, 1fr); }

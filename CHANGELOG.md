@@ -52,6 +52,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Home: in a narrow window, the wallpaper controls sit in one row beside the preview, and two columns put them under it.
 
 ### Fixed
+- Home: the header stayed on one line only in a wide window; Customize is a button that keeps its place.
+- Create: the gray lines of the side panel were cut at the usual width of the panel.
+- French: the lines of the magnetic grid, the taskbar choices, the appearance choice and a few others were cut.
+- A message that is not a state could stop the page with an error.
 - Shelf: a file added from an old folder landed at the end of the list and looked as if nothing had happened; Open the folder did nothing; the Mouse folder button also opened the Shelf.
 - Audio: the highlight of a card stopped at the volume.
 - Taskbar: a setting that Windows 11 refuses to change (Widgets on 25H2) no longer looks changed with an Undo; the toggle goes back and a note opens Windows Settings.
