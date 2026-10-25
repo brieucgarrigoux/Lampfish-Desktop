@@ -89,9 +89,7 @@ namespace Bramble
             switch (action)
             {
                 case "watch":
-                    watching = Convert.ToBoolean(m["on"]);
-                    if (watching) { Reload(); sent = null; Send(); timer.Start(); }
-                    else { timer.Stop(); Release(); }
+                    Watch("page", Convert.ToBoolean(m["on"]));
                     return false;
                 case "use":
                 {
@@ -149,6 +147,19 @@ namespace Bramble
             return false;
         }
 
+        // The page of the service and the window of the companion both read the devices: they are read while one of them looks.
+        static readonly HashSet<string> watchers = new HashSet<string>();
+        public static event Action<object> Listed;
+
+        public static void Watch(string who, bool on)
+        {
+            if (on) watchers.Add(who); else watchers.Remove(who);
+            bool wanted = watchers.Count > 0;
+            if (wanted && !watching) { watching = true; Reload(); sent = null; Send(); timer.Start(); }
+            else if (!wanted && watching) { watching = false; timer.Stop(); Release(); }
+            else if (wanted) { sent = null; Send(); }
+        }
+
         static void Open(string target)
         {
             try { System.Diagnostics.Process.Start(target); } catch (Exception ex) { Program.Log(ex); }
@@ -200,6 +211,7 @@ namespace Bramble
             if (text == sent) return;
             sent = text;
             Program.Send(message);
+            if (Listed != null) Listed(message);
         }
 
         static void Reload()

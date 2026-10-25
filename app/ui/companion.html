@@ -14,22 +14,36 @@
   <header class="c-head">
     <img class="c-logo" src="/brand/logo/mark-lampfish-white.png" alt="">
     <span class="c-when"><b id="c-clock"></b><small id="c-date"></small></span>
-    <button type="button" class="c-icon" id="c-open" title="Open lampfish" aria-label="Open lampfish"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4.5h5.5V10M19.5 4.5 11 13M17 13.5v5a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 4 18.5v-10A1.5 1.5 0 0 1 5.5 7h5"/></svg></button>
+    <button type="button" class="button button--accent c-open" id="c-open" title="Open lampfish"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4.5h5.5V10M19.5 4.5 11 13M17 13.5v5a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 4 18.5v-10A1.5 1.5 0 0 1 5.5 7h5"/></svg><span>Open lampfish</span></button>
     <button type="button" class="c-icon" id="c-close" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg></button>
   </header>
-  <nav class="segments c-tabs" role="tablist" aria-label="Companion">
-    <button type="button" role="tab" data-tab="note" aria-selected="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.5 8V5a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 5v14A1.5 1.5 0 0 0 6 20.5h4.5"/><path d="M8 8h5M8 11.5h3.5"/><path d="m13.5 20.5.5-2.5 5.5-5.5a1.5 1.5 0 0 1 2 2L16 20z"/></svg>Note</button>
-    <button type="button" role="tab" data-tab="capture" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16"/></svg>Capture</button>
-    <button type="button" role="tab" data-tab="dashboard" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 15a7.5 7.5 0 1 1 15 0"/><path d="m12 15 3.5-4"/></svg>Dashboard</button>
+  <nav class="c-tabs" role="tablist" aria-label="Companion">
+    <button type="button" role="tab" data-tab="dashboard" aria-selected="true" title="Dashboard"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span>Dashboard</span></button>
+    <button type="button" role="tab" data-tab="note" aria-selected="false" title="Note"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.5 8V5a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 5v14A1.5 1.5 0 0 0 6 20.5h4.5"/><path d="M8 8h5M8 11.5h3.5"/><path d="m13.5 20.5.5-2.5 5.5-5.5a1.5 1.5 0 0 1 2 2L16 20z"/></svg><span>Note</span></button>
+    <button type="button" role="tab" data-tab="capture" aria-selected="false" title="Capture"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16"/></svg><span>Capture</span></button>
+    <button type="button" role="tab" data-tab="shelf" aria-selected="false" title="Shelf"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 13.5V18a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-4.5M3.5 13.5l2-5.5h1.5M20.5 13.5l-2-5.5H17"/><path d="M3.5 13.5h5l1 2h5l1-2h5"/><path d="M12 3.5v8M9 9l3 3 3-3"/></svg><span>Shelf</span></button>
+    <button type="button" role="tab" data-tab="audio" aria-selected="false" title="Audio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3.5l4.5 3.5v-11L7.5 10z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6M18 6.8a7.4 7.4 0 0 1 0 10.4"/></svg><span>Audio</span></button>
+    <button type="button" role="tab" data-tab="notes" aria-selected="false" title="Notes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6.5h14M5 12h14M5 17.5h9"/></svg><span>Notes</span></button>
   </nav>
 
-  <section class="c-pane" data-pane="note">
+  <section class="c-pane" data-pane="dashboard">
+    <p class="c-verdict"><span class="state" id="c-verdict"></span></p>
+    <div class="security security--high c-dials"><div class="dials dials--small" id="c-dials"></div></div>
+    <div class="group" id="c-lines"></div>
+    <button type="button" class="c-claude" id="c-claude" hidden>
+      <span class="c-claude__name">Claude</span>
+      <span class="c-bar"><i id="c-claude-bar"></i></span>
+      <span class="c-claude__text" id="c-claude-text"></span>
+    </button>
+  </section>
+
+  <section class="c-pane" data-pane="note" hidden>
     <div class="c-note">
       <input type="text" class="c-title" id="c-title" placeholder="Title (optional)" aria-label="Title" spellcheck="false">
       <textarea class="c-text" id="c-text" placeholder="Write here, in Markdown" aria-label="Note"></textarea>
     </div>
     <p class="c-hint" id="c-saved" aria-live="polite">A new note in Notes · Ctrl + Enter adds it</p>
-    <div class="c-row"><button type="button" class="link" id="c-notes">Open Notes</button><span class="c-space"></span><button type="button" class="button button--accent" id="c-save">Add to Notes</button></div>
+    <div class="c-row"><span class="c-space"></span><button type="button" class="button button--accent" id="c-save">Add to Notes</button></div>
   </section>
 
   <section class="c-pane" data-pane="capture" hidden>
@@ -38,22 +52,32 @@
       <button type="button" class="row action" data-capture="3"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="7.5"/><path d="M12 9v4l2.5 2M10 2.5h4"/></svg><span>In 3 seconds<small>Time to open a menu first</small></span></span><svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
       <button type="button" class="row action" data-capture="whole"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="12" rx="1.5"/><path d="M9 20h6M12 16.5V20"/></svg><span>Whole screen<small>The screen under the pointer</small></span></span><svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
     </div>
-    <div class="c-subhead"><span>Last captures</span><button type="button" class="link" id="c-shelf">Open Shelf</button></div>
+    <div class="c-subhead"><span>Last captures</span></div>
     <div class="c-shots" id="c-shots"></div>
   </section>
 
-  <section class="c-pane" data-pane="dashboard" hidden>
-    <div class="security security--high c-dials"><div class="dials dials--small" id="c-dials"></div></div>
-    <div class="group" id="c-lines"></div>
-    <div class="c-subhead"><span>Last notes</span><button type="button" class="link" id="c-all">Open Notes</button></div>
-    <div class="group c-recent" id="c-recent"></div>
+  <section class="c-pane" data-pane="shelf" hidden>
+    <div class="c-row">
+      <button type="button" class="button" id="c-add"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add files</button>
+    </div>
+    <div class="c-subhead"><span>Latest</span></div>
+    <div class="group c-list" id="c-files"></div>
+    <p class="c-hint c-help-drag">A file here can be dragged into any app</p>
   </section>
 
-  <footer class="c-claude" id="c-claude" hidden>
-    <span class="c-claude__name">Claude</span>
-    <span class="c-bar"><i id="c-claude-bar"></i></span>
-    <span class="c-claude__text" id="c-claude-text"></span>
-  </footer>
+  <section class="c-pane" data-pane="audio" hidden>
+    <div class="c-subhead"><span>Playing on</span></div>
+    <div class="group" id="c-out-now"></div>
+    <div class="c-subhead" id="c-out-other-head"><span>Switch to</span></div>
+    <div class="group" id="c-out-other"></div>
+  </section>
+
+  <section class="c-pane" data-pane="notes" hidden>
+    <div class="search c-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.2-4.2"/></svg><input type="text" id="c-find" placeholder="Search the notes" aria-label="Search the notes" autocomplete="off" spellcheck="false"></div>
+    <div class="group c-list" id="c-recent"></div>
+  </section>
+
+  <footer class="c-foot"><button type="button" class="link" id="c-go"></button></footer>
 <script src="base.js"></script>
 <script src="dials.js"></script>
 <script src="companion.js"></script>

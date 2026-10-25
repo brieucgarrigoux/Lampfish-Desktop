@@ -39,7 +39,7 @@ namespace Bramble
         static PageForm popup;
         static Timer watch, idle, refresh;
         static PerformanceCounter cpu;
-        static string tab = "note";
+        static string tab = "dashboard";
         static DateTime hiddenAt, asideAt;
         static bool aside;
 
@@ -58,6 +58,7 @@ namespace Bramble
             refresh = new Timer { Interval = 2000 };
             refresh.Tick += (s, e) => { if (popup != null && popup.Visible && tab == "dashboard") SendData(); };
             Capture.Busy += Aside;
+            AudioDevices.Listed += message => { if (popup != null && !popup.IsDisposed && popup.Visible) popup.Send(message); };
             Apply();
         }
 
@@ -212,6 +213,13 @@ namespace Bramble
                 };
                 popup.Deactivate += (s, e) => { if (popup != null) { popup.Hide(); hiddenAt = DateTime.Now; idle.Start(); refresh.Stop(); } };
                 popup.Shown += (s, e) => Native.Rounded(popup.Handle);
+                // The page forgets what it showed, so the next opening never flashes the last one.
+                popup.VisibleChanged += (s, e) =>
+                {
+                    if (popup == null || popup.IsDisposed || popup.Visible) return;
+                    popup.Send(new { type = "companion.hidden" });
+                    AudioDevices.Watch("companion", false);
+                };
                 Position();
                 popup.Show();
                 await popup.Open();
@@ -220,6 +228,7 @@ namespace Bramble
             idle.Stop();
             refresh.Start();
             popup.Activate();
+            AudioDevices.Watch("companion", tab == "audio");
             SendData(true);
         }
 
@@ -248,9 +257,27 @@ namespace Bramble
             {
                 type = "companion.data", tab, open, language = Language.Code,
                 processor = Math.Round(processor), memory = Math.Round(memory), busiest = Health.Busiest,
-                theme = theme == null ? null : theme.Name, output = AudioDevices.NameOf(AudioDevices.DefaultOutput()),
-                claude = ClaudeUsage.State(), notes = Notes.Items().Take(3).ToArray(), captures = Shelf.Items().Take(3).ToArray(),
+                theme = theme == null ? null : theme.Name, output = AudioDevices.NameOf(AudioDevices.DefaultOutput()), disk = Disk(), origin = open ? Origin() : null,
+                claude = ClaudeUsage.State(), notes = Notes.Items().Take(40).ToArray(), shelf = Shelf.Items().Take(8).ToArray(),
             });
+        }
+
+        static object Disk()
+        {
+            try
+            {
+                var drive = new DriveInfo(Path.GetPathRoot(Environment.SystemDirectory));
+                return new { name = drive.Name.TrimEnd('\\'), free = drive.AvailableFreeSpace, total = drive.TotalSize };
+            }
+            catch { return null; }
+        }
+
+        // Where the button is on the window, so that the window grows out of it.
+        static object Origin()
+        {
+            if (dot == null || popup == null) return null;
+            double cx = dot.Left + dot.Width / 2.0, cy = dot.Top + dot.Height / 2.0;
+            return new { x = cx < popup.Left + popup.Width / 2.0 ? 0 : 100, y = (int)Math.Max(5, Math.Min(95, (cy - popup.Top) * 100.0 / Math.Max(1, popup.Height))) };
         }
 
         static string Text(Dictionary<string, object> m, string key) { return m.ContainsKey(key) && m[key] != null ? Convert.ToString(m[key]) : ""; }
@@ -261,7 +288,25 @@ namespace Bramble
             switch (action)
             {
                 case "companion.ready": SendData(); return;
-                case "companion.tab": tab = Text(m, "tab"); SendData(); return;
+                case "companion.tab": tab = Text(m, "tab"); AudioDevices.Watch("companion", tab == "audio"); SendData(); return;
+                case "companion.theme": Moods.Step(Convert.ToInt32(m["step"]) < 0 ? -1 : 1); SendData(); return;
+                case "companion.audio":
+                {
+                    string op = Text(m, "op");
+                    if (op == "use" || op == "deviceVolume" || op == "deviceMute") { if (AudioDevices.Receive(op, m)) Program.SendState(); }
+                    SendData();
+                    return;
+                }
+                case "companion.shelf":
+                {
+                    string op = Text(m, "op"), name = Text(m, "name");
+                    if (op == "dragOut") { Shelf.DragOut(popup, name, () => { }); return; }
+                    if (op == "add") popup.Hide();
+                    Shelf.Receive(op, m, null);
+                    if (op == "copy") popup.Hide();
+                    SendData();
+                    return;
+                }
                 case "companion.close": popup.Hide(); return;
                 case "companion.note":
                 {

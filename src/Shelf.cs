@@ -115,6 +115,20 @@ namespace Bramble
             return path;
         }
 
+        // Windows runs the drag while the button is still down; `done` tells the page when it ends, to take drops again.
+        public static void DragOut(Form window, string name, Action done)
+        {
+            string path = PathOf(name);
+            if (path == null || window == null || window.IsDisposed) { done(); return; }
+            window.BeginInvoke((Action)(() =>
+            {
+                if (Control.MouseButtons == MouseButtons.Left)
+                    try { window.DoDragDrop(new DataObject(DataFormats.FileDrop, new[] { path }), DragDropEffects.Copy); }
+                    catch (Exception ex) { Program.Log(ex); }
+                done();
+            }));
+        }
+
         public static bool Receive(string action, Dictionary<string, object> m, List<string> files)
         {
             string name = m.ContainsKey("name") ? Convert.ToString(m["name"]) : null;
@@ -161,20 +175,8 @@ namespace Bramble
                     return true;
                 }
                 case "dragOut":
-                {
-                    string path = PathOf(name);
-                    // Windows runs the drag while the button is still down; the page is told when it ends, to take drops again.
-                    var window = Program.SettingsWindow;
-                    if (path == null || window == null) { Program.Send(new { type = "shelf.dragged" }); return false; }
-                    window.BeginInvoke((Action)(() =>
-                    {
-                        if (Control.MouseButtons == MouseButtons.Left)
-                            try { window.DoDragDrop(new DataObject(DataFormats.FileDrop, new[] { path }), DragDropEffects.Copy); }
-                            catch (Exception ex) { Program.Log(ex); }
-                        Program.Send(new { type = "shelf.dragged" });
-                    }));
+                    DragOut(Program.SettingsWindow, name, () => Program.Send(new { type = "shelf.dragged" }));
                     return false;
-                }
                 case "remove":
                 {
                     string path = PathOf(name);

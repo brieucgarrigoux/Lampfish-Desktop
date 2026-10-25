@@ -1844,5 +1844,18 @@
  "The same settings that Windows has in its Taskbar page, and its automatic hiding": "Les mêmes réglages que la page Barre des tâches de Windows, et son masquage automatique",
  "Undo for 8 seconds after a change, or Put the taskbar back as it was": "Annuler pendant 8 secondes après un changement, ou Remettre la barre des tâches comme avant",
  "Look and buttons": "Apparence et boutons",
- "Alignment, search, hiding": "Alignement, recherche, masquage"
+ "Alignment, search, hiding": "Alignement, recherche, masquage",
+ "Latest": "Derniers",
+ "A file here can be dragged into any app": "Un fichier d'ici peut être glissé dans n'importe quelle appli",
+ "Playing on": "Lecture sur",
+ "Switch to": "Passer sur",
+ "{0} % processor, {1} % memory": "{0} % du processeur, {1} % de la mémoire",
+ "free of": "libres sur",
+ "Previous theme": "Thème précédent",
+ "Next theme": "Thème suivant",
+ "Unmute": "Réactiver le son",
+ "Open Home in lampfish": "Ouvrir Home dans lampfish",
+ "Open Notes in lampfish": "Ouvrir Notes dans lampfish",
+ "Open Shelf in lampfish": "Ouvrir Dépôt dans lampfish",
+ "Open Audio in lampfish": "Ouvrir Audio dans lampfish"
 }

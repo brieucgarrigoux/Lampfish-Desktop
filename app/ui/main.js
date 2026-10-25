@@ -408,7 +408,6 @@ function wallpaperFor(key) {
   return state.wallpapers.find(f => f.name === (d && d.wallpaper ? d.wallpaper : state.current));
 }
 
-const fill = cursor => { const min = Number(cursor.min || 0), max = Number(cursor.max || 100); cursor.style.setProperty('--pct', (cursor.value - min) / (max - min) * 100 + '%'); };
 
 // Drawings in light on the glass of a round seal: the dots of the screen, then the lines lit by the lamp color of their card.
 // Filters of an inline SVG are found by id in the whole page, so each drawing needs its own ids.

@@ -212,6 +212,15 @@ namespace Bramble
             else Program.Announce("{0} applied", mood.Name);
         }
 
+        // The next theme (1) or the previous one (-1) of the list, from the one that is on.
+        public static void Step(int direction)
+        {
+            if (All.Count == 0) return;
+            var now = Active();
+            int at = now == null ? -1 : All.IndexOf(now);
+            ApplyById(All[((at < 0 ? (direction > 0 ? -1 : 0) : at) + direction + All.Count) % All.Count].Id);
+        }
+
         public static void ApplyById(string id)
         {
             var mood = All.FirstOrDefault(m => m.Id == id);
