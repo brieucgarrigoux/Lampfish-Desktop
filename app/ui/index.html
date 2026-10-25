@@ -22,6 +22,7 @@
 <link rel="stylesheet" href="display.css">
 <link rel="stylesheet" href="audio.css">
 <link rel="stylesheet" href="taskbar.css">
+<link rel="stylesheet" href="convert.css">
 <link rel="stylesheet" href="health.css">
 <link rel="stylesheet" href="duplicates.css">
 <link rel="stylesheet" href="notes.css">
@@ -104,6 +105,10 @@
     <button class="service" data-view="shelf">
       <svg viewBox="0 0 24 24"><path d="M3.5 13.5V18a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-4.5M3.5 13.5l2-5.5h1.5M20.5 13.5l-2-5.5H17"/><path d="M3.5 13.5h5l1 2h5l1-2h5"/><path d="M12 3.5v8M9 9l3 3 3-3"/></svg>
       Shelf
+    </button>
+    <button class="service" data-view="convert">
+      <svg viewBox="0 0 24 24"><path d="M5 8h11l-3-3M19 16H8l3 3"/></svg>
+      Convert
     </button>
     </div>
   </section>
@@ -685,6 +690,33 @@
     <div id="create-zone"></div>
   </section>
 
+  <section class="view view--convert only-convert" aria-label="Convert">
+    <h1>Convert</h1>
+    <div class="cv-drop" id="cv-drop">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4.5M8 8l4-4 4 4"/><path d="M4.5 14.5V18a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-3.5"/></svg>
+      <b>Drop the files here</b>
+      <span>Images, PDF, text and Office documents</span>
+      <button type="button" class="button button--accent" id="cv-pick">Choose files</button>
+      <small>Everything stays on this PC: nothing is sent anywhere.</small>
+    </div>
+    <div id="cv-job" hidden>
+      <div class="cv-head"><h2 class="settings-title">Files</h2><button type="button" class="link" id="cv-add">Add more</button></div>
+      <div class="group" id="cv-files"></div>
+      <p class="help-section cv-note" id="cv-left" hidden></p>
+      <h2 class="settings-title">Convert to</h2>
+      <div class="cv-targets" id="cv-targets" role="radiogroup" aria-label="Convert to"></div>
+      <div class="group" id="cv-options" hidden></div>
+      <div class="cv-run"><button type="button" class="button button--accent" id="cv-run">Convert</button><span class="cv-progress" id="cv-progress" role="status" aria-live="polite"></span><button type="button" class="link" id="cv-cancel" hidden>Cancel</button></div>
+    </div>
+    <div id="cv-results" hidden>
+      <h2 class="settings-title">Done</h2>
+      <div class="group" id="cv-done"></div>
+      <p class="help-section cv-note" id="cv-kept">The results are in the Shelf.</p>
+      <p class="help-section cv-errors" id="cv-errors" hidden></p>
+      <div class="cv-run"><button type="button" class="button" id="cv-again">Convert more files</button></div>
+    </div>
+  </section>
+
   <section class="view view--health only-health" aria-label="Health">
     <h1>Health</h1>
     <h2 class="settings-title">Why is my PC slow?</h2>
@@ -847,6 +879,10 @@
       <details class="tr-row" data-view="shelf">
         <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 13.5V18a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-4.5M3.5 13.5l2-5.5h1.5M20.5 13.5l-2-5.5H17"/><path d="M3.5 13.5h5l1 2h5l1-2h5"/><path d="M12 3.5v8M9 9l3 3 3-3"/></svg><span>Shelf<small>Keeps copies of files and captures</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
         <dl class="tr-body"><dt>Reads</dt><dd>The files you drop or add, and the screen when you take a capture</dd><dt>Changes</dt><dd>Nothing outside its folder: files are copied, never moved, and a capture goes to the clipboard</dd><dt>To undo</dt><dd>Remove, with Undo for 8 seconds, then the Recycle Bin of Windows</dd></dl>
+      </details>
+      <details class="tr-row" data-view="convert">
+        <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h11l-3-3M19 16H8l3 3"/></svg><span>Convert<small>Images, PDF and text, on this PC</small></span></span><svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></summary>
+        <dl class="tr-body"><dt>Reads</dt><dd>Only the files you pick or drop on it</dd><dt>Changes</dt><dd>Nothing in Windows: the results are new files in the Shelf, and the originals are never touched</dd><dt>To undo</dt><dd>Remove the results from the Shelf</dd></dl>
       </details>
       <details class="tr-row" data-view="health">
         <summary class="row action"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19.5s-7.5-4.3-7.5-10A4.2 4.2 0 0 1 12 7a4.2 4.2 0 0 1 7.5 2.5c0 5.7-7.5 10-7.5 10z"/><path d="M7 12.5h2.5l1.5-2.5 2 4 1.5-1.5H17"/></svg><span>Health<small>Turns startup programs on or off when asked</small></span></span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
@@ -1285,6 +1321,7 @@
 <script src="display.js"></script>
 <script src="audio.js"></script>
 <script src="taskbar.js"></script>
+<script src="convert.js"></script>
 <script src="health.js"></script>
 <script src="duplicates.js"></script>
 <script src="home.js"></script>

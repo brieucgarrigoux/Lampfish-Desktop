@@ -812,6 +812,7 @@ namespace Bramble
             if (action.StartsWith("welcome.")) { if (Welcome.Receive(action.Substring(action.IndexOf('.') + 1), m)) SendState(); return; }
             if (action.StartsWith("layout.")) { if (Customize.Receive(action.Substring(action.IndexOf('.') + 1), m)) { Save(); SendState(); } return; }
             if (action.StartsWith("health.")) { Health.Receive(action.Substring(action.IndexOf('.') + 1), m); return; }
+            if (action.StartsWith("convert.")) { Converter.Receive(action.Substring(action.IndexOf('.') + 1), m, files); return; }
             if (action.StartsWith("taskbar.")) { Taskbar.Receive(action.Substring(action.IndexOf('.') + 1), m); return; }
             if (action.StartsWith("duplicates.")) { if (Duplicates.Receive(action.Substring(action.IndexOf('.') + 1), m)) { Save(); SendState(); } return; }
 

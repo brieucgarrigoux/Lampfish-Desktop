@@ -289,6 +289,11 @@ namespace Bramble
             {
                 case "companion.ready": SendData(); return;
                 case "companion.tab": tab = Text(m, "tab"); AudioDevices.Watch("companion", tab == "audio"); SendData(); return;
+                case "companion.convert":
+                    popup.Hide();
+                    Program.OpenView("convert");
+                    if (Program.SettingsWindow != null) Program.SettingsWindow.BeginInvoke((Action)(() => Converter.Receive("pick", m, null)));
+                    return;
                 case "companion.theme": Moods.Step(Convert.ToInt32(m["step"]) < 0 ? -1 : 1); SendData(); return;
                 case "companion.audio":
                 {

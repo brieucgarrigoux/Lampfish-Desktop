@@ -1,7 +1,7 @@
 'use strict';
 
 const Bramble = { state: null, station: null, icons: null, arrange: null, mouse: null, network: null, files: null, hardware: null, tasks: null, moods: null, creator: null };
-const VIEWS = ['home', 'modes', 'wallpaper', 'create', 'icons', 'mouse', 'station', 'display', 'audio', 'taskbar', 'arrange', 'notes', 'shelf', 'health', 'tasks', 'files', 'duplicates', 'hardware', 'network', 'settings'];
+const VIEWS = ['home', 'modes', 'wallpaper', 'create', 'icons', 'mouse', 'station', 'display', 'audio', 'taskbar', 'arrange', 'notes', 'shelf', 'convert', 'health', 'tasks', 'files', 'duplicates', 'hardware', 'network', 'settings'];
 
 const scrolls = {}, narrowLayout = matchMedia('(max-width: 900px)');
 const scrollZones = () => narrowLayout.matches ? [document.scrollingElement] : [document.querySelector('.contents'), document.querySelector('.panel')];
@@ -29,7 +29,7 @@ $('dock-open').addEventListener('click', () => { const view = document.body.data
 addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.dataset.dock && !(e.target.matches && e.target.matches('input:not([type="checkbox"]), select, textarea'))) setDock(null); });
 
 // In a narrow window the side panel would fall far below the page: it opens as a drawer from the Options button instead.
-const OWN_PANEL = ['home', 'settings', 'display', 'audio', 'taskbar', 'shelf', 'health', 'tasks', 'modes'];
+const OWN_PANEL = ['home', 'settings', 'display', 'audio', 'taskbar', 'convert', 'shelf', 'health', 'tasks', 'modes'];
 const setPanel = open => document.body.classList.toggle('panel-open', open);
 $('panel-toggle').addEventListener('click', () => setPanel(true));
 $('panel-close').addEventListener('click', () => setPanel(false));
@@ -62,6 +62,7 @@ function showView(view) {
   if (Bramble.taskbar) Bramble.taskbar.visible(view === 'taskbar');
   if (Bramble.notes) Bramble.notes.visible(view === 'notes');
   if (Bramble.shelf) Bramble.shelf.visible(view === 'shelf');
+  if (Bramble.convert) Bramble.convert.visible(view === 'convert');
   if (Bramble.health) Bramble.health.visible(view === 'health');
   if (Bramble.duplicates) Bramble.duplicates.visible(view === 'duplicates');
   send('audioPreview', { value: view === 'create' });
@@ -124,6 +125,7 @@ webview.addEventListener('message', e => {
   if (m.type && m.type.startsWith('shelf.')) { if (Bramble.shelf) Bramble.shelf.event(m); return; }
   if (m.type && m.type.startsWith('health.')) { if (Bramble.health) Bramble.health.event(m); return; }
   if (m.type && m.type.startsWith('duplicates.')) { if (Bramble.duplicates) Bramble.duplicates.event(m); return; }
+  if (m.type && m.type.startsWith('convert.')) { if (Bramble.convert) Bramble.convert.event(m); return; }
   if (m.type && m.type.startsWith('taskbar.')) { if (Bramble.taskbar) Bramble.taskbar.event(m); return; }
   if (m.type === 'window.closed') { if (Bramble.creator) Bramble.creator.reset(); return; }
   render(m);
@@ -248,7 +250,7 @@ confirmReset($('r-reset'), 'The icons go back to where they were before lampfish
 
 let depth = 0;
 const carriesFiles = e => [...e.dataTransfer.types].includes('Files');
-const DROP_HINTS = { wallpaper: 'Videos, GIFs, images or HTML pages', icons: 'ICO files or images', mouse: 'Cursor files, .cur or .ani', station: 'MP3, AAC, OGG, FLAC or WAV sounds', shelf: 'Any file: a copy goes on the shelf' };
+const DROP_HINTS = { wallpaper: 'Videos, GIFs, images or HTML pages', icons: 'ICO files or images', mouse: 'Cursor files, .cur or .ani', station: 'MP3, AAC, OGG, FLAC or WAV sounds', shelf: 'Any file: a copy goes on the shelf', convert: 'Files to convert: images, PDF, text, Office' };
 addEventListener('dragenter', e => {
   const view = document.body.dataset.view;
   // A card of Shelf on its way out to another app is not a file coming in.
@@ -268,7 +270,7 @@ addEventListener('drop', e => {
   const files = e.dataTransfer.files;
   if (!files.length || (Bramble.shelf && Bramble.shelf.out)) return;
   const view = document.body.dataset.view;
-  const action = { icons: 'icons.drop', mouse: 'mouse.drop', wallpaper: 'drop', shelf: 'shelf.drop' }[view];
+  const action = { icons: 'icons.drop', mouse: 'mouse.drop', wallpaper: 'drop', shelf: 'shelf.drop', convert: 'convert.drop' }[view];
   if (view === 'station' && Bramble.station) Bramble.station.ingest([...files]);
   else if (action) {
     try { webview.postMessageWithAdditionalObjects({ action }, files); }

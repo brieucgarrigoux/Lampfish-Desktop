@@ -16,7 +16,7 @@ body.companion.is-opening { animation: c-open .2s cubic-bezier(.2, .7, .3, 1); }
 .c-icon:hover { background: var(--hover); color: var(--text); }
 .c-icon svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .c-tabs { flex: none; display: flex; gap: 3px; padding: 3px; border-radius: var(--radius-group); background: var(--sunken); }
-.c-tabs button { flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; padding: 0 11px; border: 0; border-radius: var(--radius-control); background: none; color: var(--text-soft); font-size: var(--text-caption); transition: background var(--fast), color var(--fast); }
+.c-tabs button { flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; padding: 0 9px; border: 0; border-radius: var(--radius-control); background: none; color: var(--text-soft); font-size: var(--text-caption); transition: background var(--fast), color var(--fast); }
 .c-tabs button:hover { color: var(--text); background: var(--hover); }
 .c-tabs button span { display: none; }
 .c-tabs button[aria-selected="true"] { flex: 1; background: var(--raised); color: var(--text); font-weight: 600; }
@@ -97,3 +97,9 @@ body.companion.is-opening { animation: c-open .2s cubic-bezier(.2, .7, .3, 1); }
 .c-vol input.is-muted { opacity: .45; }
 .c-vol output { flex: none; min-width: 30px; text-align: right; font: var(--text-value) var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-soft); }
 .c-search { flex: none; max-width: none; }
+.c-convert { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 18px; padding: 26px 18px 20px; border-radius: var(--radius-card); background: var(--group); text-align: center; color: var(--text-soft); }
+.c-convert svg { width: 30px; height: 30px; fill: none; stroke: var(--text-soft); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.c-convert b { font: 600 var(--text-title) var(--display); color: var(--text); }
+.c-convert span { font-size: var(--text-body); line-height: 1.5; }
+.c-convert .button { margin-top: 6px; }
+.c-convert small { font-size: var(--text-caption); color: var(--text-pale); }

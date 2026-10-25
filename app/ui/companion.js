@@ -6,7 +6,7 @@
   const size = n => { let i = 0; while (n >= 1024 && i < UNITS.length - 1) { n /= 1024; i++; } return n.toLocaleString(LOCALE, { maximumFractionDigits: n >= 100 || i === 0 ? 0 : 1 }) + ' ' + tr(UNITS[i]); };
   const GO = {
     dashboard: ['Open Home in lampfish', 'home'], note: ['Open Notes in lampfish', 'notes'], capture: ['Open Shelf in lampfish', 'shelf'],
-    shelf: ['Open Shelf in lampfish', 'shelf'], audio: ['Open Audio in lampfish', 'audio'], notes: ['Open Notes in lampfish', 'notes'],
+    shelf: ['Open Shelf in lampfish', 'shelf'], audio: ['Open Audio in lampfish', 'audio'], notes: ['Open Notes in lampfish', 'notes'], convert: ['Open Convert in lampfish', 'convert'],
   };
 
   function show(name, tell) {
@@ -274,6 +274,7 @@
   $('c-title').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('c-text').focus(); } });
   $('c-find').addEventListener('input', notes);
   $('c-add').addEventListener('click', () => send('companion.shelf', { op: 'add' }));
+  $('c-convert').addEventListener('click', () => send('companion.convert'));
   $('c-go').addEventListener('click', () => { const [, view] = GO[tab]; send(view === 'notes' ? 'companion.openNote' : 'companion.open', view === 'notes' ? { name: '' } : { view }); });
   $('c-open').addEventListener('click', () => send('companion.open', { view: 'home' }));
   $('c-close').addEventListener('click', () => send('companion.close'));

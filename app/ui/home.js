@@ -11,7 +11,7 @@
     mouse: ['Mouse', '<path d="M6 3.5 18 12.3l-5.6.8-3.2 4.9z"/><path d="m12.4 13.1 3.6 6.4"/>'],
     station: ['Sounds', '<path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/>'],
     tasks: ['Tasks', '<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M6.5 13h2.5l1.5-4 3 7 1.5-3h2.5"/>'],
-    modes: ['Themes'], wallpaper: ['Wallpaper'], create: ['Create'], display: ['Display'], audio: ['Audio'], taskbar: ['Taskbar'],
+    modes: ['Themes'], wallpaper: ['Wallpaper'], create: ['Create'], display: ['Display'], audio: ['Audio'], taskbar: ['Taskbar'], convert: ['Convert'],
     notes: ['Notes'], shelf: ['Shelf'], claude: ['Claude usage', '<path d="M4 17a8 8 0 1 1 16 0"/><path d="m12 17 4.5-5"/><path d="M8 20h8"/>'], health: ['Health'], files: ['Storage'], duplicates: ['Duplicates'], hardware: ['Hardware'], network: ['Network'],
   };
   const TILES = ['icons', 'arrange', 'mouse', 'station', 'tasks'];
@@ -148,6 +148,7 @@
     }
     set('duplicates', tr('Find extra copies'), tr('Files of 1 MB or more'));
     set('taskbar', tr('Look and buttons'), tr('Alignment, search, hiding'));
+    set('convert', tr('Images, PDF, text'), tr('On this PC, nothing is sent'));
     const c = e.claude, u = c && c.usage;
     if (!c || !c.on) { set('claude', tr('Off'), tr('Turn it on in Settings, Connections')); visual('claude', ''); }
     else if (c.status === 'ok' && u && u.session) { set('claude', tr('Session {0} %', u.session.percent), claudeText(c), u.session.percent >= 90); visual('claude', bar(u.session.percent)); }

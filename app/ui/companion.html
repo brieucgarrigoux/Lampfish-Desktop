@@ -24,6 +24,7 @@
     <button type="button" role="tab" data-tab="shelf" aria-selected="false" title="Shelf"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 13.5V18a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-4.5M3.5 13.5l2-5.5h1.5M20.5 13.5l-2-5.5H17"/><path d="M3.5 13.5h5l1 2h5l1-2h5"/><path d="M12 3.5v8M9 9l3 3 3-3"/></svg><span>Shelf</span></button>
     <button type="button" role="tab" data-tab="audio" aria-selected="false" title="Audio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3.5l4.5 3.5v-11L7.5 10z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6M18 6.8a7.4 7.4 0 0 1 0 10.4"/></svg><span>Audio</span></button>
     <button type="button" role="tab" data-tab="notes" aria-selected="false" title="Notes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6.5h14M5 12h14M5 17.5h9"/></svg><span>Notes</span></button>
+    <button type="button" role="tab" data-tab="convert" aria-selected="false" title="Convert"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h11l-3-3M19 16H8l3 3"/></svg><span>Convert</span></button>
   </nav>
 
   <section class="c-pane" data-pane="dashboard">
@@ -75,6 +76,16 @@
   <section class="c-pane" data-pane="notes" hidden>
     <div class="search c-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.2-4.2"/></svg><input type="text" id="c-find" placeholder="Search the notes" aria-label="Search the notes" autocomplete="off" spellcheck="false"></div>
     <div class="group c-list" id="c-recent"></div>
+  </section>
+
+  <section class="c-pane" data-pane="convert" hidden>
+    <div class="c-convert">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h11l-3-3M19 16H8l3 3"/></svg>
+      <b>Change the kind of a file</b>
+      <span>Images into another image or a PDF, a PDF into images, merged or cut, text and Office documents into a PDF.</span>
+      <button type="button" class="button button--accent" id="c-convert">Choose files</button>
+      <small>Everything stays on this PC: nothing is sent anywhere.</small>
+    </div>
   </section>
 
   <footer class="c-foot"><button type="button" class="link" id="c-go"></button></footer>

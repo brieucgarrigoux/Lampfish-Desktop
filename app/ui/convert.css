@@ -1,0 +1,34 @@
+.view--convert { max-width: 780px; }
+.cv-drop { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 36px 20px 26px; border-radius: var(--radius-card); border: 1.5px dashed var(--hairline-strong); text-align: center; color: var(--text-soft); transition: background var(--fast), border-color var(--fast); }
+.cv-drop[hidden] { display: none; }
+.cv-drop svg { width: 34px; height: 34px; fill: none; stroke: var(--text-soft); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.cv-drop b { font: 600 var(--text-title) var(--display); color: var(--text); }
+.cv-drop .button { margin-top: 8px; }
+.cv-drop small { color: var(--text-pale); font-size: var(--text-caption); }
+.cv-head { display: flex; align-items: baseline; justify-content: space-between; }
+.cv-head .settings-title { margin-bottom: 0; }
+.cv-file .caption small, .cv-file .cv-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cv-file.is-left { opacity: .45; }
+.cv-tools { flex: none; display: flex; align-items: center; gap: 2px; }
+.cv-tool { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: var(--radius-small); background: none; color: var(--text-soft); transition: background var(--fast), color var(--fast); }
+.cv-tool:hover:not(:disabled) { background: var(--hover); color: var(--text); }
+.cv-tool:disabled { opacity: .3; cursor: default; }
+.cv-tool svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.cv-note { margin: 8px 2px 0; }
+.cv-targets { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-bottom: 14px; }
+.cv-target { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0; padding: 11px 13px; border: 0; border-radius: var(--radius-group); background: var(--group); color: var(--text); text-align: left; box-shadow: inset 0 0 0 1px transparent; transition: background var(--fast), box-shadow var(--fast); }
+.cv-target b { font: 600 var(--text-body) var(--display); }
+.cv-target small { font-size: var(--text-caption); color: var(--text-pale); line-height: 1.35; }
+.cv-target:hover:not(:disabled) { background: var(--group-up); }
+.cv-target[aria-checked="true"] { background: var(--accent-tint); box-shadow: inset 0 0 0 1.5px var(--accent); }
+.cv-target:disabled { opacity: .5; cursor: default; }
+.cv-pages { flex: none; width: 150px; height: 32px; padding: 0 10px; border: 0; border-radius: var(--radius-control); background: var(--sunken); color: var(--text); font: inherit; font-size: var(--text-body); outline: none; user-select: text; }
+.cv-pages:focus { box-shadow: inset 0 0 0 1px var(--accent); }
+.cv-range { flex: none; display: flex; align-items: center; gap: 8px; width: 200px; }
+.cv-range input { flex: 1; min-width: 0; }
+.cv-range output { flex: none; min-width: 28px; text-align: right; font: var(--text-value) var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-soft); }
+.cv-run { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+.cv-progress { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--text-caption); color: var(--text-soft); }
+.cv-tools .link { font-size: var(--text-caption); padding: 4px 6px; }
+.cv-errors { display: flex; flex-direction: column; gap: 3px; color: var(--warn); }
+.cv-errors[hidden], .cv-note[hidden] { display: none; }

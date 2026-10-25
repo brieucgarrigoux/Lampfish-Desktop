@@ -7,6 +7,7 @@
   const ACTIONS = [
     ['copy', 'Copy', '<rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5"/>'],
     ['annotate', 'Annotate', '<path d="m14.5 4.5 5 5L10 19H5v-5z"/><path d="m12.5 6.5 5 5"/>'],
+    ['convert', 'Convert', '<path d="M5 8h11l-3-3M19 16H8l3 3"/>'],
     ['reveal', 'Show in File Explorer', '<path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/>'],
     ['remove', 'Remove', '<path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/>'],
   ];
@@ -58,7 +59,7 @@
         if (action === 'remove') {
           const done = () => send('shelf.remove', { name: item.name });
           if (calm.matches) done(); else c.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'scale(.94)' }], { duration: 160, easing: 'ease-in', fill: 'forwards' }).onfinish = done;
-        } else send(action === 'annotate' ? 'capture.annotate' : 'shelf.' + action, { name: item.name });
+        } else send(action === 'annotate' ? 'capture.annotate' : action === 'convert' ? 'convert.shelf' : 'shelf.' + action, { name: item.name });
       });
       c.querySelector('.s-actions').append(b);
     }
