@@ -176,7 +176,7 @@ namespace Lampfish
                 originY = origin.Y;
                 stepX = c.Width;
                 stepY = c.Height;
-                Columns = Math.Max(1, (zone.Right - origin.X) / c.Width);
+                Columns = Math.Max(1, (zone.Right - origin.X + (c.Width - icon) / 2) / c.Width);
                 Rows = Math.Max(1, (zone.Bottom - origin.Y) / c.Height);
             }
 
@@ -525,7 +525,7 @@ namespace Lampfish
             return a.All(p => map.TryGetValue(p.Id, out q) && Math.Abs(p.X - q.X) <= 2 && Math.Abs(p.Y - q.Y) <= 2);
         }
 
-        class Resize { public List<IconPosition> Before; public Size Cell; public bool Arranged; }
+        class Resize { public List<IconPosition> Before; public Size Cell; public bool Arranged; public Dictionary<string, Grid> Seats; }
         static Resize pending;
         static bool resizing;
         static Timer resizeTimer;
@@ -537,6 +537,7 @@ namespace Lampfish
             {
                 var before = Capture();
                 pending = new Resize { Before = before, Cell = DesktopIcons.Case(), Arranged = Same(before, R.Placed) };
+                if (DesktopGrid.On) pending.Seats = NativeGrids(pending.Cell, DesktopIcons.IconSize(), before);
             }
             DesktopIcons.SetIconSize(size);
             Program.Send(Map(false));
@@ -555,7 +556,8 @@ namespace Lampfish
                 if (now.Width <= 0 || r.Cell.Width <= 0) return;
                 Remember(r.Before);
                 resizing = true;
-                if (r.Arranged) Sort(R.LastSort);
+                if (r.Seats != null && DesktopGrid.On) Reseat(r, now);
+                else if (r.Arranged) Sort(R.LastSort);
                 else if (now == r.Cell) Place(r.Before.ToDictionary(p => p.Id, p => new Point(p.X, p.Y)), false);
                 else
                 {
@@ -568,6 +570,26 @@ namespace Lampfish
             }
             catch (Exception ex) { Program.Log(ex); }
             finally { resizing = false; }
+        }
+
+        // With the grid on, each icon keeps its cell on the grid Windows now snaps to, read from where it just seated the icons, and the grid stays on.
+        static void Reseat(Resize r, Size now)
+        {
+            var grids = NativeGrids(now, DesktopIcons.IconSize(), Capture());
+            var positions = new Dictionary<string, Point>();
+            foreach (var p in r.Before.OrderBy(x => x.X).ThenBy(x => x.Y))
+            {
+                var at = new Point(p.X, p.Y);
+                var screen = Screen.AllScreens.FirstOrDefault(x => x.Bounds.Contains(at)) ?? Screen.PrimaryScreen;
+                var g = grids[screen.DeviceName];
+                var was = r.Seats[screen.DeviceName].Cell(at);
+                var cell = Free(g, new Point(Math.Min(g.Columns - 1, was.X), Math.Min(g.Rows - 1, was.Y)));
+                g.Taken.Add(cell);
+                positions[p.Id] = g.Pixel(cell);
+            }
+            Place(positions, false, true);
+            DesktopGrid.Resume();
+            if (r.Arranged) R.Placed = Capture();
         }
 
         // Each icon keeps its cell number in the new grid; one that no longer fits, or lands on another, takes the nearest free cell.
@@ -614,7 +636,7 @@ namespace Lampfish
             }
             Place(positions, true, grid);
             R.Placed = Capture();
-            if (grid) DesktopGrid.Resume();
+            DesktopGrid.Resume();
         }
 
         public static List<IconPosition> Snapshot() { return Capture(); }
@@ -752,7 +774,11 @@ namespace Lampfish
             if (remember && !resizing) Remember();
             uint flags = DesktopIcons.Flags();
             if ((flags & DesktopIcons.FWF_AUTOARRANGE) != 0) DesktopIcons.Flag(DesktopIcons.FWF_AUTOARRANGE, false);
-            if ((flags & DesktopIcons.FWF_SNAPTOGRID) != 0) { DesktopIcons.Flag(DesktopIcons.FWF_SNAPTOGRID, false); DesktopGrid.Lifted(!keepGrid); }
+            if ((flags & DesktopIcons.FWF_SNAPTOGRID) != 0)
+            {
+                DesktopIcons.Flag(DesktopIcons.FWF_SNAPTOGRID, false);
+                if (!keepGrid) DesktopGrid.Lifted();
+            }
             DesktopIcons.Place(Visible(positions));
         }
 
@@ -948,7 +974,8 @@ namespace Lampfish
                 {
                     case "map": Program.Send(Map(m.ContainsKey("full") && Convert.ToBoolean(m["full"]))); return false;
                     case "move":
-                        Place(new Dictionary<string, Point> { { Text(m, "id"), new Point(Convert.ToInt32(m["x"]), Convert.ToInt32(m["y"])) } });
+                        Place(new Dictionary<string, Point> { { Text(m, "id"), new Point(Convert.ToInt32(m["x"]), Convert.ToInt32(m["y"])) } }, true, DesktopGrid.On);
+                        DesktopGrid.Resume();
                         Program.Send(Map(false));
                         return true;
                     case "sort":

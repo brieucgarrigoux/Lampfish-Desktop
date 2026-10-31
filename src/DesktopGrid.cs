@@ -106,29 +106,23 @@ namespace Lampfish
             }
         }
 
-        // Straighten placed the icons on the cells of the grid itself: the snapping comes back without a move to remember.
+        // Icons placed on the cells of the grid itself, while it stays on: the snapping lifted for the move comes back, and the cells follow a new size.
         public static void Resume()
         {
-            if (S.On) return;
-            S.On = true;
-            S.SnapBefore = snapBeforeLifted;
+            if (!S.On) return;
             Snap(true);
-            Save();
-            Apply();
-            Program.SendState();
+            Refresh();
         }
 
         // An arrangement lifted the snapping to place the icons, or Windows would pull them back onto its cells: the grid is off until it is asked for again, and it says so.
-        static bool? snapBeforeLifted;
-        public static void Lifted(bool announce)
+        public static void Lifted()
         {
             if (!S.On) return;
-            snapBeforeLifted = S.SnapBefore;
             S.On = false;
             S.SnapBefore = null;
             Save();
             Apply();
-            if (announce) Program.Announce("The grid is off: this arrangement places the icons itself");
+            Program.Announce("The grid is off: this arrangement places the icons itself");
             Program.SendState();
         }
 

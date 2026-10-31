@@ -16,6 +16,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Fixed
 
+- Magnetic grid: changing the size of the icons, or moving one in the plan of Arrange, no longer turns the grid off. Each icon keeps its cell and the cells follow the new size.
+- Magnetic grid: the last column of the desktop has its cells, and Straighten no longer moves the icons out of it.
 - Magnetic grid: a click on the desktop no longer stops lampfish for half a second.
 - Magnetic grid: the cells are drawn in the wallpaper, behind the icons. They show as long as the grid is on and only on the desktop, and a click or a change of window no longer makes them flash. The old layer over the screen looked like a full screen app to Windows and hid itself in a loop, with the button of the assistant.
 - Assistant: the window no longer slides over its button when it opens and closes, and the loading arc only shows for a real wait.
