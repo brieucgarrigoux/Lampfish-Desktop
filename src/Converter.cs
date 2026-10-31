@@ -590,7 +590,8 @@ namespace Lampfish
                     try { show.SaveAs(path, 32); } finally { show.Close(); }
                 }
             }
-            finally { try { app.Quit(); } catch { } }
+            // PowerPoint runs once per user: what it still has open belongs to the user.
+            finally { try { if (progId != "PowerPoint.Application" || app.Presentations.Count == 0) app.Quit(); } catch { } }
             if (!File.Exists(path)) throw new InvalidOperationException(Language.T("Office could not make the PDF"));
             return path;
         }
