@@ -67,6 +67,15 @@ namespace Lampfish
             return v == null ? null : v.Name;
         }
 
+        public static object Link()
+        {
+            var n = Active();
+            if (n == null) return new { connected = false, wifi = false, signal = -1, network = (string)null };
+            bool wireless = n.NetworkInterfaceType == NetworkInterfaceType.Wireless80211;
+            var w = wireless ? ReadWifi() : new Wifi();
+            return new { connected = true, wifi = wireless, signal = w.Signal, network = w.Network };
+        }
+
         public static object Infos()
         {
             var n = Active();

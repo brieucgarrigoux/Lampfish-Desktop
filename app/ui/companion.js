@@ -66,8 +66,36 @@
 
   const level = (v, warn, bad) => v >= bad ? 'low' : v >= warn ? 'medium' : 'high';
 
+  // Battery and Wi-Fi keep the instruments of Hardware. They stay in the page between two readings, so a bar never flickers.
+  const meters = {};
+  function meter(key, drawing) {
+    if (meters[key]) return meters[key];
+    const box = el('div', 'c-meter');
+    box.innerHTML = `<span class="c-meter__drawing">${drawing}</span><b></b><span class="c-meter__label"></span>`;
+    $('c-meters').append(box);
+    return meters[key] = { box, drawing: box.firstChild.firstChild, value: box.children[1], label: box.children[2] };
+  }
+  function renderMeters(d) {
+    const b = d.battery, n = d.link;
+    if (b) {
+      const k = meter('battery', batteryRelief());
+      k.value.textContent = b.charge + ' %';
+      k.label.textContent = tr(b.mains ? 'Plugged in' : 'Battery');
+      k.box.classList.toggle('alert', b.charge <= 15 && !b.mains);
+      setBattery(k.drawing, b);
+    }
+    if (n) {
+      const k = meter('network', wifiRelief()), signal = n.wifi && n.signal >= 0 ? n.signal : n.connected ? 100 : 0;
+      k.value.textContent = !n.connected ? tr('Offline') : n.wifi ? signal + ' %' : tr('Cable');
+      k.label.textContent = tr(n.wifi ? 'Wi-Fi' : 'Network');
+      k.box.classList.toggle('alert', !n.connected);
+      setWifi(k.drawing, signal, n.connected);
+    }
+  }
+
   function dashboard() {
     const d = data;
+    renderMeters(d);
     const free = d.disk ? size(d.disk.free) : '';
     const worst = Math.max(d.processor >= 95 ? 2 : d.processor >= 80 ? 1 : 0, d.memory >= 85 ? 2 : d.memory >= 75 ? 1 : 0, d.disk && d.disk.free / d.disk.total < .08 ? 2 : d.disk && d.disk.free / d.disk.total < .15 ? 1 : 0);
     const verdict = $('c-verdict');
@@ -146,13 +174,27 @@
     if (!q) return;
     if (document.activeElement && document.activeElement.type === 'range') return;
     const d = q.display || {}, p = q.power || {}, a = q.audio || {};
+    const look = el('div', 'row c-look');
+    look.innerHTML = `<span class="caption">${glyph('theme')}<span></span></span><div class="segments" role="radiogroup"></div>`;
+    look.querySelector('.caption > span').append(tr('Appearance'), el('small', '', tr('The windows of lampfish, this one too')));
+    look.querySelector('.segments').setAttribute('aria-label', tr('Appearance'));
+    for (const [value, label] of [['dark', 'Dark'], ['light', 'Day'], ['auto', 'Like Windows']]) {
+      const b = el('button');
+      b.type = 'button';
+      b.setAttribute('role', 'radio');
+      b.setAttribute('aria-checked', String(q.skin === value));
+      b.textContent = tr(label);
+      b.addEventListener('click', () => act('skin', { value }));
+      look.querySelector('.segments').append(b);
+    }
+    $('c-q-app').replaceChildren(look);
     $('c-q-wall').replaceChildren(
       toggle('battery', 'Pause on battery', 'Freezes when unplugged', q.PauseOnBattery, value => act('pauseOnBattery', { value })),
       toggle('full', 'Pause in full screen', 'When a window fills the screen', q.PauseAuto, value => act('pauseAuto', { value })),
       toggle('pulse', 'React to sound', 'Pulses with what you play', q.Reactive, value => act('reactive', { value })),
       toggle('shuffle', 'Shuffle', 'For the slideshow, not for Next', q.Shuffle, value => act('shuffle', { value })));
     const win = [];
-    if (d.dark != null) win.push(toggle('theme', 'Dark mode', 'Windows and the apps that follow it', d.dark, on => act('display.dark', { on })));
+    if (d.dark != null) win.push(toggle('theme', 'Windows dark mode', 'Windows and the apps that follow it', d.dark, on => act('display.dark', { on })));
     win.push(toggle('sun', 'Warm screen', 'Warmer colors at night', d.warmOn, on => act('display.warm', { on, strength: d.warm || 50, live: false })));
     if (p.battery) win.push(toggle('leaf', 'Energy saver', 'Always on while on battery', p.saver, value => act('power.saver', { value })));
     win.push(toggle('power', 'Start with Windows', 'lampfish opens by itself', q.startup, () => act('startup')));

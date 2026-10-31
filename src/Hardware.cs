@@ -428,8 +428,6 @@ namespace Lampfish
                 if (t.Count > 0) temperature = Math.Round(t.Max() - 273.15, 1);
             }
 
-            var power = SystemInformation.PowerStatus;
-            bool battery = power.BatteryChargeStatus != BatteryChargeStatus.NoSystemBattery && power.BatteryChargeStatus != BatteryChargeStatus.Unknown;
 
             return new
             {
@@ -445,13 +443,20 @@ namespace Lampfish
                 graphics = new { usage = Math.Round(Math.Min(100, gpuUtil), 1), memory = gpuBytes },
                 disks = byDisk,
                 networks = byNetwork,
-                battery = battery ? new
-                {
-                    charge = (int)Math.Round(power.BatteryLifePercent * 100),
-                    mains = power.PowerLineStatus == PowerLineStatus.Online,
-                    remaining = power.BatteryLifeRemaining,
-                } : null,
+                battery = Battery(),
                 temperature = temperature,
+            };
+        }
+
+        public static object Battery()
+        {
+            var power = SystemInformation.PowerStatus;
+            if (power.BatteryChargeStatus == BatteryChargeStatus.NoSystemBattery || power.BatteryChargeStatus == BatteryChargeStatus.Unknown) return null;
+            return new
+            {
+                charge = (int)Math.Round(power.BatteryLifePercent * 100),
+                mains = power.PowerLineStatus == PowerLineStatus.Online,
+                remaining = power.BatteryLifeRemaining,
             };
         }
 

@@ -67,6 +67,23 @@ body.companion:not(.is-ready) { visibility: hidden; }
 .c-dials .dial { min-width: 0; }
 .c-dials .dial__label { font-size: var(--text-badge); }
 .c-dials .dial__sub { font-size: var(--text-micro); }
+.c-dials--pc { flex-direction: row; justify-content: stretch; align-items: flex-start; }
+.c-dials--pc .dials { flex: 2 1 0; min-width: 0; }
+.c-meters { flex: 2 1 0; min-width: 0; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 6px; }
+.c-meters:empty { display: none; }
+.c-meter { display: flex; flex-direction: column; align-items: center; min-width: 0; }
+.c-meter__drawing { display: grid; place-items: center; width: 100%; height: 60px; margin-bottom: 6px; }
+.c-meter .wifi-relief { width: 100%; max-width: 68px; height: auto; }
+.c-meter .cell-relief { margin: 0; padding: 0; align-self: center; }
+.c-meter .cell-relief__segments { gap: 2px; padding: 3px; }
+.c-meter .cell-relief__segments i { width: 3px; height: 18px; border-radius: 1px; }
+.c-meter .cell-relief__tip { width: 3px; height: 9px; }
+.c-meter b { font: 600 var(--text-body) var(--numbers); font-variant-numeric: tabular-nums; }
+.c-meter.alert b { color: var(--danger); }
+.c-meter__label { max-width: 100%; font-size: var(--text-badge); color: var(--text-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.c-look { flex-direction: column; align-items: stretch; gap: 8px; }
+.c-look .segments { display: flex; }
+.c-look .segments button { flex: 1; }
 .c-theme { display: inline-flex; align-items: center; gap: 4px; }
 .c-theme__name { min-width: 0; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .c-step, .c-tool { display: grid; place-items: center; width: 26px; height: 26px; padding: 0; border: 0; border-radius: var(--radius-small); background: none; color: var(--text-soft); transition: background var(--fast), color var(--fast); }

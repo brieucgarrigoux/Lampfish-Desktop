@@ -34,11 +34,13 @@
 
   <section class="c-pane" data-pane="dashboard">
     <p class="c-verdict"><span class="state" id="c-verdict"></span></p>
-    <div class="security security--high c-dials"><div class="dials dials--small" id="c-dials"></div></div>
+    <div class="security security--high c-dials c-dials--pc"><div class="dials dials--small" id="c-dials"></div><div class="c-meters" id="c-meters"></div></div>
     <div class="group" id="c-lines"></div>
   </section>
 
   <section class="c-pane" data-pane="quick" hidden>
+    <div class="c-subhead"><span>lampfish</span></div>
+    <div class="group" id="c-q-app"></div>
     <div class="c-subhead"><span>Wallpaper</span></div>
     <div class="group" id="c-q-wall"></div>
     <div class="c-subhead"><span>Windows</span></div>
@@ -134,6 +136,7 @@
 <script src="phosphor-data.js"></script>
 <script src="phosphor.js"></script>
 <script src="dials.js"></script>
+<script src="instruments.js"></script>
 <script src="companion.js"></script>
 </body>
 </html>

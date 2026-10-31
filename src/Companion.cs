@@ -48,7 +48,7 @@ namespace Lampfish
         // What the assistant may do on its own: the settings it shows, nothing else from the main window.
         static readonly HashSet<string> Shared = new HashSet<string>
         {
-            "pauseOnBattery", "pauseAuto", "reactive", "shuffle", "startup", "display.dark", "display.warm", "power.saver", "audio.mute", "audio.mic", "audio.volume",
+            "skin", "pauseOnBattery", "pauseAuto", "reactive", "shuffle", "startup", "display.dark", "display.warm", "power.saver", "audio.mute", "audio.mic", "audio.volume",
             "station.active", "arrange.arrangement", "arrange.undo", "arrange.original", "arrange.iconSize", "taskbar.set",
         };
         static DateTime shownAt;
@@ -243,6 +243,7 @@ namespace Lampfish
             if (opening) return;
             opening = true;
             idle.Stop();
+            ReadLink();
             if (dot != null) { dot.Opening(true); dot.Ripple(); }
             try
             {
@@ -295,7 +296,8 @@ namespace Lampfish
             var started = DateTime.Now;
             // A press that is still held keeps its mouse: the window takes the focus after.
             if (dot == null || !dot.Held) popup.Activate();
-            if (dot != null) { dot.Opening(false); dot.Lit(true); }
+            // The window slides out from behind the button: over it, it would cover the button with a pale rectangle for the length of the slide.
+            if (dot != null) { dot.Raise(); dot.Opening(false); dot.Lit(true); }
             var timer = new Timer { Interval = 12 };
             timer.Tick += (s, e) =>
             {
@@ -313,6 +315,7 @@ namespace Lampfish
         {
             if (popup == null || popup.IsDisposed || !popup.Visible || closing) return;
             closing = true;
+            if (dot != null) dot.Raise();
             int start = popup.Left, back = slide;
             var started = DateTime.Now;
             var timer = new Timer { Interval = 12 };
@@ -350,9 +353,28 @@ namespace Lampfish
             popup.Left += slide;
         }
 
+        // Reading the Wi-Fi can take a moment: it runs aside, at most every 10 seconds, and the last reading is shown meanwhile.
+        static object link;
+        static bool linkBusy;
+        static DateTime linkAt;
+        static void ReadLink()
+        {
+            if (linkBusy || (DateTime.Now - linkAt).TotalSeconds < 10) return;
+            linkBusy = true;
+            linkAt = DateTime.Now;
+            System.Threading.Tasks.Task.Run(() => Network.Link()).ContinueWith(t => Program.OnInterface(() =>
+            {
+                linkBusy = false;
+                if (t.IsFaulted) { Program.Log(t.Exception); return; }
+                link = t.Result;
+                SendData();
+            }));
+        }
+
         static void SendData(bool open = false)
         {
             if (popup == null) return;
+            ReadLink();
             if (cpu == null) try { cpu = new PerformanceCounter("Processor Information", "% Processor Utility", "_Total"); cpu.NextValue(); } catch (Exception ex) { Program.Log(ex); }
             float processor = 0;
             try { if (cpu != null) processor = Math.Min(100, cpu.NextValue()); } catch { }
@@ -362,7 +384,7 @@ namespace Lampfish
             popup.Send(new
             {
                 type = "companion.data", tab, open, language = Language.Code,
-                processor = Math.Round(processor), memory = Math.Round(memory), busiest = Health.Busiest,
+                processor = Math.Round(processor), memory = Math.Round(memory), battery = Hardware.Battery(), link, busiest = Health.Busiest,
                 theme = theme == null ? null : theme.Name, output = AudioDevices.NameOf(AudioDevices.DefaultOutput()), disk = Disk(), origin = open ? Origin() : null,
                 claude = ClaudeUsage.State(), desktop = DesktopState(), quick = tab == "quick" ? QuickState() : null, hiddenTabs = S.HiddenTabs, tabOrder = S.TabOrder, notes = Notes.Items().Take(40).ToArray(), shelf = Shelf.Items().Take(8).ToArray(),
             });
@@ -380,7 +402,7 @@ namespace Lampfish
             var r = Program.R;
             return new
             {
-                r.PauseOnBattery, r.PauseAuto, r.Reactive, r.Shuffle, startup = Program.StartupEnabled(), display = Display.State(), power = Power.State(), audio = AudioMeter.Endpoints(),
+                skin = r.Skin, r.PauseOnBattery, r.PauseAuto, r.Reactive, r.Shuffle, startup = Program.StartupEnabled(), display = Display.State(), power = Power.State(), audio = AudioMeter.Endpoints(),
                 sounds = r.Dock.Active && !r.Dock.Silence,
             };
         }
@@ -502,7 +524,7 @@ namespace Lampfish
             const int Diameter = 64, Pad = 10;
             readonly Timer glide = new Timer { Interval = 15 }, anim = new Timer { Interval = 16 };
             Point glideFrom, glideTo;
-            DateTime glideAt, last, rippleAt = DateTime.MinValue;
+            DateTime glideAt, last, busyAt, rippleAt = DateTime.MinValue;
             double scale = 1, velocity, halo, haloTo, spin;
 
             static double Scale(Point at) { return Arrange.Scale(Screen.FromPoint(at)); }
@@ -557,8 +579,8 @@ namespace Lampfish
             }
 
             void Kick() { if (!anim.Enabled) { last = DateTime.Now; anim.Start(); } }
-            public void Ripple() { rippleAt = DateTime.Now; Kick(); }
-            public void Opening(bool on) { busy = on; Kick(); }
+            public void Ripple() { if ((DateTime.Now - rippleAt).TotalMilliseconds > 200) rippleAt = DateTime.Now; Kick(); }
+            public void Opening(bool on) { if (on && !busy) busyAt = DateTime.Now; busy = on; Kick(); }
             public void Lit(bool on) { haloTo = on ? 1 : 0; Kick(); }
 
             // From where it was let go to where it settles, in a short ease instead of a jump.
@@ -585,7 +607,9 @@ namespace Lampfish
                 int side = Width;
                 if (side < 16) return;
                 float k = side / (float)(Diameter + 2 * Pad), pad = Pad * k, dia = Diameter * k, centre = side / 2f, r = dia / 2f * (float)scale;
-                bool bright = hover || halo > .5 || busy, day = Appearance.Light;
+                // The arc is for a real wait: a window that opens at once never shows it for a single frame.
+                bool waiting = busy && (DateTime.Now - busyAt).TotalMilliseconds > 250;
+                bool bright = hover || halo > .5 || waiting, day = Appearance.Light;
                 var mark = day && logoBlack != null ? logoBlack : logo;
                 using (var bmp = new Bitmap(side, side, PixelFormat.Format32bppArgb))
                 {
@@ -608,7 +632,7 @@ namespace Lampfish
                         using (var body = new LinearGradientBrush(disc, day ? Color.FromArgb(0xcf, 0xd6, 0xd7) : Color.FromArgb(0x19, 0x1e, 0x1f), day ? Color.FromArgb(0xb4, 0xbc, 0xbe) : Color.FromArgb(0x0b, 0x0f, 0x10), 90f)) g.FillEllipse(body, disc);
                         var tone = day ? Color.FromArgb(0x0b, 0x85, 0x79) : accent;
                         using (var ring = new Pen(bright ? tone : Color.FromArgb(day ? 150 : 110, tone), Math.Max(1.5f, dia / 34f))) g.DrawEllipse(ring, disc);
-                        if (busy)
+                        if (waiting)
                             using (var arc = new Pen(accent, Math.Max(2f, 2.6f * k)) { StartCap = LineCap.Round, EndCap = LineCap.Round })
                             { float ra = r + 4.5f * k; g.DrawArc(arc, centre - ra, centre - ra, ra * 2, ra * 2, (float)spin, 100f); }
                         if (mark != null) { float w = dia * .66f * (float)scale, h = w * mark.Height / mark.Width; g.DrawImage(mark, centre - w / 2, centre - h / 2, w, h); }
@@ -683,7 +707,9 @@ namespace Lampfish
                 Capture = false;
                 Kick();
                 if (e.Button == MouseButtons.Right) { Program.OpenSettings(); return; }
-                if (e.Button != MouseButtons.Left || !was) return;
+                // The press that closes the window only reaches the window, so this click answers with a dip and the ripple of any other click.
+                if (e.Button == MouseButtons.Left && !was) { velocity = -3; Ripple(); return; }
+                if (e.Button != MouseButtons.Left) return;
                 if (moving) { moving = false; Moved(Location); return; }
                 Ripple();
                 if (opening) return;
