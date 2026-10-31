@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Bramble</title>
+<title>Lampfish</title>
 <style>
-  html, body { margin: 0; height: 100%; overflow: hidden; background: #05030d; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #040D0F; }
   canvas { display: block; width: 100%; height: 100%; }
 </style>
 </head>
@@ -21,17 +21,17 @@
   window.__audio = l => { audioTarget = Number(l); };
   addEventListener('message', e => {
     const m = e.data || {};
-    if (m.bramble === 'adjust') window.__adjust(m.light, m.speed);
-    if (m.bramble === 'freeze') frozen = m.value;
-    if (m.bramble === 'audio') window.__audio(m.level);
+    if (m.lampfish === 'adjust') window.__adjust(m.light, m.speed);
+    if (m.lampfish === 'freeze') frozen = m.value;
+    if (m.lampfish === 'audio') window.__audio(m.level);
   });
-  if (parent !== window) parent.postMessage({ bramble: 'ready' }, '*');
+  if (parent !== window) parent.postMessage({ lampfish: 'ready' }, '*');
 
   const canvas = document.querySelector('canvas');
   const ctx = canvas.getContext('2d');
-  const TINTS = [['#a47bf0', '#4a1d8f', '#12052b'], ['#8f7cf2', '#3a2299', '#0d0430'], ['#b36ee0', '#4d1a80', '#14042b']];
+  const TINTS = [['#2ED9C6', '#0F7D74', '#08171A'], ['#1EBBAA', '#0B5F63', '#06141A'], ['#5FE3C8', '#128A7C', '#08191A']];
   const LEVELS = 6;
-  const HAZE = [[.28, .3, .55, [124, 72, 230], .2, .07, 0], [.72, .68, .6, [70, 52, 210], .17, .05, 2], [.5, .9, .5, [180, 70, 200], .11, .09, 4]];
+  const HAZE = [[.28, .3, .55, [30, 187, 170], .2, .07, 0], [.72, .68, .6, [15, 120, 140], .17, .05, 2], [.5, .9, .5, [46, 217, 198], .11, .09, 4]];
   let w, h, grains, dust, sprites, backdrop, vignette;
 
   function sprite(tint, blur) {
@@ -44,9 +44,9 @@
     body.addColorStop(0, tint[0]); body.addColorStop(.6, tint[1]); body.addColorStop(1, tint[2]);
     g.fillStyle = body; g.beginPath(); g.arc(cx, cx, r, 0, Math.PI * 2); g.fill();
     const caustic = g.createRadialGradient(cx + r * .35, cx + r * .45, 0, cx + r * .35, cx + r * .45, r * .55);
-    caustic.addColorStop(0, 'rgba(196, 150, 255, .6)'); caustic.addColorStop(1, 'rgba(196, 150, 255, 0)');
+    caustic.addColorStop(0, 'rgba(150, 245, 230, .6)'); caustic.addColorStop(1, 'rgba(150, 245, 230, 0)');
     g.fillStyle = caustic; g.beginPath(); g.arc(cx, cx, r, 0, Math.PI * 2); g.fill();
-    g.strokeStyle = 'rgba(214, 190, 255, .35)'; g.lineWidth = r * .04;
+    g.strokeStyle = 'rgba(190, 250, 240, .35)'; g.lineWidth = r * .04;
     g.beginPath(); g.arc(cx, cx, r * .96, 0, Math.PI * 2); g.stroke();
     g.fillStyle = 'rgba(255, 255, 255, .85)';
     g.beginPath(); g.ellipse(cx - r * .38, cx - r * .42, r * .2, r * .13, -.6, 0, Math.PI * 2); g.fill();
@@ -58,13 +58,13 @@
     backdrop.width = w; backdrop.height = h;
     const b = backdrop.getContext('2d');
     const base = b.createLinearGradient(0, 0, w * .4, h);
-    base.addColorStop(0, '#190b33'); base.addColorStop(.55, '#0a0518'); base.addColorStop(1, '#03020a');
+    base.addColorStop(0, '#0A2A2C'); base.addColorStop(.55, '#061416'); base.addColorStop(1, '#030A0B');
     b.fillStyle = base; b.fillRect(0, 0, w, h);
     vignette = document.createElement('canvas');
     vignette.width = w; vignette.height = h;
     const v = vignette.getContext('2d');
     const edge = v.createRadialGradient(w / 2, h / 2, Math.min(w, h) * .35, w / 2, h / 2, Math.hypot(w, h) * .55);
-    edge.addColorStop(0, 'rgba(2, 1, 8, 0)'); edge.addColorStop(1, 'rgba(2, 1, 8, .7)');
+    edge.addColorStop(0, 'rgba(1, 6, 7, 0)'); edge.addColorStop(1, 'rgba(1, 6, 7, .7)');
     v.fillStyle = edge; v.fillRect(0, 0, w, h);
   }
 

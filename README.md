@@ -1,6 +1,6 @@
-<p align="center"><img src="brand/logo/logo-bramble.png" alt="Bramble" width="128"></p>
+<p align="center"><img src="brand/logo/logo-lampfish.png" alt="lampfish" width="128"></p>
 
-<h1 align="center">Bramble Desktop</h1>
+<h1 align="center">lampfish</h1>
 
 <p align="center">Customize and monitor your Windows PC from a single app.</p>
 
@@ -11,7 +11,7 @@
   <a href="CHANGELOG.md">Changelog</a>
 </p>
 
-Bramble lives in the system tray and brings together wallpapers, icons, cursors, sounds, desktop layout, the health of the PC, disk usage, network, hardware and running programs. It needs no administrator rights, no account and no server, and it collects no data: everything stays on the PC. Settings list the few outside services it calls (weather, connection test, update check) and when. A companion, if you turn it on, sits as a round button wherever you put it on the screen: a click opens a small window to write a note, take a capture (also Ctrl Alt S) or glance at the PC, and Ctrl Alt N writes a note from any app. In Settings, Connections, Claude usage shows how much of a Claude plan is used, read with the sign-in of Claude Code on the PC; it is off until you turn it on. On the very first start, a short welcome shows what it does and asks four questions, all of them skippable.
+lampfish lives in the system tray and brings together wallpapers, icons, cursors, sounds, desktop layout, the health of the PC, disk usage, network, hardware and running programs. It needs no administrator rights, no account and no server, and it collects no data: everything stays on the PC. Settings list the few outside services it calls (weather, connection test, update check) and when. A companion, if you turn it on, sits as a round button wherever you put it on the screen: a click opens a small window to write a note, take a capture (also Ctrl Alt S) or glance at the PC, and Ctrl Alt N writes a note from any app. In Settings, Connections, Claude usage shows how much of a Claude plan is used, read with the sign-in of Claude Code on the PC; it is off until you turn it on. On the very first start, a short welcome shows what it does and asks four questions, all of them skippable.
 
 ## Services
 
@@ -28,7 +28,7 @@ Bramble lives in the system tray and brings together wallpapers, icons, cursors,
 | **Mouse** | Cursor themes (including original pixel-art themes and a smooth, lightly animated one) sorted by family, any single cursor for a role, per-role cursors saved as your own themes, pointer size, speed, double-click, wheel and extras, with a way back to the mouse you had before. |
 | **Sounds** | A sound for thirteen system events (startup, lock, sleep, charger, USB devices, docking station, speed test), with a sound library, loudness matching and import. |
 | **Arrange** | A live map of your screens (one, two, three or more) to sort and lay out desktop icons in eight even arrangements, five icon sizes, undo, a way back to the original layout, your own saved arrangements, and layouts saved per screen setup. |
-| **Notes** | Notes written in Markdown, with a bar for titles, lists, tasks and links, and a reading view. They save themselves as they are written, as plain .md files in Bramble's folder or in a folder of an Obsidian vault. |
+| **Notes** | Notes written in Markdown, with a bar for titles, lists, tasks and links, and a reading view. They save themselves as they are written, as plain .md files in lampfish's folder or in a folder of an Obsidian vault. |
 | **Shelf** | A place to keep files and captures at hand: drop files to keep a copy, take a capture of a zone, a window or a screen, draw on it (pen, arrows, frames, numbered steps, text, pixelate, crop), copy it, or drag it into another app. |
 | **Convert** | Changes the kind of a file on this PC, with nothing sent anywhere: images into PNG, JPG, BMP, GIF, TIFF, an icon or a PDF, a PDF into images, merged, cut or turned, text and Office documents into a PDF. The results go to the Shelf and the originals are never touched. |
 | **Health** | Why the PC is slow, in plain words with the button that helps, a security check (antivirus, firewall, updates, encryption), the privacy switches of Windows and the programs that start with Windows, each with a switch. |
@@ -38,7 +38,7 @@ Bramble lives in the system tray and brings together wallpapers, icons, cursors,
 | **Tasks** | What is running, grouped by program with its icon, publisher, memory and processor use, sorted into apps, command-line, background and system programs, with a search and a sheet per program (version, location, start with Windows, open connections). Ends a program on request, and a Memory card shows what closing the programs not in use would free, then closes what you tick. |
 | **Hardware** | Processor, memory, graphics, storage, battery, screens, temperature and connected devices, read live, with a plain-language health summary and a summary to copy. |
 
-The interface is in English, with a French translation (automatic, following the Windows language, or chosen in Settings). The bar opens each family in a flyout, a Go to search (Ctrl K) opens any service by name, and the cards of Home can be dropped in any cell of a grid. The bar can be arranged from its foot: services move inside their family, families move, and a service can be hidden. Ctrl 1 to 9 open the services in the order of the bar, Ctrl Tab the next one, Ctrl comma the settings, and the tray menu skips to the next wallpaper, pauses it or applies a theme. `Bramble.exe --quit` closes a running Bramble.
+The interface is in English, with a French translation (automatic, following the Windows language, or chosen in Settings). The bar opens each family in a flyout, a Go to search (Ctrl K) opens any service by name, and the cards of Home can be dropped in any cell of a grid. The bar can be arranged from its foot: services move inside their family, families move, and a service can be hidden. Ctrl 1 to 9 open the services in the order of the bar, Ctrl Tab the next one, Ctrl comma the settings, and the tray menu skips to the next wallpaper, pauses it or applies a theme. `Lampfish.exe --quit` closes a running lampfish.
 
 ## Requirements
 
@@ -48,12 +48,12 @@ The interface is in English, with a French translation (automatic, following the
 
 ## Install
 
-<img src="brand/app-icon/app-icon-violet.png" alt="Bramble icon" width="56">
+<img src="brand/app-icon/app-icon-lampfish.png" alt="lampfish icon" width="56">
 
-Download `Bramble-Setup-<version>.exe` from the [latest release](../../releases/latest) and run it. It installs Bramble for your account only, without administrator rights, in `%LOCALAPPDATA%\Programs\Bramble`.
+Download `Lampfish-Setup-<version>.exe` from the [latest release](../../releases/latest) and run it. It installs lampfish for your account only, without administrator rights, in `%LOCALAPPDATA%\Programs\Lampfish`.
 The installer is not signed yet: Windows SmartScreen may ask for confirmation the first time ("More info", then "Run anyway").
 
-New versions install from Settings > Updates, keeping your settings. To uninstall, use Settings > Apps > Installed apps in Windows: Bramble first puts back the cursors, folder icons and right-click menu it changed, then asks whether to keep your settings and files.
+New versions install from Settings > Updates, keeping your settings. To uninstall, use Settings > Apps > Installed apps in Windows: lampfish first puts back the cursors, folder icons and right-click menu it changed, then asks whether to keep your settings and files.
 
 ## Build from source
 
@@ -68,11 +68,11 @@ The script uses the C# compiler that ships with Windows (no Visual Studio needed
 ## Project layout
 
 ```
-Bramble.exe          built by src\build.ps1
+Lampfish.exe         built by src\build.ps1
 app\ui\              the settings window (HTML, CSS, JavaScript), translations in locales\
 app\player\          the page that plays a wallpaper
 app\templates\       the page behind wallpapers made in Create
-app\cursor-themes\   Bramble cursor themes
+app\cursor-themes\   lampfish cursor themes
 app\sounds\          the notes of the connection test
 wallpapers\          wallpapers
 sounds\              sound packs
@@ -82,12 +82,12 @@ brand\               logo and badge
 
 ## Versioning
 
-Bramble follows [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`. While the version starts with `0.`, anything may still change. Each release is a Git tag (`v0.1.0`) with a GitHub release, and every change is listed in [CHANGELOG.md](CHANGELOG.md).
+lampfish follows [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`. While the version starts with `0.`, anything may still change. Each release is a Git tag (`v0.1.0`) with a GitHub release, and every change is listed in [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
 [MIT](LICENSE)
 
-Bramble ships the [WebView2 SDK](https://www.nuget.org/packages/Microsoft.Web.WebView2) of Microsoft (BSD 3-Clause), whose license and notices are installed next to its DLLs in `app\lib\`. Everything else is part of this project: the sound packs and cursor themes come from the generators in `src\`.
+lampfish ships the [WebView2 SDK](https://www.nuget.org/packages/Microsoft.Web.WebView2) of Microsoft (BSD 3-Clause), whose license and notices are installed next to its DLLs in `app\lib\`. Everything else is part of this project: the sound packs and cursor themes come from the generators in `src\`.
 
-<p align="center"><img src="brand/badge/powered-by-bramble-pill.png" alt="Powered by Bramble" width="200"></p>
+<p align="center"><img src="brand/badge/powered-by-lampfish-pill.png" alt="Powered by lampfish" width="200"></p>

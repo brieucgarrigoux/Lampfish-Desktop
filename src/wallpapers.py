@@ -1,38 +1,38 @@
 """Builds the native logo wallpapers from the Create template: python src/wallpapers.py
 
 Each file is the template with its config written in, so it stays a single page that reacts to the sound,
-the light and speed knobs like a wallpaper made in Create. Output: wallpapers/bramble-logo.html, bramble-dusk.html
+the light and speed knobs like a wallpaper made in Create. Output: wallpapers/lampfish-logo.html, lampfish-dusk.html
 """
 import json, os, re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEMPLATE = os.path.join(ROOT, 'app', 'templates', 'custom.html')
-LOGO = 'https://app.example/brand/logo/berry-color.png'
+LOGO = 'https://app.example/brand/logo/sticker-lampfish.png'
 
 SOUND = {'on': True, 'pulse': True, 'ripples': True, 'ring': True, 'vibe': True, 'vibeAmount': 15, 'particles': True, 'color': ''}
 
 WALLPAPERS = {
-    'bramble-logo': {
-        'title': 'Bramble logo',
+    'lampfish-logo': {
+        'title': 'Lampfish logo',
         'config': {
             'v': 2,
-            'background': {'type': 'gradient', 'color': '#0a0230', 'color2': '#3d0f86', 'angle': 183, 'fit': 'cover', 'dim': 0, 'vignette': 100, 'drift': 0, 'image': None},
+            'background': {'type': 'gradient', 'color': '#08171A', 'color2': '#0B3F42', 'angle': 183, 'fit': 'cover', 'dim': 0, 'vignette': 100, 'drift': 0, 'image': None},
             'logo': {'size': 25, 'x': 50, 'y': 48, 'shadow': 60, 'float': True, 'image': LOGO},
-            'title': {'text': '', 'size': 6, 'weight': 600, 'color': '#ece7f4', 'x': 50, 'y': 72, 'font': 'sans'},
-            'particles': {'type': 'embers', 'color': '#b9a2ff', 'amount': 70, 'size': 150, 'speed': 130},
-            'glow': {'on': True, 'color': '#8324ff', 'strength': 90},
+            'title': {'text': '', 'size': 6, 'weight': 600, 'color': '#E8F6F4', 'x': 50, 'y': 72, 'font': 'sans'},
+            'particles': {'type': 'embers', 'color': '#2ED9C6', 'amount': 70, 'size': 150, 'speed': 130},
+            'glow': {'on': True, 'color': '#1EBBAA', 'strength': 90},
             'sound': SOUND,
         },
     },
-    'bramble-dusk': {
-        'title': 'Bramble dusk',
+    'lampfish-dusk': {
+        'title': 'Lampfish dusk',
         'config': {
             'v': 2,
-            'background': {'type': 'gradient', 'color': '#12062b', 'color2': '#6b2a7a', 'angle': 200, 'fit': 'cover', 'dim': 0, 'vignette': 100, 'drift': 0, 'image': None},
+            'background': {'type': 'gradient', 'color': '#08171A', 'color2': '#0F6F6A', 'angle': 200, 'fit': 'cover', 'dim': 0, 'vignette': 100, 'drift': 0, 'image': None},
             'logo': {'size': 25, 'x': 50, 'y': 48, 'shadow': 60, 'float': True, 'image': LOGO},
-            'title': {'text': '', 'size': 6, 'weight': 600, 'color': '#f4e7f0', 'x': 50, 'y': 72, 'font': 'sans'},
-            'particles': {'type': 'fireflies', 'color': '#ffb3e0', 'amount': 55, 'size': 120, 'speed': 100},
-            'glow': {'on': True, 'color': '#ff6ec4', 'strength': 70},
+            'title': {'text': '', 'size': 6, 'weight': 600, 'color': '#E8F6F4', 'x': 50, 'y': 72, 'font': 'sans'},
+            'particles': {'type': 'fireflies', 'color': '#9FF3E6', 'amount': 55, 'size': 120, 'speed': 100},
+            'glow': {'on': True, 'color': '#2ED9C6', 'strength': 70},
             'sound': SOUND,
         },
     },

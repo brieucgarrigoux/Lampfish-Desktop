@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Bramble logo</title>
+<title>Lampfish logo</title>
 <style>
   html, body { margin: 0; height: 100%; overflow: hidden; background: #05030a; }
   #bg, #dim, #vignette, canvas { position: fixed; inset: 0; }
@@ -41,13 +41,13 @@
   };
   addEventListener('message', e => {
     const m = e.data || {};
-    if (m.bramble === 'adjust') window.__adjust(m.light, m.speed);
-    if (m.bramble === 'freeze') { frozen = m.value; dirty = true; }
-    if (m.bramble === 'config') { config = m.config; dirty = true; apply(); }
-    if (m.bramble === 'audio') window.__audio(m.level);
+    if (m.lampfish === 'adjust') window.__adjust(m.light, m.speed);
+    if (m.lampfish === 'freeze') { frozen = m.value; dirty = true; }
+    if (m.lampfish === 'config') { config = m.config; dirty = true; apply(); }
+    if (m.lampfish === 'audio') window.__audio(m.level);
   });
-  Promise.resolve().then(() => { config = {"v":2,"background":{"type":"gradient","color":"#0a0230","color2":"#3d0f86","angle":183,"fit":"cover","dim":0,"vignette":100,"drift":0,"image":null},"logo":{"size":25,"x":50,"y":48,"shadow":60,"float":true,"image":"https://app.example/brand/logo/berry-color.png"},"title":{"text":"","size":6,"weight":600,"color":"#ece7f4","x":50,"y":72,"font":"sans"},"particles":{"type":"embers","color":"#b9a2ff","amount":70,"size":150,"speed":130},"glow":{"on":true,"color":"#8324ff","strength":90},"sound":{"on":true,"pulse":true,"ripples":true,"ring":true,"vibe":true,"vibeAmount":15,"particles":true,"color":""}}; apply(); });
-  if (parent !== window) parent.postMessage({ bramble: 'ready' }, '*');
+  Promise.resolve().then(() => { config = {"v":2,"background":{"type":"gradient","color":"#08171A","color2":"#0B3F42","angle":183,"fit":"cover","dim":0,"vignette":100,"drift":0,"image":null},"logo":{"size":25,"x":50,"y":48,"shadow":60,"float":true,"image":"https://app.example/brand/logo/sticker-lampfish.png"},"title":{"text":"","size":6,"weight":600,"color":"#E8F6F4","x":50,"y":72,"font":"sans"},"particles":{"type":"embers","color":"#2ED9C6","amount":70,"size":150,"speed":130},"glow":{"on":true,"color":"#1EBBAA","strength":90},"sound":{"on":true,"pulse":true,"ripples":true,"ring":true,"vibe":true,"vibeAmount":15,"particles":true,"color":""}}; apply(); });
+  if (parent !== window) parent.postMessage({ lampfish: 'ready' }, '*');
 
   const $ = id => document.getElementById(id);
   const bg = $('bg'), dim = $('dim'), vignette = $('vignette'), logo = $('logo'), title = $('title');

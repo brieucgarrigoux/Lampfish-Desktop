@@ -1,49 +1,37 @@
-"""Builds src/icon.ico from the app icon (brand/app-icon/app-icon-violet.png)
-and the in-app PNGs (header, About) from the official berry (brand/logo/berry-color.png).
+"""Rebuilds src/icon.ico from an icon whose frames are all PNG: python src/icon.py <source.ico>
 
-Usage: python src/icon.py
-Sizes up to 128 px are 32-bit BMPs (read by csc and every Windows version), 256 px is a PNG.
+Sizes up to 128 px become 32-bit BMPs (read by csc and every Windows version), 256 px stays a PNG.
 """
-import io, os, struct, time
+import io, os, struct, sys
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ICON = os.path.join(ROOT, 'brand', 'app-icon', 'app-icon-violet.png')
-SOURCE = os.path.join(ROOT, 'brand', 'logo', 'berry-color.png')
-LOGO = os.path.join(ROOT, 'brand', 'logo')
-SIZES = (16, 20, 24, 32, 40, 48, 64, 128, 256)
 
 
-def save(img, path):
-    for _ in range(10):
-        try:
-            return img.save(path)
-        except OSError:
-            time.sleep(1.5)
-    img.save(path)
-
-
-def square(img, size):
-    return img.resize((size, size), Image.LANCZOS)
+def frames(path):
+    with open(path, 'rb') as f:
+        data = f.read()
+    for i in range(struct.unpack('<H', data[4:6])[0]):
+        size, offset = struct.unpack('<II', data[6 + 16 * i + 8:6 + 16 * i + 16])
+        yield Image.open(io.BytesIO(data[offset:offset + size])).convert('RGBA')
 
 
 def bmp(img):
     s = img.width
-    bgra = img.convert('RGBA').tobytes('raw', 'BGRA')
+    bgra = img.tobytes('raw', 'BGRA')
     rows = b''.join(bgra[y * s * 4:(y + 1) * s * 4] for y in range(s - 1, -1, -1))
     mask = b'\x00' * (((s + 31) // 32 * 4) * s)
     header = struct.pack('<IiiHHIIiiII', 40, s, s * 2, 1, 32, 0, len(rows) + len(mask), 0, 0, 0, 0)
     return header + rows + mask
 
 
-def ico(img, path):
+def ico(source, path):
     images = []
-    for s in SIZES:
-        c = square(img, s)
-        if s >= 256:
-            b = io.BytesIO(); c.save(b, 'PNG'); images.append((s, b.getvalue()))
+    for f in frames(source):
+        if f.width >= 256:
+            b = io.BytesIO(); f.save(b, 'PNG'); images.append((f.width, b.getvalue()))
         else:
-            images.append((s, bmp(c)))
+            images.append((f.width, bmp(f)))
     out = struct.pack('<HHH', 0, 1, len(images))
     offset = 6 + 16 * len(images)
     for s, d in images:
@@ -54,8 +42,5 @@ def ico(img, path):
 
 
 if __name__ == '__main__':
-    logo = Image.open(SOURCE).convert('RGBA')
-    save(square(logo, 512), os.path.join(LOGO, 'logo-bramble.png'))
-    save(square(logo, 192), os.path.join(LOGO, 'logo-bramble-192.png'))
-    ico(Image.open(ICON).convert('RGBA'), os.path.join(ROOT, 'src', 'icon.ico'))
+    ico(sys.argv[1], os.path.join(ROOT, 'src', 'icon.ico'))
     print('OK')
