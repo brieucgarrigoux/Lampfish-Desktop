@@ -1,15 +1,15 @@
-; Built by publish.ps1: ISCC /DVersion=x.y.z /DSource=<staged folder> installer.iss
+﻿; Built by publish.ps1: ISCC /DVersion=x.y.z /DSource=<staged folder> installer.iss
 #ifndef Version
   #error Pass /DVersion=x.y.z
 #endif
 #ifndef Source
   #error Pass /DSource=<folder>
 #endif
-#define AppId "{{982DBBF8-9DA8-4E70-8C9D-514A38FD61C4}"
+#define AppId "{982DBBF8-9DA8-4E70-8C9D-514A38FD61C4}"
 #define Brand AddBackslash(SourcePath) + "..\brand\logo\"
 
 [Setup]
-AppId={#AppId}
+AppId={#StringChange(AppId, "{", "{{")}
 AppName=lampfish
 AppVersion={#Version}
 AppVerName=lampfish {#Version}
