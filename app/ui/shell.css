@@ -78,7 +78,7 @@
 .seal__ring { position: absolute; inset: 9px; z-index: 1; border-radius: 50%; background: conic-gradient(from 0deg, var(--lamp) calc(var(--part, 0) * 1%), rgba(255, 255, 255, .1) 0);
   -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 calc(100% - 5px)); mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 calc(100% - 5px));
   filter: drop-shadow(0 0 4px color-mix(in srgb, var(--lamp) 70%, transparent)); transition: background .4s; }
-.seal__text { position: relative; z-index: 2; font: 700 var(--text-title) var(--display); font-variant-numeric: tabular-nums; color: #fff; text-shadow: 0 0 8px color-mix(in srgb, var(--lamp) 60%, transparent), 0 1px 2px rgba(0, 0, 0, .7); white-space: nowrap; }
+.seal__text { position: relative; z-index: 2; text-box: trim-both cap alphabetic; font: 700 var(--text-title) var(--display); font-variant-numeric: tabular-nums; color: #fff; text-shadow: 0 0 8px color-mix(in srgb, var(--lamp) 60%, transparent), 0 1px 2px rgba(0, 0, 0, .7); white-space: nowrap; }
 .seal__text small { margin-left: 1px; font-size: var(--text-badge); font-weight: 600; opacity: .75; }
 .seal .seal__face { position: relative; z-index: 1; width: 56px; height: 56px; }
 .security--off { --lamp-hi: #c9cccd; --lamp: #6c6f70; --lamp-lo: #3a4042; }

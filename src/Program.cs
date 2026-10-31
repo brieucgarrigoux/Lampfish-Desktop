@@ -14,8 +14,8 @@ using Microsoft.Win32;
 
 [assembly: System.Reflection.AssemblyTitle("lampfish")]
 [assembly: System.Reflection.AssemblyProduct("lampfish")]
-[assembly: System.Reflection.AssemblyVersion("0.4.0.0")]
-[assembly: System.Reflection.AssemblyFileVersion("0.4.0.0")]
+[assembly: System.Reflection.AssemblyVersion("0.5.0.0")]
+[assembly: System.Reflection.AssemblyFileVersion("0.5.0.0")]
 
 namespace Lampfish
 {
@@ -773,6 +773,9 @@ namespace Lampfish
             settingsWindow.Activate();
         }
 
+        // The assistant runs the same actions as the main window.
+        public static void Run(Dictionary<string, object> message) { Receive(json.Serialize(message), null); }
+
         static void Receive(string message, List<string> files)
         {
             var m = json.Deserialize<Dictionary<string, object>>(message);
@@ -1049,7 +1052,7 @@ namespace Lampfish
             catch (Exception ex) { Log(ex); }
         }
 
-        static bool StartupEnabled()
+        public static bool StartupEnabled()
         {
             using (var key = Registry.CurrentUser.OpenSubKey(StartupKey))
                 return key != null && key.GetValue("Lampfish") != null;

@@ -104,7 +104,7 @@
 .key__value { font: 600 var(--text-clock)/1.1 var(--display); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .key__value small { margin-left: 5px; font: 400 var(--text-caption) var(--numbers); color: var(--text-pale); }
 .key--empty .key__value { display: flex; align-items: center; min-height: 31px; white-space: normal; }
-.key--empty .key__value b { line-height: 1.25; font: 400 var(--text-body) "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif; color: var(--text-pale); }
+.key--empty .key__value b { line-height: 1.25; font: 400 var(--text-body) "LF Text", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif; color: var(--text-pale); }
 .key__detail { min-height: 1.35em; font-size: var(--text-caption); color: var(--text-pale); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .key__detail.error { white-space: normal; color: var(--danger); line-height: 1.35; }
 
@@ -130,7 +130,7 @@
 .legend-traffic .sent { color: var(--text-soft); }
 
 .test-pass { display: grid; grid-template-columns: minmax(100px, 1.3fr) minmax(70px, 2fr) 84px 84px 70px 40px; gap: 14px; font: var(--text-body) var(--numbers); font-variant-numeric: tabular-nums; }
-.test-pass--header { padding-block: 8px; font: var(--text-caption) "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif; color: var(--text-pale); }
+.test-pass--header { padding-block: 8px; font: var(--text-caption) "LF Text", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif; color: var(--text-pale); }
 .test-pass .when { color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bar-test { align-self: center; height: 6px; border-radius: 3px; background: var(--raised); overflow: hidden; }
 .bar-test i { display: block; height: 100%; border-radius: 3px; background: var(--accent); }

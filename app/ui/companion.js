@@ -7,10 +7,15 @@
   const GO = {
     dashboard: ['Open Home in lampfish', 'home'], note: ['Open Notes in lampfish', 'notes'], capture: ['Open Shelf in lampfish', 'shelf'],
     shelf: ['Open Shelf in lampfish', 'shelf'], audio: ['Open Audio in lampfish', 'audio'], notes: ['Open Notes in lampfish', 'notes'], convert: ['Open Convert in lampfish', 'convert'], desktop: ['Open Arrange in lampfish', 'arrange'],
+    quick: ['Open Settings in lampfish', 'settings'], claude: ['Open Plugins in lampfish', 'plugins'], customize: ['Open Assistant in lampfish', 'assistant'],
   };
+  const ARRANGEMENTS = [['left', 'Left'], ['right', 'Right'], ['top', 'Top'], ['bottom', 'Bottom'], ['frame', 'Frame'], ['center', 'Center'], ['corners', 'Corners'], ['blocks', 'Blocks']];
+  const SIZES = [[32, 'S'], [40, 'M'], [48, 'L'], [64, 'XL'], [96, 'XXL']];
+  const act = (name, values = {}) => send('companion.do', Object.assign({ name }, values));
 
   function show(name, tell) {
     tab = name;
+    $('c-custom').setAttribute('aria-pressed', String(name === 'customize'));
     for (const b of document.querySelectorAll('[data-tab]')) b.setAttribute('aria-selected', String(b.dataset.tab === name));
     for (const p of document.querySelectorAll('[data-pane]')) p.hidden = p.dataset.pane !== name;
     $('c-go').textContent = tr(GO[name][0]);
@@ -23,7 +28,7 @@
   function clock() {
     const now = new Date();
     $('c-clock').textContent = now.toLocaleTimeString(LOCALE, { hour: '2-digit', minute: '2-digit' });
-    $('c-date').textContent = now.toLocaleDateString(LOCALE, { weekday: 'long', day: 'numeric', month: 'long' });
+    $('c-date').textContent = now.toLocaleDateString(LOCALE, { weekday: 'short', day: 'numeric', month: 'short' });
   }
 
   const GLYPHS = {
@@ -39,6 +44,14 @@
     copy: '<rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5"/>',
     reveal: '<path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/>',
     chevron: '<path d="m9 6 6 6-6 6"/>',
+    battery: '<rect x="3.5" y="8" width="15" height="8" rx="1.5"/><path d="M21 11v2M7 12h4"/>',
+    full: '<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>',
+    pulse: '<path d="M3.5 12h3l2.5-6 4 12 2.5-6h5"/>',
+    shuffle: '<path d="M4 7h3.5l9 10H20M4 17h3.5l2.5-2.8M13.5 9.8 16.5 7H20M17.5 4.5 20 7l-2.5 2.5M17.5 14.5 20 17l-2.5 2.5"/>',
+    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6 6l1.4 1.4M16.6 16.6 18 18M18 6l-1.4 1.4M7.4 16.6 6 18"/>',
+    leaf: '<path d="M5 19c0-8 5-13 14-14 0 9-5 14-13 14M5 19l7-7"/>',
+    power: '<path d="M12 4v8M7 7a7 7 0 1 0 10 0"/>',
+    mic: '<rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5"/>',
   };
   const glyph = name => `<svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${GLYPHS[name]}</svg>`;
   const el = (tag, className, text) => Object.assign(document.createElement(tag), { className: className || '', textContent: text || '' });
@@ -63,7 +76,6 @@
     dials($('c-dials'), [
       { part: d.processor, value: Math.round(d.processor) + ' %', label: tr('Processor'), level: level(d.processor, 80, 95) },
       { part: d.memory, value: Math.round(d.memory) + ' %', label: tr('Memory'), level: level(d.memory, 75, 85) },
-      ...claudeDials(),
     ]);
     const lines = [];
     if (d.disk) lines.push(diskLine(d.disk));
@@ -101,18 +113,90 @@
   }
 
   // The two limits of a plan as two dials: the 5-hour session, which is the one that runs out during a day, and the week.
-  function claudeDials() {
-    const c = data.claude, u = c && c.usage;
-    if (!(c && c.on)) { $('c-claude-note').hidden = true; return []; }
-    const ok = c.status === 'ok' && u && (u.session || u.week);
+  function claude() {
+    const c = data.claude, u = c && c.usage, ok = c && c.on && c.status === 'ok' && u && (u.session || u.week);
     const dial = (w, label, key) => ({
       key, part: w ? w.percent : 0, value: w ? Math.round(w.percent) + ' %' : '-', label: tr(label), sub: w ? tr('resets in {0}', resetIn(w.resets)) : '', color: 'var(--plugin-claude)',
-      level: !w ? 'high' : w.percent >= 90 ? 'low' : w.percent >= 75 ? 'medium' : 'high', action: () => send('companion.open', { view: 'settings' }),
+      level: !w ? 'high' : w.percent >= 90 ? 'low' : w.percent >= 75 ? 'medium' : 'high', action: () => send('companion.open', { view: 'plugins' }),
       details: w ? { title: tr(label), value: Math.round(w.percent) + ' %', lines: [[tr('Resets in'), resetIn(w.resets)], ...(key === 'week' ? (u.rows || []).map(r => [r.name, Math.round(r.percent) + ' %']) : [])] } : null,
     });
     $('c-claude-note').hidden = !!ok;
-    $('c-claude-note').textContent = ok ? '' : tr(c.status === 'expired' ? 'Open Claude Code to renew its sign-in' : c.status === 'missing' ? 'Claude Code is not signed in on this PC' : c.status === 'offline' ? 'No connection to read the usage' : 'Reading the usage');
-    return ok ? [dial(u.session, 'Claude 5 h', 'session'), dial(u.week, 'Claude week', 'week')] : [];
+    $('c-claude-note').textContent = ok ? '' : tr(!(c && c.on) ? 'Turn on Claude usage in Plugins' : c.status === 'expired' ? 'Open Claude Code to renew its sign-in' : c.status === 'missing' ? 'Claude Code is not signed in on this PC' : c.status === 'offline' ? 'No connection to read the usage' : 'Reading the usage');
+    dials($('c-claude-dials'), ok ? [dial(u.session, 'Claude 5 h', 'session'), dial(u.week, 'Claude week', 'week')] : []);
+    $('c-claude-dials').parentElement.hidden = !ok;
+    const rows = ok ? (u.rows || []) : [];
+    $('c-claude-head').hidden = $('c-claude-rows').hidden = !rows.length;
+    $('c-claude-rows').replaceChildren(...rows.map(r => { const row = line('busiest', r.name, Math.round(r.percent) + ' %'); row.querySelector('.caption > span').textContent = r.name; return row; }));
+  }
+
+  // The settings that are worth a click without opening the app.
+  function toggle(icon, label, help, on, change) {
+    const row = el('label', 'toggle');
+    row.innerHTML = `<input type="checkbox"><span class="caption">${glyph(icon)}<span><span class="c-name"></span><small></small></span></span>`;
+    row.querySelector('.c-name').textContent = tr(label);
+    row.querySelector('small').textContent = tr(help);
+    const box = row.querySelector('input');
+    box.checked = !!on;
+    box.addEventListener('change', () => change(box.checked));
+    return row;
+  }
+
+  function quick() {
+    const q = data.quick;
+    if (!q) return;
+    if (document.activeElement && document.activeElement.type === 'range') return;
+    const d = q.display || {}, p = q.power || {}, a = q.audio || {};
+    $('c-q-wall').replaceChildren(
+      toggle('battery', 'Pause on battery', 'Freezes when unplugged', q.PauseOnBattery, value => act('pauseOnBattery', { value })),
+      toggle('full', 'Pause in full screen', 'When a window fills the screen', q.PauseAuto, value => act('pauseAuto', { value })),
+      toggle('pulse', 'React to sound', 'Pulses with what you play', q.Reactive, value => act('reactive', { value })),
+      toggle('shuffle', 'Shuffle', 'For the slideshow, not for Next', q.Shuffle, value => act('shuffle', { value })));
+    const win = [];
+    if (d.dark != null) win.push(toggle('theme', 'Dark mode', 'Windows and the apps that follow it', d.dark, on => act('display.dark', { on })));
+    win.push(toggle('sun', 'Warm screen', 'Warmer colors at night', d.warmOn, on => act('display.warm', { on, strength: d.warm || 50, live: false })));
+    if (p.battery) win.push(toggle('leaf', 'Energy saver', 'Always on while on battery', p.saver, value => act('power.saver', { value })));
+    win.push(toggle('power', 'Start with Windows', 'lampfish opens by itself', q.startup, () => act('startup')));
+    $('c-q-win').replaceChildren(...win);
+    const sound = [toggle('output', 'Sounds on', 'Plays the events that are on', q.sounds, value => act('station.active', { value }))];
+    if (a.volume != null) {
+      const row = el('div', 'row c-range');
+      row.innerHTML = `<span class="caption">${glyph('output')}<span></span></span><input type="range" min="0" max="100" step="2" aria-label="Volume">`;
+      row.querySelector('.caption > span').textContent = tr('Volume');
+      const range = row.querySelector('input');
+      range.value = a.volume;
+      fill(range);
+      range.addEventListener('input', () => { fill(range); act('audio.volume', { value: Number(range.value), live: true }); });
+      range.addEventListener('change', () => act('audio.volume', { value: Number(range.value) }));
+      sound.push(row);
+      sound.push(toggle('output', 'Sound of Windows', 'Off mutes everything', !a.muted, on => act('audio.mute', { on: !on })));
+    }
+    if (a.mic) sound.push(toggle('mic', 'Microphone', 'On for every app', !a.micMuted, on => act('audio.mic', { on })));
+    $('c-q-sound').replaceChildren(...sound);
+  }
+
+  // The tabs are arranged from here too, the same choice as the Assistant page of the app.
+  const TAB_NAMES = { dashboard: 'Dashboard', quick: 'Settings', claude: 'Claude', note: 'Note', capture: 'Capture', shelf: 'Shelf', audio: 'Audio', notes: 'Notes', convert: 'Convert', desktop: 'Desktop' };
+  function saveTabs(order, hidden) { send('companion.tabs', { order, hidden }); }
+  function customize() {
+    const nav = document.querySelector('.c-tabs'), order = [...nav.children].map(b => b.dataset.tab), hidden = data.hiddenTabs || [];
+    $('c-custom-tabs').replaceChildren(...order.map((id, i) => {
+      const row = el('div', 'row c-custom-row');
+      row.innerHTML = `<span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${nav.querySelector(`[data-tab="${id}"] svg`).innerHTML}</svg><span></span></span><span class="c-order"><button type="button" class="c-up"><svg viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></svg></button><button type="button" class="c-down"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button></span><span class="toggler"><input type="checkbox"></span>`;
+      row.querySelector('.caption > span').textContent = tr(TAB_NAMES[id]);
+      const up = row.querySelector('.c-up'), down = row.querySelector('.c-down'), box = row.querySelector('input');
+      up.title = tr('Move up'); down.title = tr('Move down'); box.setAttribute('aria-label', tr(TAB_NAMES[id]));
+      up.disabled = i === 0; down.disabled = i === order.length - 1;
+      box.checked = !hidden.includes(id);
+      const move = by => { const next = order.slice(); next.splice(i + by, 0, next.splice(i, 1)[0]); saveTabs(next, hidden); };
+      up.addEventListener('click', () => move(-1));
+      down.addEventListener('click', () => move(1));
+      box.addEventListener('change', () => {
+        const next = box.checked ? hidden.filter(x => x !== id) : [...hidden, id];
+        if (next.length >= order.length) { box.checked = true; return; }
+        saveTabs(order, next);
+      });
+      return row;
+    }));
   }
 
   // A file kept in the shelf: a click opens it, the buttons copy it or show it, and it can be dragged into another app.
@@ -245,6 +329,11 @@
     const d = data.desktop || {};
     $('c-grid').checked = !!d.grid;
     $('c-hide').checked = !!d.hidden;
+    $('c-autohide').checked = !!(d.taskbar && d.taskbar.autoHide);
+    $('c-undo').hidden = !d.undo;
+    for (const b of $('c-arrange').children) b.setAttribute('aria-pressed', String(b.dataset.value === d.arrangement));
+    const near = SIZES.map(z => z[0]).reduce((a, b) => Math.abs(b - d.iconSize) < Math.abs(a - d.iconSize) ? b : a);
+    for (const b of $('c-size').children) b.setAttribute('aria-checked', String(Number(b.dataset.value) === near));
     $('c-wp-pause').querySelector('span').textContent = tr(d.paused ? 'Resume' : 'Pause');
     $('c-wp-pause').querySelector('svg').innerHTML = d.paused ? '<path d="M8 5.5v13l10.5-6.5z"/>' : '<path d="M9 6v12M15 6v12"/>';
   }
@@ -254,6 +343,9 @@
     if (tab === 'convert') tools();
     if (tab === 'desktop') desktop();
     if (tab === 'dashboard') dashboard();
+    else if (tab === 'quick') quick();
+    else if (tab === 'claude') claude();
+    else if (tab === 'customize') customize();
     else if (tab === 'shelf') shelf();
     else if (tab === 'capture') captures();
     else if (tab === 'notes') notes();
@@ -272,10 +364,13 @@
     const m = e.data;
     if (m.type === 'companion.data') {
       data = m;
-      const off = m.hiddenTabs || [];
+      const off = (m.hiddenTabs || []).slice();
+      if (!(m.claude && m.claude.on)) off.push('claude');
+      const nav = document.querySelector('.c-tabs');
+      for (const id of m.tabOrder || []) { const b = nav.querySelector(`[data-tab="${id}"]`); if (b) nav.append(b); }
       for (const b of document.querySelectorAll('[data-tab]')) b.hidden = off.includes(b.dataset.tab);
       if (off.includes(tab)) { const first = [...document.querySelectorAll('[data-tab]')].find(b => !b.hidden); if (first) show(first.dataset.tab, false); }
-      if (m.tab && m.tab !== tab && GO[m.tab]) show(m.tab, false);
+      if (m.tab && m.tab !== tab && tab !== 'customize' && GO[m.tab]) show(m.tab, false);
       if (m.open) {
         // The window itself slides and fades in: the page only has to say when its data is drawn.
         document.body.classList.add('is-ready');
@@ -320,6 +415,25 @@
   $('c-wp-prev').addEventListener('click', () => send('companion.wallpaper', { op: 'previous' }));
   $('c-wp-next').addEventListener('click', () => send('companion.wallpaper', { op: 'next' }));
   $('c-wp-pause').addEventListener('click', () => send('companion.wallpaper', { op: 'pause' }));
+  $('c-custom').addEventListener('click', () => show(tab === 'customize' ? 'dashboard' : 'customize', false));
+  $('c-tabs-reset').addEventListener('click', () => saveTabs([], []));
+  $('c-autohide').addEventListener('change', e => act('taskbar.set', { id: 'autoHide', value: e.target.checked, title: tr('Hide the taskbar') }));
+  $('c-undo').addEventListener('click', () => act('arrange.undo'));
+  for (const [value, name] of ARRANGEMENTS) {
+    const b = el('button', 'tool-chip', tr(name));
+    b.type = 'button';
+    b.dataset.value = value;
+    b.addEventListener('click', () => act('arrange.arrangement', { value }));
+    $('c-arrange').append(b);
+  }
+  for (const [value, name] of SIZES) {
+    const b = el('button', '', name);
+    b.type = 'button';
+    b.setAttribute('role', 'radio');
+    b.dataset.value = value;
+    b.addEventListener('click', () => act('arrange.iconSize', { value }));
+    $('c-size').append(b);
+  }
   $('c-go').addEventListener('click', () => { const [, view] = GO[tab]; send(view === 'notes' ? 'companion.openNote' : 'companion.open', view === 'notes' ? { name: '' } : { view }); });
   $('c-open').addEventListener('click', () => send('companion.open', { view: 'home' }));
   $('c-close').addEventListener('click', () => send('companion.close'));

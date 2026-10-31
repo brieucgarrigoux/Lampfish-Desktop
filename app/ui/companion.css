@@ -12,12 +12,13 @@ body.companion:not(.is-ready) { visibility: hidden; }
 .c-icon { display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 0; border-radius: var(--radius-control); background: none; color: var(--text-soft); transition: background var(--fast), color var(--fast); }
 .c-icon:hover { background: var(--hover); color: var(--text); }
 .c-icon svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.c-tabs { flex: none; display: flex; gap: 3px; padding: 3px; border-radius: var(--radius-group); background: var(--sunken); }
-.c-tabs button { flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; padding: 0 7px; border: 0; border-radius: var(--radius-control); background: none; color: var(--text-soft); font-size: var(--text-caption); transition: background var(--fast), color var(--fast); }
+.c-tabs { flex: none; display: flex; gap: 1px; padding: 3px; border-radius: var(--radius-group); background: var(--sunken); }
+.c-tabs { overflow: hidden; }
+.c-tabs button { flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; padding: 0 5px; border: 0; border-radius: var(--radius-control); background: none; color: var(--text-soft); font-size: var(--text-caption); transition: background var(--fast), color var(--fast); }
 .c-tabs button:hover { color: var(--text); background: var(--hover); }
 .c-tabs button span { display: none; }
 .c-tabs button[aria-selected="true"] { flex: 1; background: var(--raised); color: var(--text); font-weight: 600; }
-.c-tabs button[aria-selected="true"] span { display: inline; }
+.c-tabs button[aria-selected="true"] span { display: inline; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .c-tabs svg { flex: none; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .c-tabs button[aria-selected="true"] svg { stroke: var(--accent); }
 .c-pane { flex: 1; display: flex; flex-direction: column; gap: 10px; min-height: 0; overflow-y: auto; scrollbar-width: none; }
@@ -31,6 +32,21 @@ body.companion:not(.is-ready) { visibility: hidden; }
 .c-hint .link { font-size: var(--text-caption); color: var(--accent); }
 .c-row { display: flex; align-items: center; gap: 10px; }
 .c-space { flex: 1; }
+.c-chips { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.c-chips .tool-chip { justify-content: center; min-width: 0; padding-inline: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.c-chips .tool-chip[aria-pressed="true"] { background: var(--accent-dim); color: var(--accent); box-shadow: var(--pressed); }
+.c-segments { display: flex; }
+.c-segments button { flex: 1; }
+.c-order { display: inline-flex; gap: 2px; margin-right: 8px; }
+.c-order button { display: grid; place-items: center; width: 26px; height: 26px; padding: 0; border: 0; border-radius: var(--radius-small); background: none; color: var(--text-soft); }
+.c-order button:hover:not(:disabled) { background: var(--hover); color: var(--text); }
+.c-order button:disabled { opacity: .3; }
+.c-order svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.c-custom-row { display: flex; align-items: center; }
+.c-custom-row .caption { flex: 1; min-width: 0; }
+.c-range { display: flex; align-items: center; gap: 10px; }
+.c-range input[type="range"] { flex: 1; min-width: 0; }
+#c-custom[aria-pressed="true"] { background: var(--accent-dim); color: var(--accent); }
 .c-subhead { display: flex; align-items: center; justify-content: space-between; margin: 4px 2px 0; font-size: var(--text-caption); font-weight: 600; color: var(--text-soft); }
 .c-shots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .c-shot { position: relative; padding: 0; border: 0; border-radius: var(--radius-group); background: var(--screen); aspect-ratio: 4 / 3; overflow: hidden; }

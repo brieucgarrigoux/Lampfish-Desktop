@@ -27,6 +27,7 @@ namespace Lampfish
         public KeyChoice Note = new KeyChoice { Key = 0x4E, Label = "Ctrl + Alt + N" };
         public KeyChoice Toggle = new KeyChoice { Key = 0x42, Label = "Ctrl + Alt + B" };
         public List<string> HiddenTabs = new List<string>();
+        public List<string> TabOrder = new List<string>();
     }
 
     // The companion: a round button on the desktop, wherever it is put. A click opens a small window to write a note,
@@ -42,8 +43,14 @@ namespace Lampfish
         static PerformanceCounter cpu;
         static string tab = "dashboard";
         static DateTime hiddenAt, asideAt;
-        static bool aside, opening, retried;
-        static readonly string[] Tabs = { "dashboard", "note", "capture", "shelf", "audio", "notes", "convert", "desktop" };
+        static bool aside, opening, retried, closing;
+        static readonly string[] Tabs = { "dashboard", "quick", "desktop", "claude", "note", "capture", "shelf", "audio", "notes", "convert" };
+        // What the assistant may do on its own: the settings it shows, nothing else from the main window.
+        static readonly HashSet<string> Shared = new HashSet<string>
+        {
+            "pauseOnBattery", "pauseAuto", "reactive", "shuffle", "startup", "display.dark", "display.warm", "power.saver", "audio.mute", "audio.mic", "audio.volume",
+            "station.active", "arrange.arrangement", "arrange.undo", "arrange.original", "arrange.iconSize", "taskbar.set",
+        };
         static DateTime shownAt;
         static int slide;
 
@@ -67,9 +74,9 @@ namespace Lampfish
                 if ((DateTime.Now - shownAt).TotalSeconds > 2 && Native.GetForegroundWindow() != popup.Handle && !popup.ContainsFocus)
                 {
                     if (!retried) { retried = true; popup.Activate(); }
-                    else { popup.Hide(); return; }
+                    else { Conceal(); return; }
                 }
-                if (tab == "dashboard") SendData();
+                if (tab == "dashboard" || tab == "claude" || tab == "quick" || tab == "desktop") SendData();
             };
             Capture.Busy += Aside;
             AudioDevices.Listed += message => { if (popup != null && !popup.IsDisposed && popup.Visible) popup.Send(message); };
@@ -135,7 +142,7 @@ namespace Lampfish
         public static object State()
         {
             Func<string, KeyChoice, object> key = (name, k) => new { on = k.On, label = k.Label, error = errors.ContainsKey(name) ? errors[name] : null };
-            return new { on = S.On, hidden = S.Hidden, hiddenTabs = S.HiddenTabs, capture = key("capture", S.Capture), note = key("note", S.Note), toggle = key("toggle", S.Toggle) };
+            return new { on = S.On, hidden = S.Hidden, hiddenTabs = S.HiddenTabs, tabOrder = S.TabOrder, capture = key("capture", S.Capture), note = key("note", S.Note), toggle = key("toggle", S.Toggle) };
         }
 
         public static bool Receive(string action, Dictionary<string, object> m)
@@ -149,6 +156,8 @@ namespace Lampfish
                     var list = m.ContainsKey("hidden") ? m["hidden"] as System.Collections.IEnumerable : null;
                     var hidden = list == null ? new List<string>() : list.OfType<object>().Select(Convert.ToString).Where(x => Tabs.Contains(x)).Distinct().ToList();
                     S.HiddenTabs = hidden.Count >= Tabs.Length ? new List<string>() : hidden;
+                    var order = m.ContainsKey("order") ? m["order"] as System.Collections.IEnumerable : null;
+                    if (order != null) S.TabOrder = order.OfType<object>().Select(Convert.ToString).Where(x => Tabs.Contains(x)).Distinct().ToList();
                     Save();
                     SendData();
                     return true;
@@ -243,7 +252,7 @@ namespace Lampfish
                     {
                         FormBorderStyle = FormBorderStyle.None, ShowInTaskbar = false, TopMost = true, StartPosition = FormStartPosition.Manual, Text = "lampfish", Opacity = 0,
                     };
-                    popup.Deactivate += (s, e) => { if (popup != null && !opening) { popup.Hide(); hiddenAt = DateTime.Now; idle.Start(); refresh.Stop(); } };
+                    popup.Deactivate += (s, e) => { if (popup != null && !opening) { Conceal(); hiddenAt = DateTime.Now; idle.Start(); refresh.Stop(); } };
                     popup.Shown += (s, e) => Native.Rounded(popup.Handle);
                     // The page forgets what it showed, so the next opening never flashes the last one.
                     popup.VisibleChanged += (s, e) =>
@@ -299,6 +308,33 @@ namespace Lampfish
             timer.Start();
         }
 
+        // The way out mirrors the way in: the window slides back to the button while it fades.
+        static void Conceal()
+        {
+            if (popup == null || popup.IsDisposed || !popup.Visible || closing) return;
+            closing = true;
+            int start = popup.Left, back = slide;
+            var started = DateTime.Now;
+            var timer = new Timer { Interval = 12 };
+            timer.Tick += (s, e) =>
+            {
+                double t = popup == null || popup.IsDisposed ? 1 : Math.Min(1, (DateTime.Now - started).TotalMilliseconds / 140), k = t * t;
+                if (popup != null && !popup.IsDisposed)
+                {
+                    popup.Opacity = 1 - k;
+                    popup.Left = start + (int)Math.Round(back * k);
+                }
+                if (t < 1) return;
+                timer.Stop();
+                timer.Dispose();
+                closing = false;
+                if (popup == null || popup.IsDisposed) return;
+                popup.Hide();
+                popup.Left = start;
+            };
+            timer.Start();
+        }
+
         static void Position()
         {
             var anchor = dot != null && dot.Visible ? dot.Disc : new Rectangle(Cursor.Position, Size.Empty);
@@ -328,7 +364,7 @@ namespace Lampfish
                 type = "companion.data", tab, open, language = Language.Code,
                 processor = Math.Round(processor), memory = Math.Round(memory), busiest = Health.Busiest,
                 theme = theme == null ? null : theme.Name, output = AudioDevices.NameOf(AudioDevices.DefaultOutput()), disk = Disk(), origin = open ? Origin() : null,
-                claude = ClaudeUsage.State(), desktop = DesktopState(), hiddenTabs = S.HiddenTabs, notes = Notes.Items().Take(40).ToArray(), shelf = Shelf.Items().Take(8).ToArray(),
+                claude = ClaudeUsage.State(), desktop = DesktopState(), quick = tab == "quick" ? QuickState() : null, hiddenTabs = S.HiddenTabs, tabOrder = S.TabOrder, notes = Notes.Items().Take(40).ToArray(), shelf = Shelf.Items().Take(8).ToArray(),
             });
         }
 
@@ -336,7 +372,17 @@ namespace Lampfish
         {
             bool hidden = false;
             try { hidden = (DesktopIcons.Flags() & DesktopIcons.FWF_NOICONS) != 0; } catch { }
-            return new { grid = DesktopGrid.On, hidden, paused = Program.Paused };
+            return new { grid = DesktopGrid.On, hidden, paused = Program.Paused, arrangement = Program.R.Arrange.Arrangement, undo = Program.R.Arrange.History.Count > 0, iconSize = DesktopIcons.IconSize(), taskbar = Taskbar.State() };
+        }
+
+        static object QuickState()
+        {
+            var r = Program.R;
+            return new
+            {
+                r.PauseOnBattery, r.PauseAuto, r.Reactive, r.Shuffle, startup = Program.StartupEnabled(), display = Display.State(), power = Power.State(), audio = AudioMeter.Endpoints(),
+                sounds = r.Dock.Active && !r.Dock.Silence,
+            };
         }
 
         static object Disk()
@@ -403,7 +449,19 @@ namespace Lampfish
                     SendData();
                     return;
                 }
-                case "companion.close": popup.Hide(); return;
+                case "companion.close": Conceal(); return;
+                case "companion.do":
+                {
+                    string shared = Text(m, "name");
+                    if (!Shared.Contains(shared)) return;
+                    var message = new Dictionary<string, object>(m);
+                    message["action"] = shared;
+                    Program.Run(message);
+                    Program.SendState();
+                    SendData();
+                    return;
+                }
+                case "companion.tabs": Receive("tabs", m); Program.SendState(); return;
                 case "companion.note":
                 {
                     string name = Notes.Add(Text(m, "title"), Text(m, "text"));
