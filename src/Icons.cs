@@ -410,6 +410,18 @@ namespace Lampfish
             return path.StartsWith(Program.Root + "\\", StringComparison.OrdinalIgnoreCase);
         }
 
+        // The icon of a folder is a full path in its desktop.ini: it stays behind when the folder of the app moves.
+        public static void FollowRoot(IEnumerable<string> folders, string former)
+        {
+            foreach (string folder in folders)
+            {
+                if (!Directory.Exists(folder)) continue;
+                var icon = ReadIcon(folder);
+                if (icon != null && icon.Item1.StartsWith(former + "\\", StringComparison.OrdinalIgnoreCase))
+                    WriteIcon(folder, Program.Root + icon.Item1.Substring(former.Length), icon.Item2);
+            }
+        }
+
         public static void Uninstall()
         {
             foreach (string folder in R.Customized.ToList())

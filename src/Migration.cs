@@ -21,6 +21,7 @@ namespace Lampfish
         const string OldName = "Bramble";
         const string OldMenu = @"Software\Classes\Directory\shell\Bramble.Icon";
         const string CursorsKey = @"Control Panel\Cursors";
+        const string ApprovedKey = @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run";
         const string ThemesFolder = @"\app\cursor-themes\";
 
         static readonly Dictionary<string, string> Names = new Dictionary<string, string>
@@ -49,6 +50,7 @@ namespace Lampfish
             string former = FormerRoot(local);
             bool clean = Step(() => MoveData(Path.Combine(local, OldName), data));
             clean &= Step(() => MoveSettings(former));
+            clean &= Step(() => MoveFolderIcons(former));
             clean &= Step(MoveWallpapers);
             clean &= Step(() => MoveCursors(former));
             clean &= Step(MoveStartup);
@@ -141,6 +143,16 @@ namespace Lampfish
             File.Replace(temporary, file, null);
         }
 
+        static void MoveFolderIcons(string former)
+        {
+            string file = Path.Combine(Program.Root, "settings.json");
+            if (former == null || !File.Exists(file)) return;
+            var settings = new JavaScriptSerializer { MaxJsonLength = int.MaxValue }.Deserialize<Settings>(File.ReadAllText(file));
+            var folders = new List<string>(settings.Icons.Customized);
+            if (settings.Folders != null) folders.AddRange(settings.Folders.Customized);
+            Icons.FollowRoot(folders, former);
+        }
+
         // A wallpaper made in Create is a copy of the template, with the words of the version that made it.
         static void MoveWallpapers()
         {
@@ -201,6 +213,16 @@ namespace Lampfish
 
         static void MoveStartup()
         {
+            // Windows keeps "turned off in Task Manager" under the name of the startup value.
+            using (var approved = Registry.CurrentUser.OpenSubKey(ApprovedKey, true))
+            {
+                object state = approved == null ? null : approved.GetValue(OldName);
+                if (state != null)
+                {
+                    approved.SetValue("Lampfish", state, RegistryValueKind.Binary);
+                    approved.DeleteValue(OldName, false);
+                }
+            }
             using (var key = Registry.CurrentUser.OpenSubKey(Program.StartupKey, true))
             {
                 if (key == null || key.GetValue(OldName) == null) return;
