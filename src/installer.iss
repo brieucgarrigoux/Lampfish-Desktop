@@ -6,7 +6,7 @@
   #error Pass /DSource=<folder>
 #endif
 #define AppId "{982DBBF8-9DA8-4E70-8C9D-514A38FD61C4}"
-#define Brand AddBackslash(SourcePath) + "..\brand\logo\"
+#define Brand AddBackslash(SourcePath) + "..\brand\installer\"
 
 [Setup]
 AppId={#StringChange(AppId, "{", "{{")}
@@ -28,9 +28,9 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0
 WizardStyle=modern dark
-WizardImageFile={#Brand}logo-lampfish-192.png
-WizardImageStretch=no
-WizardSmallImageFile={#Brand}logo-lampfish-192.png
+WizardImageFile={#Brand}wizard-202.png,{#Brand}wizard-269.png,{#Brand}wizard-336.png,{#Brand}wizard-403.png,{#Brand}wizard-430.png,{#Brand}wizard-498.png,{#Brand}wizard-534.png
+WizardSmallImageFile={#Brand}corner-58.png,{#Brand}corner-77.png,{#Brand}corner-97.png,{#Brand}corner-116.png,{#Brand}corner-124.png,{#Brand}corner-143.png,{#Brand}corner-159.png
+WizardSmallImageBackColor=none
 SetupIconFile=icon.ico
 UninstallDisplayIcon={app}\Lampfish.exe
 UninstallDisplayName=lampfish
