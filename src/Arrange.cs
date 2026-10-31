@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace Bramble
+namespace Lampfish
 {
     class IconPosition { public string Id; public int X, Y; }
 

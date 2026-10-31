@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Win32;
 
-namespace Bramble
+namespace Lampfish
 {
     // The values the privacy pages of the Windows settings write for the current user. Policies are only read: when one is set, the organization decides.
     static class Privacy

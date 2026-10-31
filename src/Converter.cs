@@ -17,7 +17,7 @@ using PdfSharp.Drawing.Layout;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
 
-namespace Bramble
+namespace Lampfish
 {
     // Converts the files a user hands over, on this PC and nowhere else. A result is kept in the Shelf, next to what was already there.
     static class Converter

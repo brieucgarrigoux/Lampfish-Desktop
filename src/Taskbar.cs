@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Web.Script.Serialization;
 using Microsoft.Win32;
 
-namespace Bramble
+namespace Lampfish
 {
     // The settings of the taskbar that Windows itself keeps for the current user, and its automatic hiding. Nothing is injected into Explorer:
     // the position at the top or on a side, the size and the transparency have no setting in Windows 11, so they are not here.

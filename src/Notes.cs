@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 using System.Web.Script.Serialization;
 using System.Windows.Forms;
 
-namespace Bramble
+namespace Lampfish
 {
     class NotesSettings
     {
@@ -255,7 +255,7 @@ namespace Bramble
                         }
                     }
                     // A vault gets the notes in its own lampfish folder, next to the user's notes, never mixed with them.
-                    if (m.ContainsKey("vault") && Convert.ToBoolean(m["vault"])) next = Path.Combine(next, "Bramble");
+                    if (m.ContainsKey("vault") && Convert.ToBoolean(m["vault"])) next = Path.Combine(next, "Lampfish");
                     string before = Folder;
                     try { if (!string.IsNullOrEmpty(next)) Directory.CreateDirectory(next); }
                     catch (Exception ex) { Program.Log(ex); Program.Announce("This folder cannot be used for the notes"); return true; }

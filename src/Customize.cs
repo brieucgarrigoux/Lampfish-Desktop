@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web.Script.Serialization;
 
-namespace Bramble
+namespace Lampfish
 {
     // A card of Home on the grid: its cell (counted from 0) and how many cells it takes.
     class TilePlace

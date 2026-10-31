@@ -12,7 +12,7 @@ using System.Threading;
 using System.Web.Script.Serialization;
 using Microsoft.Win32;
 
-namespace Bramble
+namespace Lampfish
 {
     class IconsSettings
     {
@@ -30,7 +30,7 @@ namespace Bramble
         static readonly string Cache = Path.Combine(Program.Root, "app", "icon-cache");
         static readonly string IndexFile = Path.Combine(Cache, "index.json");
         static readonly string SystemDir = Environment.GetFolderPath(Environment.SpecialFolder.System);
-        const string MenuKey = @"Software\Classes\Directory\shell\Bramble.Icon";
+        const string MenuKey = @"Software\Classes\Directory\shell\Lampfish.Icon";
 
         static readonly string[] Sources =
         {
@@ -587,10 +587,15 @@ namespace Bramble
         static void ToggleMenu(bool active)
         {
             if (!active) { Registry.CurrentUser.DeleteSubKeyTree(MenuKey, false); return; }
+            WriteMenu(Language.T("Change icon with lampfish"));
+        }
+
+        public static void WriteMenu(string verb)
+        {
             string exe = System.Windows.Forms.Application.ExecutablePath;
             using (var key = Registry.CurrentUser.CreateSubKey(MenuKey))
             {
-                key.SetValue("MUIVerb", Language.T("Change icon with lampfish"));
+                key.SetValue("MUIVerb", verb);
                 key.SetValue("Icon", "\"" + exe + "\",0");
                 using (var command = key.CreateSubKey("command"))
                     command.SetValue("", "\"" + exe + "\" --folder \"%1\"");

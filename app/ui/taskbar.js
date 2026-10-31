@@ -40,7 +40,7 @@
   $('tb-reset').addEventListener('click', () => send('taskbar.reset'));
   $('tb-lock-open').addEventListener('click', () => send('taskbar.open'));
 
-  Bramble.taskbar = {
+  Lampfish.taskbar = {
     event(m) { if (m.type === 'taskbar.state') { state = m; paint(); } },
     visible(v) { shown = v; if (v) send('taskbar.state'); },
   };

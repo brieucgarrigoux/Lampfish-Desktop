@@ -380,5 +380,5 @@
 
   render();
   renderMemory();
-  Bramble.tasks = { event, visible, free: () => { showView('tasks'); startFree(); }, dock: yes => { if (yes) startFree(); else close(); } };
+  Lampfish.tasks = { event, visible, free: () => { showView('tasks'); startFree(); }, dock: yes => { if (yes) startFree(); else close(); } };
 })();

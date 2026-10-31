@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.Win32;
 
-namespace Bramble
+namespace Lampfish
 {
     static class Health
     {

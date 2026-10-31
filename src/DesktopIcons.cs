@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Runtime.InteropServices;
 
-namespace Bramble
+namespace Lampfish
 {
     static class DesktopIcons
     {

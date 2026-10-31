@@ -4,7 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Web.Script.Serialization;
 
-namespace Bramble
+namespace Lampfish
 {
     static class Language
     {

@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace Bramble
+namespace Lampfish
 {
     // A place to keep captures and files at hand. Files are copied in, never moved, so the originals stay where they were.
     static class Shelf

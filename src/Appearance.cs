@@ -2,7 +2,7 @@ using System;
 using System.Drawing;
 using Microsoft.Win32;
 
-namespace Bramble
+namespace Lampfish
 {
     // Night or day for the windows of the app. "auto" follows the apps mode of Windows.
     static class Appearance

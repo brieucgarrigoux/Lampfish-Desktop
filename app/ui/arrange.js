@@ -129,7 +129,7 @@
   }
 
   function wallpaperBehind(screen, e) {
-    const state = Bramble.state;
+    const state = Lampfish.state;
     const wallpaper = wallpaperFor(`${e.w}x${e.h}@${e.x},${e.y}`);
     if (!wallpaper) return;
     const box = document.createElement('div');
@@ -166,7 +166,7 @@
     const k = scale, frame = { w: (right - left) * k, h: (down - up) * k };
 
     const key = map.screens.map(e => [e.x, e.y, e.w, e.h, e.tx, e.ty, e.tw, e.th].join(',')).join('|') + '@' + width
-      + '@' + (Bramble.state ? Bramble.state.current + '/' + Bramble.state.dim + '/' + Bramble.state.fit + '/' + JSON.stringify(Bramble.state.displays || []) : '');
+      + '@' + (Lampfish.state ? Lampfish.state.current + '/' + Lampfish.state.dim + '/' + Lampfish.state.fit + '/' + JSON.stringify(Lampfish.state.displays || []) : '');
     if (key !== keyScreens) {
       keyScreens = key;
       zone.replaceChildren(label);
@@ -184,7 +184,7 @@
         screen.style.setProperty('--vw', (e.w / s).toFixed(1));
         screen.style.setProperty('--vh', (e.h / s).toFixed(1));
         screen.style.setProperty('--k', (k * s).toFixed(5));
-        screen.classList.toggle('fit', !!Bramble.state && Bramble.state.fit === 'fit');
+        screen.classList.toggle('fit', !!Lampfish.state && Lampfish.state.fit === 'fit');
 
         const name = document.createElement('span');
         name.className = 'screen-label' + (e.primary ? ' primary' : '');
@@ -407,5 +407,5 @@
   });
 
   const grid = g => { $('r-grid').checked = !!g.on; };
-  Bramble.arrange = { state, event, visible, thumbnail, renderDock, grid };
+  Lampfish.arrange = { state, event, visible, thumbnail, renderDock, grid };
 })();

@@ -1,24 +1,24 @@
 'use strict';
 
-const Bramble = { state: null, station: null, icons: null, arrange: null, mouse: null, network: null, files: null, hardware: null, tasks: null, moods: null, creator: null };
+const Lampfish = { state: null, station: null, icons: null, arrange: null, mouse: null, network: null, files: null, hardware: null, tasks: null, moods: null, creator: null };
 const VIEWS = ['home', 'modes', 'wallpaper', 'create', 'icons', 'mouse', 'station', 'display', 'audio', 'taskbar', 'arrange', 'notes', 'shelf', 'convert', 'health', 'tasks', 'files', 'duplicates', 'hardware', 'network', 'settings'];
 
 const scrolls = {}, narrowLayout = matchMedia('(max-width: 900px)');
 const scrollZones = () => narrowLayout.matches ? [document.scrollingElement] : [document.querySelector('.contents'), document.querySelector('.panel')];
 const DOCKS = { wallpaper: 'Wallpaper', modes: 'Themes', display: 'Display', icons: 'Icons', arrange: 'Arrange', mouse: 'Mouse', station: 'Sounds', tasks: 'Tasks', hardware: 'Hardware', network: 'Network' };
-const dockModule = view => Bramble[view === 'modes' ? 'moods' : view];
+const dockModule = view => Lampfish[view === 'modes' ? 'moods' : view];
 function setDock(view) {
   const old = document.body.dataset.dock;
   if (old === view) return;
   const pick = $('dock-pick');
   pick.replaceChildren();
   delete pick.dataset.key;
-  if (old) { if (old === 'tasks') { if (Bramble.tasks) Bramble.tasks.dock(false); } else if (dockModule(old)) dockModule(old).visible(false); }
+  if (old) { if (old === 'tasks') { if (Lampfish.tasks) Lampfish.tasks.dock(false); } else if (dockModule(old)) dockModule(old).visible(false); }
   if (view) document.body.dataset.dock = view; else delete document.body.dataset.dock;
   if (view) {
     $('dock-title').textContent = tr(DOCKS[view]);
     const module = dockModule(view);
-    if (view === 'tasks') { if (Bramble.tasks) Bramble.tasks.dock(true); } else if (module) { module.visible(true); if (module.renderDock) module.renderDock(); }
+    if (view === 'tasks') { if (Lampfish.tasks) Lampfish.tasks.dock(true); } else if (module) { module.visible(true); if (module.renderDock) module.renderDock(); }
   }
   for (const t of document.querySelectorAll('.h-tile, [data-dock-to]')) t.setAttribute('aria-pressed', String((t.dataset.view || t.dataset.dockTo) === view));
   dispatchEvent(new Event('resize'));
@@ -58,26 +58,26 @@ function showView(view) {
     else b.removeAttribute('aria-current');
   }
   try { localStorage.setItem('view', view); } catch (e) { }
-  if (Bramble.station) Bramble.station.visible(view === 'station');
-  if (Bramble.icons) Bramble.icons.visible(view === 'icons');
-  if (Bramble.mouse) Bramble.mouse.visible(view === 'mouse');
-  if (Bramble.network) Bramble.network.visible(view === 'network');
-  if (Bramble.arrange) Bramble.arrange.visible(view === 'arrange');
-  if (Bramble.files) Bramble.files.visible(view === 'files');
-  if (Bramble.hardware) Bramble.hardware.visible(view === 'hardware');
-  if (Bramble.tasks) Bramble.tasks.visible(view === 'tasks');
-  if (Bramble.creator) Bramble.creator.visible(view === 'create');
-  if (Bramble.display) Bramble.display.visible(view === 'display');
-  if (Bramble.audio) Bramble.audio.visible(view === 'audio');
-  if (Bramble.taskbar) Bramble.taskbar.visible(view === 'taskbar');
-  if (Bramble.notes) Bramble.notes.visible(view === 'notes');
-  if (Bramble.shelf) Bramble.shelf.visible(view === 'shelf');
-  if (Bramble.convert) Bramble.convert.visible(view === 'convert');
-  if (Bramble.health) Bramble.health.visible(view === 'health');
-  if (Bramble.duplicates) Bramble.duplicates.visible(view === 'duplicates');
+  if (Lampfish.station) Lampfish.station.visible(view === 'station');
+  if (Lampfish.icons) Lampfish.icons.visible(view === 'icons');
+  if (Lampfish.mouse) Lampfish.mouse.visible(view === 'mouse');
+  if (Lampfish.network) Lampfish.network.visible(view === 'network');
+  if (Lampfish.arrange) Lampfish.arrange.visible(view === 'arrange');
+  if (Lampfish.files) Lampfish.files.visible(view === 'files');
+  if (Lampfish.hardware) Lampfish.hardware.visible(view === 'hardware');
+  if (Lampfish.tasks) Lampfish.tasks.visible(view === 'tasks');
+  if (Lampfish.creator) Lampfish.creator.visible(view === 'create');
+  if (Lampfish.display) Lampfish.display.visible(view === 'display');
+  if (Lampfish.audio) Lampfish.audio.visible(view === 'audio');
+  if (Lampfish.taskbar) Lampfish.taskbar.visible(view === 'taskbar');
+  if (Lampfish.notes) Lampfish.notes.visible(view === 'notes');
+  if (Lampfish.shelf) Lampfish.shelf.visible(view === 'shelf');
+  if (Lampfish.convert) Lampfish.convert.visible(view === 'convert');
+  if (Lampfish.health) Lampfish.health.visible(view === 'health');
+  if (Lampfish.duplicates) Lampfish.duplicates.visible(view === 'duplicates');
   send('audioPreview', { value: view === 'create' });
-  if (Bramble.home) Bramble.home.visible(view === 'home');
-  if (Bramble.welcome) Bramble.welcome.viewed(view);
+  if (Lampfish.home) Lampfish.home.visible(view === 'home');
+  if (Lampfish.welcome) Lampfish.welcome.viewed(view);
 }
 for (const b of document.querySelectorAll('.service')) b.addEventListener('click', () => showView(b.dataset.view));
 const iconRail = matchMedia('(max-width: 620px), (max-width: 900px) and (max-height: 1000px)');
@@ -110,35 +110,35 @@ webview.addEventListener('message', e => {
   if (m.type === 'appearance') return;
   if (m.type === 'audio.level') {
     levelTarget.push(m.level); levelTarget.shift();
-    const previews = Bramble.state && Bramble.state.reactive ? '#hero-preview iframe, .cr-stage iframe, .wallpaper-map iframe, #h-wallpaper iframe' : '.cr-stage iframe';
-    for (const f of document.querySelectorAll(previews)) { try { f.contentWindow.postMessage({ bramble: 'audio', level: m.level }, '*'); } catch (e) { } }
+    const previews = Lampfish.state && Lampfish.state.reactive ? '#hero-preview iframe, .cr-stage iframe, .wallpaper-map iframe, #h-wallpaper iframe' : '.cr-stage iframe';
+    for (const f of document.querySelectorAll(previews)) { try { f.contentWindow.postMessage({ lampfish: 'audio', level: m.level }, '*'); } catch (e) { } }
     if (!levelLoop && document.body.dataset.view === 'wallpaper') levelLoop = requestAnimationFrame(levelFrame);
     return;
   }
 
-  if (Bramble.home && m.type && (m.type.startsWith('network.') || m.type.startsWith('hardware.') || m.type === 'arrange.map' || m.type === 'tasks.list')) Bramble.home.event(m);
-  if (m.type === 'network.infos' && Bramble.hardware) Bramble.hardware.wifiInfo(m);
+  if (Lampfish.home && m.type && (m.type.startsWith('network.') || m.type.startsWith('hardware.') || m.type === 'arrange.map' || m.type === 'tasks.list')) Lampfish.home.event(m);
+  if (m.type === 'network.infos' && Lampfish.hardware) Lampfish.hardware.wifiInfo(m);
   if (m.type === 'home.places') { renderPlaces(m); return; }
-  if (m.type && m.type.startsWith('home.')) { if (Bramble.home) Bramble.home.event(m); return; }
-  if (m.type && m.type.startsWith('station.')) { if (Bramble.station) Bramble.station.event(m); return; }
-  if (m.type && m.type.startsWith('icons.')) { if (Bramble.icons) Bramble.icons.event(m); return; }
-  if (m.type && m.type.startsWith('mouse.')) { if (Bramble.mouse) Bramble.mouse.event(m); return; }
-  if (m.type && m.type.startsWith('network.')) { if (Bramble.network) Bramble.network.event(m); return; }
-  if (m.type && m.type.startsWith('arrange.')) { if (Bramble.arrange) Bramble.arrange.event(m); return; }
-  if (m.type && m.type.startsWith('files.')) { if (Bramble.files) Bramble.files.event(m); return; }
-  if (m.type && m.type.startsWith('creator.')) { if (Bramble.creator) Bramble.creator.event(m); return; }
-  if (m.type && m.type.startsWith('tasks.')) { if (Bramble.tasks) Bramble.tasks.event(m); return; }
-  if (m.type && m.type.startsWith('hardware.')) { if (Bramble.hardware) Bramble.hardware.event(m); return; }
-  if (m.type && m.type.startsWith('moods.')) { if (Bramble.moods) Bramble.moods.event(m); return; }
-  if (m.type && m.type.startsWith('display.')) { if (Bramble.display) Bramble.display.event(m); return; }
-  if (m.type === 'audio.devices' || m.type === 'audio.levels') { if (Bramble.audio) Bramble.audio.event(m); return; }
-  if (m.type && m.type.startsWith('notes.')) { if (Bramble.notes) Bramble.notes.event(m); return; }
-  if (m.type && m.type.startsWith('shelf.')) { if (Bramble.shelf) Bramble.shelf.event(m); return; }
-  if (m.type && m.type.startsWith('health.')) { if (Bramble.health) Bramble.health.event(m); return; }
-  if (m.type && m.type.startsWith('duplicates.')) { if (Bramble.duplicates) Bramble.duplicates.event(m); return; }
-  if (m.type && m.type.startsWith('convert.')) { if (Bramble.convert) Bramble.convert.event(m); return; }
-  if (m.type && m.type.startsWith('taskbar.')) { if (Bramble.taskbar) Bramble.taskbar.event(m); return; }
-  if (m.type === 'window.closed') { if (Bramble.creator) Bramble.creator.reset(); return; }
+  if (m.type && m.type.startsWith('home.')) { if (Lampfish.home) Lampfish.home.event(m); return; }
+  if (m.type && m.type.startsWith('station.')) { if (Lampfish.station) Lampfish.station.event(m); return; }
+  if (m.type && m.type.startsWith('icons.')) { if (Lampfish.icons) Lampfish.icons.event(m); return; }
+  if (m.type && m.type.startsWith('mouse.')) { if (Lampfish.mouse) Lampfish.mouse.event(m); return; }
+  if (m.type && m.type.startsWith('network.')) { if (Lampfish.network) Lampfish.network.event(m); return; }
+  if (m.type && m.type.startsWith('arrange.')) { if (Lampfish.arrange) Lampfish.arrange.event(m); return; }
+  if (m.type && m.type.startsWith('files.')) { if (Lampfish.files) Lampfish.files.event(m); return; }
+  if (m.type && m.type.startsWith('creator.')) { if (Lampfish.creator) Lampfish.creator.event(m); return; }
+  if (m.type && m.type.startsWith('tasks.')) { if (Lampfish.tasks) Lampfish.tasks.event(m); return; }
+  if (m.type && m.type.startsWith('hardware.')) { if (Lampfish.hardware) Lampfish.hardware.event(m); return; }
+  if (m.type && m.type.startsWith('moods.')) { if (Lampfish.moods) Lampfish.moods.event(m); return; }
+  if (m.type && m.type.startsWith('display.')) { if (Lampfish.display) Lampfish.display.event(m); return; }
+  if (m.type === 'audio.devices' || m.type === 'audio.levels') { if (Lampfish.audio) Lampfish.audio.event(m); return; }
+  if (m.type && m.type.startsWith('notes.')) { if (Lampfish.notes) Lampfish.notes.event(m); return; }
+  if (m.type && m.type.startsWith('shelf.')) { if (Lampfish.shelf) Lampfish.shelf.event(m); return; }
+  if (m.type && m.type.startsWith('health.')) { if (Lampfish.health) Lampfish.health.event(m); return; }
+  if (m.type && m.type.startsWith('duplicates.')) { if (Lampfish.duplicates) Lampfish.duplicates.event(m); return; }
+  if (m.type && m.type.startsWith('convert.')) { if (Lampfish.convert) Lampfish.convert.event(m); return; }
+  if (m.type && m.type.startsWith('taskbar.')) { if (Lampfish.taskbar) Lampfish.taskbar.event(m); return; }
+  if (m.type === 'window.closed') { if (Lampfish.creator) Lampfish.creator.reset(); return; }
   render(m);
 });
 
@@ -147,14 +147,14 @@ let removalShown = null;
 
 function render(state) {
   if (!state || !Array.isArray(state.wallpapers)) return;
-  const before = Bramble.state;
-  Bramble.state = state;
+  const before = Lampfish.state;
+  Lampfish.state = state;
   $('startup').checked = state.startup;
   $('weather').checked = state.weather;
   $('allow-test').checked = state.speedTest !== false;
   showViews(state.hiddenViews || []);
-  if (Bramble.layout) Bramble.layout.state(state.layout || {});
-  if (Bramble.welcome) Bramble.welcome.state(state);
+  if (Lampfish.layout) Lampfish.layout.state(state.layout || {});
+  if (Lampfish.welcome) Lampfish.welcome.state(state);
   $('allow-ip').checked = state.publicIp !== false;
   $('allow-claude').checked = !!(state.claude && state.claude.on);
   $('claude-row').hidden = !(state.claude && state.claude.on);
@@ -174,21 +174,21 @@ function render(state) {
   if (state.about) {
     $('about-version').textContent = tr('Version {0} · built on {1}', state.about.version, new Date(state.about.compile).toLocaleDateString(LOCALE, { day: 'numeric', month: 'long', year: 'numeric' }));
     $('about-folder').textContent = state.about.folder;
-    $('folder-bramble').title = state.about.folder;
+    $('folder-lampfish').title = state.about.folder;
     $('about-errors').textContent = tr(state.about.errors ? 'Some errors were logged' : 'No errors logged');
   }
   renderWallpaper(state, before);
-  if (Bramble.station && state.station) Bramble.station.state(state.station);
-  if (Bramble.icons && state.icons) Bramble.icons.state(state.icons);
-  if (Bramble.mouse && state.mouse) Bramble.mouse.state(state.mouse);
-  if (Bramble.arrange && state.arrange) Bramble.arrange.state(state.arrange);
-  if (Bramble.arrange && state.grid) Bramble.arrange.grid(state.grid);
+  if (Lampfish.station && state.station) Lampfish.station.state(state.station);
+  if (Lampfish.icons && state.icons) Lampfish.icons.state(state.icons);
+  if (Lampfish.mouse && state.mouse) Lampfish.mouse.state(state.mouse);
+  if (Lampfish.arrange && state.arrange) Lampfish.arrange.state(state.arrange);
+  if (Lampfish.arrange && state.grid) Lampfish.arrange.grid(state.grid);
   slideshowNote(state.windowsSlideshow);
-  if (Bramble.files && state.files) Bramble.files.state(state.files);
-  if (Bramble.duplicates && state.duplicates) Bramble.duplicates.state(state.duplicates);
-  if (Bramble.moods && state.moods) Bramble.moods.state(state.moods);
-  if (Bramble.home) Bramble.home.state();
-  if (Bramble.display) Bramble.display.state();
+  if (Lampfish.files && state.files) Lampfish.files.state(state.files);
+  if (Lampfish.duplicates && state.duplicates) Lampfish.duplicates.state(state.duplicates);
+  if (Lampfish.moods && state.moods) Lampfish.moods.state(state.moods);
+  if (Lampfish.home) Lampfish.home.state();
+  if (Lampfish.display) Lampfish.display.state();
 
   if (state.view && VIEWS.includes(state.view)) showView(state.view);
 
@@ -270,7 +270,7 @@ const DROP_HINTS = { wallpaper: 'Videos, GIFs, images or HTML pages', icons: 'IC
 addEventListener('dragenter', e => {
   const view = document.body.dataset.view;
   // A card of Shelf on its way out to another app is not a file coming in.
-  if (!carriesFiles(e) || !DROP_HINTS[view] || (Bramble.shelf && Bramble.shelf.out)) return;
+  if (!carriesFiles(e) || !DROP_HINTS[view] || (Lampfish.shelf && Lampfish.shelf.out)) return;
   e.preventDefault();
   $('drop-hint').textContent = tr(DROP_HINTS[view]);
   if (++depth === 1) document.body.classList.add('drag');
@@ -284,10 +284,10 @@ addEventListener('drop', e => {
   depth = 0;
   document.body.classList.remove('drag');
   const files = e.dataTransfer.files;
-  if (!files.length || (Bramble.shelf && Bramble.shelf.out)) return;
+  if (!files.length || (Lampfish.shelf && Lampfish.shelf.out)) return;
   const view = document.body.dataset.view;
   const action = { icons: 'icons.drop', mouse: 'mouse.drop', wallpaper: 'drop', shelf: 'shelf.drop', convert: 'convert.drop' }[view];
-  if (view === 'station' && Bramble.station) Bramble.station.ingest([...files]);
+  if (view === 'station' && Lampfish.station) Lampfish.station.ingest([...files]);
   else if (action) {
     try { webview.postMessageWithAdditionalObjects({ action }, files); }
     catch (x) { toast(tr('Only files saved on this PC can be added: save it first, then drop the file'), false, 5000); }
@@ -406,10 +406,10 @@ function renderPlaces(m) {
 }
 $('updates-auto').addEventListener('change', e => send('updates.auto', { value: e.target.checked }));
 $('update-check').addEventListener('click', () => {
-  const u = (Bramble.state && Bramble.state.updates) || {};
+  const u = (Lampfish.state && Lampfish.state.updates) || {};
   send(u.status !== 'available' ? 'updates.check' : u.installable ? 'updates.install' : 'updates.open');
 });
-$('folder-bramble').addEventListener('click', () => send('folderBramble'));
+$('folder-lampfish').addEventListener('click', () => send('folderLampfish'));
 $('log-errors').addEventListener('click', () => send('log'));
 
 for (const p of document.querySelectorAll('.caption small')) if (p.textContent) p.title = p.textContent;
@@ -437,9 +437,9 @@ const CURSORS = {
   dim: { text: v => v + ' %', normal: 0 },
 };
 const withoutExtension = name => name.replace(/\.[a-z0-9]{2,5}$/i, '');
-const currentWallpaper = () => Bramble.state && Bramble.state.wallpapers ? Bramble.state.wallpapers.find(f => f.name === Bramble.state.current) : null;
+const currentWallpaper = () => Lampfish.state && Lampfish.state.wallpapers ? Lampfish.state.wallpapers.find(f => f.name === Lampfish.state.current) : null;
 function wallpaperFor(key) {
-  const state = Bramble.state;
+  const state = Lampfish.state;
   if (!state || !state.wallpapers) return null;
   const d = (state.displays || []).find(x => x.key === key);
   return state.wallpapers.find(f => f.name === (d && d.wallpaper ? d.wallpaper : state.current));
@@ -646,7 +646,7 @@ function reveal(el, show) {
 
 let heroScreen = '';
 try { heroScreen = localStorage.getItem('wallpaper.screen') || ''; } catch (e) { }
-const heroDisplay = () => { const list = (Bramble.state && Bramble.state.displays) || []; return list.find(d => d.key === heroScreen) || list.find(d => d.primary) || list[0]; };
+const heroDisplay = () => { const list = (Lampfish.state && Lampfish.state.displays) || []; return list.find(d => d.key === heroScreen) || list.find(d => d.primary) || list[0]; };
 const shownWallpaper = () => heroScreen ? wallpaperFor(heroScreen) : currentWallpaper();
 
 function renderScreens(state) {
@@ -666,7 +666,7 @@ function renderScreens(state) {
     b.addEventListener('click', () => {
       heroScreen = d.key;
       try { localStorage.setItem('wallpaper.screen', heroScreen); } catch (e) { }
-      renderWallpaper(Bramble.state, Bramble.state);
+      renderWallpaper(Lampfish.state, Lampfish.state);
     });
     return b;
   }));
@@ -681,7 +681,7 @@ function fitHero() {
   $('hero').style.setProperty('--k', k.toFixed(5));
   return k;
 }
-new ResizeObserver(() => { fitHero(); if (Bramble.state) heroEffects(Number($('blur').value), Number($('saturation').value), Number($('dim').value)); }).observe($('hero'));
+new ResizeObserver(() => { fitHero(); if (Lampfish.state) heroEffects(Number($('blur').value), Number($('saturation').value), Number($('dim').value)); }).observe($('hero'));
 
 function renderWallpaper(state, before) {
   $('pause').textContent = state.paused ? 'Resume' : 'Pause';
@@ -729,13 +729,13 @@ function renderWallpaper(state, before) {
 }
 
 function urlHero(wallpaper, light, speed) {
-  const settings = `light=${light}&speed=${speed}&fit=${Bramble.state.fit}&v=${wallpaper.stamp}`;
+  const settings = `light=${light}&speed=${speed}&fit=${Lampfish.state.fit}&v=${wallpaper.stamp}`;
   if (wallpaper.type === 'html') return `${wallpaper.url}?${settings}`;
   return `/app/player/player.html?type=${wallpaper.type}&src=${encodeURIComponent(wallpaper.url)}&${settings}`;
 }
 
 function buildHero() {
-  const wallpaper = shownWallpaper(), state = Bramble.state;
+  const wallpaper = shownWallpaper(), state = Lampfish.state;
   const zone = $('hero-preview');
   zone.replaceChildren();
   hero = null; heroDirect = false;
@@ -761,7 +761,7 @@ function adjustHero(light, speed) {
   if (!hero || key === heroSet) return;
   heroSet = key;
   if (heroDirect) {
-    hero.contentWindow.postMessage({ bramble: 'adjust', light, speed }, '*');
+    hero.contentWindow.postMessage({ lampfish: 'adjust', light, speed }, '*');
     return;
   }
   clearTimeout(reload);
@@ -784,11 +784,11 @@ function check(group, value) {
 }
 
 function freezeHero() {
-  if (hero && heroDirect) hero.contentWindow.postMessage({ bramble: 'freeze', value: Bramble.state.paused || Bramble.state.onBattery }, '*');
+  if (hero && heroDirect) hero.contentWindow.postMessage({ lampfish: 'freeze', value: Lampfish.state.paused || Lampfish.state.onBattery }, '*');
 }
 
 addEventListener('message', e => {
-  if (!hero || e.source !== hero.contentWindow || !e.data || e.data.bramble !== 'ready') return;
+  if (!hero || e.source !== hero.contentWindow || !e.data || e.data.lampfish !== 'ready') return;
   heroDirect = true;
   heroSet = '';
   adjustHero(Number($('light').value), Number($('speed').value));
@@ -798,7 +798,7 @@ addEventListener('message', e => {
 function buildGrid() {
   const grid = $('grid');
   grid.replaceChildren();
-  for (const wallpaper of Bramble.state.wallpapers) {
+  for (const wallpaper of Lampfish.state.wallpapers) {
     const card = document.createElement('article');
     card.className = 'card';
     card.tabIndex = 0;
@@ -843,7 +843,7 @@ function buildGrid() {
 }
 
 function renderWallpaperDock() {
-  const zone = $('dock-pick'), state = Bramble.state;
+  const zone = $('dock-pick'), state = Lampfish.state;
   if (document.body.dataset.dock !== 'wallpaper' || !state || !state.wallpapers) return;
   const key = state.wallpapers.map(f => f.name + '@' + f.stamp).join('|') + '#' + LANGUAGE;
   if (zone.dataset.key !== key || !zone.firstChild) {
@@ -868,11 +868,11 @@ function renderWallpaperDock() {
   const current = shownWallpaper();
   for (const b of zone.querySelectorAll('.dock-wallpaper')) b.setAttribute('aria-pressed', String(!!current && b.dataset.name === current.name));
 }
-Bramble.wallpaper = { visible() { }, renderDock: renderWallpaperDock };
+Lampfish.wallpaper = { visible() { }, renderDock: renderWallpaperDock };
 
 function livePreview(wallpaper, card) {
   if (wallpaper.type !== 'html') return preview(wallpaper, card);
-  const e = Bramble.state || {};
+  const e = Lampfish.state || {};
   const frame = document.createElement('iframe');
   frame.src = wallpaper.url + '?light=' + (e.light != null ? e.light : 50) + '&speed=' + (e.speed != null ? e.speed : 50) + '&fit=' + (e.fit || 'fill') + '&v=' + wallpaper.stamp;
   frame.tabIndex = -1;
@@ -928,7 +928,7 @@ const TASKBAR_APPS = [
   '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2.4" fill="#f4c542"/><path d="M3 9.5h18v7.6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#ffd966"/><path d="M3 8.6a2.4 2.4 0 0 1 2.4-2.4h4l1.6 2z" fill="#e0a82e"/></svg>',
   '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#1d7fe6"/><path d="M12 3a9 9 0 0 0-9 9h10a3 3 0 0 0 0-6h-1z" fill="#34d399"/><path d="M5.5 13c2-3.6 6.4-4.4 10-2.6 1.6.8 2.6 2.2 3 3.6-1.8-1.4-3.8-1.8-6-1.4-2.4.4-4.4 2-7 .4z" fill="#0a3a8a" opacity=".55"/></svg>',
   '<svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="15" rx="3" fill="#191e1f" stroke="#4d5355" stroke-width="1"/><path d="m7.5 9.5 3 2.5-3 2.5M12.5 15h4" fill="none" stroke="#a9cac4" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-  '<svg viewBox="0 0 24 24"><image href="/brand/app-icon/app-icon-lampfish.png" x="2" y="2" width="20" height="20"/></svg>',
+  '<svg viewBox="0 0 24 24"><image href="/brand/logo/logo-lampfish-192.png" x="2" y="2" width="20" height="20"/></svg>',
 ].map((svg, i) => `<i${i === 4 ? ' class="on"' : ''}>${svg}</i>`).join('');
 const TASKBAR_TRAY = '<svg viewBox="0 0 24 24"><path d="m6 14 6-6 6 6" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><svg viewBox="0 0 24 24"><path d="M3 9a13 13 0 0 1 18 0M6 12.5a8.5 8.5 0 0 1 12 0M9 16a4 4 0 0 1 6 0" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg><svg viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z" fill="#fff"/><path d="M15 9a4 4 0 0 1 0 6" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg><svg viewBox="0 0 24 24"><rect x="3" y="8" width="16" height="8" rx="2" fill="none" stroke="#fff" stroke-width="1.8"/><rect x="5" y="10" width="9" height="4" rx=".8" fill="#fff"/><path d="M21 10.5v3" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>';
 

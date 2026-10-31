@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-namespace Bramble
+namespace Lampfish
 {
     // The global shortcuts of lampfish, all on one hidden window. Each feature keeps its own id.
     static class Hotkeys

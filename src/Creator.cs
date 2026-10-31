@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web.Script.Serialization;
 
-namespace Bramble
+namespace Lampfish
 {
     static class Creator
     {

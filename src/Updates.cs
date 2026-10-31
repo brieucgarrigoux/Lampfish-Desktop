@@ -11,11 +11,11 @@ using System.Web.Script.Serialization;
 using System.Windows.Forms;
 using Microsoft.Win32;
 
-namespace Bramble
+namespace Lampfish
 {
     static class Updates
     {
-        const string Latest = "https://api.github.com/repos/brieucgarrigoux/Bramble-Desktop/releases/latest";
+        const string Latest = "https://api.github.com/repos/brieucgarrigoux/Lampfish-Desktop/releases/latest";
         static readonly JavaScriptSerializer json = new JavaScriptSerializer();
         const string UninstallKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\{982DBBF8-9DA8-4E70-8C9D-514A38FD61C4}_is1";
         static string status = "never", version, page, setup, digest;
@@ -89,7 +89,7 @@ namespace Bramble
                 var asset = (assets as System.Collections.ArrayList ?? new System.Collections.ArrayList()).OfType<Dictionary<string, object>>().FirstOrDefault(a =>
                 {
                     string name = a.ContainsKey("name") ? a["name"] as string ?? "" : "";
-                    return name.StartsWith("Bramble-Setup-", StringComparison.OrdinalIgnoreCase) && name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase);
+                    return name.StartsWith("Lampfish-Setup-", StringComparison.OrdinalIgnoreCase) && name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase);
                 });
                 if (asset != null) { asset.TryGetValue("browser_download_url", out download); asset.TryGetValue("digest", out hash); }
                 return new[] { ((tag as string) ?? "").TrimStart('v', 'V'), url as string, download as string, hash as string };
@@ -119,7 +119,7 @@ namespace Bramble
             status = "downloading";
             progress = 0;
             Program.SendState();
-            string file = Path.Combine(Path.GetTempPath(), "Bramble-Setup-" + version + ".exe");
+            string file = Path.Combine(Path.GetTempPath(), "Lampfish-Setup-" + version + ".exe");
             string expected = digest.Substring("sha256:".Length).ToLowerInvariant();
             Task.Run(() =>
             {

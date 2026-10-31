@@ -87,10 +87,10 @@
   $('welcome-back').addEventListener('click', () => go(step - 1));
   $('welcome-skip').addEventListener('click', finish);
   // Each switch sends the action Settings sends, so both always agree.
-  $('welcome-startup').addEventListener('change', e => { if (e.target.checked !== !!Bramble.state.startup) send('startup'); });
+  $('welcome-startup').addEventListener('change', e => { if (e.target.checked !== !!Lampfish.state.startup) send('startup'); });
   $('welcome-updates').addEventListener('change', e => send('updates.auto', { value: e.target.checked }));
   $('welcome-companion').addEventListener('change', e => send('companion.set', { on: e.target.checked }));
-  $('welcome-weather').addEventListener('change', e => { if (e.target.checked !== !!Bramble.state.weather) { send('weather'); send('home.weather'); } });
+  $('welcome-weather').addEventListener('change', e => { if (e.target.checked !== !!Lampfish.state.weather) { send('weather'); send('home.weather'); } });
   // The focus stays inside the welcome while it is open; Escape skips it.
   box.addEventListener('keydown', e => {
     if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); finish(); return; }
@@ -103,7 +103,7 @@
 
   // First steps on Home: each line ticks itself from what lampfish already knows.
   const STEPS = [
-    ['wallpaper', 'Pick a wallpaper', s => (s.welcome.seen || []).includes('wallpaper') || s.current !== 'bramble-logo.html'],
+    ['wallpaper', 'Pick a wallpaper', s => (s.welcome.seen || []).includes('wallpaper') || s.current !== 'lampfish-logo.html'],
     ['health', 'Check the health of the PC', s => (s.welcome.seen || []).includes('health')],
     ['modes', 'Save your setup as a theme', s => (s.moods || []).length > 0],
     ['arrange', 'Arrange the desktop icons', s => (s.welcome.seen || []).includes('arrange') || !!(s.arrange && s.arrange.layouts && s.arrange.layouts.length)],
@@ -148,9 +148,9 @@
 
   // Opening a service counts for its step only while the steps are shown.
   function viewed(view) {
-    const s = Bramble.state;
+    const s = Lampfish.state;
     if (s && s.welcome && s.welcome.steps && ['wallpaper', 'health', 'arrange'].includes(view) && !(s.welcome.seen || []).includes(view)) send('welcome.seen', { view });
   }
 
-  Bramble.welcome = { state: s => { state(s); firstSteps(s); companionNote(s); }, viewed };
+  Lampfish.welcome = { state: s => { state(s); firstSteps(s); companionNote(s); }, viewed };
 })();

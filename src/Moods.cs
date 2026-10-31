@@ -7,7 +7,7 @@ using System.Web.Script.Serialization;
 using System.Windows.Forms;
 using Microsoft.Win32;
 
-namespace Bramble
+namespace Lampfish
 {
     class MoodSetting
     {
@@ -319,7 +319,7 @@ namespace Bramble
                 if (dialog.ShowDialog(Program.SettingsWindow) != DialogResult.OK) return;
                 var data = new Dictionary<string, object>
                 {
-                    { "bramble", "mood" }, { "version", 1 }, { "name", mood.Name }, { "wallpaper", mood.Wallpaper }, { "fit", mood.Fit },
+                    { "lampfish", "mood" }, { "version", 1 }, { "name", mood.Name }, { "wallpaper", mood.Wallpaper }, { "fit", mood.Fit },
                     { "light", mood.Light }, { "speed", mood.Speed }, { "blur", mood.Blur }, { "saturation", mood.Saturation }, { "dim", mood.Dim },
                     { "theme", mood.Theme }, { "soundsOn", mood.SoundsActive }, { "silent", mood.Silence }, { "volume", mood.Volume },
                     { "reactive", mood.Reactive }, { "time", mood.Time }, { "screens", mood.Screens }, { "power", mood.Power }, { "headphones", mood.Headset },
@@ -354,9 +354,9 @@ namespace Bramble
                 Dictionary<string, object> d = null;
                 try { if (new FileInfo(dialog.FileName).Length <= 64 * 1024) d = json.Deserialize<Dictionary<string, object>>(File.ReadAllText(dialog.FileName)); }
                 catch (Exception ex) { Program.Log(ex); }
-                if (d == null || Word(d, "bramble", 10) != "mood") { Program.Announce("This file is not a lampfish theme"); Program.SendState(); return; }
+                if (d == null || (Word(d, "lampfish", 10) != "mood" && Word(d, Migration.OldThemeKey, 10) != "mood")) { Program.Announce("This file is not a lampfish theme"); Program.SendState(); return; }
 
-                string wallpaper = Word(d, "wallpaper", 200), time = Word(d, "time", 5), powerTrigger = Word(d, "power", 10), fit = Word(d, "fit", 4);
+                string wallpaper = Migration.Renamed(Word(d, "wallpaper", 200)), time = Word(d, "time", 5), powerTrigger = Word(d, "power", 10), fit = Word(d, "fit", 4);
                 if (wallpaper != Path.GetFileName(wallpaper) || wallpaper.Contains("..")) wallpaper = "";
                 DateTime parsed;
                 object reactive;
@@ -364,7 +364,7 @@ namespace Bramble
                 {
                     Id = Guid.NewGuid().ToString("N").Substring(0, 8), Name = Word(d, "name", 40), Wallpaper = wallpaper, Fit = fit == "fit" ? "fit" : "fill",
                     Light = Number(d, "light", 0, 100, 50), Speed = Number(d, "speed", 0, 100, 50), Blur = Number(d, "blur", 0, 100, 0),
-                    Saturation = Number(d, "saturation", 0, 100, 50), Dim = Number(d, "dim", 0, 100, 0), Theme = Word(d, "theme", 120),
+                    Saturation = Number(d, "saturation", 0, 100, 50), Dim = Number(d, "dim", 0, 100, 0), Theme = Migration.Renamed(Word(d, "theme", 120)),
                     SoundsActive = d.ContainsKey("soundsOn") && d["soundsOn"] is bool && (bool)d["soundsOn"],
                     Silence = d.ContainsKey("silent") && d["silent"] is bool && (bool)d["silent"], Volume = Number(d, "volume", 0, 100, 80),
                     Reactive = d.TryGetValue("reactive", out reactive) && reactive is bool ? (bool?)reactive : null,

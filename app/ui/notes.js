@@ -120,7 +120,7 @@
 
   // The folder is chosen in a list that stays folded: the place in use is enough most of the time.
   const ICONS = {
-    bramble: '<path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/>',
+    lampfish: '<path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/>',
     vault: '<path d="M12 3.5 6.5 8 8 17.5l4 3 4-3L17.5 8z"/><path d="M12 3.5 10 12l2 8.5M10 12l-3.5-4M10 12l6 5.5"/>',
     folder: '<path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/><path d="M12 11v5M9.5 13.5h5"/>',
   };
@@ -128,15 +128,15 @@
 
   function renderPlaces() {
     const vault = info.vault;
-    $('n-here-icon').innerHTML = info.isDefault ? ICONS.bramble : vault ? ICONS.vault : ICONS.folder;
+    $('n-here-icon').innerHTML = info.isDefault ? ICONS.lampfish : vault ? ICONS.vault : ICONS.folder;
     $('n-here-name').textContent = info.isDefault ? tr('lampfish notes folder') : vault ? tr('Obsidian: {0}', vault.name) : short(info.folder);
     $('n-where').textContent = short(info.folder);
     $('n-where').title = info.folder || '';
     $('n-missing').hidden = !info.missing;
     if (info.missing) $('n-missing-text').textContent = tr('{0} cannot be found, so notes go to the lampfish folder until it is back', short(info.missing));
 
-    const places = [{ label: tr('lampfish notes folder'), detail: tr('In the profile of this user'), path: '', vault: false, icon: 'bramble', on: info.isDefault && !info.missing }]
-      .concat((info.vaults || []).map(v => ({ label: tr('Obsidian: {0}', v.name), detail: short(v.path + '\\Bramble'), path: v.path, vault: true, icon: 'vault', on: !info.isDefault && (info.folder || '').toLowerCase() === (v.path + '\\Bramble').toLowerCase() })))
+    const places = [{ label: tr('lampfish notes folder'), detail: tr('In the profile of this user'), path: '', vault: false, icon: 'lampfish', on: info.isDefault && !info.missing }]
+      .concat((info.vaults || []).map(v => ({ label: tr('Obsidian: {0}', v.name), detail: short(v.path + '\\Lampfish'), path: v.path, vault: true, icon: 'vault', on: !info.isDefault && (info.folder || '').toLowerCase() === (v.path + '\\Lampfish').toLowerCase() })))
       .concat([{ label: tr('Choose a folder'), detail: tr('Any folder, a vault or a synced one'), path: 'pick', vault: false, icon: 'folder', on: false }]);
     const custom = !info.isDefault && !places.some(p => p.on);
     $('n-places').replaceChildren(...places.map(p => {
@@ -289,5 +289,5 @@
   // The bot and Home open a note by its name.
   function show(name) { showView('notes'); if (name) { current = null; open(name); } }
 
-  Bramble.notes = { event, visible, show, choose: () => choices(true) };
+  Lampfish.notes = { event, visible, show, choose: () => choices(true) };
 })();

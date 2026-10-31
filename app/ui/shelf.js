@@ -21,7 +21,7 @@
       if (!start || !(e.buttons & 1) || Math.hypot(e.clientX - start.x, e.clientY - start.y) < 8) return;
       start = null;
       handle._dragged = true;
-      Bramble.shelf.out = true;
+      Lampfish.shelf.out = true;
       send('shelf.dragOut', { name: item.name });
     });
     handle.addEventListener('pointerup', () => { start = null; });
@@ -110,7 +110,7 @@
       const first = m.added && m.added.length ? $('s-grid').querySelector(`.s-card[data-name="${CSS.escape(m.added[0])}"]`) : null;
       if (first) { first.scrollIntoView({ block: 'nearest', behavior: calm.matches ? 'auto' : 'smooth' }); if (!calm.matches) first.animate([{ boxShadow: '0 0 0 2px var(--accent)' }, { boxShadow: '0 0 0 2px transparent' }], { duration: 1400, easing: 'ease-out' }); }
     }
-    else if (m.type === 'shelf.dragged') Bramble.shelf.out = false;
+    else if (m.type === 'shelf.dragged') Lampfish.shelf.out = false;
   }
 
   function menu(open) {
@@ -142,5 +142,5 @@
     if (yes) send('shelf.list'); else menu(false);
   }
 
-  Bramble.shelf = { event, visible, items: () => items, out: false };
+  Lampfish.shelf = { event, visible, items: () => items, out: false };
 })();

@@ -61,7 +61,7 @@
     if (queued || !frame) return;
     queued = requestAnimationFrame(() => {
       queued = 0;
-      if (ready && frame.contentWindow) frame.contentWindow.postMessage({ bramble: 'config', config: config(true) }, '*');
+      if (ready && frame.contentWindow) frame.contentWindow.postMessage({ lampfish: 'config', config: config(true) }, '*');
     });
   }
 
@@ -743,10 +743,10 @@
   }
 
   addEventListener('message', e => {
-    if (e.data && e.data.bramble === 'ready' && frame && e.source === frame.contentWindow) { ready = true; push(); }
+    if (e.data && e.data.lampfish === 'ready' && frame && e.source === frame.contentWindow) { ready = true; push(); }
   });
 
-  Bramble.creator = {
+  Lampfish.creator = {
     visible(yes) { if (yes) layout(); },
     reset: restart,
     event(m) {

@@ -59,7 +59,7 @@
 
   function cover(m, host) {
     const box = el('div', 'preview mood__cover');
-    const state = Bramble.state, w = state && state.wallpapers ? state.wallpapers.find(f => f.name === m.wallpaper) : null;
+    const state = Lampfish.state, w = state && state.wallpapers ? state.wallpapers.find(f => f.name === m.wallpaper) : null;
     if (w) {
       box.append(preview(w, host, m.light, m.speed));
       const look = [];
@@ -174,7 +174,7 @@
 
   function newMode() {
     const tile = el('div', 'mood mood--add');
-    const state = Bramble.state || {};
+    const state = Lampfish.state || {};
     const art = cover({ wallpaper: state.current, light: state.light, speed: state.speed, blur: state.blur, saturation: state.saturation, dim: state.dim }, tile);
     art.insertAdjacentHTML('beforeend', `<span class="mood__plus" aria-hidden="true">${svg('<path d="M12 5.5v13M5.5 12h13"/>')}</span>`);
     const head = el('div', 'mood__head');
@@ -212,7 +212,7 @@
 
   function renderModels() {
     const list = $('mood-starters');
-    const key = JSON.stringify(models) + '|' + (Bramble.state ? Bramble.state.wallpapers.map(w => w.name + '@' + w.stamp).join() : '');
+    const key = JSON.stringify(models) + '|' + (Lampfish.state ? Lampfish.state.wallpapers.map(w => w.name + '@' + w.stamp).join() : '');
     if (list.dataset.key === key) return;
     list.dataset.key = key;
     list.replaceChildren(...models.filter(m => MODELS[m.kind]).map(m => {
@@ -304,7 +304,7 @@
     const m = moods.find(x => x.id === chosen);
     document.body.classList.toggle('mode-open', !!m);
     if (!m) { sheet.dataset.key = ''; sheet.replaceChildren(); return; }
-    const key = JSON.stringify(m) + '|' + (Bramble.state ? Bramble.state.wallpapers.map(w => w.name + '@' + w.stamp).join() : '');
+    const key = JSON.stringify(m) + '|' + (Lampfish.state ? Lampfish.state.wallpapers.map(w => w.name + '@' + w.stamp).join() : '');
     if (sheet.dataset.key === key) return;
     sheet.dataset.key = key;
 
@@ -469,7 +469,7 @@
   ];
   // The steps are drawn with what is set up right now: this wallpaper, this cursor, as one theme brought back by a trigger.
   function renderSteps() {
-    const zone = $('mood-help'), s = Bramble.state || {};
+    const zone = $('mood-help'), s = Lampfish.state || {};
     const key = [s.current, s.light, s.speed, s.blur, s.saturation, s.dim, LANGUAGE].join('|');
     if (zone.dataset.key === key && zone.children.length) return;
     zone.dataset.key = key;
@@ -504,7 +504,7 @@
     $('mood-count').textContent = moods.length || '';
     renderSteps();
     if (chosen && !moods.some(m => m.id === chosen)) chosen = null;
-    const state = Bramble.state || {};
+    const state = Lampfish.state || {};
     const key = JSON.stringify(moods) + '|' + [state.current, state.light, state.speed, state.blur, state.saturation, state.dim].join() + '|' + (state.wallpapers ? state.wallpapers.map(w => w.name + '@' + w.stamp).join() : '');
     if (key !== keyGrid && !naming) {
       keyGrid = key;
@@ -546,7 +546,7 @@
 
   function state(list) {
     moods = list;
-    models = (Bramble.state && Bramble.state.moodModels) || [];
+    models = (Lampfish.state && Lampfish.state.moodModels) || [];
     render();
   }
 
@@ -564,5 +564,5 @@
   $('mood-import').addEventListener('click', () => send('moods.import'));
   addEventListener('keydown', e => { if (e.key === 'Escape' && chosen && document.body.dataset.view === 'modes' && !(e.target.matches && e.target.matches('input:not([type="checkbox"]), select'))) close(); });
 
-  Bramble.moods = { state, event, startNew, icon, renderDock, visible() { } };
+  Lampfish.moods = { state, event, startNew, icon, renderDock, visible() { } };
 })();

@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 
-namespace Bramble
+namespace Lampfish
 {
     // A screen capture: the screens freeze under a dark veil, a drag takes a zone, a click takes the window under the pointer,
     // Enter takes the whole screen. The image lands on the shelf and in the clipboard, and a small note offers to annotate it.

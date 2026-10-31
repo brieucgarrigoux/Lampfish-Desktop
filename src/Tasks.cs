@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Win32;
 
-namespace Bramble
+namespace Lampfish
 {
     static class Tasks
     {
@@ -18,7 +18,7 @@ namespace Bramble
         {
             "Idle", "System", "Registry", "Memory Compression", "smss", "csrss", "wininit", "winlogon", "services", "lsass",
             "svchost", "dwm", "fontdrvhost", "explorer", "sihost", "ctfmon", "taskhostw", "audiodg", "spoolsv",
-            "MsMpEng", "NisSrv", "SecurityHealthService", "Bramble", "msedgewebview2",
+            "MsMpEng", "NisSrv", "SecurityHealthService", "Lampfish", "msedgewebview2",
         };
 
         static readonly string WindowsFolder = Environment.GetFolderPath(Environment.SpecialFolder.Windows) + "\\";
@@ -97,7 +97,7 @@ namespace Bramble
 
         static string Kind(Group g)
         {
-            if (g.Locked && g.Name != "Bramble" && g.Name != "msedgewebview2") return "system";
+            if (g.Locked && g.Name != "Lampfish" && g.Name != "msedgewebview2") return "system";
             if (g.Path != null && g.Path.IndexOf("\\Windows Defender\\", StringComparison.OrdinalIgnoreCase) >= 0) return "system";
             if (IsConsole(g.Path)) return "console";
             if (g.Window) return "app";

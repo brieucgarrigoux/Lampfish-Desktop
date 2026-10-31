@@ -205,7 +205,7 @@
     if (document.body.dataset.dock === dock && rowShown === key) { setDock(null); return; }
     rowShown = key;
     setDock(dock);
-    if (dock === 'hardware' && Bramble.hardware) Bramble.hardware.focus(PARTS[key]);
+    if (dock === 'hardware' && Lampfish.hardware) Lampfish.hardware.focus(PARTS[key]);
     markRows();
   }
   function markRows() {
@@ -271,7 +271,7 @@
   }
 
   function render() {
-    const e = Bramble.state;
+    const e = Lampfish.state;
     $('h-date').textContent = new Date().toLocaleDateString(LOCALE, { weekday: 'long', day: 'numeric', month: 'long' });
     $('h-time').textContent = new Date().toLocaleTimeString(LOCALE, { hour: '2-digit', minute: '2-digit' });
     if (!e) return;
@@ -383,7 +383,7 @@
     const r = e.arrange;
     if (r) {
       set('arrange', tr(ARRANGEMENTS[r.arrangement] || 'Left'), tr(r.layouts.length > 1 ? '{0} saved layouts' : r.layouts.length ? '1 saved layout' : 'No saved layout', r.layouts.length));
-      if (Bramble.arrange && Bramble.arrange.thumbnail) visual('arrange', '<span class="h-thumbnail">' + Bramble.arrange.thumbnail(r.arrangement || 'left') + '</span>');
+      if (Lampfish.arrange && Lampfish.arrange.thumbnail) visual('arrange', '<span class="h-thumbnail">' + Lampfish.arrange.thumbnail(r.arrangement || 'left') + '</span>');
     }
 
     const so = e.mouse;
@@ -405,7 +405,7 @@
     const active = moods.find(m => m.current);
     set('modes', active ? active.name : moods.length === 1 ? tr('1 theme') : moods.length ? tr('{0} themes', moods.length) : tr('None yet'), active ? tr('Active') : '');
     if (tiles.modes) tiles.modes.value.translate = !active;
-    if (Bramble.moods) visual('modes', '<span class="h-glyphs">' + moods.slice(0, 5).map(m => Bramble.moods.icon(m.icon)).join('') + '</span>');
+    if (Lampfish.moods) visual('modes', '<span class="h-glyphs">' + moods.slice(0, 5).map(m => Lampfish.moods.icon(m.icon)).join('') + '</span>');
   }
 
   function renderMoods(moods) {
@@ -428,12 +428,12 @@
     more.className = 'link h-modes__more';
     more.textContent = tr('Save the current setup as a theme');
     more.hidden = moods.length > 0;
-    more.addEventListener('click', () => { if (Bramble.moods) Bramble.moods.startNew(); });
+    more.addEventListener('click', () => { if (Lampfish.moods) Lampfish.moods.startNew(); });
     zone.replaceChildren(title, ...moods.slice(0, 4).map(m => {
       const b = document.createElement('button');
       b.className = 'tool-chip';
       b.setAttribute('aria-pressed', String(!!m.current));
-      if (Bramble.moods) b.insertAdjacentHTML('beforeend', Bramble.moods.icon(m.icon));
+      if (Lampfish.moods) b.insertAdjacentHTML('beforeend', Lampfish.moods.icon(m.icon));
       b.append(Object.assign(document.createElement('span'), { textContent: m.name, translate: false }));
       b.title = m.current ? tr('Turn off') : tr('Apply');
       b.addEventListener('click', () => send(m.current ? 'moods.release' : 'moods.apply', { id: m.id }));
@@ -734,5 +734,5 @@
     }, 2000);
   }
 
-  Bramble.home = { state: () => { if (shown) render(); }, event, visible, health, layout };
+  Lampfish.home = { state: () => { if (shown) render(); }, event, visible, health, layout };
 })();

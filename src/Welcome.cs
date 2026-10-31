@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Web.Script.Serialization;
 
-namespace Bramble
+namespace Lampfish
 {
     class WelcomeSettings
     {

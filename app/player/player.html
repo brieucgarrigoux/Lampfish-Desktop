@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Bramble</title>
+<title>Lampfish</title>
 <style>
   html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
 
@@ -91,14 +91,14 @@
 
   addEventListener('message', e => {
     const m = e.data || {};
-    if (m.bramble === 'adjust') window.__adjust(m.light, m.speed);
-    if (m.bramble === 'audio') window.__audio(m.level);
-    if (m.bramble === 'freeze') {
+    if (m.lampfish === 'adjust') window.__adjust(m.light, m.speed);
+    if (m.lampfish === 'audio') window.__audio(m.level);
+    if (m.lampfish === 'freeze') {
       for (const a of document.getAnimations()) m.value ? a.pause() : a.play();
       if (media && media.tagName === 'VIDEO') m.value ? media.pause() : media.play();
     }
   });
-  if (parent !== window) parent.postMessage({ bramble: 'ready' }, '*');
+  if (parent !== window) parent.postMessage({ lampfish: 'ready' }, '*');
 
   function animateImage(src) {
     const scene = document.createElement('div');

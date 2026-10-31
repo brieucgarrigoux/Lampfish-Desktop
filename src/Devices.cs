@@ -4,7 +4,7 @@ using System.Linq;
 using System.Management;
 using System.Threading.Tasks;
 
-namespace Bramble
+namespace Lampfish
 {
     static class Devices
     {

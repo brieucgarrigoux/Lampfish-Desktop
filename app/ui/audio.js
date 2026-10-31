@@ -132,5 +132,5 @@
   $('a-shortcut').addEventListener('change', e => send('audio.shortcut', { on: e.target.checked }));
   $('a-settings').addEventListener('click', () => send('audio.settings'));
 
-  Bramble.audio = { event, visible };
+  Lampfish.audio = { event, visible };
 })();

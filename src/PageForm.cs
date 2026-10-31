@@ -7,7 +7,7 @@ using System.Windows.Forms;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 
-namespace Bramble
+namespace Lampfish
 {
     // A small window that shows one page of app\ui, for what lives outside the main window (annotation, the companion).
     class PageForm : Form

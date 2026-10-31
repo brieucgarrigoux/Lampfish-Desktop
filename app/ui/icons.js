@@ -254,5 +254,5 @@
     zone.replaceChildren(hint);
   }
 
-  Bramble.icons = { state, event, visible, renderDock };
+  Lampfish.icons = { state, event, visible, renderDock };
 })();

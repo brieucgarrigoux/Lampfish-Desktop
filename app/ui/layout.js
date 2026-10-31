@@ -81,8 +81,8 @@
   function state(l) {
     apply(l);
     if (editing) for (const f of families) for (const s of f.services) s.setAttribute('aria-pressed', String(!s.hidden));
-    if (Bramble.home && Bramble.home.layout) Bramble.home.layout(l);
+    if (Lampfish.home && Lampfish.home.layout) Lampfish.home.layout(l);
   }
 
-  Bramble.layout = { state };
+  Lampfish.layout = { state };
 })();

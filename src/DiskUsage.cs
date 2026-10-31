@@ -8,7 +8,7 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Bramble
+namespace Lampfish
 {
     class DiskUsageSettings
     {

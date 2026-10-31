@@ -284,5 +284,5 @@
     send('duplicates.report');
   }
 
-  Bramble.duplicates = { state, event, visible };
+  Lampfish.duplicates = { state, event, visible };
 })();

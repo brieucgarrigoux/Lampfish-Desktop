@@ -6,7 +6,7 @@ using System.Windows.Forms;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 
-namespace Bramble
+namespace Lampfish
 {
     class WallpaperForm : Form
     {
@@ -102,13 +102,13 @@ namespace Bramble
     if (!document.documentElement) return;
     o.disconnect();
     const s = document.createElement('style');
-    s.textContent = 'html::after{content:"""";position:fixed;inset:0;z-index:2147483647;background:#000;pointer-events:none;transition:opacity .5s ease-out}html.__bramble-shown::after{opacity:0}html.__bramble-hiding::after{opacity:1;transition:opacity .25s ease-in}';
+    s.textContent = 'html::after{content:"""";position:fixed;inset:0;z-index:2147483647;background:#000;pointer-events:none;transition:opacity .5s ease-out}html.__lampfish-shown::after{opacity:0}html.__lampfish-hiding::after{opacity:1;transition:opacity .25s ease-in}';
     document.documentElement.appendChild(s);
   }).observe(document, { childList: true });
-  const show = () => raf(() => raf(() => document.documentElement && document.documentElement.classList.add('__bramble-shown')));
+  const show = () => raf(() => raf(() => document.documentElement && document.documentElement.classList.add('__lampfish-shown')));
   addEventListener('load', show, { once: true });
   setTimeout(show, 2500);
-  window.__veil = () => document.documentElement.classList.add('__bramble-hiding');
+  window.__veil = () => document.documentElement.classList.add('__lampfish-hiding');
   window.__freeze = f => {
     if (f === frozen) return;
     frozen = f;
@@ -130,11 +130,11 @@ namespace Bramble
     }
   };
   window.__effects = (blur, saturation, dim) => {
-    let v = document.getElementById('__bramble_effects');
+    let v = document.getElementById('__lampfish_effects');
     if (blur == 0 && saturation == 50 && dim == 0) { if (v) v.remove(); return; }
     if (!v) {
       v = document.createElement('div');
-      v.id = '__bramble_effects';
+      v.id = '__lampfish_effects';
       v.style.cssText = 'position:fixed;inset:0;z-index:2147483647;pointer-events:none';
       document.documentElement.appendChild(v);
     }

@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 using System.Web.Script.Serialization;
 using System.Windows.Forms;
 
-namespace Bramble
+namespace Lampfish
 {
     class KeyChoice
     {

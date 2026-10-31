@@ -629,5 +629,5 @@
     }, 1000);
   }
 
-  Bramble.hardware = { event, visible, focus, renderDock, wifiInfo };
+  Lampfish.hardware = { event, visible, focus, renderDock, wifiInfo };
 })();

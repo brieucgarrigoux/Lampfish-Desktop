@@ -17,7 +17,7 @@ using Microsoft.Win32;
 [assembly: System.Reflection.AssemblyVersion("0.4.0.0")]
 [assembly: System.Reflection.AssemblyFileVersion("0.4.0.0")]
 
-namespace Bramble
+namespace Lampfish
 {
     class ScreenWallpaper { public string Key, Wallpaper; }
 
@@ -33,7 +33,7 @@ namespace Bramble
         public List<string> HiddenViews = new List<string>();
         public WeatherPlace WeatherPlace;
         public List<Dictionary<string, object>> NetworkTests = new List<Dictionary<string, object>>();
-        public string Wallpaper = "bramble-logo.html";
+        public string Wallpaper = "lampfish-logo.html";
         public List<ScreenWallpaper> ScreenWallpapers = new List<ScreenWallpaper>();
         public bool Shuffle;
         public int FrameRate = 60;
@@ -74,8 +74,8 @@ namespace Bramble
         static readonly string SettingsFile = Path.Combine(Root, "settings.json");
 
         static readonly string RemovedFolder = Path.Combine(Root, "app", "trash");
-        const string StartupKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
-        const string OpenSignal = "Bramble.OpenSettings";
+        public const string StartupKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
+        const string OpenSignal = "Lampfish.OpenSettings";
 
         static readonly string RequestFile = Path.Combine(Root, "app", "request.txt");
 
@@ -111,9 +111,9 @@ namespace Bramble
         [STAThread]
         static void Main(string[] args)
         {
-            if (args.Contains("--uninstall")) { Uninstall(); return; }
+            if (args.Contains("--uninstall")) { Migration.Run(); Uninstall(); return; }
             bool firstInstance;
-            using (new Mutex(true, "Bramble.SingleInstance", out firstInstance))
+            using (new Mutex(true, "Lampfish.SingleInstance", out firstInstance))
             {
                 string requestedFolder = RequestedFolder(args);
                 if (!firstInstance)
@@ -125,7 +125,9 @@ namespace Bramble
                     if (EventWaitHandle.TryOpenExisting(OpenSignal, out signal)) signal.Set();
                     return;
                 }
+                if (args.Contains("--quit")) return;
 
+                Migration.Run();
                 Native.SetProcessDpiAwarenessContext(new IntPtr(-4));
 
                 System.Net.ServicePointManager.SecurityProtocol |= System.Net.SecurityProtocolType.Tls12 | (System.Net.SecurityProtocolType)12288 ;
@@ -239,7 +241,7 @@ namespace Bramble
         // Data of the modules added since 0.5 lives in the user profile, not beside the exe.
         public static string DataFolder(string module)
         {
-            string folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Bramble", module);
+            string folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Lampfish", module);
             Directory.CreateDirectory(folder);
             return folder;
         }
@@ -296,7 +298,7 @@ namespace Bramble
 
         static Task<CoreWebView2Environment> CreateEnvironment()
         {
-            string data = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Bramble");
+            string data = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Lampfish");
             var options = new CoreWebView2EnvironmentOptions("--autoplay-policy=no-user-gesture-required --disable-http-cache");
             return CoreWebView2Environment.CreateAsync(null, data, options);
         }
@@ -586,7 +588,7 @@ namespace Bramble
             SendState();
         }
 
-        static readonly string[] Featured = { "bramble-logo.html", "bramble-dusk.html", "bramble.html", "aurora.html" };
+        static readonly string[] Featured = { "lampfish-logo.html", "lampfish-dusk.html", "lampfish.html", "aurora.html" };
 
         static IEnumerable<string> ListWallpapers()
         {
@@ -918,7 +920,7 @@ namespace Bramble
                 case "folder": Process.Start("explorer.exe", "\"" + WallpapersFolder + "\""); break;
                 case "quit": Quit(); return;
                 case "pageError": Log(new Exception("Page: " + m["text"])); return;
-                case "folderBramble": Process.Start("explorer.exe", "\"" + Root + "\""); return;
+                case "folderLampfish": Process.Start("explorer.exe", "\"" + Root + "\""); return;
                 case "log":
                 {
                     string log = Path.Combine(Root, "errors.log");
@@ -1050,15 +1052,15 @@ namespace Bramble
         static bool StartupEnabled()
         {
             using (var key = Registry.CurrentUser.OpenSubKey(StartupKey))
-                return key != null && key.GetValue("Bramble") != null;
+                return key != null && key.GetValue("Lampfish") != null;
         }
 
         static void ToggleStartup()
         {
             using (var key = Registry.CurrentUser.CreateSubKey(StartupKey))
             {
-                if (StartupEnabled()) key.DeleteValue("Bramble", false);
-                else key.SetValue("Bramble", "\"" + Application.ExecutablePath + "\" --background");
+                if (StartupEnabled()) key.DeleteValue("Lampfish", false);
+                else key.SetValue("Lampfish", "\"" + Application.ExecutablePath + "\" --background");
             }
         }
 
@@ -1084,19 +1086,22 @@ namespace Bramble
             {
                 using (var key = Registry.CurrentUser.OpenSubKey(StartupKey, true))
                 {
-                    string v = key == null ? null : key.GetValue("Bramble") as string;
-                    if (v != null && (v.IndexOf(exe, StringComparison.OrdinalIgnoreCase) < 0 || v.Contains("--discret"))) key.SetValue("Bramble", "\"" + exe + "\" --background");
+                    string v = key == null ? null : key.GetValue("Lampfish") as string;
+                    if (v != null && (v.IndexOf(exe, StringComparison.OrdinalIgnoreCase) < 0 || v.Contains("--discret"))) key.SetValue("Lampfish", "\"" + exe + "\" --background");
                 }
             }
             catch (Exception ex) { Log(ex); }
             foreach (var folder in new[] { Environment.SpecialFolder.DesktopDirectory, Environment.SpecialFolder.Programs })
             {
-                string dir = Environment.GetFolderPath(folder), old = Path.Combine(dir, "Bramble.lnk"), now = Path.Combine(dir, "lampfish.lnk");
-                try { if (File.Exists(old) && !File.Exists(now) && ShortcutTarget(old).EndsWith("Bramble.exe", StringComparison.OrdinalIgnoreCase)) File.Move(old, now); }
+                string dir = Environment.GetFolderPath(folder), old = Path.Combine(dir, Migration.OldShortcut), now = Path.Combine(dir, "lampfish.lnk");
+                try { if (File.Exists(old) && !File.Exists(now) && ShortcutTarget(old).EndsWith(Migration.OldExe, StringComparison.OrdinalIgnoreCase)) File.Move(old, now); }
                 catch (Exception ex) { Log(ex); }
                 FollowShortcut(now, exe);
                 FollowShortcut(old, exe);
             }
+            string pinned = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar");
+            FollowShortcut(Path.Combine(pinned, "lampfish.lnk"), exe);
+            FollowShortcut(Path.Combine(pinned, Migration.OldShortcut), exe);
         }
 
         // Windows moves a shortcut's target along with a renamed folder but leaves its icon path behind.
@@ -1111,13 +1116,13 @@ namespace Bramble
                 Type t = r.GetType();
                 Func<string, string> read = name => (t.InvokeMember(name, System.Reflection.BindingFlags.GetProperty, null, r, null) as string) ?? "";
                 string target = read("TargetPath"), icon = Environment.ExpandEnvironmentVariables(read("IconLocation").Split(',')[0]);
-                bool ours = target.EndsWith("Bramble.exe", StringComparison.OrdinalIgnoreCase);
+                bool ours = target.EndsWith(Path.GetFileName(exe), StringComparison.OrdinalIgnoreCase) || target.EndsWith(Migration.OldExe, StringComparison.OrdinalIgnoreCase);
                 bool staleIcon = icon.Length > 0 && !File.Exists(icon);
                 if (ours && (!target.Equals(exe, StringComparison.OrdinalIgnoreCase) || staleIcon))
                 {
                     t.InvokeMember("TargetPath", System.Reflection.BindingFlags.SetProperty, null, r, new object[] { exe });
                     t.InvokeMember("WorkingDirectory", System.Reflection.BindingFlags.SetProperty, null, r, new object[] { Root });
-                    if (staleIcon || icon.EndsWith("Bramble.exe", StringComparison.OrdinalIgnoreCase))
+                    if (staleIcon || icon.EndsWith(Path.GetFileName(exe), StringComparison.OrdinalIgnoreCase) || icon.EndsWith(Migration.OldExe, StringComparison.OrdinalIgnoreCase))
                         t.InvokeMember("IconLocation", System.Reflection.BindingFlags.SetProperty, null, r, new object[] { exe + ",0" });
                     t.InvokeMember("Save", System.Reflection.BindingFlags.InvokeMethod, null, r, null);
                 }
@@ -1145,7 +1150,7 @@ namespace Bramble
         static void Uninstall()
         {
             string exe = Application.ExecutablePath;
-            foreach (var p in Process.GetProcessesByName("Bramble"))
+            foreach (var p in Process.GetProcessesByName("Lampfish"))
                 using (p)
                 {
                     string path;
@@ -1165,14 +1170,14 @@ namespace Bramble
             {
                 using (var key = Registry.CurrentUser.OpenSubKey(StartupKey, true))
                 {
-                    string v = key == null ? null : key.GetValue("Bramble") as string;
-                    if (v != null && v.IndexOf(exe, StringComparison.OrdinalIgnoreCase) >= 0) key.DeleteValue("Bramble", false);
+                    string v = key == null ? null : key.GetValue("Lampfish") as string;
+                    if (v != null && v.IndexOf(exe, StringComparison.OrdinalIgnoreCase) >= 0) key.DeleteValue("Lampfish", false);
                 }
             }
             catch (Exception ex) { Log(ex); }
             foreach (var folder in new[] { Environment.SpecialFolder.DesktopDirectory, Environment.SpecialFolder.Programs })
             {
-                foreach (string name in new[] { "lampfish.lnk", "Bramble.lnk" })
+                foreach (string name in new[] { "lampfish.lnk", Migration.OldShortcut })
                 {
                     string lnk = Path.Combine(Environment.GetFolderPath(folder), name);
                     if (File.Exists(lnk) && ShortcutTarget(lnk).Equals(exe, StringComparison.OrdinalIgnoreCase))

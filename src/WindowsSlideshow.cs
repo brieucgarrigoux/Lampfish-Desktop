@@ -4,7 +4,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Web.Script.Serialization;
 
-namespace Bramble
+namespace Lampfish
 {
     // The slideshow of Windows itself. Each time it changes the picture, Windows rebuilds the desktop window and a live wallpaper blinks for a moment:
     // the interval can be made very long and put back, through the documented desktop wallpaper interface.

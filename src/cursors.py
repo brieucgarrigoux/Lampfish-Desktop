@@ -1,4 +1,4 @@
-"""Builds Bramble's pixel-art cursor themes: python src/cursors.py
+"""Builds Lampfish's pixel-art cursor themes: python src/cursors.py
 
 Each cursor is drawn on a 16 x 16 grid (one letter per cell), then scaled without smoothing to 16, 32, 48, 64, 96
 and 128 px in a single file, so Windows picks the size matching the pointer size setting.
@@ -13,9 +13,9 @@ SCALES = [1, 2, 3, 4, 6, 8]
 SCALES_ANI = [2, 3, 4, 8]  # Windows refuses to load an .ani frame with more than four sizes.
 
 TINTS = {
-    'Bramble Berry': {'K': (8, 1, 26), 'P': (136, 87, 224), 'L': (185, 157, 255), 'D': (90, 32, 171)},
-    'Bramble Snow':  {'K': (55, 12, 111), 'P': (245, 244, 251), 'L': (255, 255, 255), 'D': (204, 197, 232)},
-    'Bramble Night': {'K': (185, 157, 255), 'P': (24, 16, 42), 'L': (61, 42, 101), 'D': (4, 2, 11)},
+    'Lampfish Violet': {'K': (8, 1, 26), 'P': (136, 87, 224), 'L': (185, 157, 255), 'D': (90, 32, 171)},
+    'Lampfish Snow':  {'K': (55, 12, 111), 'P': (245, 244, 251), 'L': (255, 255, 255), 'D': (204, 197, 232)},
+    'Lampfish Night': {'K': (185, 157, 255), 'P': (24, 16, 42), 'L': (61, 42, 101), 'D': (4, 2, 11)},
 }
 
 def grid(rows):

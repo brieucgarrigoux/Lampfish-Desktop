@@ -19,16 +19,16 @@ jobs:
       - name: Install Inno Setup
         run: choco install innosetup --no-progress -y
 
-      - name: Build Bramble and its installer
+      - name: Build Lampfish and its installer
         shell: pwsh
         run: ./src/publish.ps1
 
       - name: Show the checksum of the installer
         shell: pwsh
-        run: Get-FileHash dist/Bramble-Setup-*.exe -Algorithm SHA256 | Format-List
+        run: Get-FileHash dist/Lampfish-Setup-*.exe -Algorithm SHA256 | Format-List
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Bramble-Setup
-          path: dist/Bramble-Setup-*.exe
+          name: Lampfish-Setup
+          path: dist/Lampfish-Setup-*.exe
           if-no-files-found: error

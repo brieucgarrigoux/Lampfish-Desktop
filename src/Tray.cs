@@ -4,7 +4,7 @@ using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace Bramble
+namespace Lampfish
 {
     static class Tray
     {

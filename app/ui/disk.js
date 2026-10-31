@@ -252,7 +252,7 @@
 
   const GLYPHS = {
     disk: '<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 14h16M8 16.5h.01"/>',
-    bramble: '<path d="M4.5 11 12 4.5l7.5 6.5V19a1 1 0 0 1-1 1h-4v-5h-5v5h-4a1 1 0 0 1-1-1z"/>',
+    lampfish: '<path d="M4.5 11 12 4.5l7.5 6.5V19a1 1 0 0 1-1 1h-4v-5h-5v5h-4a1 1 0 0 1-1-1z"/>',
     folder: '<path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/>',
     file: '<path d="M7 3.5h7l4 4v13H7z"/><path d="M14 3.5v4h4"/>',
     group: '<circle cx="7" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="17" cy="12" r="1.3"/>',
@@ -335,7 +335,7 @@
     const sources = $('f-sources');
     const same = (a, b) => a && b && a.replace(/\\$/, '').toLowerCase() === b.replace(/\\$/, '').toLowerCase();
     const rows = f.disks.map(d => ({ icon: 'disk', name: d.name, note: tr('Windows included'), value: size(d.size), action: () => send('files.source', { value: d.path }), active: same(f.source, d.path) }));
-    rows.push({ icon: 'bramble', name: 'Personal folder', note: f.custom, value: '', action: () => send('files.source', { value: 'custom' }), active: same(f.source, f.custom) });
+    rows.push({ icon: 'lampfish', name: 'Personal folder', note: f.custom, value: '', action: () => send('files.source', { value: 'custom' }), active: same(f.source, f.custom) });
     const other = !rows.some(l => l.active);
     rows.push({ icon: 'folder', name: other ? f.sourceName : 'Choose a folder', note: other ? f.source : tr('Pick any folder'), value: '', action: () => send('files.browse'), active: other, choose: true });
     sources.replaceChildren(...rows.map(l => {
@@ -480,5 +480,5 @@
     }
   });
 
-  Bramble.files = { state, event, visible };
+  Lampfish.files = { state, event, visible };
 })();

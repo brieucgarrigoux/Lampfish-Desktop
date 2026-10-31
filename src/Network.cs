@@ -12,7 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 
-namespace Bramble
+namespace Lampfish
 {
     static class Network
     {
@@ -398,7 +398,7 @@ namespace Bramble
             var chrono = Stopwatch.StartNew();
             try
             {
-                System.Net.Dns.GetHostAddresses("bramble-" + Guid.NewGuid().ToString("N").Substring(0, 10) + ".cloudflare.com");
+                System.Net.Dns.GetHostAddresses("lampfish-" + Guid.NewGuid().ToString("N").Substring(0, 10) + ".cloudflare.com");
             }
             catch (SocketException) { }
             catch { return Failure("No response"); }

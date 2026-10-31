@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.VisualBasic.Devices;
 
-namespace Bramble
+namespace Lampfish
 {
     static class Hardware
     {

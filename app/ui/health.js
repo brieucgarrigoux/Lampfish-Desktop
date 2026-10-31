@@ -33,7 +33,7 @@
 
   function act(action) {
     if (action.startsWith('view:')) showView(action.slice(5));
-    else if (action === 'free') { if (Bramble.tasks) Bramble.tasks.free(); else showView('tasks'); }
+    else if (action === 'free') { if (Lampfish.tasks) Lampfish.tasks.free(); else showView('tasks'); }
     else send('health.open', { target: action });
   }
 
@@ -274,7 +274,7 @@
   }
 
   function render() {
-    if (Bramble.home && Bramble.home.health) Bramble.home.health(report && !report.failed ? { level: worst(report.slow), text: verdict(report), protectionLevel: worst(radar(report)), protection: protection(report) } : null);
+    if (Lampfish.home && Lampfish.home.health) Lampfish.home.health(report && !report.failed ? { level: worst(report.slow), text: verdict(report), protectionLevel: worst(radar(report)), protection: protection(report) } : null);
     if (!shown) return;
     if (checking && !report) {
       $('health-slow').replaceChildren(Object.assign(document.createElement('div'), { className: 'row loading', textContent: tr('Checking') }));
@@ -307,5 +307,5 @@
     if (yes) { render(); send('health.scan', { again: false }); send('health.privacy'); }
   }
 
-  Bramble.health = { event, visible };
+  Lampfish.health = { event, visible };
 })();

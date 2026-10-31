@@ -2,7 +2,7 @@
 using System.Drawing;
 using System.Threading;
 
-namespace Bramble
+namespace Lampfish
 {
     static class Desktop
     {

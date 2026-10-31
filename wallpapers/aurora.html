@@ -26,11 +26,11 @@
 
   addEventListener('message', e => {
     const m = e.data || {};
-    if (m.bramble === 'adjust') window.__adjust(m.light, m.speed);
-    if (m.bramble === 'freeze') { frozen = m.value; dirty = true; }
-    if (m.bramble === 'audio') window.__audio(m.level);
+    if (m.lampfish === 'adjust') window.__adjust(m.light, m.speed);
+    if (m.lampfish === 'freeze') { frozen = m.value; dirty = true; }
+    if (m.lampfish === 'audio') window.__audio(m.level);
   });
-  if (parent !== window) parent.postMessage({ bramble: 'ready' }, '*');
+  if (parent !== window) parent.postMessage({ lampfish: 'ready' }, '*');
 
   const sky = document.getElementById('sky'), field = document.getElementById('stars');
   const ctx = sky.getContext('2d'), night = field.getContext('2d');

@@ -185,7 +185,7 @@
     const running = !!(test && test.running);
     $('r-tester').classList.toggle('testing', running);
 
-    const keycap = $('r-test'), off = !!Bramble.state && Bramble.state.speedTest === false;
+    const keycap = $('r-test'), off = !!Lampfish.state && Lampfish.state.speedTest === false;
     keycap.disabled = running || off;
     keycap.title = off ? tr('Turned off in Settings, Connections') : '';
     keycap.querySelector(':scope > span:last-child').textContent = tr(off ? 'Test turned off' : running ? 'Testing…' : test ? 'Test again' : 'Run the test');
@@ -492,7 +492,7 @@
       return;
     }
     let publicIpNode = publicIp;
-    if (Bramble.state && Bramble.state.publicIp === false) publicIpNode = document.createTextNode(tr('Off in Settings'));
+    if (Lampfish.state && Lampfish.state.publicIp === false) publicIpNode = document.createTextNode(tr('Off in Settings'));
     else if (publicIp === null) {
       publicIpNode = document.createElement('button');
       publicIpNode.className = 'link';
@@ -575,5 +575,5 @@
   renderPanel();
   renderHistory();
 
-  Bramble.network = { event, visible };
+  Lampfish.network = { event, visible };
 })();

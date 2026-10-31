@@ -1,7 +1,7 @@
 'use strict';
 
 (function () {
-  const TABS = [['all', 'All'], ['bramble', 'Bramble'], ['windows', 'Windows'], ['mine', 'My cursors']];
+  const TABS = [['all', 'All'], ['lampfish', 'lampfish'], ['windows', 'Windows'], ['mine', 'My cursors']];
   const OLD_TABS = { themes: 'all', custom: 'mine' };
   let s = null, library = null;
   let role = 'Arrow', tab = 'all', keyLibrary = '';
@@ -120,7 +120,7 @@
     return t;
   }
 
-  const SECTIONS = [['bramble', 'Bramble'], ['system', 'Windows'], ['mine', 'My themes']];
+  const SECTIONS = [['lampfish', 'lampfish'], ['system', 'Windows'], ['mine', 'My themes']];
   const ACTIONS = {
     rename: ['Rename', '<path d="M4.5 19.5h4l10-10-4-4-10 10z"/><path d="m13 7 4 4"/>'],
     duplicate: ['Duplicate', '<rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M5.5 15.5v-8a2 2 0 0 1 2-2h8"/>'],
@@ -229,9 +229,9 @@
         const list = themes(kind);
         if (list.length || kind === 'mine') section(tr(label), list.length, 'themes', list, kind === 'mine' ? newTheme() : null);
       }
-    } else if (tab === 'bramble') {
-      section(tr('Themes'), themes('bramble').length, 'themes', themes('bramble'));
-      for (const t of library.brambleCursors || []) section(t.title, t.cursors.length, 'cursors', t.cursors);
+    } else if (tab === 'lampfish') {
+      section(tr('Themes'), themes('lampfish').length, 'themes', themes('lampfish'));
+      for (const t of library.lampfishCursors || []) section(t.title, t.cursors.length, 'cursors', t.cursors);
     } else if (tab === 'windows') {
       section(tr('Themes'), themes('system').length, 'themes', themes('system'));
       section(tr('Cursors'), library.windows.length, 'cursors', library.windows);
@@ -367,5 +367,5 @@
     mark();
   }
 
-  Bramble.mouse = { state, event, visible, renderDock };
+  Lampfish.mouse = { state, event, visible, renderDock };
 })();

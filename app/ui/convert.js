@@ -230,7 +230,7 @@
   $('cv-cancel').addEventListener('click', () => send('convert.cancel'));
   $('cv-again').addEventListener('click', again);
 
-  Bramble.convert = {
+  Lampfish.convert = {
     visible(v) { if (v) send('convert.caps'); },
     event(m) {
       if (m.type === 'convert.caps') { office = { word: m.word, sheet: m.sheet, slides: m.slides }; recent = m.recent; tiles(); }

@@ -7,7 +7,7 @@ using System.Net;
 using System.Threading;
 using System.Web.Script.Serialization;
 
-namespace Bramble
+namespace Lampfish
 {
     class ClaudeSettings
     {

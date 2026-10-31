@@ -6,7 +6,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 
-namespace Bramble
+namespace Lampfish
 {
     static class Weather
     {

@@ -14,12 +14,13 @@ AppName=lampfish
 AppVersion={#Version}
 AppVerName=lampfish {#Version}
 AppPublisher=Brieuc Garrigoux
-AppPublisherURL=https://github.com/brieucgarrigoux/Bramble-Desktop
-AppSupportURL=https://github.com/brieucgarrigoux/Bramble-Desktop/issues
-AppUpdatesURL=https://github.com/brieucgarrigoux/Bramble-Desktop/releases
+AppPublisherURL=https://github.com/brieucgarrigoux/Lampfish-Desktop
+AppSupportURL=https://github.com/brieucgarrigoux/Lampfish-Desktop/issues
+AppUpdatesURL=https://github.com/brieucgarrigoux/Lampfish-Desktop/releases
 VersionInfoVersion={#Version}
 PrivilegesRequired=lowest
-DefaultDirName={autopf}\Bramble
+DefaultDirName={autopf}\Lampfish
+UsePreviousAppDir=no
 DisableDirPage=yes
 DisableProgramGroupPage=yes
 DisableReadyPage=yes
@@ -27,14 +28,14 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0
 WizardStyle=modern dark
-WizardImageFile={#Brand}logo-bramble-192.png
+WizardImageFile={#Brand}logo-lampfish-192.png
 WizardImageStretch=no
-WizardSmallImageFile={#Brand}logo-bramble-192.png
+WizardSmallImageFile={#Brand}logo-lampfish-192.png
 SetupIconFile=icon.ico
-UninstallDisplayIcon={app}\Bramble.exe
+UninstallDisplayIcon={app}\Lampfish.exe
 UninstallDisplayName=lampfish
 RestartApplications=no
-OutputBaseFilename=Bramble-Setup-{#Version}
+OutputBaseFilename=Lampfish-Setup-{#Version}
 Compression=lzma2
 SolidCompression=yes
 
@@ -54,6 +55,8 @@ french.NeedWebView2=lampfish a besoin du runtime Microsoft Edge WebView2, absent
 english.NeedDotNet=lampfish needs .NET Framework 4.8, part of Windows 10 since version 1903.%n%nOpen the Microsoft download page?
 french.NeedDotNet=lampfish a besoin de .NET Framework 4.8, inclus dans Windows 10 depuis la version 1903.%n%nOuvrir la page de téléchargement de Microsoft ?
 english.DeleteData=Also delete the settings and files of lampfish (added wallpapers, cursors, icons, sounds)?%n%nKeeping them brings everything back after a new install.
+english.CannotMove=lampfish could not move its folder because a file in it is in use. Restart the PC, then run the update again.
+french.CannotMove=lampfish n'a pas pu déplacer son dossier, car un fichier y est encore utilisé. Redémarrez le PC, puis relancez la mise à jour.
 french.DeleteData=Supprimer aussi les réglages et les fichiers de lampfish (fonds ajoutés, curseurs, icônes, sons) ?%n%nLes garder permet de tout retrouver après une nouvelle installation.
 
 [Tasks]
@@ -62,23 +65,32 @@ Name: "startup"; Description: "{cm:Startup}"; GroupDescription: "{cm:Options}"; 
 
 [InstallDelete]
 Type: files; Name: "{autoprograms}\Bramble.lnk"
+Type: files; Name: "{app}\Bramble.exe"
+Type: files; Name: "{app}\Bramble.exe.config"
+Type: files; Name: "{app}\wallpapers\bramble-logo.html"
+Type: files; Name: "{app}\wallpapers\bramble-dusk.html"
+Type: files; Name: "{app}\wallpapers\bramble.html"
+Type: filesandordirs; Name: "{app}\app\cursor-themes\Bramble *"
+Type: files; Name: "{app}\brand\logo\berry-*.png"
+Type: files; Name: "{app}\brand\logo\logo-bramble*.png"
+Type: files; Name: "{app}\brand\badge\powered-by-bramble*.png"
 
 [Files]
 Source: "{#Source}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{autoprograms}\lampfish"; Filename: "{app}\Bramble.exe"; WorkingDir: "{app}"
-Name: "{autodesktop}\lampfish"; Filename: "{app}\Bramble.exe"; WorkingDir: "{app}"; Tasks: desktopicon
+Name: "{autoprograms}\lampfish"; Filename: "{app}\Lampfish.exe"; WorkingDir: "{app}"
+Name: "{autodesktop}\lampfish"; Filename: "{app}\Lampfish.exe"; WorkingDir: "{app}"; Tasks: desktopicon
 
 [Registry]
-Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "Bramble"; ValueData: """{app}\Bramble.exe"" --background"; Tasks: startup
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "Lampfish"; ValueData: """{app}\Lampfish.exe"" --background"; Tasks: startup
 
 [Run]
-Filename: "{app}\Bramble.exe"; Description: "{cm:LaunchProgram,lampfish}"; Flags: nowait postinstall skipifsilent
-Filename: "{app}\Bramble.exe"; Flags: nowait; Check: WizardSilent
+Filename: "{app}\Lampfish.exe"; Description: "{cm:LaunchProgram,lampfish}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\Lampfish.exe"; Flags: nowait; Check: WizardSilent
 
 [UninstallRun]
-Filename: "{app}\Bramble.exe"; Parameters: "--uninstall"; Flags: runhidden waituntilterminated; RunOnceId: "UndoWindowsChanges"
+Filename: "{app}\Lampfish.exe"; Parameters: "--uninstall"; Flags: runhidden waituntilterminated; RunOnceId: "UndoWindowsChanges"
 
 [Code]
 const
@@ -120,18 +132,43 @@ begin
     Result := Ask(CustomMessage('NeedWebView2'), 'https://developer.microsoft.com/microsoft-edge/webview2/');
 end;
 
-// A running Bramble locks its own files: it is asked to quit before they are replaced.
-function PrepareToInstall(var NeedsRestart: Boolean): String;
+// Without its mutex there is nothing to quit, and --quit would start a version up to 0.4 instead of stopping it.
+procedure AskToQuit(Mutex, Exe: String);
 var
   Code, Waited: Integer;
 begin
-  Result := '';
-  if FileExists(ExpandConstant('{app}\Bramble.exe')) then
+  if not CheckForMutexes(Mutex) or not FileExists(Exe) then Exit;
+  Exec(Exe, '--quit', '', SW_HIDE, ewWaitUntilTerminated, Code);
+  Waited := 0;
+  while CheckForMutexes(Mutex) and (Waited < 15000) do
   begin
-    Exec(ExpandConstant('{app}\Bramble.exe'), '--quit', '', SW_HIDE, ewWaitUntilTerminated, Code);
+    Sleep(250);
+    Waited := Waited + 250;
+  end;
+end;
+
+// The folder of a version named Bramble moves whole, so the settings and files beside the exe stay with it.
+// The web engine can hold the folder for a moment after the app quit.
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+var
+  Code, Waited: Integer;
+  Old: String;
+begin
+  Result := '';
+  Old := ExpandConstant('{autopf}\Bramble');
+  AskToQuit('Bramble.SingleInstance', Old + '\Bramble.exe');
+  AskToQuit('Lampfish.SingleInstance', ExpandConstant('{app}\Lampfish.exe'));
+  if DirExists(Old) and not DirExists(ExpandConstant('{app}')) then
+  begin
     Waited := 0;
-    while CheckForMutexes('Bramble.SingleInstance') and (Waited < 15000) do
+    while not RenameFile(Old, ExpandConstant('{app}')) do
     begin
+      if Waited >= 15000 then
+      begin
+        Exec(Old + '\Bramble.exe', '', '', SW_SHOW, ewNoWait, Code);
+        Result := CustomMessage('CannotMove');
+        Exit;
+      end;
       Sleep(250);
       Waited := Waited + 250;
     end;
@@ -144,6 +181,6 @@ begin
     if MsgBox(CustomMessage('DeleteData'), mbConfirmation, MB_YESNO or MB_DEFBUTTON2) = IDYES then
     begin
       DelTree(ExpandConstant('{app}'), True, True, True);
-      DelTree(ExpandConstant('{localappdata}\Bramble'), True, True, True);
+      DelTree(ExpandConstant('{localappdata}\Lampfish'), True, True, True);
     end;
 end;

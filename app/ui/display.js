@@ -141,7 +141,7 @@ const Quick = (() => {
   }
 
   function state() {
-    const e = Bramble.state;
+    const e = Lampfish.state;
     if (!e) return;
     renderQuick(e);
     Quick.windows(e);
@@ -233,5 +233,5 @@ const Quick = (() => {
   }
 
   addEventListener('resize', () => { if (shown) renderMap(); });
-  Bramble.display = { state, event, visible, renderDock };
+  Lampfish.display = { state, event, visible, renderDock };
 })();

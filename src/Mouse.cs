@@ -9,7 +9,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Win32;
 
-namespace Bramble
+namespace Lampfish
 {
     static class Mouse
     {
@@ -19,8 +19,8 @@ namespace Bramble
         static readonly string FolderWindows = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Cursors");
         const string Key = @"Control Panel\Cursors";
         const string SchemesKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Control Panel\Cursors\Schemes";
-        const string LegacyScheme = "Bramble";
-        const string Flagship = "Bramble Glass";
+        const string LegacyScheme = Migration.OldCursorScheme;
+        const string Flagship = "Lampfish Glass";
 
         static readonly string[][] Roles =
         {
@@ -44,7 +44,7 @@ namespace Bramble
             try { Migrate(); } catch (Exception ex) { Program.Log(ex); }
         }
 
-        // Older versions saved every hand-picked cursor into a scheme named "Bramble", which read like a built-in theme.
+        // Older versions saved every hand-picked cursor into a scheme of their own, which read like a built-in theme.
         static void Migrate()
         {
             using (var schemes = Registry.CurrentUser.OpenSubKey(Key + @"\Schemes", true))
@@ -146,7 +146,7 @@ namespace Bramble
                         string ani = Path.Combine(folder, r[0] + ".ani");
                         return File.Exists(ani) ? ani : Path.Combine(folder, r[0] + ".cur");
                     }).ToArray();
-                    if (File.Exists(paths[0])) list.Add(new Theme { Name = Path.GetFileName(folder), Source = "bramble", Paths = paths });
+                    if (File.Exists(paths[0])) list.Add(new Theme { Name = Path.GetFileName(folder), Source = "lampfish", Paths = paths });
                 }
             Read(Registry.LocalMachine, SchemesKey, "system", list);
             Read(Registry.CurrentUser, Key + @"\Schemes", "user", list);
@@ -193,7 +193,7 @@ namespace Bramble
                 key.SetValue("Scheme Source", theme.Source == "system" ? 2 : 1, RegistryValueKind.DWord);
             }
 
-            if (theme.Source == "bramble")
+            if (theme.Source == "lampfish")
                 using (var schemas = Registry.CurrentUser.CreateSubKey(Key + @"\Schemes"))
                     schemas.SetValue(name, string.Join(",", theme.Paths), RegistryValueKind.ExpandString);
             Reload();
@@ -347,7 +347,7 @@ namespace Bramble
             Program.Save();
         }
 
-        static void Reload()
+        public static void Reload()
         {
             if (!SystemParametersInfo(SPI_SETCURSORS, 0, IntPtr.Zero, SPIF_UPDATEINIFILE | SPIF_SENDCHANGE))
                 SystemParametersInfo(SPI_SETCURSORS, 0, IntPtr.Zero, 0);
@@ -653,13 +653,13 @@ namespace Bramble
                     name = t.Name,
                     title = NameTheme(t.Name),
                     custom = t.Source == "user",
-                    bramble = t.Source == "bramble",
-                    kind = t.Source == "bramble" ? "bramble" : t.Source == "user" ? "mine" : "system",
+                    lampfish = t.Source == "lampfish",
+                    kind = t.Source == "lampfish" ? "lampfish" : t.Source == "user" ? "mine" : "system",
                     showcase = Showcase.Where(i => i < t.Paths.Length).Select(i => Preview(t.Paths[i])).Where(a => a != null).ToArray(),
-                }).OrderBy(t => t.bramble ? 0 : t.custom ? 2 : 1).ToArray(),
+                }).OrderBy(t => t.lampfish ? 0 : t.custom ? 2 : 1).ToArray(),
                 windows = List(FolderWindows, false),
                 custom = List(CustomFolder, true),
-                brambleCursors = Themes().Where(t => t.Source == "bramble").Select(t => new
+                lampfishCursors = Themes().Where(t => t.Source == "lampfish").Select(t => new
                 {
                     name = t.Name,
                     title = NameTheme(t.Name),
