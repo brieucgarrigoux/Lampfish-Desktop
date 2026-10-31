@@ -167,17 +167,19 @@ namespace Lampfish
             }
         }
 
+        // A copy unpacked from a zip stays where it is when the installer arrives: a file that did not come along keeps its path.
         static string MoveCursor(string path, string former)
         {
+            string moved = path;
             int at = path.IndexOf(ThemesFolder, StringComparison.OrdinalIgnoreCase);
             if (at >= 0)
             {
                 string rest = path.Substring(at + ThemesFolder.Length);
                 int slash = rest.IndexOf('\\');
-                if (slash > 0) return Program.Root + ThemesFolder + Renamed(rest.Substring(0, slash)) + rest.Substring(slash);
+                if (slash > 0) moved = Program.Root + ThemesFolder + Renamed(rest.Substring(0, slash)) + rest.Substring(slash);
             }
-            if (former != null && path.StartsWith(former + "\\", StringComparison.OrdinalIgnoreCase)) return Program.Root + path.Substring(former.Length);
-            return path;
+            else if (former != null && path.StartsWith(former + "\\", StringComparison.OrdinalIgnoreCase)) moved = Program.Root + path.Substring(former.Length);
+            return File.Exists(moved) ? moved : path;
         }
 
         static void MoveCursors(string former)

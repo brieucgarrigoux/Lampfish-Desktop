@@ -417,8 +417,9 @@ namespace Lampfish
             {
                 if (!Directory.Exists(folder)) continue;
                 var icon = ReadIcon(folder);
-                if (icon != null && icon.Item1.StartsWith(former + "\\", StringComparison.OrdinalIgnoreCase))
-                    WriteIcon(folder, Program.Root + icon.Item1.Substring(former.Length), icon.Item2);
+                if (icon == null || !icon.Item1.StartsWith(former + "\\", StringComparison.OrdinalIgnoreCase)) continue;
+                string moved = Program.Root + icon.Item1.Substring(former.Length);
+                if (File.Exists(moved)) WriteIcon(folder, moved, icon.Item2);
             }
         }
 
