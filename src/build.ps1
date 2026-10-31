@@ -1,5 +1,7 @@
 ﻿# Builds Lampfish.exe with the C# compiler that ships with Windows (.NET Framework 4.8).
 # On first run, downloads the official WebView2 SDK from NuGet into app\lib\, with the license that must ship with its DLLs.
+# -Output compiles elsewhere, so a build can run while the app holds Lampfish.exe.
+param([string]$Output)
 $ErrorActionPreference = 'Stop'
 $src = $PSScriptRoot
 $root = Split-Path $src -Parent
@@ -47,11 +49,12 @@ $ico = Join-Path $src 'icon.ico'
 
 $csc = "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
 # Path options are quoted whole because the folder name may contain spaces.
-& $csc /nologo /target:winexe /platform:x64 /optimize+ "/out:$root\Lampfish.exe" "/win32icon:$ico" "/resource:$ico,icon.ico" `
+$exe = if ($Output) { $Output } else { "$root\Lampfish.exe" }
+& $csc /nologo /target:winexe /platform:x64 /optimize+ "/out:$exe" "/win32icon:$ico" "/resource:$ico,icon.ico" `
     /r:System.Windows.Forms.dll /r:System.Drawing.dll /r:System.Web.Extensions.dll /r:Microsoft.VisualBasic.dll /r:System.Management.dll `
     "/lib:$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\WPF" /r:System.Runtime.WindowsRuntime.dll /r:PresentationCore.dll /r:WindowsBase.dll /r:System.Xaml.dll /r:Microsoft.CSharp.dll `
     "/r:$lib\Microsoft.Web.WebView2.Core.dll" "/r:$lib\Microsoft.Web.WebView2.WinForms.dll" "/r:$lib\PdfSharp.dll" `
     "$src\*.cs"
 if ($LASTEXITCODE -ne 0) { throw "Build failed" }
-Copy-Item "$src\Lampfish.exe.config" $root
-Write-Host "OK: $root\Lampfish.exe"
+if (-not $Output) { Copy-Item "$src\Lampfish.exe.config" $root }
+Write-Host "OK: $exe"

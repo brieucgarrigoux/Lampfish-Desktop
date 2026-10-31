@@ -1,0 +1,167 @@
+import { execFileSync, spawnSync } from 'node:child_process';
+import { appendFileSync, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const logFile = process.argv[2] || join(tmpdir(), 'lampfish-check.log');
+const shown = 8;
+let failed = false;
+
+const read = file => {
+  const text = readFileSync(join(root, file), 'utf8');
+  return (text.charCodeAt(0) === 0xFEFF ? text.slice(1) : text).replace(/\r\n/g, '\n');
+};
+const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 1 << 28 }).replace(/\r\n/g, '\n');
+const tracked = git('ls-files').split('\n').filter(Boolean);
+const ui = file => /^app\/ui\/[^/]+$/.test(file);
+
+function step(name, run) {
+  const problems = run();
+  appendFileSync(logFile, `\n[${name}] ${problems.length} problem(s)\n${problems.join('\n')}\n`);
+  console.log(`${problems.length ? 'FAIL' : 'ok  '}  ${name}`);
+  for (const p of problems.slice(0, shown)) console.log(`      ${p}`);
+  if (problems.length > shown) console.log(`      and ${problems.length - shown} more`);
+  if (problems.length) failed = true;
+}
+
+const scratch = mkdtempSync(join(tmpdir(), 'lampfish-check-'));
+
+// node --check names the first error only, which is enough: the next run finds the next one.
+function syntax(source) {
+  const file = join(scratch, 'script.js');
+  writeFileSync(file, source);
+  const run = spawnSync(process.execPath, ['--check', file], { encoding: 'utf8' });
+  if (run.status === 0) return null;
+  const lines = run.stderr.split('\n');
+  const at = lines.find(l => l.includes('script.js:'));
+  return { line: at ? Number(/:(\d+)\s*$/.exec(at)?.[1]) : 0, message: lines.find(l => /Error/.test(l)) || 'syntax error' };
+}
+
+const pageScripts = page => [...read(page).matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g)].map(m => m[1]);
+const pages = tracked.filter(f => ui(f) && f.endsWith('.html') && pageScripts(f).length);
+
+// The scripts of a page share one scope, so they are parsed together: a const declared twice stops the whole page.
+step('scripts of each page, parsed together', () => {
+  const problems = [];
+  for (const page of pages) {
+    const parts = pageScripts(page).map(src => `app/ui/${src.replace(/^\.?\//, '')}`);
+    const missing = parts.filter(p => !existsSync(join(root, p)));
+    if (missing.length) { problems.push(...missing.map(p => `${page}: ${p} does not exist`)); continue; }
+    let line = 1, joined = '';
+    const starts = parts.map(file => {
+      const text = read(file) + '\n';
+      const start = line;
+      joined += text;
+      line += text.split('\n').length - 1;
+      return { file, start };
+    });
+    const error = syntax(joined);
+    if (error) {
+      const part = starts.filter(s => s.start <= error.line).at(-1) || { file: page, start: 1 };
+      problems.push(`${page}: ${part.file}:${error.line - part.start + 1} ${error.message}`);
+    }
+  }
+  return problems;
+});
+
+step('scripts outside a page and inline scripts', () => {
+  const problems = [];
+  const used = new Set(pages.flatMap(page => pageScripts(page).map(src => `app/ui/${src.replace(/^\.?\//, '')}`)));
+  for (const file of tracked.filter(f => ui(f) && f.endsWith('.js') && !used.has(f))) {
+    const error = syntax(read(file));
+    if (error) problems.push(`${file}:${error.line} ${error.message}`);
+  }
+  for (const file of tracked.filter(f => f.endsWith('.html'))) {
+    for (const m of read(file).matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)) {
+      const error = syntax(m[1]);
+      if (error) problems.push(`${file}: inline script, ${error.message}`);
+    }
+  }
+  return problems;
+});
+
+function braces(text) {
+  const opened = [];
+  let line = 1, quote = '';
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '\n') line++;
+    if (quote) {
+      if (c === '\\') i++;
+      else if (c === quote) quote = '';
+    }
+    else if (c === '/' && text[i + 1] === '*') {
+      const end = text.indexOf('*/', i + 2);
+      if (end < 0) return `${line}: comment never closed`;
+      line += text.slice(i, end).split('\n').length - 1;
+      i = end + 1;
+    }
+    else if (c === '"' || c === "'") quote = c;
+    else if (c === '{') opened.push(line);
+    else if (c === '}' && !opened.pop()) return `${line}: closing brace with nothing open`;
+  }
+  return opened.length ? `${opened.at(-1)}: brace never closed` : null;
+}
+
+step('braces of the stylesheets', () => tracked.filter(f => f.endsWith('.css')).flatMap(file => {
+  const problem = braces(read(file));
+  return problem ? [`${file}:${problem}`] : [];
+}));
+
+let french = {};
+step('French translation file', () => {
+  try { french = JSON.parse(read('app/ui/locales/fr.json')); return []; }
+  catch (e) { return [`app/ui/locales/fr.json: ${e.message}`]; }
+});
+
+const unescape = text => text.replace(/\\(['"`\\])/g, '$1').replace(/\\n/g, '\n');
+
+function visibleTexts() {
+  const found = new Map();
+  const add = (text, where) => { if (/\p{L}/u.test(text) && !text.includes('${') && !found.has(text)) found.set(text, where); };
+  for (const file of tracked.filter(f => f.endsWith('.js') && ui(f) && !f.includes('phosphor-data'))) {
+    for (const m of read(file).matchAll(/\btr\(\s*(?:'((?:\\.|[^'\\\n])*)'|"((?:\\.|[^"\\\n])*)"|`((?:\\.|[^`\\])*)`)/g)) add(unescape(m[1] ?? m[2] ?? m[3]), file);
+  }
+  for (const file of tracked.filter(f => f.startsWith('src/') && f.endsWith('.cs'))) {
+    for (const m of read(file).matchAll(/Language\.T\(\s*"((?:\\.|[^"\\\n])*)"/g)) add(unescape(m[1]), file);
+  }
+  for (const file of tracked.filter(f => ui(f) && f.endsWith('.html'))) {
+    const html = read(file).replace(/<(script|style|svg)\b[\s\S]*?<\/\1>/g, ' ').replace(/<!--[\s\S]*?-->/g, ' ');
+    for (const m of html.matchAll(/\b(?:title|aria-label|placeholder|alt)="([^"]+)"/g)) add(m[1], file);
+    for (const m of html.replace(/<[^>]*\btranslate="no"[^>]*>[^<]*/g, ' ').matchAll(/>([^<>]+)</g)) add(m[1].replace(/\s+/g, ' ').trim(), file);
+  }
+  return found;
+}
+
+step('visible texts have a French translation', () => {
+  const skip = new Set(read('src/check-names.txt').split('\n').map(l => l.trim()).filter(Boolean));
+  return [...visibleTexts()].filter(([text]) => !(text in french) && !skip.has(text)).map(([text, file]) => `${file}: "${text}"`);
+});
+
+step('published versions of the changelog', () => {
+  const tag = git('tag', '--list', 'v*', '--sort=-v:refname').split('\n')[0];
+  if (!tag) return [];
+  const tail = text => text.slice(text.search(/^## \[\d/m));
+  const published = tail(git('show', `${tag}:CHANGELOG.md`));
+  const now = read('CHANGELOG.md');
+  const from = now.indexOf(published.split('\n')[0]);
+  if (from < 0) return [`the section ${published.split('\n')[0]} is gone`];
+  if (now.slice(from) === published) return [];
+  const before = published.split('\n'), after = now.slice(from).split('\n');
+  const line = before.findIndex((l, i) => l !== after[i]);
+  return [`changed since ${tag}, near: ${(after[line] ?? before[line]).slice(0, 90)}`];
+});
+
+step('paths named in the readme', () => {
+  const readme = read('README.md');
+  const names = new Set();
+  for (const m of readme.matchAll(/`((?:src|app|brand|wallpapers|sounds|dist)[\\/][^`<>%*]*)`/g)) names.add(m[1]);
+  for (const m of readme.matchAll(/^((?:app\\|src\\|brand\\|wallpapers\\|sounds\\)\S*)\s/gm)) names.add(m[1]);
+  for (const m of readme.matchAll(/(?:src="|\]\()(?!https?:|#|\.\.\/)([^")#]+)/g)) names.add(m[1]);
+  return [...names].map(n => n.replace(/\\/g, '/')).filter(n => !n.startsWith('dist/') && !existsSync(join(root, n))).map(n => `README.md: ${n} does not exist`);
+});
+
+rmSync(scratch, { recursive: true, force: true });
+process.exit(failed ? 1 : 0);
