@@ -50,7 +50,7 @@
 
   // The blocks and the cards share one grid of cells: any cell can hold a card, a small card can sit under a block and a block under a card, and an empty cell stays empty.
   // What a card is dropped on is pushed down. The columns follow the width of the page.
-  const CELL_MIN = 140, GAP = 12, SIZES = [[1, 1], [2, 1], [1, 2], [2, 2]];
+  const CELL_MIN = 150, GAP = 12, SIZES = [[1, 1], [2, 1], [1, 2], [2, 2]];
   let cols = 4, spots = {};
   const main = document.querySelector('.h-main');
   const tileEls = () => [...$('h-tiles').children].filter(el => el.classList.contains('h-tile'));
@@ -66,7 +66,8 @@
     el.style.gridColumn = 'span ' + w;
     el.style.gridRow = 'auto';
     const row = parseFloat(getComputedStyle($('h-board')).gridAutoRows) || 118;
-    return { w, h: Math.max(1, Math.ceil((el.offsetHeight + GAP) / (row + GAP))) };
+    // A few pixels over the last row stay inside the gap: they are not worth an empty row.
+    return { w, h: Math.max(1, Math.ceil((el.offsetHeight + GAP - 8) / (row + GAP))) };
   }
 
   // Where every card goes: `first` is placed where it is wanted, the others keep theirs when they can, and a card that does not have a place yet takes the first free one.
