@@ -17,7 +17,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Fixed
 
 - Magnetic grid: a click on the desktop no longer stops lampfish for half a second.
-- Magnetic grid: the cells no longer flash, and they fade in and out. The grid covered a whole screen, so Windows took it for a full screen app and it hid itself in a loop, with the button of the assistant.
+- Magnetic grid: the cells are drawn in the wallpaper, behind the icons. They show as long as the grid is on and only on the desktop, and a click or a change of window no longer makes them flash. The old layer over the screen looked like a full screen app to Windows and hid itself in a loop, with the button of the assistant.
 - Assistant: the window no longer slides over its button when it opens and closes, and the loading arc only shows for a real wait.
 - Home: a block no longer leaves a gap under it, at any size or zoom, and the question mark stays next to Customize.
 - Home: at a zoom or a window size with another number of columns, the blocks and cards flow in their order instead of keeping cells that leave holes. The arrangement comes back with its number of columns.

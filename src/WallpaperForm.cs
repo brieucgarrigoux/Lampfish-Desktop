@@ -70,6 +70,7 @@ namespace Lampfish
                 if (Suspended) Freeze(true);
                 if (last != null) Effects(last);
                 FrameRate(Program.R.FrameRate);
+                Run(DesktopGrid.ScriptFor(Screen));
             };
             view.CoreWebView2.ProcessFailed += (s, e) =>
             {
@@ -143,6 +144,34 @@ namespace Lampfish
     if (saturation != 50) filters.push('saturate(' + saturation / 50 + ')');
     v.style.backdropFilter = filters.join(' ') || 'none';
     v.style.background = 'rgba(0,0,0,' + (dim / 100 * 0.75) + ')';
+  };
+  window.__grid = (cells, width, height) => {
+    let g = document.getElementById('__lampfish_grid');
+    if (!cells) { if (g) g.remove(); return; }
+    if (!g) {
+      g = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      g.id = '__lampfish_grid';
+      g.setAttribute('preserveAspectRatio', 'none');
+      g.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;z-index:2147483647;pointer-events:none';
+      g.innerHTML = `<path fill='none' stroke='rgba(0,0,0,.24)' stroke-width='3'/><path fill='rgba(255,255,255,.07)' stroke='rgba(255,255,255,.27)' stroke-width='1.5'/><rect fill='rgba(30,187,170,.28)' stroke='#1EBBAA' stroke-width='2' visibility='hidden'/>`;
+      document.documentElement.appendChild(g);
+    }
+    g.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    g.__cells = cells;
+    const d = cells.map(([x, y, w, h]) => {
+      const r = Math.max(6, w / 7);
+      return `M${x + r} ${y}h${w - 2 * r}a${r} ${r} 0 0 1 ${r} ${r}v${h - 2 * r}a${r} ${r} 0 0 1 ${-r} ${r}h${2 * r - w}a${r} ${r} 0 0 1 ${-r} ${-r}v${2 * r - h}a${r} ${r} 0 0 1 ${r} ${-r}z`;
+    }).join('');
+    g.children[0].setAttribute('d', d);
+    g.children[1].setAttribute('d', d);
+  };
+  window.__gridAim = i => {
+    const g = document.getElementById('__lampfish_grid');
+    if (!g) return;
+    const box = g.children[2], c = g.__cells[i];
+    box.setAttribute('visibility', c ? 'visible' : 'hidden');
+    if (!c) return;
+    box.setAttribute('x', c[0]); box.setAttribute('y', c[1]); box.setAttribute('width', c[2]); box.setAttribute('height', c[3]); box.setAttribute('rx', Math.max(6, c[2] / 7));
   };
 })();";
 
@@ -231,6 +260,12 @@ namespace Lampfish
         {
             var core = view.CoreWebView2;
             if (core != null) core.ExecuteScriptAsync("window.__audio && window.__audio(" + level + ")");
+        }
+
+        public void Run(string script)
+        {
+            var core = view.CoreWebView2;
+            if (core != null && script != null) core.ExecuteScriptAsync(script);
         }
 
         public void FrameRate(int fps)

@@ -447,7 +447,7 @@ namespace Lampfish
             return Types.TryGetValue(Path.GetExtension(file).ToLowerInvariant(), out type) ? type : null;
         }
 
-        static void ForEachWallpaper(Action<WallpaperForm> action)
+        public static void ForEachWallpaper(Action<WallpaperForm> action)
         {
             bool dead = false;
             foreach (var f in screens.ToList())
