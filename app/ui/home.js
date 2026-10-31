@@ -344,7 +344,7 @@
         details: { title: tr('Processor'), value: Math.round(cpu) + ' %', lines: [[tr('Clock'), stats.processor.frequency ? (stats.processor.frequency / 1000).toLocaleString(LOCALE, { maximumFractionDigits: 2 }) + ' GHz' : ''],
           [tr('Threads'), String(stats.processor.threads.length)], [tr('Busiest'), busy && busy.cpu >= 1 ? busy.name + ' · ' + Math.round(busy.cpu) + ' %' : '']] } });
       pc.push({ key: 'memory', part: ram, value: Math.round(ram) + ' %', label: tr('Memory'), level: level(ram, 75, 85),
-        sub: memoryHigh ? tr('Free up memory') : tr('{0} of {1}', size(stats.memory.used).replace(/ \S+$/, ''), size(stats.memory.total)),
+        sub: memoryHigh ? tr('Free it up') : tr('{0} of {1}', size(stats.memory.used).replace(/ \S+$/, ''), size(stats.memory.total)),
         details: { title: tr('Memory'), value: Math.round(ram) + ' %', lines: [[tr('In use'), size(stats.memory.used)], [tr('Available'), size(stats.memory.total - stats.memory.used)],
           [tr('Installed'), size(stats.memory.total)], [tr('Heaviest'), heavy ? heavy.name + ' · ' + size(heavy.memory) : '']] } });
     }
