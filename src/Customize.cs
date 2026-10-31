@@ -68,7 +68,7 @@ namespace Lampfish
             {
                 string id = o.ContainsKey("id") ? Convert.ToString(o["id"]) : null;
                 if (id == null || !Id.IsMatch(id) || result.Any(p => p.Id == id)) continue;
-                result.Add(new TilePlace { Id = id, Col = Cell(o, "col", 0, 11, 0), Row = Cell(o, "row", 0, 59, 0), W = Cell(o, "w", 1, 3, 1), H = Cell(o, "h", 1, 2, 1) });
+                result.Add(new TilePlace { Id = id, Col = Cell(o, "col", 0, 11, 0), Row = Cell(o, "row", 0, 59, 0), W = Cell(o, "w", 1, 8, 1), H = Cell(o, "h", 1, 12, 1) });
                 if (result.Count >= 40) break;
             }
             return result;

@@ -28,7 +28,7 @@
   const glyph = icon => `<svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${icon}</svg>`;
   const iconOf = view => SHORTCUTS[view][1] || (document.querySelector(`.rail .service[data-view="${view}"] svg`) || {}).innerHTML || '';
   // A service with a side panel opens there, so Home stays in view; the others open their page.
-  const open = view => view === 'claude' ? showView('settings') : DOCKS[view] ? dockTo(view) : showView(view);
+  const open = view => view === 'claude' ? showView('plugins') : DOCKS[view] ? dockTo(view) : showView(view);
   function tile(view) {
     if (tiles[view]) return tiles[view];
     const b = document.createElement('button');
@@ -48,33 +48,47 @@
     return tiles[view] = { el: b, value: b.querySelector('.h-value'), detail: null, visual: b.querySelector('.h-visual') };
   }
 
-  // The cards sit on a grid of cells: any cell can hold one, a card takes one to three cells across and one or two down, and an empty cell stays empty.
+  // The blocks and the cards share one grid of cells: any cell can hold a card, a small card can sit under a block and a block under a card, and an empty cell stays empty.
   // What a card is dropped on is pushed down. The columns follow the width of the page.
-  const CELL_MIN = 150, GAP = 12, SIZES = [[1, 1], [2, 1], [1, 2], [2, 2]];
+  const CELL_MIN = 140, GAP = 12, SIZES = [[1, 1], [2, 1], [1, 2], [2, 2]];
   let cols = 4, spots = {};
+  const main = document.querySelector('.h-main');
   const tileEls = () => [...$('h-tiles').children].filter(el => el.classList.contains('h-tile'));
+  const keyOf = el => el.dataset.block ? 'block' + el.dataset.block : el.dataset.view;
+  const blockEls = () => [...main.children].sort((a, b) => (Number(a.style.order) || 0) - (Number(b.style.order) || 0));
+  const gridEls = () => [...blockEls().filter(el => !el.hidden), ...tileEls()];
+
+  // A block takes its share of the width, as many rows as its content needs, and never a size chosen by hand.
+  function blockSize(el) {
+    const width = $('h-board').clientWidth, name = el.dataset.block, third = Math.floor(cols / 3);
+    const w = width >= 900 && cols >= 6 ? { stage: cols - third * 2 > third ? cols - third - Math.floor((cols - third) / 2) : third, pc: third, quick: Math.floor((cols - third) / 2) }[name]
+      : width >= 760 ? { stage: Math.ceil(cols * .6), pc: cols - Math.ceil(cols * .6), quick: cols }[name] : cols;
+    el.style.gridColumn = 'span ' + w;
+    el.style.gridRow = 'auto';
+    const row = parseFloat(getComputedStyle($('h-board')).gridAutoRows) || 118;
+    return { w, h: Math.max(1, Math.ceil((el.offsetHeight + GAP) / (row + GAP))) };
+  }
 
   // Where every card goes: `first` is placed where it is wanted, the others keep theirs when they can, and a card that does not have a place yet takes the first free one.
   function solveGrid(views, wanted, first) {
     const used = new Set(), out = {};
     const free = (c, r, w, h) => { if (c < 0 || c + w > cols) return false; for (let i = 0; i < w; i++) for (let j = 0; j < h; j++) if (used.has((c + i) + ',' + (r + j))) return false; return true; };
     const take = (v, c, r, w, h) => { for (let i = 0; i < w; i++) for (let j = 0; j < h; j++) used.add((c + i) + ',' + (r + j)); out[v] = { col: c, row: r, w, h }; };
+    // A block that has no place yet goes first, so cards saved before the blocks joined the grid end up under them.
+    const rank = v => v === first ? 0 : wanted[v] && wanted[v].col == null ? 1 : wanted[v] ? 2 : 3;
     const order = views.slice().sort((a, b) => {
-      if (a === first) return -1;
-      if (b === first) return 1;
       const A = wanted[a], B = wanted[b];
-      if (A && B) return A.row - B.row || A.col - B.col;
-      return A ? -1 : B ? 1 : views.indexOf(a) - views.indexOf(b);
+      return rank(a) - rank(b) || (rank(a) === 2 ? A.row - B.row || A.col - B.col : views.indexOf(a) - views.indexOf(b));
     });
     for (const v of order) {
       const want = wanted[v], w = Math.min(cols, (want && want.w) || 1), h = (want && want.h) || 1;
-      if (want) {
+      if (want && want.col != null) {
         const c = Math.max(0, Math.min(cols - w, want.col));
         let r = Math.max(0, want.row);
         while (!free(c, r, w, h)) r++;
         take(v, c, r, w, h);
       } else {
-        let r = 0, found = false;
+        let r = (want && want.floor) || 0, found = false;
         for (; !found; r++) for (let c = 0; c <= cols - w && !found; c++) if (free(c, r, w, h)) { take(v, c, r, w, h); found = true; }
       }
     }
@@ -83,15 +97,23 @@
 
   // Puts every card where the grid says. `want` overrides the wish of some cards (a card being moved or resized).
   function arrangeTiles(want = {}, first = null) {
-    const zone = $('h-tiles'), els = tileEls();
+    const zone = $('h-tiles'), els = gridEls();
     const saved = {};
     for (const p of (layoutNow.TilePlaces || [])) saved[p.Id] = { col: p.Col, row: p.Row, w: p.W, h: p.H };
-    const wanted = {};
-    for (const el of els) { const v = el.dataset.view; wanted[v] = want[v] || spots[v] || saved[v] || null; }
-    spots = solveGrid(els.map(el => el.dataset.view), wanted, first);
+    const wanted = {}, blocksEls = els.filter(el => el.dataset.block);
+    for (const el of blocksEls) { const v = keyOf(el); wanted[v] = Object.assign({ col: null, row: 0 }, want[v] || spots[v] || saved[v], blockSize(el)); }
+    // Until a block has been moved, the blocks fill the top and the cards start in one row under the lowest one, even with a layout saved before they shared the grid.
+    const placed = blocksEls.some(el => spots[keyOf(el)] || saved[keyOf(el)]);
+    const under = placed ? 0 : Object.values(solveGrid(blocksEls.map(keyOf), wanted)).reduce((n, s) => Math.max(n, s.row + s.h), 0);
+    for (const el of els) {
+      if (el.dataset.block) continue;
+      const v = keyOf(el), wish = want[v] || spots[v] || null, old = saved[v];
+      wanted[v] = wish || (old ? Object.assign({}, old, { row: old.row + under }) : under ? { col: null, row: 0, w: 1, h: 1, floor: under } : null);
+    }
+    spots = solveGrid(els.map(keyOf), wanted, first);
     let rows = 1;
     for (const el of els) {
-      const s = spots[el.dataset.view];
+      const s = spots[keyOf(el)];
       el.style.gridColumn = (s.col + 1) + ' / span ' + s.w;
       el.style.gridRow = (s.row + 1) + ' / span ' + s.h;
       el.dataset.size = s.w + 'x' + s.h;
@@ -101,7 +123,7 @@
     for (const cell of [...zone.querySelectorAll('.h-cell')]) cell.remove();
     if (editing) {
       const taken = new Set();
-      for (const el of els) { const s = spots[el.dataset.view]; for (let i = 0; i < s.w; i++) for (let j = 0; j < s.h; j++) taken.add((s.col + i) + ',' + (s.row + j)); }
+      for (const el of els) { const s = spots[keyOf(el)]; for (let i = 0; i < s.w; i++) for (let j = 0; j < s.h; j++) taken.add((s.col + i) + ',' + (s.row + j)); }
       for (let r = 0; r <= rows; r++) for (let c = 0; c < cols; c++) if (!taken.has(c + ',' + r)) {
         const cell = document.createElement('i');
         cell.className = 'h-cell';
@@ -114,7 +136,7 @@
 
   // The columns that fit, at least two.
   function fitColumns() {
-    const zone = $('h-tiles'), width = zone.clientWidth;
+    const zone = $('h-board'), width = zone.clientWidth;
     if (!width) return;
     const next = Math.max(2, Math.min(8, Math.floor((width + GAP) / (CELL_MIN + GAP))));
     if (next === cols && zone.style.getPropertyValue('--cols')) return;
@@ -127,7 +149,7 @@
   // A card follows the pointer in the edit mode; the cards in its way glide down, it settles in the cell it was left over.
   function dragTile(b) {
     let start = null, dragging = false, home = null, origin = null, last = '';
-    const view = () => b.dataset.view;
+    const view = () => keyOf(b);
     const spot = () => { const t = b.style.transform; b.style.transform = ''; const r = b.getBoundingClientRect(); b.style.transform = t; return r; };
     const follow = e => {
       if (!start || e.pointerId !== start.id) return;
@@ -139,13 +161,13 @@
         start.dx = start.x - origin.left; start.dy = start.y - origin.top;
         b.classList.add('grabbed');
       }
-      const zone = $('h-tiles').getBoundingClientRect(), cw = (zone.width - GAP * (cols - 1)) / cols, rh = parseFloat(getComputedStyle($('h-tiles')).gridAutoRows) || 118;
+      const zone = $('h-board').getBoundingClientRect(), cw = (zone.width - GAP * (cols - 1)) / cols, rh = parseFloat(getComputedStyle($('h-board')).gridAutoRows) || 118;
       const col = Math.round((e.clientX - start.dx - zone.left) / (cw + GAP)), row = Math.round((e.clientY - start.dy - zone.top) / (rh + GAP));
       const key = col + ',' + row;
       if (key !== last) {
         last = key;
         const s = spots[view()];
-        glide(tileEls().filter(x => x !== b), () => arrangeTiles({ [view()]: { col, row, w: s.w, h: s.h } }, view()));
+        glide(gridEls().filter(x => x !== b), () => arrangeTiles({ [view()]: { col, row, w: s.w, h: s.h } }, view()));
         home = spot();
       }
       b.style.transform = `translate(${e.clientX - start.x - (home.left - origin.left)}px, ${e.clientY - start.y - (home.top - origin.top)}px) scale(1.02)`;
@@ -181,8 +203,8 @@
       e.preventDefault();
       e.stopPropagation();
       const s = spots[view()];
-      glide(tileEls().filter(x => x !== b), () => arrangeTiles({ [view()]: { col: s.col + step[0], row: Math.max(0, s.row + step[1]), w: s.w, h: s.h } }, view()));
-      b.focus();
+      glide(gridEls().filter(x => x !== b), () => arrangeTiles({ [view()]: { col: s.col + step[0], row: Math.max(0, s.row + step[1]), w: s.w, h: s.h } }, view()));
+      (b.querySelector(':scope > .h-cover') || b).focus();
       saveHome();
     });
   }
@@ -193,7 +215,7 @@
     let at = SIZES.findIndex(z => z[0] === s.w && z[1] === s.h);
     let next = SIZES[(at + 1) % SIZES.length];
     if (next[0] > cols) next = SIZES.find(z => z[0] <= cols && z[1] !== s.h) || [1, 1];
-    glide(tileEls().filter(x => x !== b), () => arrangeTiles({ [b.dataset.view]: { col: s.col, row: s.row, w: next[0], h: next[1] } }, b.dataset.view));
+    glide(gridEls().filter(x => x !== b), () => arrangeTiles({ [b.dataset.view]: { col: s.col, row: s.row, w: next[0], h: next[1] } }, b.dataset.view));
     saveHome();
   }
 
@@ -618,8 +640,7 @@
 
   // Customize: the three blocks and the cards move with the pointer or the arrows; a click hides a block or unpins a card.
   let editing = false, layoutKey = '', layoutNow = {};
-  const main = document.querySelector('.h-main');
-  const blocks = () => [...main.children].sort((a, b) => (Number(a.style.order) || 0) - (Number(b.style.order) || 0));
+  const blocks = blockEls;
   const ordered = (saved, all) => [...(saved || []).filter(x => all.includes(x)), ...all.filter(x => !(saved || []).includes(x))];
   function layout(l) {
     layoutNow = l || {};
@@ -667,7 +688,7 @@
   function saveHome() {
     const all = blocks();
     const message = { blocks: all.map(el => el.dataset.block), hiddenBlocks: all.filter(el => el.classList.contains('is-off')).map(el => el.dataset.block), tiles: tileEls().map(t => t.dataset.view) };
-    message.places = message.tiles.filter(v => spots[v]).map(v => ({ id: v, col: spots[v].col, row: spots[v].row, w: spots[v].w, h: spots[v].h }));
+    message.places = gridEls().map(keyOf).filter(v => spots[v]).map(v => ({ id: v, col: spots[v].col, row: spots[v].row, w: spots[v].w, h: spots[v].h }));
     layoutNow = { Blocks: message.blocks, HiddenBlocks: message.hiddenBlocks, Tiles: message.tiles, TilePlaces: message.places.map(p => ({ Id: p.id, Col: p.col, Row: p.row, W: p.w, H: p.h })) };
     layoutKey = JSON.stringify([layoutNow.Blocks, layoutNow.HiddenBlocks, layoutNow.Tiles, layoutNow.TilePlaces, editing]);
     send('layout.home', message);
@@ -687,13 +708,11 @@
       layout(layoutNow);
     });
     el.append(cover);
-    const swap = (a, b, after) => {
-      const list = blocks().filter(x => x !== a);
-      list.splice(list.indexOf(b) + (after ? 1 : 0), 0, a);
-      list.forEach((x, i) => { x.style.order = i; });
-    };
-    dragOrder(el, { peers: blocks, active: () => editing, done: saveHome, move: swap, focus: cover });
+    dragTile(el);
   }
+  // A block grows when its content does, for instance when Screen and sleep unfolds: what is under it moves down.
+  const growing = new ResizeObserver(() => { if (shown) arrangeTiles(); });
+  for (const el of main.children) growing.observe(el);
   function edit(on) {
     if (on === editing) return;
     editing = on;
@@ -708,7 +727,7 @@
   }
   $('h-customize').addEventListener('click', () => edit(true));
   // The grid follows the width of the page.
-  new ResizeObserver(() => { if (shown) fitColumns(); }).observe($('h-tiles'));
+  new ResizeObserver(() => { if (shown) fitColumns(); }).observe($('h-board'));
   $('h-done').addEventListener('click', () => edit(false));
   $('h-reset').addEventListener('click', () => send('layout.reset', { what: 'home' }));
   addEventListener('keydown', e => { if (e.key === 'Escape' && editing && !document.body.classList.contains('bar-editing')) edit(false); });
