@@ -120,6 +120,7 @@
       el.dataset.size = s.w + 'x' + s.h;
       rows = Math.max(rows, s.row + s.h);
     }
+    fitRows(els, rows);
     // While arranging, every empty cell shows, and one more row to drop a card into.
     for (const cell of [...zone.querySelectorAll('.h-cell')]) cell.remove();
     if (editing) {
@@ -133,6 +134,26 @@
         zone.append(cell);
       }
     }
+  }
+
+  // A block rarely measures a whole number of rows, and the rest would stay as a hole under it. The row that ends a block is only as tall as the block needs.
+  // While arranging, every row keeps one height, so the cells line up under the pointer.
+  function fitRows(els, rows) {
+    const board = $('h-board');
+    if (editing) { board.style.gridTemplateRows = ''; return; }
+    const row = parseFloat(getComputedStyle(board).gridAutoRows) || 118, heights = [];
+    for (let r = 0; r < rows; r++) {
+      let height = null;
+      for (const el of els) {
+        const s = spots[keyOf(el)];
+        if (s.row + s.h - 1 !== r) continue;
+        const need = el.dataset.block ? el.offsetHeight : s.h * row + (s.h - 1) * GAP;
+        const above = heights.slice(s.row, r).reduce((n, h) => n + h + GAP, 0);
+        height = Math.max(height ?? 0, need - above);
+      }
+      heights[r] = height == null ? row : Math.max(0, height);
+    }
+    board.style.gridTemplateRows = heights.map(h => h + 'px').join(' ');
   }
 
   // The columns that fit, at least two.

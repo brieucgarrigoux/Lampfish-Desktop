@@ -82,7 +82,7 @@ Fonts: `--display` for titles and lit text, `--numbers` with `font-variant-numer
 - **Segments**, **time select** (`.time-select`), **chips** (`.tool-chip`), **links** (`.link` with a 14 px icon).
 - **Buttons**: main `.button--accent`, or `.keycap-pill` for the main action of a shell; secondary `.button`; card header action = chip; title line action = link. Armed red (`--danger-dim`, text and ring `--danger`) is the only red button.
 - **Ring dial** (`.dials`, `.dial`, filled by `dials(zone, list)` of `dials.js`, shared by every page): a value and its share. `.dials--small` on Home and in the companion, `.dials--led` with lit figures in Health. Each dial shows details in a bubble on hover or keyboard focus.
-- **Instruments** (`thermometer`, `batteryRelief`, `wifiRelief` in `main.js`): used instead of a ring wherever they exist. A ring is only for what has no instrument.
+- **Instruments** (`thermometer`, `batteryRelief`, `wifiRelief` in `instruments.js`): used instead of a ring wherever they exist. A ring is only for what has no instrument.
 - **Bezel** (`.bezel`, `.bezel__glass`): a rectangular screen in a brushed steel frame with a verdict in `.led-text` and a gray line.
 - **Seal** (`.seal`): a round anodized frame with a face or a shield drawn in light (`faceLight`, `shieldLight`). Never in a diagram.
 - **Readouts** (`.readouts`, `.readout`): a well with rows of icon, title, effect, value and action.
@@ -135,7 +135,7 @@ Segoe sits its capitals 0.064 em under the middle of the line. `main.css` declar
 
 ## Home grid
 
-Blocks and cards share `.h-board`. `.h-main` and `.h-shortcuts` take no box (`display: contents`), so a block never moves in the page and the live preview never reloads. A block has no size of its own: `blockSize()` gives it a share of the width and the rows its content needs.
+Blocks and cards share `.h-board`. `.h-main` and `.h-shortcuts` take no box (`display: contents`), so a block never moves in the page and the live preview never reloads. A block has no size of its own: `blockSize()` gives it a share of the width and the rows its content needs. The row that ends a block is only as tall as the block needs (`fitRows()`), so a block never leaves a hole under it; while arranging, every row keeps one height so the cells line up.
 
 ## Icons
 

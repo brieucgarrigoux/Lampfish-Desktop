@@ -5,6 +5,24 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+
+- Assistant: the dashboard shows the battery and the Wi-Fi next to the processor and the memory.
+- Assistant: the Settings tab chooses the appearance of lampfish, and the window follows at once. The switch for Windows is now named Windows dark mode.
+
+### Changed
+
+- Magnetic grid: the cells fade in while an icon is carried, and no longer whenever the desktop is in front.
+
+### Fixed
+
+- Magnetic grid: the cells no longer flash. The grid covered a whole screen, so Windows took it for a full screen app and it hid itself in a loop, with the button of the assistant.
+- Assistant: the window no longer slides over its button when it opens and closes, and the loading arc only shows for a real wait.
+- Home: a block no longer leaves a gap under it, at any size or zoom, and the question mark stays next to Customize.
+- Assistant and Plugins pages are centered like the others.
+- Mouse: the buttons of the header wrap instead of leaving the page at a high zoom.
+- French: two messages of the magnetic grid were in English.
+
 ## [0.5.0] - 2026-10-31
 
 ### Added

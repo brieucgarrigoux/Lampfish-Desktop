@@ -577,7 +577,7 @@ body.resizing .rail-scrollable { pointer-events: none; }
 /* What Go to found stays lit for a moment, so the eye lands on it. */
 .is-found { position: relative; border-radius: var(--radius-control); animation: found 1.8s ease-out; }
 @keyframes found { 0%, 60% { box-shadow: inset 0 0 0 2px var(--accent); background: var(--accent-dim); } 100% { box-shadow: inset 0 0 0 2px transparent; } }
-.view--assistant, .view--plugins { max-width: 760px; }
+.view--assistant, .view--plugins { max-width: 900px; margin-inline: auto; }
 .view--assistant .help-section { margin-bottom: 16px; }
 #companion-tabs-row { flex-wrap: wrap; }
 #companion-tabs { flex: 1 1 100%; justify-content: flex-start; margin-top: 8px; }
