@@ -102,16 +102,30 @@
     const saved = {};
     for (const p of (layoutNow.TilePlaces || [])) saved[p.Id] = { col: p.Col, row: p.Row, w: p.W, h: p.H };
     const wanted = {}, blocksEls = els.filter(el => el.dataset.block);
-    for (const el of blocksEls) { const v = keyOf(el); wanted[v] = Object.assign({ col: null, row: 0 }, want[v] || spots[v] || saved[v], blockSize(el)); }
-    // Until a block has been moved, the blocks fill the top and the cards start in one row under the lowest one, even with a layout saved before they shared the grid.
-    const placed = blocksEls.some(el => spots[keyOf(el)] || saved[keyOf(el)]);
-    const under = placed ? 0 : Object.values(solveGrid(blocksEls.map(keyOf), wanted)).reduce((n, s) => Math.max(n, s.row + s.h), 0);
-    for (const el of els) {
-      if (el.dataset.block) continue;
-      const v = keyOf(el), wish = want[v] || spots[v] || null, old = saved[v];
-      wanted[v] = wish || (old ? Object.assign({}, old, { row: old.row + under }) : under ? { col: null, row: 0, w: 1, h: 1, floor: under } : null);
+    // Places are cells of the grid they were saved on. With another number of columns, at another zoom or window size, the same cells would leave holes:
+    // everything flows again in the same order, and the places come back with their number of columns.
+    const savedCols = layoutNow.TileCols || Math.max(0, ...Object.values(saved).map(p => p.col + p.w));
+    if (!Object.keys(spots).length && !Object.keys(want).length && savedCols && savedCols !== cols) {
+      const rank = el => { const p = saved[keyOf(el)]; return p ? p.row * 100 + p.col : Infinity; };
+      const order = els.slice().sort((a, b) => rank(a) - rank(b));
+      for (const el of order) {
+        const v = keyOf(el), p = saved[v];
+        wanted[v] = Object.assign({ col: null, row: 0 }, el.dataset.block ? blockSize(el) : { w: Math.min(cols, (p && p.w) || 1), h: (p && p.h) || 1 });
+      }
+      spots = solveGrid(order.map(keyOf), wanted);
     }
-    spots = solveGrid(els.map(keyOf), wanted, first);
+    else {
+      for (const el of blocksEls) { const v = keyOf(el); wanted[v] = Object.assign({ col: null, row: 0 }, want[v] || spots[v] || saved[v], blockSize(el)); }
+      // Until a block has been moved, the blocks fill the top and the cards start in one row under the lowest one, even with a layout saved before they shared the grid.
+      const placed = blocksEls.some(el => spots[keyOf(el)] || saved[keyOf(el)]);
+      const under = placed ? 0 : Object.values(solveGrid(blocksEls.map(keyOf), wanted)).reduce((n, s) => Math.max(n, s.row + s.h), 0);
+      for (const el of els) {
+        if (el.dataset.block) continue;
+        const v = keyOf(el), wish = want[v] || spots[v] || null, old = saved[v];
+        wanted[v] = wish || (old ? Object.assign({}, old, { row: old.row + under }) : under ? { col: null, row: 0, w: 1, h: 1, floor: under } : null);
+      }
+      spots = solveGrid(els.map(keyOf), wanted, first);
+    }
     let rows = 1;
     for (const el of els) {
       const s = spots[keyOf(el)];
@@ -709,9 +723,9 @@
   }
   function saveHome() {
     const all = blocks();
-    const message = { blocks: all.map(el => el.dataset.block), hiddenBlocks: all.filter(el => el.classList.contains('is-off')).map(el => el.dataset.block), tiles: tileEls().map(t => t.dataset.view) };
+    const message = { blocks: all.map(el => el.dataset.block), hiddenBlocks: all.filter(el => el.classList.contains('is-off')).map(el => el.dataset.block), tiles: tileEls().map(t => t.dataset.view), cols };
     message.places = gridEls().map(keyOf).filter(v => spots[v]).map(v => ({ id: v, col: spots[v].col, row: spots[v].row, w: spots[v].w, h: spots[v].h }));
-    layoutNow = { Blocks: message.blocks, HiddenBlocks: message.hiddenBlocks, Tiles: message.tiles, TilePlaces: message.places.map(p => ({ Id: p.id, Col: p.col, Row: p.row, W: p.w, H: p.h })) };
+    layoutNow = { Blocks: message.blocks, HiddenBlocks: message.hiddenBlocks, Tiles: message.tiles, TilePlaces: message.places.map(p => ({ Id: p.id, Col: p.col, Row: p.row, W: p.w, H: p.h })), TileCols: cols };
     layoutKey = JSON.stringify([layoutNow.Blocks, layoutNow.HiddenBlocks, layoutNow.Tiles, layoutNow.TilePlaces, editing]);
     send('layout.home', message);
   }

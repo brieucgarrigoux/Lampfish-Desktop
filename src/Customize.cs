@@ -21,6 +21,8 @@ namespace Lampfish
         public List<string> Bar, Groups, Blocks, HiddenBlocks, Tiles;
         // Where each card sits. Without it the cards fill the grid in the order of Tiles, as before.
         public List<TilePlace> TilePlaces;
+        // The number of columns of the grid those places were saved on. 0 for a layout saved before it was kept.
+        public int TileCols;
     }
 
     // The order of the bar and the cards of Home. Which services the bar hides stays in settings.json (HiddenViews).
@@ -78,7 +80,7 @@ namespace Lampfish
         {
             Func<List<string>, List<string>> copy = l => l == null ? null : new List<string>(l);
             var places = s.TilePlaces == null ? null : s.TilePlaces.Select(p => new TilePlace { Id = p.Id, Col = p.Col, Row = p.Row, W = p.W, H = p.H }).ToList();
-            return new CustomizeSettings { Bar = copy(s.Bar), Groups = copy(s.Groups), Blocks = copy(s.Blocks), HiddenBlocks = copy(s.HiddenBlocks), Tiles = copy(s.Tiles), TilePlaces = places };
+            return new CustomizeSettings { Bar = copy(s.Bar), Groups = copy(s.Groups), Blocks = copy(s.Blocks), HiddenBlocks = copy(s.HiddenBlocks), Tiles = copy(s.Tiles), TilePlaces = places, TileCols = s.TileCols };
         }
 
         public static bool Receive(string action, Dictionary<string, object> m)
@@ -94,7 +96,7 @@ namespace Lampfish
                     if (m.ContainsKey("blocks")) S.Blocks = Ids(m, "blocks");
                     if (m.ContainsKey("hiddenBlocks")) S.HiddenBlocks = Ids(m, "hiddenBlocks");
                     if (m.ContainsKey("tiles")) S.Tiles = Ids(m, "tiles");
-                    if (m.ContainsKey("places")) S.TilePlaces = Places(m);
+                    if (m.ContainsKey("places")) { S.TilePlaces = Places(m); S.TileCols = Cell(m, "cols", 0, 12, 0); }
                     Save();
                     return true;
                 case "reset":
@@ -111,6 +113,7 @@ namespace Lampfish
                     {
                         S.Blocks = S.HiddenBlocks = S.Tiles = null;
                         S.TilePlaces = null;
+                        S.TileCols = 0;
                         Program.Undoable(Language.T("Home reset"), () => { S = before; Save(); });
                     }
                     Save();

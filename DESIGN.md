@@ -135,7 +135,7 @@ Segoe sits its capitals 0.064 em under the middle of the line. `main.css` declar
 
 ## Home grid
 
-Blocks and cards share `.h-board`. `.h-main` and `.h-shortcuts` take no box (`display: contents`), so a block never moves in the page and the live preview never reloads. A block has no size of its own: `blockSize()` gives it a share of the width and the rows its content needs. The row that ends a block is only as tall as the block needs (`fitRows()`), so a block never leaves a hole under it; while arranging, every row keeps one height so the cells line up.
+Blocks and cards share `.h-board`. `.h-main` and `.h-shortcuts` take no box (`display: contents`), so a block never moves in the page and the live preview never reloads. A block has no size of its own: `blockSize()` gives it a share of the width and the rows its content needs. The row that ends a block is only as tall as the block needs (`fitRows()`), so a block never leaves a hole under it; while arranging, every row keeps one height so the cells line up. Places are saved with their number of columns (`TileCols`): with another number, at another zoom or window size, everything flows again in the same order, without holes, and the places are not rewritten.
 
 ## Icons
 
