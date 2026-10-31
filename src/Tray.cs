@@ -14,18 +14,23 @@ namespace Lampfish
 
         public static void Create()
         {
-            menu = new ContextMenuStrip { Renderer = new Renderer(), ShowImageMargin = false, ShowCheckMargin = true, Padding = new Padding(4, 6, 4, 6) };
+            menu = new ContextMenuStrip { Renderer = new Renderer(), ShowImageMargin = true, ShowCheckMargin = true, Padding = new Padding(4, 6, 4, 6) };
             open = Item((s, e) => Program.OpenSettings());
             open.Font = new Font(menu.Font, FontStyle.Bold);
+            open.Image = Picture("open");
             next = Item((s, e) => Program.NextWallpaper());
+            next.Image = Picture("next");
             pause = Item((s, e) => Program.TogglePause());
             moods = Item(null);
+            moods.Image = Picture("themes");
             ((ToolStripDropDownMenu)moods.DropDown).ShowImageMargin = false;
             moods.DropDown.Renderer = menu.Renderer;
             moods.DropDown.Padding = menu.Padding;
             moods.DropDown.HandleCreated += (s, e) => Native.Rounded(((Control)s).Handle);
             sounds = Item((s, e) => { Sounds.Toggle(); Program.Save(); Update(); Program.SendState(); });
+            sounds.Image = Picture("sounds");
             quit = Item((s, e) => Program.Quit());
+            quit.Image = Picture("quit");
             menu.Items.AddRange(new ToolStripItem[] { open, new ToolStripSeparator(), next, pause, moods, sounds, new ToolStripSeparator(), quit });
             menu.HandleCreated += (s, e) => Native.Rounded(menu.Handle);
             menu.Opening += (s, e) => Update();
@@ -33,6 +38,12 @@ namespace Lampfish
             icon = new NotifyIcon { Icon = new Icon(Program.AppIcon, SystemInformation.SmallIconSize), Text = "lampfish", ContextMenuStrip = menu, Visible = true };
             icon.MouseUp += (s, e) => { if (e.Button == MouseButtons.Left) Program.OpenSettings(); };
             Update();
+        }
+
+        static Image Picture(string name)
+        {
+            try { return Image.FromFile(System.IO.Path.Combine(Program.Root, "app", "ui", "tray", name + ".png")); }
+            catch (Exception ex) { Program.Log(ex); return null; }
         }
 
         static ToolStripMenuItem Item(EventHandler click)
@@ -49,6 +60,7 @@ namespace Lampfish
             next.Text = Language.T("Next wallpaper");
             next.Enabled = Program.WallpaperCount > 1;
             pause.Text = Language.T(Program.Paused ? "Resume wallpaper" : "Pause wallpaper");
+            pause.Image = Picture(Program.Paused ? "resume" : "pause");
             moods.Text = Language.T("Themes");
             sounds.Text = Language.T("Sounds");
             sounds.Checked = Sounds.Active;

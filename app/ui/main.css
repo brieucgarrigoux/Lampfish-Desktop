@@ -581,3 +581,9 @@ body.resizing .rail-scrollable { pointer-events: none; }
 .view--assistant .help-section { margin-bottom: 16px; }
 #companion-tabs-row { flex-wrap: wrap; }
 #companion-tabs { flex: 1 1 100%; justify-content: flex-start; margin-top: 8px; }
+
+/* Phosphor draws in fill, the other icons in stroke. */
+svg.ph { flex: none; width: 15px; height: 15px; fill: currentColor !important; stroke: none !important; }
+svg.ph.glyph { width: 30px; height: 30px; }
+.has-ph { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.link.has-ph svg.ph, .chip.has-ph svg.ph, .task__end.has-ph svg.ph { width: 14px; height: 14px; }
