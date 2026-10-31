@@ -126,13 +126,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Home: a click on the active theme turns it off and brings back the setup from before it, with Undo.
 
 ### Changed
-- Home: blocks and cards share one grid, so a small card can go under a block and a block under the cards. A block keeps its width and takes the rows its content needs.
-- Buttons, links and the tray menu that had no icon now have one, from Phosphor.
-- Assistant is the new name of the companion. It has its own page, and its window can be customized from its own button: tabs shown and their order.
-- Plugins has its own page, out of Settings.
-- Go to (Ctrl K) also finds settings by name, opens the page and lights the setting up. Wallpaper shows Power saving first.
-- The assistant closes the way it opens, sliding back to its button while it fades.
-- The assistant has a Settings tab (pause on battery, pause in full screen, react to sound, dark mode, warm screen, energy saver, start with Windows, sounds, volume, microphone) and a Claude tab of its own. Desktop gains the arrangements, Undo, the icon size and hiding the taskbar.
 - Home: This PC shows small ring dials for the processor, memory and disk, and the instruments of Hardware for the rest: a needle thermometer for heat, cells in relief for the battery and lit arcs for Wi-Fi; each opens its details in the side panel.
 - Every list icon is drawn in the same gray across the app: those of Line quality and What the connection can do in Network were white.
 - In a narrow window, the bar on the left keeps only its icons when the window is not tall enough to show every service, and the side panel opens as a drawer from an Options button instead of falling below the page.
@@ -201,13 +194,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - The window remembers its size, position and maximized state.
 
 ### Changed
-- Home: blocks and cards share one grid, so a small card can go under a block and a block under the cards. A block keeps its width and takes the rows its content needs.
-- Buttons, links and the tray menu that had no icon now have one, from Phosphor.
-- Assistant is the new name of the companion. It has its own page, and its window can be customized from its own button: tabs shown and their order.
-- Plugins has its own page, out of Settings.
-- Go to (Ctrl K) also finds settings by name, opens the page and lights the setting up. Wallpaper shows Power saving first.
-- The assistant closes the way it opens, sliding back to its button while it fades.
-- The assistant has a Settings tab (pause on battery, pause in full screen, react to sound, dark mode, warm screen, energy saver, start with Windows, sounds, volume, microphone) and a Claude tab of its own. Desktop gains the arrangements, Undo, the icon size and hiding the taskbar.
 - Home: the Icons panel no longer shows the preview size and the subfolders options, which only mean something next to the icon library of the Icons page.
 - The bar on the left is grouped in families: Personalization (Themes, Wallpaper, Create, Icons, Mouse, Sounds), Desktop (Display, Arrange) and PC (Tasks, Folders, Hardware, Network). Ctrl 1 to 9 follow this order.
 - The wallpapers that come with Bramble can no longer be removed.
@@ -322,13 +308,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Arrange: the screen map is centered and no longer slides in from the corner, and the icon size slider shows its real position and refreshes the map after a change.
 
 ### Changed
-- Home: blocks and cards share one grid, so a small card can go under a block and a block under the cards. A block keeps its width and takes the rows its content needs.
-- Buttons, links and the tray menu that had no icon now have one, from Phosphor.
-- Assistant is the new name of the companion. It has its own page, and its window can be customized from its own button: tabs shown and their order.
-- Plugins has its own page, out of Settings.
-- Go to (Ctrl K) also finds settings by name, opens the page and lights the setting up. Wallpaper shows Power saving first.
-- The assistant closes the way it opens, sliding back to its button while it fades.
-- The assistant has a Settings tab (pause on battery, pause in full screen, react to sound, dark mode, warm screen, energy saver, start with Windows, sounds, volume, microphone) and a Claude tab of its own. Desktop gains the arrangements, Undo, the icon size and hiding the taskbar.
 - Selection no longer uses corner brackets: a flat violet pill in the rail, an accent ring elsewhere.
 - Hardware is a 12 column dashboard: processor beside memory, then graphics, temperature and battery, then devices, screens, storage and network. The status LEDs are gone.
 - Sounds: the console is a 28 band LED equalizer driven by the real spectrum of the sound, the volume dial lights its LEDs as it turns, and Listen and the connection test share one pill button.

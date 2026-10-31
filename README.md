@@ -63,7 +63,7 @@ powershell -ExecutionPolicy Bypass -File src\build.ps1
 
 The script uses the C# compiler that ships with Windows (no Visual Studio needed). On first run it downloads the official WebView2 SDK from NuGet into `app\lib\`.
 
-`src\publish.ps1` builds the installer into `dist\` with [Inno Setup 6](https://jrsoftware.org/isinfo.php) (`winget install JRSoftware.InnoSetup`), from `src\installer.iss`. GitHub Actions runs the same script on every push and tag. Other generators, in Python 3: `src\icon.py` (app icon), `src\app_icon.py` (icon variants), `src\cursors.py` and `src\cursors_modern.py` (cursor themes), `src\sounds.py` (sound packs), `src\wallpapers.py` (the logo wallpapers).
+`src\publish.ps1` builds the installer into `dist\` with [Inno Setup 6](https://jrsoftware.org/isinfo.php) (`winget install JRSoftware.InnoSetup`), from `src\installer.iss`. GitHub Actions runs the same script on every push and tag. Other generators, in Python 3: `src\icon.py` (app icon), `src\cursors.py` and `src\cursors_modern.py` (cursor themes), `src\sounds.py` (sound packs), `src\wallpapers.py` (the logo wallpapers).
 
 ## Project layout
 
