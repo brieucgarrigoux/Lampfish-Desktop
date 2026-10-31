@@ -128,3 +128,11 @@ Fonts: `--display` for titles and lit text, `--numbers` with `font-variant-numer
 - Two radii for the same element type, a raw value used twice.
 - A setting without an icon and an explanation line.
 - A change to Windows that cannot be undone.
+
+## Text position
+
+Segoe sits its capitals 0.064 em under the middle of the line. `main.css` declares two aliases, `LF Display` and `LF Text`, with `ascent-override` 105.5 % and `descent-override` 27.5 %: same line height, text centered at the usual display scales. Always use `--display` or `--numbers`, never a font name. Text in a ring also uses `text-box: trim-both cap alphabetic`.
+
+## Home grid
+
+Blocks and cards share `.h-board`. `.h-main` and `.h-shortcuts` take no box (`display: contents`), so a block never moves in the page and the live preview never reloads. A block has no size of its own: `blockSize()` gives it a share of the width and the rows its content needs.
