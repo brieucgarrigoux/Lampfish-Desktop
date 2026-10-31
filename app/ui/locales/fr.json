@@ -1998,6 +1998,8 @@
  "An empty desktop, nothing is deleted": "Un bureau vide, rien n'est supprimé",
  "Shows the cells; an icon let go snaps into one": "Montre les cases où ranger les icônes",
  "The grid is on": "La grille est active",
+ "The grid is on, 1 icon snapped to it": "La grille est active, 1 icône s'y est calée",
+ "The grid is on, {0} icons snapped to it": "La grille est active, {0} icônes s'y sont calées",
  "Windows changes its own wallpaper every 30 minutes": "Windows change aussi son fond toutes les 30 minutes",
  "Windows changes its own wallpaper every {0} minutes": "Windows change aussi son fond toutes les {0} minutes",
  "Each change makes the live wallpaper blink": "Chaque changement fait clignoter le fond animé",
