@@ -618,6 +618,17 @@ namespace Lampfish
         }
 
         public static List<IconPosition> Snapshot() { return Capture(); }
+
+        // The position of the icon under a point of the screen: its picture and two lines of name, in the frame Windows draws around them.
+        public static Point? IconAt(Point pixel)
+        {
+            Size c = DesktopIcons.Case();
+            double scale = Scale(Screen.FromPoint(pixel));
+            int high = Math.Min(c.Height, (int)Math.Round((DesktopIcons.IconSize() + 44) * scale));
+            foreach (var p in Capture())
+                if (new Rectangle(p.X, p.Y, c.Width, high).Contains(pixel)) return new Point(p.X, p.Y);
+            return null;
+        }
         public static void RememberNow() { Remember(); }
         public static void UndoLast() { Undo(); }
 

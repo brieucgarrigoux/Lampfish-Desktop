@@ -20,15 +20,18 @@ namespace Lampfish
     }
 
     // A magnetic grid on the desktop: Windows' own Align to grid, turned on with the grid and put back as it was when the grid goes off,
-    // plus the cells of that grid drawn on every screen whenever the desktop is in front. Windows seats every icon let go; nothing here moves an icon.
+    // plus the cells of that grid, faded in while an icon is carried. Windows seats every icon let go; nothing here moves an icon.
     static class DesktopGrid
     {
+        const double FadeIn = .12, FadeOut = .2;
         static readonly JavaScriptSerializer json = new JavaScriptSerializer();
         static GridSettings S = new GridSettings();
         static readonly List<Overlay> overlays = new List<Overlay>();
         static Timer tick;
-        static bool wasDown, dragging, built;
-        static DateTime quietUntil, flashUntil, checkedAt;
+        static bool wasDown, onIcon, carrying, built, covered;
+        static Point pressedAt, grab;
+        static double shown;
+        static DateTime quietUntil, flashUntil, checkedAt, steppedAt;
         static string lookAt;
 
         static string SettingsFile { get { return Path.Combine(Program.DataFolder("Grid"), "settings.json"); } }
@@ -136,63 +139,109 @@ namespace Lampfish
 
         static void Apply()
         {
-            if (S.On) { built = false; tick.Start(); }
-            else { tick.Stop(); Close(); wasDown = dragging = false; }
+            if (S.On) { built = false; steppedAt = DateTime.Now; tick.Start(); }
+            else { tick.Stop(); Close(); wasDown = onIcon = carrying = false; }
         }
 
         static void Close()
         {
-            foreach (var o in overlays) { o.Hide(); o.Dispose(); }
+            foreach (var o in overlays) o.Dispose();
             overlays.Clear();
             built = false;
+            shown = 0;
         }
 
-        // The desktop is in front when nothing else has the focus: its window, or the one behind its icons.
-        static bool OnDesktop()
+        // The list of icons of the desktop, not another window over it: a press elsewhere never shows the grid.
+        static bool OnDesktop(Point at)
         {
-            var window = Native.GetForegroundWindow();
-            if (window == IntPtr.Zero) return true;
+            var list = WindowFromPoint(new Native.POINT { X = at.X, Y = at.Y });
+            if (ClassOf(list) != "SysListView32") return false;
+            var view = GetParent(list);
+            if (ClassOf(view) != "SHELLDLL_DefView") return false;
+            string host = ClassOf(GetParent(view));
+            return host == "Progman" || host == "WorkerW";
+        }
+
+        static string ClassOf(IntPtr window)
+        {
+            if (window == IntPtr.Zero) return "";
             var name = new StringBuilder(64);
             Native.GetClassName(window, name, name.Capacity);
-            string c = name.ToString();
-            return c == "Progman" || c == "WorkerW";
+            return name.ToString();
         }
 
+        // Only what changed is drawn again, and only while nothing shows.
         static void Build()
         {
-            Close();
             List<Arrange.GridScreen> screens;
             try { screens = Arrange.GridScreens(); }
             catch (Exception ex) { Program.Log(ex); screens = new List<Arrange.GridScreen>(); }
-            foreach (var s in screens) overlays.Add(new Overlay(s));
-            built = true;
             lookAt = Look();
+            built = true;
+            if (overlays.Count == screens.Count && overlays.Zip(screens, (o, s) => o.Shows(s)).All(same => same))
+            {
+                for (int i = 0; i < screens.Count; i++) overlays[i].Screen = screens[i];
+                return;
+            }
+            Close();
+            built = true;
+            foreach (var s in screens) overlays.Add(new Overlay(s));
+        }
+
+        static void Press()
+        {
+            var at = Cursor.Position;
+            pressedAt = at;
+            onIcon = false;
+            if (!OnDesktop(at)) return;
+            Point? icon = null;
+            try { icon = Arrange.IconAt(at); }
+            catch (Exception ex) { Program.Log(ex); }
+            if (icon == null) return;
+            onIcon = true;
+            grab = new Point(at.X - icon.Value.X, at.Y - icon.Value.Y);
+            if (!built) Build();
         }
 
         static void Step()
         {
             var now = DateTime.Now;
-            bool down = (GetAsyncKeyState(0x01) & 0x8000) != 0, desk = OnDesktop();
-            bool show = desk || now < flashUntil;
-            if (now < quietUntil) { foreach (var o in overlays) o.Hide(); wasDown = down; return; }
-            if (show && !built) Build();
-            foreach (var o in overlays) o.Visible = show && !FullScreenApp();
+            double dt = Math.Min(.1, (now - steppedAt).TotalSeconds);
+            steppedAt = now;
+            bool down = (GetAsyncKeyState(0x01) & 0x8000) != 0;
+            if (now < quietUntil) { shown = 0; foreach (var o in overlays) o.Fade(0); wasDown = down; return; }
 
-            if (down && !wasDown) dragging = desk;
-            if (down && dragging)
+            if (down && !wasDown) Press();
+            if (down && onIcon && !carrying)
             {
                 var at = Cursor.Position;
-                foreach (var o in overlays) o.Aim(at);
+                carrying = Math.Abs(at.X - pressedAt.X) >= SystemInformation.DragSize.Width || Math.Abs(at.Y - pressedAt.Y) >= SystemInformation.DragSize.Height;
             }
-            if (!down && wasDown) { foreach (var o in overlays) o.Aim(null); dragging = false; }
+            if (!down) onIcon = carrying = false;
             wasDown = down;
 
+            bool want = carrying || now < flashUntil;
+            if (!want) covered = false;
+            else if (shown == 0) covered = FullScreenApp();
+            want = want && !covered;
+            if (want && !built) Build();
+            double before = shown;
+            shown = want ? Math.Min(1, shown + dt / FadeIn) : Math.Max(0, shown - dt / FadeOut);
+            if (shown != before) foreach (var o in overlays) o.Fade(shown);
+            if (carrying && shown > 0)
+            {
+                var icon = new Point(Cursor.Position.X - grab.X, Cursor.Position.Y - grab.Y);
+                foreach (var o in overlays) o.Aim(icon);
+            }
+            else if (before > 0 && shown == 0) foreach (var o in overlays) o.Aim(null);
+            tick.Interval = want || shown > 0 ? 15 : 40;
+
             // The cells follow the size and spacing of the icons, and where Windows seats them; an arrangement that lifted the snapping turns the grid off.
-            if (!down && (now - checkedAt).TotalSeconds > 3)
+            if (!down && shown == 0 && (now - checkedAt).TotalSeconds > 3)
             {
                 checkedAt = now;
                 if (!Snapping()) { Enable(false, false); Program.SendState(); return; }
-                if (Look() != lookAt) built = false;
+                if (built && Look() != lookAt) built = false;
             }
         }
 
@@ -210,22 +259,20 @@ namespace Lampfish
 
         [DllImport("shell32.dll")] static extern int SHQueryUserNotificationState(out int state);
         [DllImport("user32.dll")] static extern short GetAsyncKeyState(int key);
+        [DllImport("user32.dll")] static extern IntPtr WindowFromPoint(Native.POINT point);
+        [DllImport("user32.dll")] static extern IntPtr GetParent(IntPtr window);
 
-        // One click-through window over the work area of a screen, drawn with its own alpha.
-        class Overlay : Form
+        // A click-through window with its own alpha. Fading only changes a constant: the picture is not sent again.
+        class Sheet : Form
         {
-            readonly Arrange.GridScreen screen;
-            int aimed = -1;
-
-            public Overlay(Arrange.GridScreen screen)
+            public Sheet(Rectangle bounds)
             {
-                this.screen = screen;
                 FormBorderStyle = FormBorderStyle.None;
                 StartPosition = FormStartPosition.Manual;
                 ShowInTaskbar = false;
                 TopMost = true;
                 AutoScaleMode = AutoScaleMode.None;
-                Bounds = screen.Area;
+                Bounds = bounds;
             }
 
             protected override bool ShowWithoutActivation { get { return true; } }
@@ -234,54 +281,125 @@ namespace Lampfish
                 get { var p = base.CreateParams; p.ExStyle |= Native.WS_EX_LAYERED | Native.WS_EX_TOOLWINDOW | Native.WS_EX_NOACTIVATE | 0x20; return p; }
             }
 
-            public new bool Visible
+            public void Picture(Bitmap bmp, double alpha)
             {
-                get { return base.Visible; }
-                set
+                IntPtr screenDc = GetDC(IntPtr.Zero), memory = CreateCompatibleDC(screenDc), hbitmap = bmp.GetHbitmap(Color.FromArgb(0)), old = SelectObject(memory, hbitmap);
+                try
                 {
-                    if (value == base.Visible) return;
-                    if (value) { Bounds = screen.Area; Show(); Redraw(); }
-                    else Hide();
+                    var size = new SIZE { cx = bmp.Width, cy = bmp.Height };
+                    var source = new Native.POINT();
+                    var top = new Native.POINT { X = Left, Y = Top };
+                    var blend = Blend(alpha);
+                    UpdateLayeredWindow(Handle, screenDc, ref top, ref size, memory, ref source, 0, ref blend, 2);
                 }
+                finally { SelectObject(memory, old); DeleteObject(hbitmap); DeleteDC(memory); ReleaseDC(IntPtr.Zero, screenDc); }
+            }
+
+            public void Alpha(double alpha)
+            {
+                var blend = Blend(alpha);
+                UpdateAlpha(Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, 0, ref blend, 2);
+            }
+
+            static BLENDFUNCTION Blend(double alpha) { return new BLENDFUNCTION { BlendOp = 0, SourceConstantAlpha = (byte)Math.Round(255 * alpha * alpha * (3 - 2 * alpha)), AlphaFormat = 1 }; }
+
+            [StructLayout(LayoutKind.Sequential)] struct SIZE { public int cx, cy; }
+            [StructLayout(LayoutKind.Sequential, Pack = 1)] struct BLENDFUNCTION { public byte BlendOp, BlendFlags, SourceConstantAlpha, AlphaFormat; }
+            [DllImport("user32.dll")] static extern bool UpdateLayeredWindow(IntPtr hwnd, IntPtr dst, ref Native.POINT pptDst, ref SIZE psize, IntPtr src, ref Native.POINT pptSrc, int key, ref BLENDFUNCTION blend, int flags);
+            [DllImport("user32.dll", EntryPoint = "UpdateLayeredWindow")] static extern bool UpdateAlpha(IntPtr hwnd, IntPtr dst, IntPtr pptDst, IntPtr psize, IntPtr src, IntPtr pptSrc, int key, ref BLENDFUNCTION blend, int flags);
+            [DllImport("user32.dll")] static extern IntPtr GetDC(IntPtr hwnd);
+            [DllImport("user32.dll")] static extern int ReleaseDC(IntPtr hwnd, IntPtr dc);
+            [DllImport("gdi32.dll")] static extern IntPtr CreateCompatibleDC(IntPtr dc);
+            [DllImport("gdi32.dll")] static extern bool DeleteDC(IntPtr dc);
+            [DllImport("gdi32.dll")] static extern IntPtr SelectObject(IntPtr dc, IntPtr obj);
+            [DllImport("gdi32.dll")] static extern bool DeleteObject(IntPtr obj);
+        }
+
+        // The cells of a screen on one sheet, drawn once, and the aimed cell on a small sheet of its own that moves.
+        class Overlay : IDisposable
+        {
+            readonly Sheet cells, lit;
+            int aimed = -1;
+            double alpha;
+
+            public Arrange.GridScreen Screen;
+
+            public Overlay(Arrange.GridScreen screen)
+            {
+                Screen = screen;
+                cells = new Sheet(Sheetable(screen.Area));
+                lit = new Sheet(new Rectangle(screen.Area.Location, new Size(1, 1)));
+                Draw();
+            }
+
+            // A topmost window that covers a whole screen makes Windows report a full screen app: the grid hid itself for it, came back, and flashed.
+            // One pixel less keeps it out of that test. It also kept the button of the assistant on screen.
+            static Rectangle Sheetable(Rectangle area) { return new Rectangle(area.X, area.Y, area.Width, area.Height - 1); }
+
+            public bool Shows(Arrange.GridScreen other) { return Screen.Area == other.Area && Screen.Slots.SequenceEqual(other.Slots); }
+
+            public void Fade(double value)
+            {
+                alpha = value;
+                if (value <= 0) { cells.Hide(); lit.Hide(); return; }
+                cells.Alpha(value);
+                if (!cells.Visible) cells.Show();
+                if (lit.Visible) lit.Alpha(value);
             }
 
             public void Aim(Point? at)
             {
-                int slot = at == null || !screen.Area.Contains(at.Value) ? -1 : screen.Nearest(at.Value);
+                int slot = at == null || !Screen.Area.Contains(at.Value) ? -1 : Screen.Nearest(at.Value);
                 if (slot == aimed) return;
                 aimed = slot;
-                if (base.Visible) Redraw();
+                if (slot < 0 || slot >= Screen.Slots.Count) { lit.Hide(); return; }
+                var r = Screen.Slots[slot];
+                r.Inflate(2, 2);
+                lit.Bounds = r;
+                using (var bmp = new Bitmap(r.Width, r.Height, PixelFormat.Format32bppArgb))
+                {
+                    using (var g = Graphics.FromImage(bmp))
+                    {
+                        g.SmoothingMode = SmoothingMode.AntiAlias;
+                        var accent = Color.FromArgb(0x1E, 0xBB, 0xAA);
+                        using (var fill = new SolidBrush(Color.FromArgb(70, accent)))
+                        using (var ring = new Pen(accent, 2f))
+                        using (var path = Rounded(new Rectangle(2, 2, r.Width - 4, r.Height - 4), Math.Max(6, r.Width / 7)))
+                        {
+                            g.FillPath(fill, path);
+                            g.DrawPath(ring, path);
+                        }
+                    }
+                    lit.Picture(bmp, alpha);
+                }
+                if (!lit.Visible) lit.Show();
             }
 
-            void Redraw()
+            void Draw()
             {
-                int w = screen.Area.Width, h = screen.Area.Height;
+                int w = Screen.Area.Width, h = Screen.Area.Height - 1;
                 if (w <= 0 || h <= 0) return;
                 using (var bmp = new Bitmap(w, h, PixelFormat.Format32bppArgb))
                 {
                     using (var g = Graphics.FromImage(bmp))
                     {
                         g.SmoothingMode = SmoothingMode.AntiAlias;
-                        var accent = Color.FromArgb(0x1E, 0xBB, 0xAA);
                         using (var edge = new Pen(Color.FromArgb(70, 255, 255, 255), 1.5f))
                         using (var shade = new Pen(Color.FromArgb(60, 0, 0, 0), 3f))
                         using (var fill = new SolidBrush(Color.FromArgb(18, 255, 255, 255)))
-                        using (var lit = new SolidBrush(Color.FromArgb(70, accent)))
-                        using (var ring = new Pen(accent, 2f))
-                            for (int i = 0; i < screen.Slots.Count; i++)
+                            foreach (var slot in Screen.Slots)
                             {
-                                var r = screen.Slots[i];
-                                r.Offset(-screen.Area.X, -screen.Area.Y);
+                                var r = slot;
+                                r.Offset(-Screen.Area.X, -Screen.Area.Y);
                                 using (var path = Rounded(r, Math.Max(6, r.Width / 7)))
                                 {
-                                    if (i == aimed) { g.FillPath(lit, path); g.DrawPath(ring, path); continue; }
                                     g.FillPath(fill, path);
                                     g.DrawPath(shade, path);
                                     g.DrawPath(edge, path);
                                 }
                             }
                     }
-                    Layered(bmp);
+                    cells.Picture(bmp, 0);
                 }
             }
 
@@ -297,29 +415,11 @@ namespace Lampfish
                 return path;
             }
 
-            void Layered(Bitmap bmp)
+            public void Dispose()
             {
-                IntPtr screenDc = GetDC(IntPtr.Zero), memory = CreateCompatibleDC(screenDc), hbitmap = bmp.GetHbitmap(Color.FromArgb(0)), old = SelectObject(memory, hbitmap);
-                try
-                {
-                    var size = new SIZE { cx = bmp.Width, cy = bmp.Height };
-                    var source = new Native.POINT();
-                    var top = new Native.POINT { X = Left, Y = Top };
-                    var blend = new BLENDFUNCTION { BlendOp = 0, SourceConstantAlpha = 255, AlphaFormat = 1 };
-                    UpdateLayeredWindow(Handle, screenDc, ref top, ref size, memory, ref source, 0, ref blend, 2);
-                }
-                finally { SelectObject(memory, old); DeleteObject(hbitmap); DeleteDC(memory); ReleaseDC(IntPtr.Zero, screenDc); }
+                cells.Dispose();
+                lit.Dispose();
             }
-
-            [StructLayout(LayoutKind.Sequential)] struct SIZE { public int cx, cy; }
-            [StructLayout(LayoutKind.Sequential, Pack = 1)] struct BLENDFUNCTION { public byte BlendOp, BlendFlags, SourceConstantAlpha, AlphaFormat; }
-            [DllImport("user32.dll")] static extern bool UpdateLayeredWindow(IntPtr hwnd, IntPtr dst, ref Native.POINT pptDst, ref SIZE psize, IntPtr src, ref Native.POINT pptSrc, int key, ref BLENDFUNCTION blend, int flags);
-            [DllImport("user32.dll")] static extern IntPtr GetDC(IntPtr hwnd);
-            [DllImport("user32.dll")] static extern int ReleaseDC(IntPtr hwnd, IntPtr dc);
-            [DllImport("gdi32.dll")] static extern IntPtr CreateCompatibleDC(IntPtr dc);
-            [DllImport("gdi32.dll")] static extern bool DeleteDC(IntPtr dc);
-            [DllImport("gdi32.dll")] static extern IntPtr SelectObject(IntPtr dc, IntPtr obj);
-            [DllImport("gdi32.dll")] static extern bool DeleteObject(IntPtr obj);
         }
     }
 }
