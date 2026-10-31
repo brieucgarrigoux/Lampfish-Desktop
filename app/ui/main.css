@@ -1,3 +1,15 @@
+/* Segoe sits its capitals 0.064 em under the middle of the line, so every label looks low in its button. These faces center the capitals and keep the height of the line. */
+@font-face { font-family: "LF Display"; font-weight: 300; src: local("Segoe UI Variable Display Light"), local("Segoe UI Light"); ascent-override: 105.5%; descent-override: 27.5%; line-gap-override: 0%; }
+@font-face { font-family: "LF Display"; font-weight: 350; src: local("Segoe UI Variable Display Semilight"), local("Segoe UI Semilight"); ascent-override: 105.5%; descent-override: 27.5%; line-gap-override: 0%; }
+@font-face { font-family: "LF Display"; font-weight: 400 500; src: local("Segoe UI Variable Display"), local("Segoe UI"); ascent-override: 105.5%; descent-override: 27.5%; line-gap-override: 0%; }
+@font-face { font-family: "LF Display"; font-weight: 600; src: local("Segoe UI Variable Display Semibold"), local("Segoe UI Semibold"); ascent-override: 105.5%; descent-override: 27.5%; line-gap-override: 0%; }
+@font-face { font-family: "LF Display"; font-weight: 700; src: local("Segoe UI Variable Display Bold"), local("Segoe UI Bold"); ascent-override: 105.5%; descent-override: 27.5%; line-gap-override: 0%; }
+@font-face { font-family: "LF Text"; font-weight: 300; src: local("Segoe UI Variable Text Light"), local("Segoe UI Light"); ascent-override: 105.5%; descent-override: 27.5%; line-gap-override: 0%; }
+@font-face { font-family: "LF Text"; font-weight: 350; src: local("Segoe UI Variable Text Semilight"), local("Segoe UI Semilight"); ascent-override: 105.5%; descent-override: 27.5%; line-gap-override: 0%; }
+@font-face { font-family: "LF Text"; font-weight: 400 500; src: local("Segoe UI Variable Text"), local("Segoe UI"); ascent-override: 105.5%; descent-override: 27.5%; line-gap-override: 0%; }
+@font-face { font-family: "LF Text"; font-weight: 600; src: local("Segoe UI Variable Text Semibold"), local("Segoe UI Semibold"); ascent-override: 105.5%; descent-override: 27.5%; line-gap-override: 0%; }
+@font-face { font-family: "LF Text"; font-weight: 700; src: local("Segoe UI Variable Text Bold"), local("Segoe UI Bold"); ascent-override: 105.5%; descent-override: 27.5%; line-gap-override: 0%; }
+
 :root {
   --wallpaper: #090c0d;
   --group: #121618;
@@ -46,8 +58,8 @@
   --radius-small: 6px;
 
   --fast: .12s;
-  --display: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
-  --numbers: "Segoe UI Variable Small", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --display: "LF Display", "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  --numbers: "LF Text", "Segoe UI Variable Small", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
 
   --shell: linear-gradient(180deg, #1a2021, #131719 60%, #101415);
   --shell-up: linear-gradient(180deg, #202627, #171c1d 60%, #131719);
@@ -70,7 +82,7 @@ html, body { margin: 0; height: 100%; }
 html { scrollbar-width: none; }
 body {
   background: var(--wallpaper); color: var(--text);
-  font: var(--text-base)/1.4 "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  font: var(--text-base)/1.4 "LF Text", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
   display: grid; grid-template-columns: var(--width-rail, 180px) 1fr var(--width-panel, 300px); user-select: none; overflow: hidden;
 }
 button { font: inherit; color: inherit; cursor: pointer; }
@@ -145,10 +157,10 @@ body:not([data-view="wallpaper"]) .only-wallpaper, body:not([data-view="station"
 body:not([data-view="icons"]) .only-icons, body:not([data-view="mouse"]) .only-mouse, body:not([data-view="network"]) .only-network, body:not([data-view="arrange"]) .only-arrange,
 body:not([data-view="files"]) .only-files, body:not([data-view="hardware"]) .only-hardware,
 body:not([data-view="tasks"]) .only-tasks, body:not([data-view="create"]) .only-create, body:not([data-view="settings"]) .only-settings, body:not([data-view="home"]) .only-home,
-body:not([data-view="modes"]) .only-modes, body:not([data-view="display"]) .only-display, body:not([data-view="audio"]) .only-audio, body:not([data-view="taskbar"]) .only-taskbar, body:not([data-view="convert"]) .only-convert, body:not([data-view="notes"]) .only-notes, body:not([data-view="shelf"]) .only-shelf, body:not([data-view="health"]) .only-health, body:not([data-view="duplicates"]) .only-duplicates { display: none !important; }
+body:not([data-view="modes"]) .only-modes, body:not([data-view="display"]) .only-display, body:not([data-view="assistant"]) .only-assistant, body:not([data-view="plugins"]) .only-plugins, body:not([data-view="audio"]) .only-audio, body:not([data-view="taskbar"]) .only-taskbar, body:not([data-view="convert"]) .only-convert, body:not([data-view="notes"]) .only-notes, body:not([data-view="shelf"]) .only-shelf, body:not([data-view="health"]) .only-health, body:not([data-view="duplicates"]) .only-duplicates { display: none !important; }
 
-body[data-view="settings"], body[data-view="home"], body[data-view="display"], body[data-view="audio"], body[data-view="taskbar"], body[data-view="convert"], body[data-view="shelf"], body[data-view="health"] { grid-template-columns: var(--width-rail, 180px) 1fr; }
-body[data-view="settings"] .panel, body[data-view="home"] .panel, body[data-view="display"] .panel, body[data-view="audio"] .panel, body[data-view="taskbar"] .panel, body[data-view="convert"] .panel, body[data-view="shelf"] .panel, body[data-view="health"] .panel { display: none; }
+body[data-view="settings"], body[data-view="assistant"], body[data-view="plugins"], body[data-view="home"], body[data-view="display"], body[data-view="audio"], body[data-view="taskbar"], body[data-view="convert"], body[data-view="shelf"], body[data-view="health"] { grid-template-columns: var(--width-rail, 180px) 1fr; }
+body[data-view="settings"] .panel, body[data-view="assistant"] .panel, body[data-view="plugins"] .panel, body[data-view="home"] .panel, body[data-view="display"] .panel, body[data-view="audio"] .panel, body[data-view="taskbar"] .panel, body[data-view="convert"] .panel, body[data-view="shelf"] .panel, body[data-view="health"] .panel { display: none; }
 body[data-view="tasks"]:not(.sheet-open), body[data-view="modes"]:not(.mode-open) { grid-template-columns: var(--width-rail, 180px) 1fr; }
 /* On Home, a shortcut opens the settings of its service in the side panel. */
 body[data-view="home"][data-dock] { grid-template-columns: var(--width-rail, 180px) 1fr var(--width-panel, 300px); }
@@ -561,3 +573,11 @@ body.resizing .rail-scrollable { pointer-events: none; }
 
 .w-slide { margin: 12px 0 0; }
 .w-slide[hidden] { display: none; }
+
+/* What Go to found stays lit for a moment, so the eye lands on it. */
+.is-found { position: relative; border-radius: var(--radius-control); animation: found 1.8s ease-out; }
+@keyframes found { 0%, 60% { box-shadow: inset 0 0 0 2px var(--accent); background: var(--accent-dim); } 100% { box-shadow: inset 0 0 0 2px transparent; } }
+.view--assistant, .view--plugins { max-width: 760px; }
+.view--assistant .help-section { margin-bottom: 16px; }
+#companion-tabs-row { flex-wrap: wrap; }
+#companion-tabs { flex: 1 1 100%; justify-content: flex-start; margin-top: 8px; }

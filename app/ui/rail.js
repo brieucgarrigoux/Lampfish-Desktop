@@ -116,10 +116,28 @@
     });
   }
 
+  // Every setting can be found by its name, wherever it lives; a service with a hidden button stays out.
+  function settings() {
+    const out = [], seen = new Set();
+    for (const row of document.querySelectorAll('.toggle, .row--setting, .choice, .row.action, .h-q')) {
+      const zone = row.closest('[class*="only-"]'), match = zone && zone.className.match(/only-(\w+)/);
+      const title = row.querySelector('.caption > span, .h-q__name');
+      if (!match || !title || row.closest('.tr-fold, .welcome')) continue;
+      const service = rail.querySelector(`.service[data-view="${match[1]}"]`);
+      const name = ((title.firstChild && title.firstChild.textContent) || '').trim();
+      if (!service || service.hidden || name.length < 3 || seen.has(match[1] + name)) continue;
+      seen.add(match[1] + name);
+      const icon = row.querySelector('svg');
+      out.push({ view: match[1], name, family: service.textContent.trim(), icon: icon ? icon.outerHTML : '', row });
+    }
+    return out;
+  }
+
   function paint() {
     const q = plain(input.value.trim());
-    results = entries().filter(e => !q || plain(e.name).includes(q) || plain(e.family).includes(q))
-      .sort((a, b) => (plain(b.name).startsWith(q) ? 1 : 0) - (plain(a.name).startsWith(q) ? 1 : 0));
+    const all = q ? [...entries(), ...settings()] : entries();
+    results = all.filter(e => !q || plain(e.name).includes(q) || (!e.row && plain(e.family).includes(q)))
+      .sort((a, b) => (plain(b.name).startsWith(q) ? 1 : 0) - (plain(a.name).startsWith(q) ? 1 : 0) || (a.row ? 1 : 0) - (b.row ? 1 : 0)).slice(0, 30);
     chosen = Math.min(chosen, Math.max(0, results.length - 1));
     list.replaceChildren(...results.map((e, i) => {
       const row = document.createElement('button');
@@ -134,12 +152,26 @@
       row.addEventListener('pointermove', () => { if (chosen !== i) { chosen = i; mark2(); } });
       return row;
     }));
-    if (!results.length) list.append(Object.assign(document.createElement('p'), { className: 'goto__none', textContent: tr('No service matches') }));
+    if (!results.length) list.append(Object.assign(document.createElement('p'), { className: 'goto__none', textContent: tr('Nothing matches') }));
   }
   function mark2() {
     [...list.querySelectorAll('.goto__item')].forEach((b, i) => { b.setAttribute('aria-selected', String(i === chosen)); if (i === chosen) b.scrollIntoView({ block: 'nearest' }); });
   }
-  function go(e) { closePalette(false); showView(e.view); }
+  function go(e) {
+    closePalette(false);
+    showView(e.view);
+    if (!e.row) return;
+    if (e.row.closest('.panel')) document.body.classList.add('panel-open');
+    const fold = e.row.closest('.fold');
+    if (fold && fold.classList.contains('collapsed')) fold.querySelector('.fold__title').click();
+    setTimeout(() => {
+      e.row.scrollIntoView({ block: 'center' });
+      e.row.classList.remove('is-found');
+      void e.row.offsetWidth;
+      e.row.classList.add('is-found');
+      setTimeout(() => e.row.classList.remove('is-found'), 1900);
+    }, 120);
+  }
   function openPalette() {
     close(false);
     from = document.activeElement;

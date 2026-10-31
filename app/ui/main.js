@@ -1,7 +1,7 @@
 'use strict';
 
 const Lampfish = { state: null, station: null, icons: null, arrange: null, mouse: null, network: null, files: null, hardware: null, tasks: null, moods: null, creator: null };
-const VIEWS = ['home', 'modes', 'wallpaper', 'create', 'icons', 'mouse', 'station', 'display', 'audio', 'taskbar', 'arrange', 'notes', 'shelf', 'convert', 'health', 'tasks', 'files', 'duplicates', 'hardware', 'network', 'settings'];
+const VIEWS = ['home', 'modes', 'wallpaper', 'create', 'icons', 'mouse', 'station', 'display', 'audio', 'taskbar', 'arrange', 'notes', 'shelf', 'convert', 'assistant', 'plugins', 'health', 'tasks', 'files', 'duplicates', 'hardware', 'network', 'settings'];
 
 const scrolls = {}, narrowLayout = matchMedia('(max-width: 900px)');
 const scrollZones = () => narrowLayout.matches ? [document.scrollingElement] : [document.querySelector('.contents'), document.querySelector('.panel')];
@@ -39,7 +39,7 @@ function slideshowNote(s) {
 }
 $('w-slide-go').addEventListener('click', () => send('winbg.slow'));
 
-const OWN_PANEL = ['home', 'settings', 'display', 'audio', 'taskbar', 'convert', 'shelf', 'health', 'tasks', 'modes'];
+const OWN_PANEL = ['home', 'settings', 'assistant', 'plugins', 'display', 'audio', 'taskbar', 'convert', 'shelf', 'health', 'tasks', 'modes'];
 const setPanel = open => document.body.classList.toggle('panel-open', open);
 $('panel-toggle').addEventListener('click', () => setPanel(true));
 $('panel-close').addEventListener('click', () => setPanel(false));
@@ -330,7 +330,7 @@ for (const row of document.querySelectorAll('[data-companion-key]')) {
   row.querySelector('input').addEventListener('change', e => send('companion.keyOn', { which, on: e.target.checked }));
   companionKeys[which] = shortcutKeys(row.querySelector('button'), row.querySelector('small'), k => send('companion.key', Object.assign({ which }, k)));
 }
-const COMPANION_TABS = [['dashboard', 'Dashboard'], ['note', 'Note'], ['capture', 'Capture'], ['shelf', 'Shelf'], ['audio', 'Audio'], ['notes', 'Notes'], ['convert', 'Convert'], ['desktop', 'Desktop']];
+const COMPANION_TABS = [['dashboard', 'Dashboard'], ['quick', 'Settings'], ['claude', 'Claude'], ['note', 'Note'], ['capture', 'Capture'], ['shelf', 'Shelf'], ['audio', 'Audio'], ['notes', 'Notes'], ['convert', 'Convert'], ['desktop', 'Desktop']];
 let companionHidden = [];
 for (const [id, label] of COMPANION_TABS) {
   const b = document.createElement('button');
