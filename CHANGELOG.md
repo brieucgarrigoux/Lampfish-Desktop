@@ -1,9 +1,11 @@
 # Changelog
 
-All notable changes to Bramble are listed here.
+All notable changes to lampfish are listed here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+
+## [0.5.0] - 2026-10-31
 
 ### Added
 - A question mark next to the title of every page opens a short note on what the page is for, what it reads and what it changes, with a link to the full list in Settings.
@@ -15,13 +17,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Health: a Privacy card turns off, for this user, the sharing settings of Windows such as the advertising ID, the suggestions and the typing data, with Undo. A setting locked by an organization is shown and left alone.
 - Themes: a theme also brings back the audio output it was made with, when that device is plugged in.
 - The bar can be arranged: Arrange the bar, at its foot, lets you drag a service inside its family, move the families, and hide a service with a click. Ctrl 1 to 9 follow the new order. Reset puts the bar back, with Undo.
-- Notes: a new service for notes in Markdown, with a formatting bar, a reading view where tasks can be ticked, and search. They save themselves at each change, as the pill next to their name says. The notes are plain .md files, in Bramble's folder or in a folder of an Obsidian vault, and open in Obsidian with one click; a change made in Obsidian shows up, Bramble never overwrites it without asking, and a chosen folder that goes missing is said.
+- Notes: a new service for notes in Markdown, with a formatting bar, a reading view where tasks can be ticked, and search. They save themselves at each change, as the pill next to their name says. The notes are plain .md files, in lampfish's folder or in a folder of an Obsidian vault, and open in Obsidian with one click; a change made in Obsidian shows up, lampfish never overwrites it without asking, and a chosen folder that goes missing is said.
 - Shelf: a new service that keeps copies of files dropped on it and every capture. A card dragged out drops its file in another app, and Copy puts the file and its picture in the clipboard at once.
 - Capture: a zone, a window or a whole screen, now or in 3 seconds. The image goes to the shelf and the clipboard, and a click on the note that follows opens it to draw on: pen, line, arrow, frame, ellipse, highlighter, numbered steps, text, pixelation and crop.
 - Companion: a round button that sits anywhere on the screen, off until turned on, opens a small window to write a note, take a capture or glance at the processor, memory, theme, audio output and last notes. Ctrl Alt S captures, Ctrl Alt N writes a note and Ctrl Alt B shows or hides it, each shortcut can be changed or turned off.
-- Claude usage: when turned on in Settings, Connections, Bramble reads the sign-in of Claude Code and shows the session and the week used of a Claude plan, on Home and in the companion. The answer comes from a call Anthropic does not document, so an unexpected answer is shown as unknown.
+- Claude usage: when turned on in Settings, Connections, lampfish reads the sign-in of Claude Code and shows the session and the week used of a Claude plan, on Home and in the companion. The answer comes from a call Anthropic does not document, so an unexpected answer is shown as unknown.
 - Home: the cards of Notes, Shelf and Claude usage can be pinned.
-- A short welcome on the very first start: what Bramble does, a wallpaper to pick, and four choices (start with Windows, check for updates, the companion, weather on Home). Home then keeps a First steps card until its five steps are done or it is hidden.
+- A short welcome on the very first start: what lampfish does, a wallpaper to pick, and four choices (start with Windows, check for updates, the companion, weather on Home). Home then keeps a First steps card until its five steps are done or it is hidden.
 - Home can be customized: any service can have its card at the bottom, the cards and the three blocks move with a drag or the arrow keys, and a block can be hidden. Reset Home puts it back, with Undo.
 - What is dragged follows the pointer and the rest slides out of its way, in the bar, on Home and in the categories of Arrange, instead of jumping.
 
@@ -37,6 +39,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Companion: tabs for the Shelf, Audio, Notes and Convert, a dashboard with the dials, the disk, the theme (changed with arrows) and the audio output, and the window grows out of the button.
 
 ### Changed
+- Home: blocks and cards share one grid, so a small card can go under a block and a block under the cards. A block keeps its width and takes the rows its content needs.
+- Buttons, links and the tray menu that had no icon now have one, from Phosphor.
+- Assistant is the new name of the companion. It has its own page, and its window can be customized from its own button: tabs shown and their order.
+- Plugins has its own page, out of Settings.
+- Go to (Ctrl K) also finds settings by name, opens the page and lights the setting up. Wallpaper shows Power saving first.
+- The assistant closes the way it opens, sliding back to its button while it fades.
+- The assistant has a Settings tab (pause on battery, pause in full screen, react to sound, dark mode, warm screen, energy saver, start with Windows, sounds, volume, microphone) and a Claude tab of its own. Desktop gains the arrangements, Undo, the icon size and hiding the taskbar.
 - Home: the cards shown until you choose yours are Convert, Notes, Health, Arrange, Sounds and Tasks; Icons and Mouse stay a click away in Pin to Home.
 - Every page has one of two widths: 900 px for settings and lists, 1120 px for a gallery, a plan or instruments; Convert is centered like the others.
 - The interface size control at the bottom right shows only under the pointer, with the keyboard, or for a moment after a zoom, so it no longer covers the page.
@@ -45,9 +54,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - A state is a lamp and a word instead of a tinted capsule, and a state that is normal says nothing: the Up to 10 pill of Startup and the All good pill of Hardware are gone.
 - Shelf is called Dépôt in French.
 - The interface moves from violet to turquoise on dark gray surfaces, the application is now called lampfish, and the bar, the window and the application icon carry the new fish mark.
+- Bramble is now lampfish everywhere: the program is `Lampfish.exe`, it installs in `%LOCALAPPDATA%\Programs\Lampfish`, keeps its data in `%LOCALAPPDATA%\Lampfish`, and the repository is Lampfish-Desktop. An update moves everything by itself on the first start: settings, added files, cursors, folder icons, the right-click menu, start with Windows and shortcuts. A copy unpacked from a zip is closed if it is running, and its settings and added files are copied over.
+- The logo is the white fish on the turquoise plate, on the application icon, the installer and in the app. The wallpapers that came with Bramble become turquoise and carry the turquoise fish, and saved themes that use them follow.
+- The cursor themes are named Lampfish Glass, Night, Snow and Violet.
 - Folders is now called Storage, the word Windows uses for the space on its drives.
 - Sounds: the volume and the microphone of Windows moved to Audio.
-- Network: the top card shows the connection on the glass of a round seal, the Wi-Fi lit in violet, instead of an icon and separate signal bars. The security level is three lit arcs instead of three bars.
+- Network: the top card shows the connection on the glass of a round seal, the Wi-Fi lit in turquoise, instead of an icon and separate signal bars. The security level is three lit arcs instead of three bars.
 - The frames of seals, ring dials and screens are brushed steel, like the dial of the speed test.
 - Home: the face and the shield each have their own bubble, and the shield opens Protection.
 - Health: when the PC is too hot, the finding names the program that uses the processor the most, with Tasks, or offers to choose the power mode.
@@ -60,6 +72,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Home: in a narrow window, the wallpaper controls sit in one row beside the preview, and two columns put them under it.
 
 ### Fixed
+- The picture of the installer was cut off: it had the wrong size for the window. The installer now carries one for each display scale.
+- Convert: turning a slide deck into a PDF no longer closes PowerPoint when another presentation is open.
+- Labels sat about one pixel low in every button, and the numbers in the rings up to two: Segoe places its capitals under the middle of the line. Text is now centered everywhere.
+- `--quit` started the app when it was not running, which left the installer waiting until the app was closed by hand.
+- An update no longer brings back a desktop shortcut that was deleted: the installer never recognized an existing install.
 - Home: the header stayed on one line only in a wide window; Customize is a button that keeps its place.
 - Create: the gray lines of the side panel were cut at the usual width of the panel.
 - French: the lines of the magnetic grid, the taskbar choices, the appearance choice and a few others were cut.
@@ -73,7 +90,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Desktop icons: the last row of a full column stops 8 px above the taskbar instead of 23.
 - Notes: Delete, the bin of a row and the Delete key ask for a second click, within 4 seconds, before a note goes.
 - Companion: the button could vanish while it was dragged, or move on a plain click, or stay hidden after a failed capture. It now stays in front, except for a game, a film or a presentation.
-- Health: the program named as the busiest could be the page engine of Bramble itself, Microsoft Edge WebView2. Its processes now count for the app that shows them.
+- Health: the program named as the busiest could be the page engine of lampfish itself, Microsoft Edge WebView2. Its processes now count for the app that shows them.
 - Sounds: Reset everything turned on the dock sounds. Only the sound of the speed test is on by default.
 - Home: HTML wallpapers filled a quarter of their thumbnail in the side panel.
 - Duplicates: the ring of the Search button turned in jerks during a search.
@@ -109,6 +126,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Home: a click on the active theme turns it off and brings back the setup from before it, with Undo.
 
 ### Changed
+- Home: blocks and cards share one grid, so a small card can go under a block and a block under the cards. A block keeps its width and takes the rows its content needs.
+- Buttons, links and the tray menu that had no icon now have one, from Phosphor.
+- Assistant is the new name of the companion. It has its own page, and its window can be customized from its own button: tabs shown and their order.
+- Plugins has its own page, out of Settings.
+- Go to (Ctrl K) also finds settings by name, opens the page and lights the setting up. Wallpaper shows Power saving first.
+- The assistant closes the way it opens, sliding back to its button while it fades.
+- The assistant has a Settings tab (pause on battery, pause in full screen, react to sound, dark mode, warm screen, energy saver, start with Windows, sounds, volume, microphone) and a Claude tab of its own. Desktop gains the arrangements, Undo, the icon size and hiding the taskbar.
 - Home: This PC shows small ring dials for the processor, memory and disk, and the instruments of Hardware for the rest: a needle thermometer for heat, cells in relief for the battery and lit arcs for Wi-Fi; each opens its details in the side panel.
 - Every list icon is drawn in the same gray across the app: those of Line quality and What the connection can do in Network were white.
 - In a narrow window, the bar on the left keeps only its icons when the window is not tall enough to show every service, and the side panel opens as a drawer from an Options button instead of falling below the page.
@@ -177,6 +201,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - The window remembers its size, position and maximized state.
 
 ### Changed
+- Home: blocks and cards share one grid, so a small card can go under a block and a block under the cards. A block keeps its width and takes the rows its content needs.
+- Buttons, links and the tray menu that had no icon now have one, from Phosphor.
+- Assistant is the new name of the companion. It has its own page, and its window can be customized from its own button: tabs shown and their order.
+- Plugins has its own page, out of Settings.
+- Go to (Ctrl K) also finds settings by name, opens the page and lights the setting up. Wallpaper shows Power saving first.
+- The assistant closes the way it opens, sliding back to its button while it fades.
+- The assistant has a Settings tab (pause on battery, pause in full screen, react to sound, dark mode, warm screen, energy saver, start with Windows, sounds, volume, microphone) and a Claude tab of its own. Desktop gains the arrangements, Undo, the icon size and hiding the taskbar.
 - Home: the Icons panel no longer shows the preview size and the subfolders options, which only mean something next to the icon library of the Icons page.
 - The bar on the left is grouped in families: Personalization (Themes, Wallpaper, Create, Icons, Mouse, Sounds), Desktop (Display, Arrange) and PC (Tasks, Folders, Hardware, Network). Ctrl 1 to 9 follow this order.
 - The wallpapers that come with Bramble can no longer be removed.
@@ -291,6 +322,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Arrange: the screen map is centered and no longer slides in from the corner, and the icon size slider shows its real position and refreshes the map after a change.
 
 ### Changed
+- Home: blocks and cards share one grid, so a small card can go under a block and a block under the cards. A block keeps its width and takes the rows its content needs.
+- Buttons, links and the tray menu that had no icon now have one, from Phosphor.
+- Assistant is the new name of the companion. It has its own page, and its window can be customized from its own button: tabs shown and their order.
+- Plugins has its own page, out of Settings.
+- Go to (Ctrl K) also finds settings by name, opens the page and lights the setting up. Wallpaper shows Power saving first.
+- The assistant closes the way it opens, sliding back to its button while it fades.
+- The assistant has a Settings tab (pause on battery, pause in full screen, react to sound, dark mode, warm screen, energy saver, start with Windows, sounds, volume, microphone) and a Claude tab of its own. Desktop gains the arrangements, Undo, the icon size and hiding the taskbar.
 - Selection no longer uses corner brackets: a flat violet pill in the rail, an accent ring elsewhere.
 - Hardware is a 12 column dashboard: processor beside memory, then graphics, temperature and battery, then devices, screens, storage and network. The status LEDs are gone.
 - Sounds: the console is a 28 band LED equalizer driven by the real spectrum of the sound, the volume dial lights its LEDs as it turns, and Listen and the connection test share one pill button.
