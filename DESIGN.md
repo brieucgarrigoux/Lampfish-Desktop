@@ -136,3 +136,7 @@ Segoe sits its capitals 0.064 em under the middle of the line. `main.css` declar
 ## Home grid
 
 Blocks and cards share `.h-board`. `.h-main` and `.h-shortcuts` take no box (`display: contents`), so a block never moves in the page and the live preview never reloads. A block has no size of its own: `blockSize()` gives it a share of the width and the rows its content needs.
+
+## Icons
+
+Most icons are drawn by hand in stroke on a 24 grid. Where a control had none, `app/ui/phosphor.js` gives it one from Phosphor, regular weight: add a label there, then run `src/phosphor.py`. Never add a button without an icon, a data row or a segment excepted.
