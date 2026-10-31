@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -47,8 +48,11 @@ namespace Lampfish
             string local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             string data = Path.Combine(local, "Lampfish"), done = Path.Combine(data, "renamed");
             if (File.Exists(done)) return;
-            string former = FormerRoot(local);
-            bool clean = Step(() => MoveData(Path.Combine(local, OldName), data));
+            string running = null;
+            bool clean = Step(() => running = QuitOld());
+            string former = FormerRoot(local, running);
+            clean &= Step(() => CopyFromZip(former));
+            clean &= Step(() => MoveData(Path.Combine(local, OldName), data));
             clean &= Step(() => MoveSettings(former));
             clean &= Step(() => MoveFolderIcons(former));
             clean &= Step(MoveWallpapers);
@@ -71,9 +75,57 @@ namespace Lampfish
             using (var k = Registry.CurrentUser.OpenSubKey(key)) return k == null ? null : k.GetValue(name) as string;
         }
 
-        // Nothing records where the app used to be: the paths it wrote in the registry say it, and an install has a known place.
-        static string FormerRoot(string local)
+        // The installer knows nothing of a copy unpacked from a zip, which may still be running under the old name.
+        static string QuitOld()
         {
+            string folder = null;
+            foreach (var p in Process.GetProcessesByName(OldName))
+                using (p)
+                {
+                    string path;
+                    try { path = p.MainModule.FileName; } catch { continue; }
+                    folder = Path.GetDirectoryName(path);
+                    using (var quit = Process.Start(path, "--quit")) quit.WaitForExit(5000);
+                    p.WaitForExit(15000);
+                }
+            return folder;
+        }
+
+        // A copy from a zip stays where it is: what the user added there is copied, never moved.
+        static void CopyFromZip(string former)
+        {
+            string settings = Path.Combine(Program.Root, "settings.json");
+            if (former == null || File.Exists(settings) || !File.Exists(Path.Combine(former, "settings.json"))) return;
+            foreach (string folder in new[] { "icons", "cursors", Path.Combine("sounds", "My sounds") })
+                CopyTree(Path.Combine(former, folder), Path.Combine(Program.Root, folder));
+            string wallpapers = Path.Combine(former, "wallpapers");
+            if (Directory.Exists(wallpapers))
+                foreach (string entry in Directory.GetFileSystemEntries(wallpapers))
+                {
+                    string name = Path.GetFileName(entry), target = Path.Combine(Program.WallpapersFolder, name);
+                    if (Names.ContainsKey(name) || name.Equals("aurora.html", StringComparison.OrdinalIgnoreCase)) continue;
+                    if (Directory.Exists(entry)) CopyTree(entry, target);
+                    else if (!File.Exists(target)) File.Copy(entry, target);
+                }
+            File.Copy(Path.Combine(former, "settings.json"), settings);
+        }
+
+        static void CopyTree(string from, string to)
+        {
+            if (!Directory.Exists(from)) return;
+            Directory.CreateDirectory(to);
+            foreach (string file in Directory.GetFiles(from))
+            {
+                string target = Path.Combine(to, Path.GetFileName(file));
+                if (!File.Exists(target)) File.Copy(file, target);
+            }
+            foreach (string folder in Directory.GetDirectories(from)) CopyTree(folder, Path.Combine(to, Path.GetFileName(folder)));
+        }
+
+        // Nothing records where the app used to be: a copy still running says it, then the paths it wrote in the registry, and an install has a known place.
+        static string FormerRoot(string local, string running)
+        {
+            if (running != null && !running.Equals(Program.Root, StringComparison.OrdinalIgnoreCase)) return running;
             foreach (string text in new[] { Value(CursorsKey, "Arrow"), Value(Program.StartupKey, OldName), Value(OldMenu + @"\command", "") })
             {
                 Match m = Regex.Match(text ?? "", @"^""?(.+?)\\(?:" + Regex.Escape(OldExe) + "|" + Regex.Escape(ThemesFolder.Substring(1)) + ")", RegexOptions.IgnoreCase);
@@ -167,7 +219,7 @@ namespace Lampfish
             }
         }
 
-        // A copy unpacked from a zip stays where it is when the installer arrives: a file that did not come along keeps its path.
+        // A file that did not come along keeps its path.
         static string MoveCursor(string path, string former)
         {
             string moved = path;
