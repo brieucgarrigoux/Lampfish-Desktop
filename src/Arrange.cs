@@ -612,7 +612,7 @@ namespace Lampfish
                 g.Taken.Add(cell);
                 positions[p.Id] = g.Pixel(cell);
             }
-            Place(positions);
+            Place(positions, true, grid);
             R.Placed = Capture();
             if (grid) DesktopGrid.Resume();
         }
@@ -620,13 +620,11 @@ namespace Lampfish
         public static List<IconPosition> Snapshot() { return Capture(); }
 
         // The position of the icon under a point of the screen: its picture and two lines of name, in the frame Windows draws around them.
-        public static Point? IconAt(Point pixel)
+        public static Point? IconAt(Point pixel, List<IconPosition> icons, Size cell, int iconSize)
         {
-            Size c = DesktopIcons.Case();
-            double scale = Scale(Screen.FromPoint(pixel));
-            int high = Math.Min(c.Height, (int)Math.Round((DesktopIcons.IconSize() + 44) * scale));
-            foreach (var p in Capture())
-                if (new Rectangle(p.X, p.Y, c.Width, high).Contains(pixel)) return new Point(p.X, p.Y);
+            int high = Math.Min(cell.Height, (int)Math.Round((iconSize + 44) * Scale(Screen.FromPoint(pixel))));
+            foreach (var p in icons)
+                if (new Rectangle(p.X, p.Y, cell.Width, high).Contains(pixel)) return new Point(p.X, p.Y);
             return null;
         }
         public static void RememberNow() { Remember(); }
@@ -749,12 +747,12 @@ namespace Lampfish
         }
 
         // Auto arrange and snapping would both pull the placed icons back to Windows' own cells, so both are lifted, and the grid with them.
-        static void Place(Dictionary<string, Point> positions, bool remember = true)
+        static void Place(Dictionary<string, Point> positions, bool remember = true, bool keepGrid = false)
         {
             if (remember && !resizing) Remember();
             uint flags = DesktopIcons.Flags();
             if ((flags & DesktopIcons.FWF_AUTOARRANGE) != 0) DesktopIcons.Flag(DesktopIcons.FWF_AUTOARRANGE, false);
-            if ((flags & DesktopIcons.FWF_SNAPTOGRID) != 0) { DesktopIcons.Flag(DesktopIcons.FWF_SNAPTOGRID, false); DesktopGrid.Lifted(); }
+            if ((flags & DesktopIcons.FWF_SNAPTOGRID) != 0) { DesktopIcons.Flag(DesktopIcons.FWF_SNAPTOGRID, false); DesktopGrid.Lifted(!keepGrid); }
             DesktopIcons.Place(Visible(positions));
         }
 

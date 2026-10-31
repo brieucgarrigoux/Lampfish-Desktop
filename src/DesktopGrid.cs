@@ -20,7 +20,7 @@ namespace Lampfish
     }
 
     // A magnetic grid on the desktop: Windows' own Align to grid, turned on with the grid and put back as it was when the grid goes off,
-    // plus the cells of that grid, faded in while an icon is carried. Windows seats every icon let go; nothing here moves an icon.
+    // plus the cells of that grid, faded in while the desktop is in front or an icon is carried. Windows seats every icon let go; nothing here moves an icon.
     static class DesktopGrid
     {
         const double FadeIn = .12, FadeOut = .2;
@@ -31,8 +31,11 @@ namespace Lampfish
         static bool wasDown, onIcon, carrying, built, covered;
         static Point pressedAt, grab;
         static double shown;
-        static DateTime quietUntil, flashUntil, checkedAt, steppedAt;
+        static DateTime quietUntil, flashUntil, checkedAt, steppedAt, frontAt;
         static string lookAt;
+        static List<IconPosition> icons;
+        static Size iconCase;
+        static int iconSize;
 
         static string SettingsFile { get { return Path.Combine(Program.DataFolder("Grid"), "settings.json"); } }
 
@@ -118,9 +121,9 @@ namespace Lampfish
             Program.SendState();
         }
 
-        // An arrangement lifted the snapping to place the icons: the grid is off until it is asked for again.
+        // An arrangement lifted the snapping to place the icons, or Windows would pull them back onto its cells: the grid is off until it is asked for again, and it says so.
         static bool? snapBeforeLifted;
-        public static void Lifted()
+        public static void Lifted(bool announce)
         {
             if (!S.On) return;
             snapBeforeLifted = S.SnapBefore;
@@ -128,6 +131,7 @@ namespace Lampfish
             S.SnapBefore = null;
             Save();
             Apply();
+            if (announce) Program.Announce("The grid is off: this arrangement places the icons itself");
             Program.SendState();
         }
 
@@ -149,6 +153,15 @@ namespace Lampfish
             overlays.Clear();
             built = false;
             shown = 0;
+        }
+
+        // The desktop is in front when nothing else has the focus: its window, or the one behind its icons.
+        static bool DesktopInFront()
+        {
+            var window = Native.GetForegroundWindow();
+            if (window == IntPtr.Zero) return true;
+            string name = ClassOf(window);
+            return name == "Progman" || name == "WorkerW";
         }
 
         // The list of icons of the desktop, not another window over it: a press elsewhere never shows the grid.
@@ -188,15 +201,14 @@ namespace Lampfish
             foreach (var s in screens) overlays.Add(new Overlay(s));
         }
 
+        // Asking Explorer for the icons while it handles this very press took half a second: the last reading is enough to know what was pressed.
         static void Press()
         {
             var at = Cursor.Position;
             pressedAt = at;
             onIcon = false;
-            if (!OnDesktop(at)) return;
-            Point? icon = null;
-            try { icon = Arrange.IconAt(at); }
-            catch (Exception ex) { Program.Log(ex); }
+            if (icons == null || !OnDesktop(at)) return;
+            var icon = Arrange.IconAt(at, icons, iconCase, iconSize);
             if (icon == null) return;
             onIcon = true;
             grab = new Point(at.X - icon.Value.X, at.Y - icon.Value.Y);
@@ -206,7 +218,7 @@ namespace Lampfish
         static void Step()
         {
             var now = DateTime.Now;
-            double dt = Math.Min(.1, (now - steppedAt).TotalSeconds);
+            double dt = Math.Min(.03, (now - steppedAt).TotalSeconds);
             steppedAt = now;
             bool down = (GetAsyncKeyState(0x01) & 0x8000) != 0;
             if (now < quietUntil) { shown = 0; foreach (var o in overlays) o.Fade(0); wasDown = down; return; }
@@ -218,9 +230,13 @@ namespace Lampfish
                 carrying = Math.Abs(at.X - pressedAt.X) >= SystemInformation.DragSize.Width || Math.Abs(at.Y - pressedAt.Y) >= SystemInformation.DragSize.Height;
             }
             if (!down) onIcon = carrying = false;
+            // An icon let go has moved: read the icons again soon, for the next press.
+            if (!down && wasDown) checkedAt = now.AddSeconds(-2.4);
             wasDown = down;
 
-            bool want = carrying || now < flashUntil;
+            // The focus leaves the desktop for an instant around a click: the grid only follows when it stays away.
+            if (DesktopInFront()) frontAt = now;
+            bool want = carrying || now < flashUntil || (now - frontAt).TotalMilliseconds < 250;
             if (!want) covered = false;
             else if (shown == 0) covered = FullScreenApp();
             want = want && !covered;
@@ -234,20 +250,30 @@ namespace Lampfish
                 foreach (var o in overlays) o.Aim(icon);
             }
             else if (before > 0 && shown == 0) foreach (var o in overlays) o.Aim(null);
-            tick.Interval = want || shown > 0 ? 15 : 40;
+            tick.Interval = carrying || (want ? shown < 1 : shown > 0) ? 15 : 40;
 
             // The cells follow the size and spacing of the icons, and where Windows seats them; an arrangement that lifted the snapping turns the grid off.
-            if (!down && shown == 0 && (now - checkedAt).TotalSeconds > 3)
+            if (!down && (now - checkedAt).TotalSeconds > 3)
             {
                 checkedAt = now;
                 if (!Snapping()) { Enable(false, false); Program.SendState(); return; }
-                if (built && Look() != lookAt) built = false;
+                if (built && Look() != lookAt)
+                {
+                    built = false;
+                    if (shown > 0) { Build(); foreach (var o in overlays) o.Fade(shown); }
+                }
             }
         }
 
         static string Look()
         {
-            try { return DesktopIcons.Case() + " " + DesktopIcons.IconSize() + " " + Arrange.Fingerprint(); }
+            try
+            {
+                iconCase = DesktopIcons.Case();
+                iconSize = DesktopIcons.IconSize();
+                icons = Arrange.Snapshot();
+                return iconCase + " " + iconSize + " " + string.Join(";", icons.Select(p => p.X + "," + p.Y));
+            }
             catch { return lookAt; }
         }
 
