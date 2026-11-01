@@ -1028,7 +1028,7 @@ const ZOOMS = [80, 90, 100, 115, 130, 150];
 // instead of following the state, which made it grow then shrink. The pixel ratio also changes when the window moves to a
 // screen with another scale, which is not a zoom. Quick clicks count from the zoom asked last, not the last one confirmed.
 let zoomNow = 100, zoomBase = devicePixelRatio, zoomAsked = null, zoomWait = 0;
-// The pill and the Options button keep their size whatever the zoom. A script hears of a zoom one frame late, so their
+// The zoom and the Options button keep their size whatever the zoom. A script hears of a zoom one frame late, so their
 // counter-scale comes from media queries on the resolution, which apply in the very frame the zoom changes.
 const zoomSheet = document.head.appendChild(document.createElement('style'));
 let zoomSheetBase = 0;
@@ -1051,14 +1051,7 @@ function paintZoom(zoom) {
   $('zoom-out').disabled = zoom <= ZOOMS[0];
   $('zoom-in').disabled = zoom >= ZOOMS[ZOOMS.length - 1];
 }
-let zoomShown = 0;
-function flashZoom() {
-  $('zoom-value').closest('.zoom-pill').classList.add('shown');
-  clearTimeout(zoomShown);
-  zoomShown = setTimeout(() => $('zoom-value').closest('.zoom-pill').classList.remove('shown'), 1800);
-}
 function zoomTo(value) {
-  flashZoom();
   if (value === zoomNow) return;
   zoomNow = zoomAsked = value;
   paintZoom(value);

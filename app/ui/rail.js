@@ -205,6 +205,7 @@
     const keys = { ArrowUp: -1, ArrowDown: 1, Home: 'first', End: 'last' };
     if (!(e.key in keys)) return;
     const active = document.activeElement, inRail = !!(active && active.closest && active.closest('.rail, .rail-group'));
+    if (active && active.closest && active.closest('.zoom-pill')) return;
     if (!inRail && active && active !== document.body) return;
     const step = keys[e.key];
     if (inRail) {
