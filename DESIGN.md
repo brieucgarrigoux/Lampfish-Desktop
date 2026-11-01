@@ -25,6 +25,7 @@ The rules every page of lampfish follows. Values live as tokens in `:root` of `a
 | `--hover` | Hovered row or card |
 | `--hairline`, `--hairline-strong` | Separators inside a group |
 | `--text`, `--text-soft`, `--text-pale` | Titles, values and icons, explanations |
+| `--fill` | Bars, meters and lit marks: `--accent` at night, `--accent-strong` by day |
 | `--accent`, `--accent-strong`, `--on-accent` | Turquoise: `#1EBBAA` for text and strokes on dark, `#0F9D8F` for filled controls, `#08171A` for the text on those fills (white on `#0F9D8F` is only 3.4:1) |
 | `--accent-dim`, `--accent-tint`, `--accent-ring` | Pressed, chosen row, focus |
 | `--lit`, `--warn`, `--bad` | Lamp colors: fine (`#2ED9C6`), to watch, to fix |
@@ -52,7 +53,7 @@ Turquoise marks a state (chosen, active, on). Surfaces are near-neutral dark gra
 
 Named exceptions: the screen number on the map of Display (26), the dot glyphs of the weather icon (9), and the center of the rings of Folders, which scales with the ring (`clamp`).
 
-Fonts: `--display` for titles and lit text, `--numbers` with `font-variant-numeric: tabular-nums` for figures. No fixed-width font.
+Fonts: `--display` (Geist, the font of the logo) for titles, the clock and lit text from 14 px up, `--numbers` (Segoe) with `font-variant-numeric: tabular-nums` for figures and anything smaller, `--system` (Segoe) where the text must match what a canvas or a generated wallpaper draws. No fixed-width font.
 
 ### Shape and time
 
@@ -67,10 +68,11 @@ Fonts: `--display` for titles and lit text, `--numbers` with `font-variant-numer
 | Material | Tokens | Where |
 | --- | --- | --- |
 | Flat | `--group`, `--group-up` | Lists, settings, Personalization cards |
-| Shell | `--shell`, `--shell-edge`, `--shell-lift` | Cards in relief of the PC family, the zoom pill |
-| Well | `--sunken` + inset shadow | Fields, readout lists, segment rails |
+| Shell | `--shell`, `--shell-edge`, `--shell-lift` | Cards in relief of the PC family |
+| Well | `--sunken`, `--well-inset` | Fields, readout lists, segment rails |
 | Brushed steel | `--steel`, `--steel-edge` | Frames of bezels, seals, ring dials and the speed test dial: a turning sheen, the same thin edge all around so the frame keeps one width |
 | Glass | `--glass`, `--glass-sheen`, `--glass-inset` | Behind lit text and drawings in light |
+| Screen | `--screen-face`, `--screen-inset` | Faces of the meters and of the sound screen |
 | Light | `--lit`, `--warn`, `--bad`, `.led-text` | Lit letters, rings and drawings on glass |
 
 ## Components
@@ -89,14 +91,14 @@ Fonts: `--display` for titles and lit text, `--numbers` with `font-variant-numer
 - **Bubble** (`.chart-tip`): title, note and label and value lines.
 - **Drawer**: the side panel opens over the page in a narrow window, from the Options button.
 - **Toast**: 8 s, with Undo for any change.
-- **Zoom pill** (`.zoom-pill`): bottom right, invisible until the pointer or the keyboard reaches it, shown for a moment after a zoom.
+- **Zoom** (`.zoom-pill`): at the foot of the bar on the left, always on screen, never over a page. Value above minus and plus in a narrow bar, on one line from 140 px. Its size ignores the zoom, so that plus stays under the pointer between two clicks, and it sticks to the foot when the bar scrolls.
 - **Bar on the left** (`.rail`): Home, a Go to search (Ctrl K), then one button per family (icon, name, arrow) that opens its services in a flyout next to the bar, on click. The name of every button is always written: under the icon in a narrow bar, beside it from 140 px, and in the flyout when the window is too small for names. The family that holds the page on screen carries a lit bar on the edge of the bar. Arranging the bar shows every family open, one under the other. Two levels at most.
 - **Page help** (`.page-help`): a round question mark after the title of every page (in the header on Home) that opens a bubble (`.page-help__tip`) with the line, the Reads, Changes and To undo of the page, taken from What lampfish reads and changes, and a link to it. Never on a single setting: the gray line is its help.
 - **Plugin tag** (`.plugin-tag`): an outlined word, Plugin, after the name of what a plugin adds. What a plugin shows (its bars, its dials) is drawn in the color of the plugin (`--plugin-claude` for Claude, the one exception to turquoise for a state), never the interface around it.
 - **Actions row** (`.h-actions` on Home): the everyday actions as chips (`.tool-chip` with a 16 px icon), one click each, right under the header. An action that has a page opens it, the others act from Home with their usual toast.
 - **Home cards** (`.h-shortcuts`): a grid of columns that follows the width of the page, a card in any cell, an empty cell left empty, one to three cells across and one or two down. A card dropped on another pushes it down.
 - **Delete in two clicks** (a note): the control arms on the first click, says so in red, and deletes on a second one within 4 seconds. Undo stays for 8 seconds after. A removal that touches one file keeps Undo only; this one was asked for because a note is easy to lose by a stray click.
-- **Day** (`light.css`, `data-theme="light"` on the root, set by `applyLight` of `base.js`): only the tokens change, the page is a soft gray (`#d4dadb`, never white: white hurt the eyes) with groups a little lighter, the accent text is darker (`#06655c`) to keep 4.5:1, and the fish is the black mark. Instruments (dials, screens, meters) stay dark glass. Anything drawn over a picture keeps light text.
+- **Day** (`light.css`, `data-theme="light"` on the root, set by `applyLight` of `base.js`): tokens first, then the parts drawn once. The page is a gray (`#c3cacb`, groups `#d3d9da`, never white: `#d4dadb` already hurt the eyes), the accent text is darker (`#044e46`) and filled controls use `#0a7469` to keep 4.5:1 with white text, and the fish is the black mark. Instruments exist in daylight too: steel frames, pale faces (`--glass`), dark print, no glow, depth from shadow and outline. A face stays the lightest surface of the screen. A canvas asks `isDay()` for its colors and redraws on `themechange`. The title bar and the tray menu follow. Anything drawn over a picture keeps light text.
 - **State** (`.state`): a lamp (`--lit`, `--warn`, `--bad`, or gray for waiting) and a gray word, no background and no capsule. A state that is normal says nothing; only what is on, chosen, to watch or to fix gets a lamp. Never a tinted capsule.
 - **Saved state** (`.n-saved` in Notes): a state next to the name that says a change is saved by itself, and when it is not written yet. A page that saves on its own shows it this way rather than with a Save button.
 - **Main button with a menu** (`.s-capture` in Shelf): the main action on the left, a narrow arrow on the right that opens the other ways to do it, as rows with a glyph, a title and a gray line.
@@ -131,7 +133,7 @@ Fonts: `--display` for titles and lit text, `--numbers` with `font-variant-numer
 
 ## Text position
 
-Segoe sits its capitals 0.064 em under the middle of the line. `main.css` declares two aliases, `LF Display` and `LF Text`, with `ascent-override` 105.5 % and `descent-override` 27.5 %: same line height, text centered at the usual display scales. Always use `--display` or `--numbers`, never a font name. Text in a ring also uses `text-box: trim-both cap alphabetic`.
+Segoe sits its capitals 0.064 em under the middle of the line. `main.css` declares two aliases, `LF Display` and `LF Text`, with `ascent-override` 105.5 % and `descent-override` 27.5 %: same line height, text centered at the usual display scales. `LF Geist` uses 102 % and 31 %: the same line height, and ascent minus descent equals its capital height (0.71 em), so its capitals sit exactly in the middle. Always use `--display`, `--numbers` or `--system`, never a font name. Text in a ring also uses `text-box: trim-both cap alphabetic`.
 
 ## Home grid
 

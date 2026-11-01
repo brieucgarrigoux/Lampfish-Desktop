@@ -9,13 +9,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 - Assistant: the dashboard shows the battery and the Wi-Fi next to the processor and the memory.
 - Assistant: the Settings tab chooses the appearance of lampfish, and the window follows at once. The switch for Windows is now named Windows dark mode.
+- Day mode: screens, seals, dials, the speed gauge, the knob, the battery and the Wi-Fi arcs now have a light version, in the main window and in the assistant.
 
 ### Changed
 
 - Magnetic grid: an arrangement says when it turns the grid off. It still has to: Windows would pull the icons back onto its cells.
+- The zoom stays on screen at the foot of the bar on the left, instead of appearing only under the pointer.
+- Day mode: the page is a lighter gray, and the title bar and the tray menu follow it.
+- Titles and the clock use Geist, the font of the logo. The rest stays in Segoe.
 
 ### Fixed
 
+- Day mode: every text reaches a contrast of 4.5:1. Titles of Sounds and values of Hardware were dark on dark, and white on the main buttons was too faint.
 - Magnetic grid: changing the size of the icons, or moving one in the plan of Arrange, no longer turns the grid off. Each icon keeps its cell and the cells follow the new size.
 - Magnetic grid: the last column of the desktop has its cells, and Straighten no longer moves the icons out of it.
 - Magnetic grid: a click on the desktop no longer stops lampfish for half a second.

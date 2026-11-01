@@ -77,6 +77,8 @@
   --glass-inset: inset 0 2px 6px rgba(0, 0, 0, .9), inset 0 0 0 1px rgba(0, 0, 0, .85), 0 1px 0 rgba(255, 255, 255, .06);
   --chosen: 0 0 0 2px var(--accent), 0 0 22px rgba(30, 187, 170, .25);
   --fill: var(--accent);
+  --button: rgba(255, 255, 255, .07);
+  --button-up: rgba(255, 255, 255, .13);
   --needle: #ecf0f1;
   --pivot: #c5c8c9;
   --pivot-edge: #0b0e0f;
@@ -145,7 +147,7 @@ h2 .count { margin-left: 8px; font: 400 var(--text-caption) var(--numbers); font
 }
 
 .contents { min-width: 0; overflow-y: auto; padding: 18px 28px 60px; }
-.panel-toggle { position: fixed; right: calc(14px / var(--zoom, 1)); bottom: calc(14px / var(--zoom, 1)); z-index: 40; transform: scale(calc(1 / var(--zoom, 1))); transform-origin: right bottom; display: none; align-items: center; gap: 8px; height: 36px; padding: 0 14px 0 12px; border: 0; border-radius: 99px;
+.panel-toggle { position: fixed; right: calc(14px / var(--zoom, 1)); bottom: calc(62px / var(--zoom, 1)); z-index: 40; transform: scale(calc(1 / var(--zoom, 1))); transform-origin: right bottom; display: none; align-items: center; gap: 8px; height: 36px; padding: 0 14px 0 12px; border: 0; border-radius: 99px;
   background: var(--shell); box-shadow: var(--shell-edge), 0 8px 20px rgba(0, 0, 0, .6); color: var(--text); font-size: var(--text-body); font-weight: 600; transition: filter var(--fast); }
 .panel-toggle:hover { filter: brightness(1.15); }
 .panel-toggle svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
@@ -275,11 +277,11 @@ body[data-view="tasks"]:not(.sheet-open) .panel, body[data-view="modes"]:not(.mo
 .link svg { flex: none; width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 
 .button {
-  border: 0; border-radius: var(--radius-control); padding: 7px 14px; background: rgba(255, 255, 255, .07);
+  border: 0; border-radius: var(--radius-control); padding: 7px 14px; background: var(--button);
   font-size: var(--text-body); font-weight: 600; white-space: nowrap; transition: background var(--fast), color var(--fast);
 }
-.button:hover { background: rgba(255, 255, 255, .13); }
-.button:disabled { opacity: .35; cursor: default; background: rgba(255, 255, 255, .07); }
+.button:hover { background: var(--button-up); }
+.button:disabled { opacity: .35; cursor: default; background: var(--button); }
 .button--accent { background: var(--accent-strong); color: var(--on-accent); }
 .button--accent:hover { background: var(--accent); }
 .button--accent:disabled { opacity: .5; background: var(--accent-strong); }

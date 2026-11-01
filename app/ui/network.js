@@ -141,6 +141,7 @@
     ? (t > .85 ? '#034039' : t > .6 ? '#055f55' : t > .3 ? '#0a7469' : '#0f9d8f')
     : (t > .85 ? '#e1ecef' : t > .6 ? '#7ec6ba' : t > .3 ? '#1EBBAA' : '#077e72');
   let target = 0, displayed = 0, loop = 0, litBefore = -2;
+  document.addEventListener('themechange', () => { litBefore = -2; if (!loop) loop = requestAnimationFrame(animate); });
   function gauge(v) {
     target = part(v);
     if (!loop) loop = requestAnimationFrame(animate);
