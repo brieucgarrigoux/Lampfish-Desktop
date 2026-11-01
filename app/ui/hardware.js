@@ -78,7 +78,7 @@
     const traffic = kind === 'network', max = traffic ? Math.max(64 * 1024, ...h) : 100;
     return {
       at: slot / (HISTORY - 1), title: tr(CHARTS[kind][0]), note: tr(CHARTS[kind][1]), when: Chart.ago(h.length - 1 - i),
-      lines: [{ color: '#1EBBAA', label: tr(traffic ? 'Traffic' : 'Usage'), value: traffic ? throughput(h[i]) : pct(h[i]), y: (31 - 29 * Math.min(1, h[i] / max)) / 32, hot: true }],
+      lines: [{ color: isDay() ? '#0a7469' : '#1EBBAA', label: tr(traffic ? 'Traffic' : 'Usage'), value: traffic ? throughput(h[i]) : pct(h[i]), y: (31 - 29 * Math.min(1, h[i] / max)) / 32, hot: true }],
     };
   }
 

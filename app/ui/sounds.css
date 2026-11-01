@@ -4,8 +4,8 @@
 
 .screen-sound {
   flex: 1; min-width: 140px; display: flex; flex-direction: column; gap: 4px; padding: 11px 14px 10px; border-radius: var(--radius-group);
-  background: radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 60%), var(--ink);
-  box-shadow: inset 0 2px 5px rgba(0, 0, 0, .8), inset 0 0 0 1px rgba(0, 0, 0, .6), 0 1px 0 rgba(255, 255, 255, .05);
+  background: radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 60%), var(--screen-face);
+  box-shadow: var(--screen-inset);
 }
 .screen-sound__up { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
 .screen-sound .title { flex: 1; min-width: 0; font: 600 var(--text-title)/1.2 var(--display); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

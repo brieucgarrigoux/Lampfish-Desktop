@@ -10,7 +10,7 @@
 .t-free__icon svg { width: 20px; height: 20px; }
 .t-free__all { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 2px 2px -4px; font-size: var(--text-caption); color: var(--text-pale); }
 .t-free__meter { display: block; height: 6px; margin: 2px 2px 0; border-radius: 3px; background: var(--meter); overflow: hidden; }
-.t-free__meter i { display: block; height: 100%; border-radius: 3px; background: var(--accent); }
+.t-free__meter i { display: block; height: 100%; border-radius: 3px; background: var(--fill); }
 .t-free__meter.full i { background: var(--danger); }
 .t-free__row { display: grid; grid-template-columns: auto 32px minmax(0, 1fr) auto; gap: 10px; align-items: center; cursor: pointer; }
 .t-free__row input { width: 16px; height: 16px; margin: 0; accent-color: var(--accent-strong); cursor: pointer; }

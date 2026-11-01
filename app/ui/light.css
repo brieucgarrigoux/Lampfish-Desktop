@@ -1,40 +1,56 @@
-/* Day: the same design on a light page. Only the tokens change; the instruments (dials, screens, the glass of the meters) stay dark, as on a real dashboard. */
+/* Day: the same design on a light page. The instruments exist in daylight too: steel frames, pale faces, dark print, no glow. Depth comes from shadow and outline. */
 :root[data-theme="light"] {
-  --wallpaper: #b3bbbd;
-  --group: #c5cccd;
-  --group-up: #ced4d5;
-  --raised: #b0b9bb;
-  --sunken: #a4adaf;
-  --track: #939ea0;
-  --meter: #a3acae;
-  --screen: #aab3b5;
-  --hover: #bac2c4;
+  --wallpaper: #c3cacb;
+  --group: #d3d9da;
+  --group-up: #dbe0e1;
+  --raised: #c2c9cb;
+  --sunken: #b6bec0;
+  --track: #a5aeb0;
+  --meter: #b5bdbf;
+  --screen: #bbc3c5;
+  --hover: #cad0d1;
   --hairline: rgba(10, 24, 28, .16);
   --hairline-strong: rgba(10, 24, 28, .28);
   --text: #0d1315;
   --text-soft: #28333a;
   --text-pale: #36424a;
-  --accent: #06655c;
-  --accent-strong: #0f9d8f;
+  --accent: #044e46;
+  --accent-strong: #0a7469;
   --on-accent: #ffffff;
   --accent-dim: rgba(15, 157, 143, .18);
   --accent-tint: rgba(15, 157, 143, .13);
   --accent-ring: rgba(6, 101, 92, .6);
-  --danger: #c32d41;
+  --danger: #a11d31;
   --danger-dim: rgba(195, 45, 65, .12);
-  --lit: #0b8b7f;
-  --warn: #9a5c08;
-  --bad: #bd2a3e;
+  --lit: #066f64;
+  --warn: #633c00;
+  --bad: #a11d31;
+  --plugin-claude: #92431f;
+  --fill: var(--accent-strong);
 
-  --shell: linear-gradient(180deg, #cfd5d6, #c4cbcc 60%, #bcc3c4);
-  --shell-up: linear-gradient(180deg, #d4dadb, #c9d0d1 60%, #c0c7c8);
+  --shell: linear-gradient(180deg, #dde2e2, #d2d8d9 60%, #cad0d1);
+  --shell-up: linear-gradient(180deg, #e2e6e6, #d7dcdd 60%, #cfd5d6);
   --shell-edge: inset 0 1px 0 rgba(255, 255, 255, .6), inset 0 0 0 1px rgba(18, 38, 44, .07), 0 0 0 1px rgba(18, 38, 44, .16);
   --shell-lift: 0 1px 2px rgba(18, 38, 44, .16), 0 8px 14px -8px rgba(18, 38, 44, .3);
   --float: 0 10px 24px rgba(18, 38, 44, .26);
-  --veil: rgba(150, 158, 160, .6);
+  --veil: rgba(170, 178, 180, .6);
   --chosen: 0 0 0 2px var(--accent), 0 0 18px rgba(15, 157, 143, .2);
+
+  --ink: #66716f;
+  --steel: conic-gradient(from 210deg, #a9aeaf, #eef0f0 12%, #8f9596 28%, #d3d7d7 45%, #868d8e 60%, #e0e3e3 78%, #9ca2a3 90%, #a9aeaf);
+  --steel-edge: 0 0 0 1px rgba(30, 45, 50, .42), 0 3px 8px rgba(20, 40, 45, .22), inset 0 0 0 1px rgba(255, 255, 255, .55);
+  --glass: #e8ebeb;
+  --glass-sheen: linear-gradient(135deg, rgba(255, 255, 255, .55), rgba(255, 255, 255, 0) 42%);
+  --glass-inset: inset 0 2px 4px rgba(20, 40, 45, .26), inset 0 0 0 1px rgba(20, 40, 45, .2), 0 1px 0 rgba(255, 255, 255, .7);
+  --screen-face: var(--glass);
+  --screen-inset: var(--glass-inset);
+  --well-inset: inset 0 1px 3px rgba(20, 40, 45, .22), inset 0 0 0 1px rgba(20, 40, 45, .08), 0 1px 0 rgba(255, 255, 255, .55);
+  --needle: #1d282a;
+  --pivot: #eef0f0;
+  --pivot-edge: #2a3437;
   color-scheme: light;
 }
+:root[data-theme="light"] .time-select select, :root[data-theme="light"] .m-time { color-scheme: light; }
 
 /* What sits on a picture stays dark and keeps light text, whatever the page is. */
 :root[data-theme="light"] .strip,
@@ -45,4 +61,131 @@
 :root[data-theme="light"] .mood__remove { color: #eef1f1; }
 :root[data-theme="light"] .strip .hero-screens button[aria-checked="true"] { color: #0f1617; }
 :root[data-theme="light"] .security__next { border-top-color: rgba(18, 38, 44, .12); box-shadow: none; background: rgba(18, 38, 44, .05); }
-:root[data-theme="light"] .drop { background: rgba(160, 168, 170, .92); }
+:root[data-theme="light"] .drop { background: rgba(178, 186, 188, .92); }
+
+/* Wells and screens */
+:root[data-theme="light"] .skeleton, :root[data-theme="light"] .d-map { background: radial-gradient(120% 120% at 0% 0%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 55%), var(--sunken); box-shadow: var(--well-inset); }
+:root[data-theme="light"] .dup-fact { box-shadow: var(--well-inset); }
+:root[data-theme="light"] .readout + .readout, :root[data-theme="light"] .readouts--two .readout { border-color: var(--hairline); }
+:root[data-theme="light"] .m-header > .dials { border-top-color: var(--hairline); }
+:root[data-theme="light"] .check__value, :root[data-theme="light"] .t-memory__screen { box-shadow: inset 0 1px 2px rgba(20, 40, 45, .24), inset 0 0 0 1px rgba(20, 40, 45, .1), 0 1px 0 rgba(255, 255, 255, .6); text-shadow: none; }
+
+/* Seals, bezels and rings */
+:root[data-theme="light"] .security--high { --lamp-hi: #03463f; --lamp: #0a7d71; --lamp-lo: #bfe0db; }
+:root[data-theme="light"] .security--medium { --lamp-hi: #5c3700; --lamp: #a56a0a; --lamp-lo: #eed9b0; }
+:root[data-theme="light"] .security--low { --lamp-hi: #8a1626; --lamp: #c62e44; --lamp-lo: #f1c9cf; }
+:root[data-theme="light"] .security--off { --lamp-hi: #3c474b; --lamp: #6c7679; --lamp-lo: #cdd3d4; }
+:root[data-theme="light"] .seal::before { background: radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--lamp) 7%, var(--glass)), var(--glass) 72%); }
+:root[data-theme="light"] .dial .seal::before { box-shadow: var(--glass-inset); }
+:root[data-theme="light"] .seal__ring { background: conic-gradient(from 0deg, var(--lamp) calc(var(--part, 0) * 1%), rgba(10, 30, 34, .13) 0); filter: none; }
+:root[data-theme="light"] .seal__text { color: var(--text); text-shadow: none; }
+:root[data-theme="light"] .dials--led .seal__text { color: var(--lamp-hi); text-shadow: none; }
+:root[data-theme="light"] .led-text { text-shadow: none; }
+:root[data-theme="light"] .bezel__sub { color: var(--text-soft); opacity: 1; }
+:root[data-theme="light"] .bezel__glass { background: var(--glass-sheen), radial-gradient(130% 170% at 0% 0%, color-mix(in srgb, var(--lamp) 10%, var(--glass)), var(--glass) 70%); }
+:root[data-theme="light"] .seal__face g[filter] { opacity: 0; }
+:root[data-theme="light"] .level-arc__part { stroke: color-mix(in srgb, var(--lamp) 16%, #c3cacb); }
+:root[data-theme="light"] .level-arc__part.on { filter: none; }
+
+/* Battery, Wi-Fi and thermometer */
+:root[data-theme="light"] .cell-relief__segments { background: linear-gradient(180deg, #f6f7f7, #c9cfd0); box-shadow: 0 0 0 1px rgba(30, 45, 50, .4), inset 0 1px 0 #fff, 0 2px 4px rgba(20, 40, 45, .22); }
+:root[data-theme="light"] .cell-relief__segments i { background: rgba(10, 30, 34, .14); box-shadow: inset 0 1px 1px rgba(10, 30, 34, .22); }
+:root[data-theme="light"] .cell-relief__segments i.full, :root[data-theme="light"] .cell-relief__segments i.low { box-shadow: none; }
+:root[data-theme="light"] .cell-relief__segments i.full { background: var(--fill); }
+:root[data-theme="light"] .cell-relief__segments i.low { background: var(--danger); }
+:root[data-theme="light"] .cell-relief__tip { background: linear-gradient(180deg, #e6e9e9, #bcc3c4); box-shadow: 0 0 0 1px rgba(30, 45, 50, .4); }
+:root[data-theme="light"] .wifi-relief__bevel path { stroke: rgba(255, 255, 255, .75); }
+:root[data-theme="light"] .wifi-relief__bevel circle { fill: rgba(255, 255, 255, .75); }
+:root[data-theme="light"] .wifi-relief__grooves path { stroke: rgba(10, 30, 34, .17); }
+:root[data-theme="light"] .wifi-relief__grooves circle { fill: rgba(10, 30, 34, .17); }
+:root[data-theme="light"] .wifi-relief__lit path { stroke: rgba(10, 30, 34, .1); }
+:root[data-theme="light"] .wifi-relief__lit circle { fill: rgba(10, 30, 34, .1); }
+:root[data-theme="light"] .wifi-relief__lit path.on, :root[data-theme="light"] .wifi-relief__lit circle.on { filter: none; }
+:root[data-theme="light"] .wifi-relief__lit path.on { stroke: var(--fill); }
+:root[data-theme="light"] .wifi-relief__lit circle.on { fill: var(--fill); }
+:root[data-theme="light"] .thermo__ticks path, :root[data-theme="light"] #r-ticks path { stroke: #5d686b; }
+:root[data-theme="light"] .thermo__needle path { filter: none; }
+
+/* The dial of the speed test */
+:root[data-theme="light"] .gauge__bezel { box-shadow: 0 0 0 1px rgba(30, 45, 50, .42), 0 10px 22px rgba(20, 40, 45, .24), inset 0 1px 1px rgba(255, 255, 255, .7), inset 0 -1px 2px rgba(20, 40, 45, .3); }
+:root[data-theme="light"] .gauge__bezel::after { background: radial-gradient(circle at 50% 38%, #fbfcfc, var(--glass) 72%); box-shadow: inset 0 2px 7px rgba(20, 40, 45, .28), inset 0 0 0 1px rgba(20, 40, 45, .2), 0 1px 0 rgba(255, 255, 255, .7); }
+:root[data-theme="light"] .led { fill: #c6cdce; stroke: rgba(10, 30, 34, .08); }
+:root[data-theme="light"] .needle path { filter: drop-shadow(0 1px 1px rgba(20, 40, 45, .35)); }
+:root[data-theme="light"] .needle .needle__queue { fill: var(--fill); }
+:root[data-theme="light"] .pivot__core { fill: #5d686b; }
+:root[data-theme="light"] .gauge__glass { background: linear-gradient(160deg, rgba(255, 255, 255, .5) 0%, rgba(255, 255, 255, .12) 36%, transparent 38%); }
+:root[data-theme="light"] #r-ticks text { fill: #2f3a3f; }
+
+/* Steps, jewels and keys of Network */
+:root[data-theme="light"] .step__wire { background: var(--track); }
+:root[data-theme="light"] .step i { background: var(--raised); box-shadow: inset 0 0 0 1px var(--hairline), 0 0 0 4px var(--group); }
+:root[data-theme="light"] .step i .glyph { stroke: var(--text-soft); }
+:root[data-theme="light"] .step.active i .glyph { stroke: var(--accent); }
+:root[data-theme="light"] .step.done i { background: linear-gradient(180deg, #0b8277, var(--accent-strong)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 0 0 4px var(--group); }
+:root[data-theme="light"] .step.done i .glyph { stroke: var(--on-accent); }
+:root[data-theme="light"] .step.failed i { background: #f3d6da; box-shadow: inset 0 0 0 1.5px var(--danger), 0 0 0 4px var(--group); }
+:root[data-theme="light"] .step.failed i .glyph { stroke: var(--danger); }
+:root[data-theme="light"] .step.active:not(.measuring) .step__fill { background: var(--accent-strong); }
+:root[data-theme="light"] .step::after { background: var(--group-up); color: var(--text); }
+:root[data-theme="light"] .security__title, :root[data-theme="light"] .check__title { text-shadow: none; }
+:root[data-theme="light"] .jewel { background: linear-gradient(180deg, #8f999b, #e6e9e9); box-shadow: inset 0 1px 1px rgba(10, 30, 34, .4), 0 1px 0 rgba(255, 255, 255, .7); }
+:root[data-theme="light"] .jewel::before { background: radial-gradient(circle at 50% 38%, #f4f6f6, #bdc5c6 72%); box-shadow: none; }
+:root[data-theme="light"] .jewel::after { background: rgba(255, 255, 255, .75); }
+:root[data-theme="light"] .check--ok .jewel { --led: #0f9d8f; }
+:root[data-theme="light"] .check--warn .jewel { --led: #c98a1c; }
+:root[data-theme="light"] .check--bad .jewel { --led: #d23a50; }
+:root[data-theme="light"] .check--ok .jewel::before, :root[data-theme="light"] .check--warn .jewel::before, :root[data-theme="light"] .check--bad .jewel::before { background: radial-gradient(circle at 50% 42%, #fff 0 6%, var(--led) 46%, color-mix(in srgb, var(--led) 76%, #000) 100%); box-shadow: 0 0 0 1px rgba(10, 30, 34, .18); }
+:root[data-theme="light"] .check--ok .readout__value i, :root[data-theme="light"] .check--warn .readout__value i, :root[data-theme="light"] .check--bad .readout__value i { box-shadow: none; }
+:root[data-theme="light"] .state::before { box-shadow: none; }
+:root[data-theme="light"] .security__key { background: linear-gradient(180deg, #f6f7f7, #d3d9da); box-shadow: 0 0 0 1px rgba(30, 45, 50, .36), 0 2px 0 rgba(30, 45, 50, .3), 0 4px 7px rgba(20, 40, 45, .18), inset 0 1px 0 #fff; }
+:root[data-theme="light"] .security__key:hover { color: var(--text); }
+:root[data-theme="light"] .security__key:active { box-shadow: 0 0 0 1px rgba(30, 45, 50, .36), inset 0 1px 2px rgba(20, 40, 45, .2); }
+
+/* The knob of Sounds */
+:root[data-theme="light"] .knob::before { background: var(--sunken); box-shadow: var(--well-inset); }
+:root[data-theme="light"] .knob__ring i { background: #a9b3b5; box-shadow: none; }
+:root[data-theme="light"] .knob__ring i.lit { background: var(--fill); box-shadow: none; }
+:root[data-theme="light"] .banner-sound.muted .knob__ring i.lit { background: var(--text-pale); }
+:root[data-theme="light"] .knob__button { background: conic-gradient(from 0deg, #b8bebf, #f0f2f2 10%, #bfc5c6 22%, #e6e9e9 36%, #b4babb 50%, #f0f2f2 64%, #bfc5c6 78%, #e6e9e9 90%, #b8bebf); box-shadow: 0 0 0 1px rgba(30, 45, 50, .42), 0 3px 7px rgba(20, 40, 45, .28), inset 0 1px 1px rgba(255, 255, 255, .7); }
+:root[data-theme="light"] .knob__button::after { background: radial-gradient(circle at 50% 30%, #fbfcfc, #d6dcdd 75%); box-shadow: inset 0 1px 0 #fff, 0 0 0 1px rgba(30, 45, 50, .22); }
+:root[data-theme="light"] .knob__marker { background: var(--accent); box-shadow: none; }
+:root[data-theme="light"] .zone-sounds--library { background: var(--shell); }
+
+/* Home */
+:root[data-theme="light"] .h-instruments { border-top-color: var(--hairline); box-shadow: none; }
+:root[data-theme="light"] .h-instrument + .h-instrument { border-left-color: var(--hairline); }
+:root[data-theme="light"] .h-instrument:hover { background: rgba(255, 255, 255, .3); }
+:root[data-theme="light"] .h-q__more { background: rgba(10, 30, 34, .05); }
+:root[data-theme="light"] .h-weather__icon .m-cloud { fill: var(--group-up); }
+:root[data-theme="light"] .h-weather__icon .m-sun, :root[data-theme="light"] .h-weather__icon .m-lightning { stroke: #a56a0a; }
+:root[data-theme="light"] .h-weather__icon .m-sun circle { fill: rgba(232, 182, 90, .34); }
+:root[data-theme="light"] .h-weather__icon .m-moon { stroke: #4c7f78; fill: rgba(76, 127, 120, .14); }
+:root[data-theme="light"] .h-weather__icon .m-drop { stroke: #2f62ad; }
+:root[data-theme="light"] .h-weather__icon .m-flake { fill: #5d7f96; }
+:root[data-theme="light"] .h-leds i { background: #aab3b5; }
+:root[data-theme="light"] .h-leds i.on, :root[data-theme="light"] .h-leds i.lamp--high { background: var(--fill); box-shadow: none; }
+
+/* Display and Folders */
+:root[data-theme="light"] .d-screen { background: linear-gradient(160deg, #f4f6f6, #d3d9da); box-shadow: inset 0 0 0 1px var(--hairline-strong), 0 2px 4px rgba(20, 40, 45, .2); }
+:root[data-theme="light"] .d-screen:hover { background: linear-gradient(160deg, #fbfcfc, #dfe4e4); }
+:root[data-theme="light"] .element i { background: #8f999b; }
+:root[data-theme="light"] .copy-row:hover { background: rgba(10, 30, 34, .06); }
+:root[data-theme="light"] .map.switching::after { border-color: rgba(10, 30, 34, .14); border-top-color: var(--accent); }
+
+/* Buttons, bars and what floats */
+:root[data-theme="light"] .service:not([aria-current="page"]):hover { background: rgba(255, 255, 255, .35); }
+:root[data-theme="light"] .button:not(.button--accent), :root[data-theme="light"] .button:not(.button--accent):disabled { background: rgba(255, 255, 255, .42); }
+:root[data-theme="light"] .button:not(.button--accent):hover { background: rgba(255, 255, 255, .68); }
+:root[data-theme="light"] .keycap-pill:not(.playing):not([data-state="progress"]) { background: linear-gradient(180deg, #0b8277, var(--accent-strong)); }
+:root[data-theme="light"] .segments button[aria-checked="true"], :root[data-theme="light"] .segments button[aria-selected="true"] { background: var(--group-up); box-shadow: 0 1px 2px rgba(20, 40, 45, .22), inset 0 0 0 1px var(--hairline); }
+:root[data-theme="light"] .thumb-scrollable { background: #7b8689; }
+:root[data-theme="light"] .rail-scrollable:hover, :root[data-theme="light"] .rail-scrollable.dragging { background: rgba(10, 30, 34, .05); }
+:root[data-theme="light"] .chart-guide { background: rgba(10, 30, 34, .26); }
+:root[data-theme="light"] .chart-tip, :root[data-theme="light"] .toast { box-shadow: 0 0 0 1px var(--hairline-strong), var(--float); }
+:root[data-theme="light"] .welcome, :root[data-theme="light"] .dup-dialog::backdrop { background: rgba(170, 178, 180, .62); }
+:root[data-theme="light"] .welcome__card { box-shadow: 0 0 0 1px var(--hairline-strong), var(--float); }
+:root[data-theme="light"] .dup-dialog { box-shadow: var(--shell-edge), var(--float); }
+:root[data-theme="light"] .panel { box-shadow: -10px 0 26px rgba(20, 40, 45, .22); }
+:root[data-theme="light"] .panel-toggle { box-shadow: var(--shell-edge), 0 6px 14px rgba(20, 40, 45, .22); }
+:root[data-theme="light"] .h-cover__label { box-shadow: 0 4px 14px rgba(20, 40, 45, .24); }
+:root[data-theme="light"].home-editing .h-cover, :root[data-theme="light"] .home-editing .h-cover { background: rgba(195, 202, 203, .45); }

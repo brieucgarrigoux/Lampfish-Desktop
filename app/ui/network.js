@@ -107,8 +107,8 @@
     return {
       at: slot / (POINTS - 1), title: tr('Live traffic'), note: tr('Data received and sent by this connection, once per second'), when: Chart.ago(received.length - 1 - i),
       lines: [
-        { color: '#1EBBAA', label: tr('Download'), value: throughput(received[i]), y: yDown, hot: downHot },
-        { color: '#a8adae', label: tr('Upload'), value: throughput(sent[i]), y: ySent, hot: !downHot },
+        { color: isDay() ? '#0a7469' : '#1EBBAA', label: tr('Download'), value: throughput(received[i]), y: yDown, hot: downHot },
+        { color: isDay() ? '#5d686b' : '#a8adae', label: tr('Upload'), value: throughput(sent[i]), y: ySent, hot: !downHot },
       ],
     };
   });
@@ -137,7 +137,9 @@
     $('r-ticks').innerHTML = html;
   })();
 
-  const ledColor = t => t > .85 ? '#e1ecef' : t > .6 ? '#7ec6ba' : t > .3 ? '#1EBBAA' : '#077e72';
+  const ledColor = t => isDay()
+    ? (t > .85 ? '#034039' : t > .6 ? '#055f55' : t > .3 ? '#0a7469' : '#0f9d8f')
+    : (t > .85 ? '#e1ecef' : t > .6 ? '#7ec6ba' : t > .3 ? '#1EBBAA' : '#077e72');
   let target = 0, displayed = 0, loop = 0, litBefore = -2;
   function gauge(v) {
     target = part(v);

@@ -6,9 +6,12 @@ const send = (action, data = {}) => webview.postMessage({ action, ...data });
 const $ = id => document.getElementById(id);
 
 // Day or night: a page opens in the mode it is told and follows the app when it changes. The fish is black on a light page.
+const isDay = () => document.documentElement.dataset.theme === 'light';
 function applyLight(light) {
+  const changed = isDay() !== light;
   document.documentElement.dataset.theme = light ? 'light' : 'dark';
   for (const img of document.querySelectorAll('img[src*="mark-lampfish-"]')) img.src = img.getAttribute('src').replace(/mark-lampfish-(white|black)/, 'mark-lampfish-' + (light ? 'black' : 'white'));
+  if (changed) document.dispatchEvent(new Event('themechange'));
 }
 applyLight(!!window.LIGHT);
 webview.addEventListener('message', e => { if (e.data && e.data.type === 'appearance') applyLight(e.data.light); });

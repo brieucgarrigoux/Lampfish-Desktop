@@ -55,11 +55,14 @@
         const on = k < lit, hold = k === cap && holds[b] > .08;
         if (on || hold) {
           const mix = k / (SEGMENTS - 1);
-          pen.fillStyle = on ? (mix > .82 ? '#e6eff1' : mix > .55 ? '#7ec6ba' : mix > .28 ? '#1EBBAA' : '#007669') : '#d8e6ea';
+          const day = isDay();
+          pen.fillStyle = day
+            ? (on ? (mix > .82 ? '#034039' : mix > .55 ? '#055f55' : mix > .28 ? '#0a7469' : '#0f9d8f') : '#034039')
+            : (on ? (mix > .82 ? '#e6eff1' : mix > .55 ? '#7ec6ba' : mix > .28 ? '#1EBBAA' : '#007669') : '#d8e6ea');
           pen.shadowColor = 'rgba(30, 187, 170, .85)';
-          pen.shadowBlur = on ? 7 : 4;
+          pen.shadowBlur = day ? 0 : on ? 7 : 4;
         } else {
-          pen.fillStyle = 'rgba(255, 255, 255, .055)';
+          pen.fillStyle = isDay() ? 'rgba(10, 30, 34, .07)' : 'rgba(255, 255, 255, .055)';
           pen.shadowBlur = 0;
         }
         pen.beginPath();
@@ -70,7 +73,7 @@
     pen.shadowBlur = 0;
     if (playback && playback.duration) {
       const p = Math.min(1, (now - playback.start) / 1000 / playback.duration);
-      pen.fillStyle = 'rgba(30, 187, 170, .9)';
+      pen.fillStyle = isDay() ? '#0a7469' : 'rgba(30, 187, 170, .9)';
       pen.fillRect(0, box.height - 2, box.width * p, 2);
     }
   }

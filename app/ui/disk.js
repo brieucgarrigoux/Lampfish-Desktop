@@ -67,15 +67,15 @@
   }
 
   function color(s) {
-    const active = hover || chosen;
+    const active = hover || chosen, day = isDay();
     if (active) {
-      if (s === active) return '#1EBBAA';
-      if (isAncestor(s, active)) return `oklch(0.50 0.075 183)`;
-      if (isAncestor(active, s)) return `oklch(0.42 0.055 183)`;
+      if (s === active) return day ? '#0a7469' : '#1EBBAA';
+      if (isAncestor(s, active)) return day ? `oklch(0.70 0.06 183)` : `oklch(0.50 0.075 183)`;
+      if (isAncestor(active, s)) return day ? `oklch(0.76 0.045 183)` : `oklch(0.42 0.055 183)`;
     }
     const n = s.n;
-    let l = 0.47 - (s.k - 1) * 0.03 + (s.i % 2 ? 0.04 : 0);
-    if (n.s === 'system') return '#1c2223';
+    let l = (day ? 0.84 : 0.47) - (s.k - 1) * 0.03 + (s.i % 2 ? 0.04 : 0);
+    if (n.s === 'system') return day ? '#b6bec0' : '#1c2223';
     if (n.s) return `oklch(${(l - 0.13).toFixed(3)} 0.005 215)`;
     if (!n.d) return `oklch(${(l - 0.07).toFixed(3)} 0.007 215)`;
     return `oklch(${l.toFixed(3)} 0.011 215)`;
@@ -103,7 +103,7 @@
       ctx.fillStyle = color(s);
       ctx.fill();
 
-      ctx.strokeStyle = '#121617';
+      ctx.strokeStyle = isDay() ? '#d3d9da' : '#121617';
       ctx.lineWidth = 1.5;
       ctx.stroke();
       if (!anim && k <= 2 && r2 - r1 >= 18) labels.push({ s, t0, t1, r: (r1 + r2) / 2 });
@@ -129,11 +129,13 @@
       ctx.save();
       ctx.translate(cx + Math.cos(m) * e.r, cy + Math.sin(m) * e.r);
       ctx.rotate(rot);
-      ctx.fillStyle = (e.s === hover || e.s === chosen) ? '#fff' : 'rgba(255, 255, 255, .92)';
+      ctx.fillStyle = (e.s === hover || e.s === chosen) ? '#fff' : isDay() ? '#0d1315' : 'rgba(255, 255, 255, .92)';
       ctx.fillText(text, 0, 0);
       ctx.restore();
     }
   }
+
+  document.addEventListener('themechange', draw);
 
   function renderCenter() {
     if (f && f.running) return;
