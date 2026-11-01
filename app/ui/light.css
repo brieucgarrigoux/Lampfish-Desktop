@@ -21,11 +21,11 @@
   --accent-dim: rgba(15, 157, 143, .18);
   --accent-tint: rgba(15, 157, 143, .13);
   --accent-ring: rgba(6, 101, 92, .6);
-  --danger: #a11d31;
+  --danger: #8e1729;
   --danger-dim: rgba(195, 45, 65, .12);
   --lit: #066f64;
   --warn: #633c00;
-  --bad: #a11d31;
+  --bad: #8e1729;
   --plugin-claude: #92431f;
   --fill: var(--accent-strong);
   --button: rgba(255, 255, 255, .42);
