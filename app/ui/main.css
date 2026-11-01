@@ -1,4 +1,5 @@
 /* Segoe sits its capitals 0.064 em under the middle of the line, so every label looks low in its button. These faces center the capitals and keep the height of the line. */
+@font-face { font-family: "LF Geist"; font-weight: 100 900; font-display: block; src: url("fonts/Geist-Variable.ttf") format("truetype"); ascent-override: 102%; descent-override: 31%; line-gap-override: 0%; }
 @font-face { font-family: "LF Display"; font-weight: 300; src: local("Segoe UI Variable Display Light"), local("Segoe UI Light"); ascent-override: 105.5%; descent-override: 27.5%; line-gap-override: 0%; }
 @font-face { font-family: "LF Display"; font-weight: 350; src: local("Segoe UI Variable Display Semilight"), local("Segoe UI Semilight"); ascent-override: 105.5%; descent-override: 27.5%; line-gap-override: 0%; }
 @font-face { font-family: "LF Display"; font-weight: 400 500; src: local("Segoe UI Variable Display"), local("Segoe UI"); ascent-override: 105.5%; descent-override: 27.5%; line-gap-override: 0%; }
@@ -58,7 +59,8 @@
   --radius-small: 6px;
 
   --fast: .12s;
-  --display: "LF Display", "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  --system: "LF Display", "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  --display: "LF Geist", var(--system);
   --numbers: "LF Text", "Segoe UI Variable Small", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
 
   --shell: linear-gradient(180deg, #1a2021, #131719 60%, #101415);
@@ -236,7 +238,7 @@ body[data-view="tasks"]:not(.sheet-open) .panel, body[data-view="modes"]:not(.mo
 .chips { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
 .chips .tool-chip { padding: 5px 10px; }
 /* The page help: a question mark by the title opens a short note on the page, taken from What lampfish reads and changes. */
-.page-help { display: inline-grid; place-items: center; width: 22px; height: 22px; margin-left: 10px; border: 0; border-radius: 99px; background: var(--raised); color: var(--text-pale); font: 600 var(--text-caption) var(--display); vertical-align: 3px; cursor: pointer; transition: color var(--fast), background var(--fast); }
+.page-help { display: inline-grid; place-items: center; width: 22px; height: 22px; margin-left: 10px; border: 0; border-radius: 99px; background: var(--raised); color: var(--text-pale); font: 600 var(--text-caption) var(--numbers); vertical-align: 3px; cursor: pointer; transition: color var(--fast), background var(--fast); }
 .page-help:hover, .page-help[aria-expanded="true"] { color: var(--accent); background: var(--hover); }
 .home-header .page-help { margin-left: 0; }
 .page-help__tip { position: fixed; z-index: 45; width: 330px; max-width: calc(100vw - 32px); padding: 12px 14px; border-radius: var(--radius-card); background: var(--group-up); box-shadow: 0 0 0 1px var(--hairline-strong), var(--float); font-size: var(--text-caption); line-height: 1.4; color: var(--text-soft); }

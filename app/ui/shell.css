@@ -88,7 +88,7 @@
 .dials--small .dial .seal { width: 60px; height: 60px; margin-bottom: 6px; }
 .dials--small .dial .seal::before, .dials--small .dial .seal::after { inset: 4px; }
 .dials--small .dial .seal__ring { inset: 8px; }
-.dials--small .seal__text { font-size: var(--text-body); }
+.dials--small .seal__text { font-family: var(--numbers); font-size: var(--text-body); }
 .dials--small .seal__text small { font-size: var(--text-badge); }
 .dials--led .seal__text { font-family: var(--display); color: var(--lamp-hi); text-shadow: 0 0 6px color-mix(in srgb, var(--lamp) 60%, transparent); }
 .dials--led .seal__text small { opacity: .8; }
@@ -96,7 +96,7 @@
 .dial .seal::before { box-shadow: inset 0 0 5px rgba(0, 0, 0, .9), inset 0 0 0 1px rgba(0, 0, 0, .85), 0 0 0 1px rgba(255, 255, 255, .05); }
 .dial .seal::after { opacity: .5; }
 .dial .seal__ring { inset: 12px; }
-.seal__text--long { font-size: var(--text-body); }
+.seal__text--long { font-family: var(--numbers); font-size: var(--text-body); }
 .seal__text--long small { font-size: var(--text-badge); }
 button.dial { cursor: pointer; transition: filter var(--fast), transform var(--fast); }
 button.dial:hover { filter: brightness(1.15); }

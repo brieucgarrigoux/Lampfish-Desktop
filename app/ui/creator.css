@@ -25,7 +25,7 @@
 .cr-thirds b { position: absolute; left: 0; right: 0; height: 1px; background: rgba(255, 255, 255, .22); }
 .cr-thirds b:nth-child(3) { top: 33.333%; } .cr-thirds b:nth-child(4) { top: 66.666%; }
 .cr-tag { position: absolute; padding: 3px 8px; border-radius: var(--radius-small); background: rgba(9, 12, 13, .85); color: #fff; font: var(--text-caption) var(--numbers); font-variant-numeric: tabular-nums; white-space: nowrap; pointer-events: none; }
-.cr-inline { position: absolute; padding: 0 8px; border: 0; border-radius: var(--radius-control); background: rgba(7, 9, 10, .55); text-align: center; letter-spacing: -.02em; outline: none; box-shadow: 0 0 0 1.5px var(--accent); font-family: var(--display); }
+.cr-inline { position: absolute; padding: 0 8px; border: 0; border-radius: var(--radius-control); background: rgba(7, 9, 10, .55); text-align: center; letter-spacing: -.02em; outline: none; box-shadow: 0 0 0 1.5px var(--accent); font-family: var(--system); }
 .cr-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .cr-tool { display: inline-flex; align-items: center; gap: 7px; padding: 6px 11px; border-radius: var(--radius-control); font-size: var(--text-value); }
 .cr-tool svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }

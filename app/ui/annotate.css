@@ -20,5 +20,5 @@ body.annotate { display: flex; flex-direction: column; height: 100vh; overflow: 
 .an-hint { flex: none; min-height: 28px; padding: 6px 16px; font-size: var(--text-caption); color: var(--text-pale); }
 .an-stage { position: relative; flex: 1; min-height: 0; display: grid; place-items: center; padding: 0 16px 16px; overflow: hidden; background: var(--wallpaper); }
 .an-stage canvas { display: block; border-radius: var(--radius-small); box-shadow: 0 0 0 1px var(--hairline-strong), var(--float); cursor: crosshair; touch-action: none; }
-.an-text { position: absolute; min-width: 160px; padding: 4px 6px; border: 1px dashed currentColor; border-radius: var(--radius-small); background: var(--glass); font: 600 var(--text-title) var(--display); outline: none; }
+.an-text { position: absolute; min-width: 160px; padding: 4px 6px; border: 1px dashed currentColor; border-radius: var(--radius-small); background: var(--glass); font: 600 var(--text-title) var(--system); outline: none; }
 .an-text[hidden] { display: none; }
