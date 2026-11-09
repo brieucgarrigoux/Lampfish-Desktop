@@ -189,4 +189,6 @@
 
 /* The speed reads on the lit arc and the number in its middle: no needle, no metal bezel, so it no longer looks like a car speedometer. */
 .gauge__bezel, .gauge__glass, .needle, .pivot, .pivot__core { display: none; }
-.gauge + .playback { position: relative; z-index: 1; margin-top: -172px; margin-bottom: 64px; }
+.gauge + .playback { position: relative; z-index: 1; flex-direction: column; align-items: center; row-gap: 4px; margin-top: -180px; margin-bottom: 56px; }
+.gauge + .playback .playback__value { font-size: 34px; }
+.gauge + .playback .playback__phase { flex-basis: auto; margin-top: 2px; }
