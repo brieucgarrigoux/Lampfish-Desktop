@@ -20,11 +20,17 @@
 :root.mica .statusbar { background: rgba(9, 12, 13, .6); -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); }
 :root.mica[data-theme="light"] .statusbar { background: rgba(195, 202, 203, .6); }
 
-/* The picture at the head of every page: the fish of the brand in its own glow, faint, behind the content. */
+/* What floats over the page or follows a drag keeps a solid fill, or the page would show through it. */
+:root.mica { --solid: #15191a; }
+:root.mica[data-theme="light"] { --solid: #d6dcdd; }
+:root.mica :is(.page-help__tip, .rail-group, .goto__box, .chart-tip, .toast, .s-menu, .welcome__card, .dup-dialog,
+  .category.grabbed, .rail .service.grabbed, .h-tile.grabbed, .arrangement__remove, .h-size, .n-item__remove) { background-color: var(--solid); }
+
+/* The picture at the head of every page: the fish of the brand in its glow, small, in the band of the title, never under a card. */
 .contents { position: relative; isolation: isolate; }
 .contents::before, .contents::after { content: ""; position: absolute; z-index: -1; pointer-events: none; }
-.contents::before { top: 0; right: 0; width: 520px; max-width: 70%; height: 260px; background: radial-gradient(circle at 78% 30%, color-mix(in srgb, var(--accent) 34%, transparent), transparent 62%); opacity: .5; }
-.contents::after { top: 18px; right: 34px; width: 150px; height: 150px; background: url("../../brand/logo/mark-lampfish-white.png") center / contain no-repeat; opacity: .08; }
-:root[data-theme="light"] .contents::after { background-image: url("../../brand/logo/mark-lampfish-black.png"); opacity: .06; }
-:root[data-theme="light"] .contents::before { opacity: .3; }
-@media (max-width: 900px) { .contents::after { width: 110px; height: 110px; right: 20px; } }
+.contents::before { top: 0; right: 0; width: 420px; max-width: 70%; height: 150px; background: radial-gradient(ellipse at 85% 0%, color-mix(in srgb, var(--accent) 30%, transparent), transparent 65%); opacity: .45; }
+.contents::after { top: 16px; right: 28px; width: 56px; height: 56px; background: url("../../brand/logo/mark-lampfish-white.png") center / contain no-repeat; opacity: .12; }
+:root[data-theme="light"] .contents::after { background-image: url("../../brand/logo/mark-lampfish-black.png"); opacity: .1; }
+:root[data-theme="light"] .contents::before { opacity: .25; }
+body[data-view="home"] .contents::after { display: none; }
