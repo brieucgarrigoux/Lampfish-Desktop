@@ -43,6 +43,20 @@ SolidCompression=yes
 Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "french"; MessagesFile: "compiler:Languages\French.isl"
 
+[Messages]
+english.SelectTasksDesc=Two choices before installing.
+english.SelectTasksLabel2=Start with Windows can also be changed later in Settings.
+english.FinishedHeadingLabel=lampfish is installed
+english.FinishedLabelNoIcons=It is installed for this account, without administrator rights.
+english.FinishedLabel=It is installed for this account, without administrator rights.
+english.ClickFinish=Finish closes this window.
+french.SelectTasksDesc=Deux choix avant l'installation.
+french.SelectTasksLabel2=Lancer avec Windows se change aussi plus tard dans Réglages.
+french.FinishedHeadingLabel=lampfish est installé
+french.FinishedLabelNoIcons=Il est installé pour ce compte, sans droits d'administrateur.
+french.FinishedLabel=Il est installé pour ce compte, sans droits d'administrateur.
+french.ClickFinish=Terminer ferme cette fenêtre.
+
 [CustomMessages]
 english.Options=Options
 french.Options=Options
