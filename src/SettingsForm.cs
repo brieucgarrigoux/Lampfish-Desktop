@@ -124,7 +124,25 @@ namespace Lampfish
             base.OnSizeChanged(e);
             if (WindowState == shape || !Visible) return;
             shape = WindowState;
+            KeepOnScreen();
             Remember();
+        }
+
+        protected override void OnVisibleChanged(EventArgs e)
+        {
+            base.OnVisibleChanged(e);
+            if (Visible) KeepOnScreen();
+        }
+
+        // A screen unplugged while the window was hidden or minimized leaves it where no screen shows it.
+        public void KeepOnScreen()
+        {
+            if (WindowState != FormWindowState.Normal || !IsHandleCreated) return;
+            var b = Bounds;
+            if (Screen.AllScreens.Any(s => { var v = Rectangle.Intersect(s.WorkingArea, b); return v.Width >= 240 && v.Height >= 160; })) return;
+            var area = Screen.FromRectangle(b).WorkingArea;
+            int w = Math.Min(b.Width, area.Width), h = Math.Min(b.Height, area.Height);
+            Bounds = new Rectangle(area.Left + (area.Width - w) / 2, area.Top + (area.Height - h) / 2, w, h);
         }
 
         void Remember()

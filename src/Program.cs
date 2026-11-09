@@ -177,7 +177,12 @@ namespace Lampfish
 
                 rebuild = new System.Windows.Forms.Timer { Interval = 1500 };
                 rebuild.Tick += (s, e) => { rebuild.Stop(); Build(); };
-                SystemEvents.DisplaySettingsChanged += (s, e) => { RebuildSoon(); Arrange.ScreensChanged(); Moods.ScreensChanged(); };
+                SystemEvents.DisplaySettingsChanged += (s, e) =>
+                {
+                    RebuildSoon(); Arrange.ScreensChanged(); Moods.ScreensChanged();
+                    var w = settingsWindow;
+                    if (w != null && w.IsHandleCreated) w.BeginInvoke(new Action(w.KeepOnScreen));
+                };
                 SystemEvents.SessionSwitch += (s, e) =>
                 {
                     if (e.Reason == SessionSwitchReason.SessionLock) locked = true;
@@ -770,6 +775,7 @@ namespace Lampfish
             }
             settingsWindow.Show();
             if (settingsWindow.WindowState == FormWindowState.Minimized) settingsWindow.WindowState = FormWindowState.Normal;
+            settingsWindow.KeepOnScreen();
             settingsWindow.Activate();
         }
 
