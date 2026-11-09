@@ -186,3 +186,7 @@
 .security__key:hover { color: #fff; }
 .security__key:active { transform: translateY(2px); box-shadow: 0 0 0 1px var(--ink), 0 1px 0 #0b0e0f, inset 0 1px 0 rgba(255, 255, 255, .1); }
 @container network (max-width: 640px) { .security__checks { grid-template-columns: 1fr; } }
+
+/* The speed reads on the lit arc and the number in its middle: no needle, no metal bezel, so it no longer looks like a car speedometer. */
+.gauge__bezel, .gauge__glass, .needle, .pivot, .pivot__core { display: none; }
+.gauge + .playback { position: relative; z-index: 1; margin-top: -172px; margin-bottom: 64px; }

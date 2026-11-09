@@ -57,7 +57,9 @@ body.home-editing .h-actions { display: none; }
 .h-instrument > :last-child { margin-bottom: auto; }
 .h-instrument:hover { background: rgba(255, 255, 255, .03); }
 .h-instrument__label { margin-bottom: auto; align-self: stretch; font-size: var(--text-caption); color: var(--text-soft); text-align: left; }
-.h-instrument .thermo, .h-instrument .wifi-relief { width: 100%; max-width: 104px; height: auto; margin: 0; }
+.h-instrument .wifi-relief { width: 100%; max-width: 104px; height: auto; margin: 0; }
+.h-instrument .thermo { display: none; }
+.h-instrument:has(.thermo) .h-instrument__value b { font: 600 var(--text-title) var(--display); }
 .h-instrument .cell-relief { align-self: center; display: flex; align-items: center; margin: 0; padding: 0; }
 .h-instrument .cell-relief__segments i { width: round(6px, var(--device-px, 1px)); height: round(20px, var(--device-px, 1px)); }
 .h-instrument__value { display: flex; flex-direction: column; align-items: center; gap: 1px; max-width: 100%; }

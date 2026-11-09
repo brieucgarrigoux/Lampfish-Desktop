@@ -129,7 +129,7 @@
       parts.push(list);
     }
     const measures = document.createElement('div');
-    measures.className = 'dials dials--small dials--led health-measures';
+    measures.className = 'dials dials--rows health-measures';
     const shownMeasures = (report.measures || []).filter(m => m.id !== 'startup');
     measures.style.setProperty('--count', shownMeasures.length);
     dials(measures, shownMeasures.map(m => ({ key: m.id, part: fill(m) * 100, value: m.value, label: tr(MEASURES[m.id] || m.id), level: LAMPS[m.level] || 'high',

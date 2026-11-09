@@ -3,8 +3,7 @@
 .health-card { margin-bottom: 4px; }
 .health-card:empty { display: none; }
 .health-card > .row.loading { padding: 18px 24px; }
-.health-measures { display: grid; grid-template-columns: repeat(var(--count, 6), minmax(0, 1fr)); justify-items: center; padding: 6px 12px 16px; }
-.health-measures .dial { width: 100%; min-width: 0; }
+.health-measures { padding: 2px 0 10px; }
 
 .health-card .security__next .keycap-pill { min-width: 150px; }
 
@@ -31,7 +30,6 @@
   .readouts--two .readout:nth-child(odd) { border-right: 1px solid rgba(255, 255, 255, .045); }
   .readouts--two .readout:last-child:nth-child(odd) { grid-column: 1 / -1; border-right: 0; }
 }
-@container health (max-width: 560px) { .health-measures { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @container health (max-width: 460px) { .health-startup__foot { flex-direction: column; align-items: stretch; } }
 .h-health { margin-left: auto; display: flex; align-items: center; gap: 8px; }
 .h-health__seal { display: block; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; transition: filter var(--fast), transform var(--fast); }

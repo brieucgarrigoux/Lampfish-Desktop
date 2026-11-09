@@ -41,8 +41,52 @@ function details(el, d) {
 }
 addEventListener('scroll', hideDetails, true);
 
-// A row of ring dials in metal seals, the dashboard of the PC family. Dials are updated in place so their rings turn instead of jumping.
+// The last minutes of each measure shown as rows, kept in memory only: nothing is written to the disk.
+const meterHistory = new Map();
+const METER_POINTS = 60;
+function meterCurve(svg, points) {
+  const w = 120, h = 32, n = points.length;
+  const xy = points.map((p, i) => [(n < 2 ? 1 : i / (n - 1)) * w, h - 2 - Math.max(0, Math.min(100, p)) / 100 * (h - 4)]);
+  if (n < 2) xy.unshift([0, xy[0][1]]);
+  const line = 'M' + xy.map(([x, y]) => x.toFixed(1) + ' ' + y.toFixed(1)).join(' L');
+  svg.querySelector('.meter__line').setAttribute('d', line);
+  svg.querySelector('.meter__area').setAttribute('d', line + ` L${w} ${h} L0 ${h} Z`);
+}
+function meters(zone, list) {
+  const now = Date.now();
+  list.forEach((g, i) => {
+    let el = zone.children[i];
+    if (!el || el.tagName !== (g.action ? 'BUTTON' : 'DIV')) {
+      const fresh = document.createElement(g.action ? 'button' : 'div');
+      fresh.innerHTML = '<span class="meter__what"><span class="meter__label"></span><span class="meter__sub"></span></span><span class="meter__value"></span><span class="meter__track"><span class="meter__fill"></span></span><svg class="meter__curve" viewBox="0 0 120 32" preserveAspectRatio="none" aria-hidden="true"><path class="meter__area"/><path class="meter__line"/></svg>';
+      if (g.action) { fresh.type = 'button'; fresh.addEventListener('click', () => fresh._action()); }
+      if (el) el.replaceWith(fresh); else zone.append(fresh);
+      el = fresh;
+    }
+    el._action = g.action;
+    el.className = 'meter security--' + (g.level || 'high');
+    if (g.color) el.style.setProperty('--lamp', g.color); else el.style.removeProperty('--lamp');
+    if (g.key) el.dataset.key = g.key;
+    const part = Math.max(0, Math.min(100, g.part || 0));
+    el.querySelector('.meter__fill').style.width = part.toFixed(1) + '%';
+    const [number, unit] = String(g.value).split(/\s+(?=\S+$)/);
+    el.querySelector('.meter__value').replaceChildren(unit ? number : String(g.value), ...(unit ? [Object.assign(document.createElement('small'), { textContent: unit })] : []));
+    el.querySelector('.meter__label').textContent = g.label;
+    el.querySelector('.meter__sub').textContent = el.querySelector('.meter__sub').title = g.sub || '';
+    const id = (zone.id || zone.className) + '|' + (g.key || g.label);
+    const h = meterHistory.get(id) || { at: 0, points: [] };
+    if (now - h.at >= 900) { h.points.push(part); h.at = now; if (h.points.length > METER_POINTS) h.points.shift(); meterHistory.set(id, h); }
+    meterCurve(el.querySelector('.meter__curve'), h.points);
+    details(el, g.details || (g.title ? { title: g.title } : null));
+    if (detailFor === el && g.details) showDetails(el);
+  });
+  while (zone.children.length > list.length) zone.lastChild.remove();
+}
+
+// A row of flat ring dials, the dashboard of the PC family. Dials are updated in place so their rings turn instead of jumping.
+// A zone marked dials--rows shows the same measures as rows with a bar and the curve of the last minutes.
 function dials(zone, list) {
+  if (zone.classList.contains('dials--rows')) return meters(zone, list);
   list.forEach((g, i) => {
     let el = zone.children[i];
     if (!el || el.tagName !== (g.action ? 'BUTTON' : 'DIV')) {

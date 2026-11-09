@@ -125,7 +125,7 @@
     header.innerHTML = `${glyph('system')}<div class="m-header__what"><span class="title"></span><span class="path"></span></div><div class="m-health"><i></i><span id="m-health"></span></div>`;
     header.querySelector('.title').textContent = [s.manufacturer, s.model].filter(Boolean).join(' ') || 'Computer';
     header.querySelector('.path').textContent = [(s.windows || '').replace(/^Microsoft\s+/, ''), s.version].filter(Boolean).join(' · ');
-    header.append(Object.assign(document.createElement('div'), { className: 'dials', id: 'm-gauges' }));
+    header.append(Object.assign(document.createElement('div'), { className: 'dials dials--rows', id: 'm-gauges' }));
 
     const threads = '<div class="m-threads">' + '<i></i>'.repeat(Math.max(1, p.threads || 1)) + '</div>';
     const cpu = card('processor', 'processor', 'Processor', shortName(p.name), threads);
