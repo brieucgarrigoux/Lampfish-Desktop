@@ -14,7 +14,7 @@ jobs:
   build:
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Inno Setup
         run: choco install innosetup --no-progress -y
@@ -27,7 +27,7 @@ jobs:
         shell: pwsh
         run: Get-FileHash dist/Lampfish-Setup-*.exe -Algorithm SHA256 | Format-List
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: Lampfish-Setup
           path: dist/Lampfish-Setup-*.exe
