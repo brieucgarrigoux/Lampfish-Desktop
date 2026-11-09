@@ -239,8 +239,11 @@ body[data-view="tasks"]:not(.sheet-open) .panel, body[data-view="modes"]:not(.mo
 .chips { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
 .chips .tool-chip { padding: 5px 10px; }
 /* The page help: a question mark by the title opens a short note on the page, taken from What lampfish reads and changes. */
-.page-help { display: inline-grid; place-items: center; width: 22px; height: 22px; margin-left: 10px; border: 0; border-radius: 99px; background: var(--raised); color: var(--text-pale); font: 600 var(--text-caption) var(--numbers); vertical-align: 3px; cursor: pointer; transition: color var(--fast), background var(--fast); }
-.page-help:hover, .page-help[aria-expanded="true"] { color: var(--accent); background: var(--hover); }
+.page-help { display: inline-flex; align-items: center; gap: 6px; height: 26px; margin-left: 12px; padding: 0 10px 0 4px; border: 0; border-radius: 99px; background: var(--accent-dim); color: var(--accent); font: 600 var(--text-caption) var(--numbers); letter-spacing: 0; vertical-align: 5px; cursor: pointer; transition: background var(--fast), transform var(--fast); }
+.page-help__mark { display: grid; place-items: center; width: 18px; height: 18px; border-radius: 99px; background: var(--accent); color: var(--wallpaper); font-size: var(--text-badge); }
+.page-help:hover { filter: brightness(1.15); }
+.page-help[aria-expanded="true"] { box-shadow: var(--pressed); }
+.page-help:active { transform: scale(.97); }
 .home-header .page-help { margin-left: 0; }
 .page-help__tip { position: fixed; z-index: 45; width: 330px; max-width: calc(100vw - 32px); padding: 12px 14px; border-radius: var(--radius-card); background: var(--group-up); box-shadow: 0 0 0 1px var(--hairline-strong), var(--float); font-size: var(--text-caption); line-height: 1.4; color: var(--text-soft); }
 .page-help__tip > b { display: block; margin-bottom: 2px; font-size: var(--text-body); color: var(--text); }
