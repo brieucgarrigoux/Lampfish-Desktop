@@ -83,7 +83,7 @@ Fonts: `--display` (Geist, the font of the logo) for titles, the clock and lit t
 - **Row** (`.row`, `.toggle`, `.setting`): icon in a `.glyph`, title and one gray line, control on the right. Title and line each fit on one line.
 - **Glyph** (`.glyph`): every list icon, stroke in `--text-soft` on `--raised`, 30 px. It turns turquoise only when its row is on or chosen.
 - **Switch**: the switch of Windows, one size for all (`.toggle input`, `.toggler input`, `.cr-switch`): 40 by 20, empty with a ring and a 12 px dot when off, filled with the accent and a dark dot (white in day mode) when on, the dot grows to 14 px under the pointer.
-- **Settings cards**: a `.group` made of settings (`.toggle`, `.row--setting`, `.setting`, `.row.action`, `.h-q`, `.tr-row`) shows each setting as its own card, 3 px apart, like the Settings app of Windows. Lists of data (programs, files) stay one block.
+- **Settings group**: a `.group` made of settings (`.toggle`, `.row--setting`, `.setting`, `.row.action`, `.h-q`, `.tr-row`) is one block with thin rules between its settings, like an open group of the Settings app of Windows (separate cards showed the dark veil of Mica between them). Lists of data (programs, files) are not touched.
 - **Appearance words**: Light, Dark, Use system setting, with a link to the Colors page of Windows (`display.colors`).
 - **Slider**: `fill()` of `main.js` paints the filled part from `min` and `max`. A muted slider is dimmed (`.is-muted`), a disabled one too.
 - **Segments**, **time select** (`.time-select`), **chips** (`.tool-chip`), **links** (`.link` with a 14 px icon).
