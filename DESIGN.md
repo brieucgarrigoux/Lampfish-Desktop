@@ -70,10 +70,13 @@ Fonts: `--display` (Geist, the font of the logo) for titles, the clock and lit t
 | Flat | `--group`, `--group-up` | Lists, settings, Personalization cards |
 | Shell | `--shell`, `--shell-edge`, `--shell-lift` | Cards in relief of the PC family |
 | Well | `--sunken`, `--well-inset` | Fields, readout lists, segment rails |
-| Brushed steel | `--steel`, `--steel-edge` | Frames of bezels, seals, ring dials and the speed test dial: a turning sheen, the same thin edge all around so the frame keeps one width |
+| Brushed steel | `--steel`, `--steel-edge` | Frames of bezels only (seals, ring dials and the speed test are flat since November 2026): a turning sheen, the same thin edge all around so the frame keeps one width |
 | Glass | `--glass`, `--glass-sheen`, `--glass-inset` | Behind lit text and drawings in light |
 | Screen | `--screen-face`, `--screen-inset` | Faces of the meters and of the sound screen |
 | Light | `--lit`, `--warn`, `--bad`, `.led-text` | Lit letters, rings and drawings on glass |
+
+- **Mica** (`material.css`, `Native.Mica`): on Windows 11 22H2 and later the main window is painted with Mica; the page lays a veil halfway between its gray and Mica (`rgba(9, 12, 13, .5)`, light `rgba(195, 202, 203, .5)`) and cards and shells turn translucent. `--wallpaper` stays opaque: it prints on accent chips and fills the drawer. Windows falls back to a plain color when inactive, on battery saver or without transparency.
+- **The picture of the page** (`.contents::before`, `::after`): the fish of the brand in its glow, faint, at the head of every page, behind the content.
 
 ## Components
 
@@ -83,10 +86,11 @@ Fonts: `--display` (Geist, the font of the logo) for titles, the clock and lit t
 - **Slider**: `fill()` of `main.js` paints the filled part from `min` and `max`. A muted slider is dimmed (`.is-muted`), a disabled one too.
 - **Segments**, **time select** (`.time-select`), **chips** (`.tool-chip`), **links** (`.link` with a 14 px icon).
 - **Buttons**: main `.button--accent`, or `.keycap-pill` for the main action of a shell; secondary `.button`; card header action = chip; title line action = link. Armed red (`--danger-dim`, text and ring `--danger`) is the only red button.
-- **Ring dial** (`.dials`, `.dial`, filled by `dials(zone, list)` of `dials.js`, shared by every page): a value and its share. `.dials--small` on Home and in the companion, `.dials--led` with lit figures in Health. Each dial shows details in a bubble on hover or keyboard focus.
+- **Ring dial** (`.dials`, `.dial`, filled by `dials(zone, list)` of `dials.js`, shared by every page): a flat ring, no metal, no glow, the number alone in the middle. Only on Home, Network and in the assistant. a value and its share. `.dials--small` on Home and in the companion, `.dials--led` with lit figures in Health. Each dial shows details in a bubble on hover or keyboard focus.
 - **Instruments** (`thermometer`, `batteryRelief`, `wifiRelief` in `instruments.js`): used instead of a ring wherever they exist. A ring is only for what has no instrument.
+- **Measure rows** (`.dials--rows`, `.meter`, drawn by the same `dials()`): name and line, value, a bar, and the curve of the last minutes kept in memory (60 points, nothing written). Tasks, Health and Hardware.
 - **Bezel** (`.bezel`, `.bezel__glass`): a rectangular screen in a brushed steel frame with a verdict in `.led-text` and a gray line.
-- **Seal** (`.seal`): a round anodized frame with a face or a shield drawn in light (`faceLight`, `shieldLight`). Never in a diagram.
+- **Seal** (`.seal`): a flat round tinted with its lamp color with a face or a shield drawn in light (`faceLight`, `shieldLight`). Never in a diagram.
 - **Readouts** (`.readouts`, `.readout`): a well with rows of icon, title, effect, value and action.
 - **Bubble** (`.chart-tip`): title, note and label and value lines.
 - **Drawer**: the side panel opens over the page in a narrow window, from the Options button.
@@ -94,7 +98,6 @@ Fonts: `--display` (Geist, the font of the logo) for titles, the clock and lit t
 - **Zoom** (`.zoom-pill`): at the foot of the bar on the left, always on screen, never over a page. Value above minus and plus in a narrow bar, on one line from 140 px. Its size ignores the zoom, so that plus stays under the pointer between two clicks, and it sticks to the foot when the bar scrolls.
 - **Bar on the left** (`.rail`): Home, a Go to search (Ctrl K), then one button per family (icon, name, arrow) that opens its services in a flyout next to the bar, on click. The name of every button is always written: under the icon in a narrow bar, beside it from 140 px, and in the flyout when the window is too small for names. The family that holds the page on screen carries a lit bar on the edge of the bar. Arranging the bar shows every family open, one under the other. Two levels at most.
 - **Page help** (`.page-help`): a round question mark after the title of every page (in the header on Home) that opens a bubble (`.page-help__tip`) with the line, the Reads, Changes and To undo of the page, taken from What lampfish reads and changes, and a link to it. Never on a single setting: the gray line is its help.
-- **Plugin tag** (`.plugin-tag`): an outlined word, Plugin, after the name of what a plugin adds. What a plugin shows (its bars, its dials) is drawn in the color of the plugin (`--plugin-claude` for Claude, the one exception to turquoise for a state), never the interface around it.
 - **Actions row** (`.h-actions` on Home): the everyday actions as chips (`.tool-chip` with a 16 px icon), one click each, right under the header. An action that has a page opens it, the others act from Home with their usual toast.
 - **Home cards** (`.h-shortcuts`): a grid of columns that follows the width of the page, a card in any cell, an empty cell left empty, one to three cells across and one or two down. A card dropped on another pushes it down.
 - **Delete in two clicks** (a note): the control arms on the first click, says so in red, and deletes on a second one within 4 seconds. Undo stays for 8 seconds after. A removal that touches one file keeps Undo only; this one was asked for because a note is easy to lose by a stray click.
