@@ -278,9 +278,10 @@ body[data-view="tasks"]:not(.sheet-open) .panel, body[data-view="modes"]:not(.mo
 
 .button {
   border: 0; border-radius: var(--radius-control); padding: 7px 14px; background: var(--button);
-  font-size: var(--text-body); font-weight: 600; white-space: nowrap; transition: background var(--fast), color var(--fast);
+  font-size: var(--text-body); font-weight: 600; white-space: nowrap; transition: background var(--fast), color var(--fast), transform var(--fast);
 }
 .button:hover { background: var(--button-up); }
+.button:active:not(:disabled) { transform: scale(.97); }
 .button:disabled { opacity: .35; cursor: default; background: var(--button); }
 .button--accent { background: var(--accent-strong); color: var(--on-accent); }
 .button--accent:hover { background: var(--accent); }

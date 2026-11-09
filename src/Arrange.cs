@@ -616,12 +616,12 @@ namespace Lampfish
         }
 
         // Every icon goes to the nearest cell of the grid of its screen, in the order of the screen, so the one that was there first keeps the cell.
-        static void Align()
+        static int Align()
         {
             var now = Capture();
-            if (now.Count == 0) return;
+            if (now.Count == 0) return 0;
             Size c = DesktopIcons.Case();
-            if (c.Width <= 0 || c.Height <= 0) return;
+            if (c.Width <= 0 || c.Height <= 0) return 0;
             int iconSize = DesktopIcons.IconSize();
             bool grid = DesktopGrid.On;
             var grids = grid ? NativeGrids(c, iconSize, now) : Screen.AllScreens.ToDictionary(s => s.DeviceName, s => new Grid(s.WorkingArea, c, Scale(s), iconSize));
@@ -634,9 +634,12 @@ namespace Lampfish
                 g.Taken.Add(cell);
                 positions[p.Id] = g.Pixel(cell);
             }
+            int moved = now.Count(p => positions[p.Id] != new Point(p.X, p.Y));
+            if (moved == 0) return 0;
             Place(positions, true, grid);
             R.Placed = Capture();
             DesktopGrid.Resume();
+            return moved;
         }
 
         public static List<IconPosition> Snapshot() { return Capture(); }
@@ -1008,7 +1011,12 @@ namespace Lampfish
                         Program.Send(Map(false));
                         return true;
                     }
-                    case "align": Align(); Program.Send(Map(false)); return true;
+                    case "align":
+                        int straightened = Align();
+                        if (straightened == 0) Program.Announce("Every icon is already in a cell");
+                        else Program.Undoable(straightened == 1 ? Language.T("1 icon straightened") : Language.T("{0} icons straightened", straightened), () => { Undo(); Program.Send(Map(false)); });
+                        Program.Send(Map(false));
+                        return true;
                     case "iconSize": ChangeIconSize(Convert.ToInt32(m["value"])); return false;
                     case "hide": DesktopIcons.Flag(DesktopIcons.FWF_NOICONS, Convert.ToBoolean(m["value"])); Program.Send(Map(false)); return false;
                     case "category":
