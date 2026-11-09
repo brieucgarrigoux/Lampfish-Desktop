@@ -32,6 +32,4 @@ if (-not $iscc) { throw "Inno Setup 6 is missing: winget install JRSoftware.Inno
 if ($LASTEXITCODE -ne 0) { throw "Installer build failed" }
 Remove-Item $tmp -Recurse -Force
 $setup = Join-Path $dist "Lampfish-Setup-$version.exe"
-# Versions up to 0.4 only look for this name: the same file under it keeps their Update button working.
-Copy-Item $setup (Join-Path $dist "Bramble-Setup-$version.exe") -Force
 Write-Host "OK: $setup ($([math]::Round((Get-Item $setup).Length / 1MB, 1)) MB)"
