@@ -3,7 +3,6 @@
 /* The everyday actions: one row of chips, each a single click, under the header. */
 .h-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
 .h-actions .tool-chip svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-body.home-editing .h-actions { display: none; }
 
 /* One grid for the blocks and the cards. The blocks stay in their own element, which takes no box: moving one in the page would reload the live preview. */
 .h-board { display: grid; grid-template-columns: repeat(var(--cols, 6), minmax(0, 1fr)); grid-auto-rows: 118px; gap: 12px; }
@@ -74,6 +73,8 @@ body.home-editing .h-actions { display: none; }
 .h-tile .h-value { max-width: 100%; font: 600 var(--text-body)/1.3 var(--numbers); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .h-quick { display: flex; flex-direction: column; }
+.home-editing .h-actions .tool-chip { cursor: pointer; }
+.home-editing .h-actions .tool-chip.is-off { opacity: .45; border-style: dashed; }
 .h-q { display: grid; grid-template-columns: 30px minmax(0, 1fr) minmax(0, max-content) auto; align-items: center; gap: 0 10px; min-height: 44px; padding: 5px 14px; border: 0; background: none; color: inherit; text-align: left; }
 .h-q + .h-q { box-shadow: inset 0 1px 0 var(--hairline); }
 .h-q[hidden] { display: none; }

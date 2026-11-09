@@ -39,13 +39,23 @@ function slideshowNote(s) {
 }
 $('w-slide-go').addEventListener('click', () => send('winbg.slow'));
 
-const OWN_PANEL = ['home', 'settings', 'assistant', 'plugins', 'display', 'audio', 'taskbar', 'convert', 'shelf', 'health', 'tasks', 'modes'];
+const OWN_PANEL = ['home', 'settings', 'display', 'audio', 'taskbar', 'convert', 'shelf', 'tasks', 'modes'];
+// Services that live inside another page since November 2026: their old name opens that page at their part.
+const PART_OF = { hardware: 'health', duplicates: 'files', assistant: 'settings', plugins: 'settings' };
 const setPanel = open => document.body.classList.toggle('panel-open', open);
 $('panel-toggle').addEventListener('click', () => setPanel(true));
 $('panel-close').addEventListener('click', () => setPanel(false));
 addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.classList.contains('panel-open')) setPanel(false); });
 
 function showView(view) {
+  if (PART_OF[view]) {
+    showView(PART_OF[view]);
+    // The part may still be filling in (Hardware draws its board when shown): scroll again once it has its height.
+    const reach = () => { const part = document.querySelector('.view.only-' + view); if (part) part.scrollIntoView({ block: 'start' }); };
+    requestAnimationFrame(reach);
+    setTimeout(reach, 350);
+    return;
+  }
   const previous = document.body.dataset.view;
   if (document.body.dataset.dock) setDock(null);
   setPanel(false);
@@ -64,7 +74,7 @@ function showView(view) {
   if (Lampfish.network) Lampfish.network.visible(view === 'network');
   if (Lampfish.arrange) Lampfish.arrange.visible(view === 'arrange');
   if (Lampfish.files) Lampfish.files.visible(view === 'files');
-  if (Lampfish.hardware) Lampfish.hardware.visible(view === 'hardware');
+  if (Lampfish.hardware) Lampfish.hardware.visible(view === 'health');
   if (Lampfish.tasks) Lampfish.tasks.visible(view === 'tasks');
   if (Lampfish.creator) Lampfish.creator.visible(view === 'create');
   if (Lampfish.display) Lampfish.display.visible(view === 'display');
@@ -74,7 +84,7 @@ function showView(view) {
   if (Lampfish.shelf) Lampfish.shelf.visible(view === 'shelf');
   if (Lampfish.convert) Lampfish.convert.visible(view === 'convert');
   if (Lampfish.health) Lampfish.health.visible(view === 'health');
-  if (Lampfish.duplicates) Lampfish.duplicates.visible(view === 'duplicates');
+  if (Lampfish.duplicates) Lampfish.duplicates.visible(view === 'files');
   send('audioPreview', { value: view === 'create' });
   if (Lampfish.home) Lampfish.home.visible(view === 'home');
   if (Lampfish.welcome) Lampfish.welcome.viewed(view);
@@ -308,7 +318,7 @@ function showViews(list) {
 }
 for (const row of document.querySelectorAll('.tr-row[data-view]')) {
   const view = row.dataset.view;
-  if (view === 'home' || view === 'settings') continue;
+  if (view === 'home' || view === 'settings' || view in PART_OF) continue;
   const box = document.createElement('span');
   box.className = 'toggler tr-show';
   box.title = tr('Shown in the bar');

@@ -155,14 +155,16 @@ h2 .count { margin-left: 8px; font: 400 var(--text-caption) var(--numbers); font
 .panel-close:hover { color: var(--text); }
 .panel-close svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
 .view > h1 { margin: 2px 0 18px; }
+/* A page that holds a second service shows it below, under its own smaller title. */
+.view--hardware > h1, .view--duplicates > h1, .view--assistant > h1, .view--plugins > h1 { margin-top: 44px; font-size: 22px; }
 body:not([data-view="wallpaper"]) .only-wallpaper, body:not([data-view="station"]) .only-station,
 body:not([data-view="icons"]) .only-icons, body:not([data-view="mouse"]) .only-mouse, body:not([data-view="network"]) .only-network, body:not([data-view="arrange"]) .only-arrange,
-body:not([data-view="files"]) .only-files, body:not([data-view="hardware"]) .only-hardware,
+body:not([data-view="files"]) .only-files, body:not([data-view="health"]) .only-hardware,
 body:not([data-view="tasks"]) .only-tasks, body:not([data-view="create"]) .only-create, body:not([data-view="settings"]) .only-settings, body:not([data-view="home"]) .only-home,
-body:not([data-view="modes"]) .only-modes, body:not([data-view="display"]) .only-display, body:not([data-view="assistant"]) .only-assistant, body:not([data-view="plugins"]) .only-plugins, body:not([data-view="audio"]) .only-audio, body:not([data-view="taskbar"]) .only-taskbar, body:not([data-view="convert"]) .only-convert, body:not([data-view="notes"]) .only-notes, body:not([data-view="shelf"]) .only-shelf, body:not([data-view="health"]) .only-health, body:not([data-view="duplicates"]) .only-duplicates { display: none !important; }
+body:not([data-view="modes"]) .only-modes, body:not([data-view="display"]) .only-display, body:not([data-view="settings"]) .only-assistant, body:not([data-view="settings"]) .only-plugins, body:not([data-view="audio"]) .only-audio, body:not([data-view="taskbar"]) .only-taskbar, body:not([data-view="convert"]) .only-convert, body:not([data-view="notes"]) .only-notes, body:not([data-view="shelf"]) .only-shelf, body:not([data-view="health"]) .only-health, body:not([data-view="files"]) .only-duplicates { display: none !important; }
 
-body[data-view="settings"], body[data-view="assistant"], body[data-view="plugins"], body[data-view="home"], body[data-view="display"], body[data-view="audio"], body[data-view="taskbar"], body[data-view="convert"], body[data-view="shelf"], body[data-view="health"] { grid-template-columns: var(--width-rail, 180px) 1fr; }
-body[data-view="settings"] .panel, body[data-view="assistant"] .panel, body[data-view="plugins"] .panel, body[data-view="home"] .panel, body[data-view="display"] .panel, body[data-view="audio"] .panel, body[data-view="taskbar"] .panel, body[data-view="convert"] .panel, body[data-view="shelf"] .panel, body[data-view="health"] .panel { display: none; }
+body[data-view="settings"], body[data-view="assistant"], body[data-view="plugins"], body[data-view="home"], body[data-view="display"], body[data-view="audio"], body[data-view="taskbar"], body[data-view="convert"], body[data-view="shelf"] { grid-template-columns: var(--width-rail, 180px) 1fr; }
+body[data-view="settings"] .panel, body[data-view="assistant"] .panel, body[data-view="plugins"] .panel, body[data-view="home"] .panel, body[data-view="display"] .panel, body[data-view="audio"] .panel, body[data-view="taskbar"] .panel, body[data-view="convert"] .panel, body[data-view="shelf"] .panel { display: none; }
 body[data-view="tasks"]:not(.sheet-open), body[data-view="modes"]:not(.mode-open) { grid-template-columns: var(--width-rail, 180px) 1fr; }
 /* On Home, a shortcut opens the settings of its service in the side panel. */
 body[data-view="home"][data-dock] { grid-template-columns: var(--width-rail, 180px) 1fr var(--width-panel, 300px); }

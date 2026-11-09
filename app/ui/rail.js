@@ -110,10 +110,16 @@
   const plain = text => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
   function entries() {
-    return [...rail.querySelectorAll('.service[data-view]')].map(s => {
+    const list = [...rail.querySelectorAll('.service[data-view]')].map(s => {
       const f = s.closest('.rail-family');
       return { view: s.dataset.view, name: s.textContent.trim(), family: f ? titleOf(f).textContent.trim() : '', icon: s.querySelector('svg').outerHTML, hidden: s.hidden };
     });
+    // A service that lives inside another page is still found by its own name, and opens that page at its part.
+    for (const [view, host] of Object.entries(PART_OF)) {
+      const owner = list.find(e => e.view === host), section = document.querySelector('.view.only-' + view);
+      if (owner && section) list.push({ view, name: tr(section.getAttribute('aria-label')), family: owner.name, icon: owner.icon, hidden: owner.hidden });
+    }
+    return list;
   }
 
   // Every setting can be found by its name, wherever it lives; a service with a hidden button stays out.
@@ -123,7 +129,7 @@
       const zone = row.closest('[class*="only-"]'), match = zone && zone.className.match(/only-(\w+)/);
       const title = row.querySelector('.caption > span, .h-q__name');
       if (!match || !title || row.closest('.tr-fold, .welcome')) continue;
-      const service = rail.querySelector(`.service[data-view="${match[1]}"]`);
+      const service = rail.querySelector(`.service[data-view="${PART_OF[match[1]] || match[1]}"]`);
       const name = ((title.firstChild && title.firstChild.textContent) || '').trim();
       if (!service || service.hidden || name.length < 3 || seen.has(match[1] + name)) continue;
       seen.add(match[1] + name);

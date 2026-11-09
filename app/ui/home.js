@@ -300,7 +300,8 @@
     refresh: () => send('icons.refresh'),
     straighten: () => send('arrange.align'),
   };
-  for (const b of $('h-actions').querySelectorAll('[data-act]')) b.addEventListener('click', () => ACTIONS[b.dataset.act]());
+  // In Customize a click shows or hides an action instead of running it, like the blocks of Home.
+  for (const b of $('h-actions').querySelectorAll('[data-act]')) b.addEventListener('click', () => { if (editing) toggleAction(b.dataset.act); else ACTIONS[b.dataset.act](); });
   $('h-previous').addEventListener('click', () => send('previous'));
   $('h-pause').addEventListener('click', () => send('pause'));
   $('h-next').addEventListener('click', () => send('next'));
@@ -680,7 +681,7 @@
   const ordered = (saved, all) => [...(saved || []).filter(x => all.includes(x)), ...all.filter(x => !(saved || []).includes(x))];
   function layout(l) {
     layoutNow = l || {};
-    const next = JSON.stringify([layoutNow.Blocks, layoutNow.HiddenBlocks, layoutNow.Tiles, layoutNow.TilePlaces, editing]);
+    const next = JSON.stringify([layoutNow.Blocks, layoutNow.HiddenBlocks, layoutNow.Tiles, layoutNow.TilePlaces, layoutNow.Actions, editing]);
     if (next === layoutKey) return;
     layoutKey = next;
     spots = {};
@@ -696,6 +697,14 @@
       cover.querySelector('.h-cover__state').textContent = tr(hidden ? 'Hidden' : 'Shown');
     }
     main.dataset.count = blocks().filter(el => !el.hidden).length;
+    const acts = shownActions();
+    for (const b of $('h-actions').querySelectorAll('[data-act]')) {
+      const on = acts.includes(b.dataset.act);
+      b.classList.toggle('is-off', !on);
+      b.hidden = !on && !editing;
+      if (editing) b.setAttribute('aria-pressed', String(on)); else b.removeAttribute('aria-pressed');
+    }
+    $('h-actions').hidden = !acts.length && !editing;
     const list = (layoutNow.Tiles || TILES).filter(v => SHORTCUTS[v]);
     const zone = $('h-tiles'), els = list.map(v => tile(v).el);
     const now = tileEls();
@@ -721,12 +730,21 @@
       return b;
     }));
   }
+  // The quick actions of Home: four by default, the two repairs (Refresh icons, Straighten) a click away in Customize.
+  const DEFAULT_ACTIONS = ['capture', 'note', 'convert', 'memory'];
+  const shownActions = () => (layoutNow.Actions && layoutNow.Actions.length ? layoutNow.Actions : DEFAULT_ACTIONS).filter(a => a in ACTIONS);
+  function toggleAction(act) {
+    const now = shownActions(), next = now.includes(act) ? now.filter(a => a !== act) : [...now, act];
+    layoutNow = Object.assign({}, layoutNow, { Actions: next.length ? next : ['none'] });
+    send('layout.home', { actions: layoutNow.Actions });
+    layout(layoutNow);
+  }
   function saveHome() {
     const all = blocks();
     const message = { blocks: all.map(el => el.dataset.block), hiddenBlocks: all.filter(el => el.classList.contains('is-off')).map(el => el.dataset.block), tiles: tileEls().map(t => t.dataset.view), cols };
     message.places = gridEls().map(keyOf).filter(v => spots[v]).map(v => ({ id: v, col: spots[v].col, row: spots[v].row, w: spots[v].w, h: spots[v].h }));
-    layoutNow = { Blocks: message.blocks, HiddenBlocks: message.hiddenBlocks, Tiles: message.tiles, TilePlaces: message.places.map(p => ({ Id: p.id, Col: p.col, Row: p.row, W: p.w, H: p.h })), TileCols: cols };
-    layoutKey = JSON.stringify([layoutNow.Blocks, layoutNow.HiddenBlocks, layoutNow.Tiles, layoutNow.TilePlaces, editing]);
+    layoutNow = { Blocks: message.blocks, HiddenBlocks: message.hiddenBlocks, Tiles: message.tiles, TilePlaces: message.places.map(p => ({ Id: p.id, Col: p.col, Row: p.row, W: p.w, H: p.h })), TileCols: cols, Actions: layoutNow.Actions };
+    layoutKey = JSON.stringify([layoutNow.Blocks, layoutNow.HiddenBlocks, layoutNow.Tiles, layoutNow.TilePlaces, layoutNow.Actions, editing]);
     send('layout.home', message);
   }
   for (const el of main.children) {

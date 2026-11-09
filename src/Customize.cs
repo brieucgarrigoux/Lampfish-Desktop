@@ -19,6 +19,8 @@ namespace Lampfish
     class CustomizeSettings
     {
         public List<string> Bar, Groups, Blocks, HiddenBlocks, Tiles;
+        // The quick actions shown under the header of Home. Empty: Capture, Note, Convert and Free up memory.
+        public List<string> Actions;
         // Where each card sits. Without it the cards fill the grid in the order of Tiles, as before.
         public List<TilePlace> TilePlaces;
         // The number of columns of the grid those places were saved on. 0 for a layout saved before it was kept.
@@ -80,7 +82,7 @@ namespace Lampfish
         {
             Func<List<string>, List<string>> copy = l => l == null ? null : new List<string>(l);
             var places = s.TilePlaces == null ? null : s.TilePlaces.Select(p => new TilePlace { Id = p.Id, Col = p.Col, Row = p.Row, W = p.W, H = p.H }).ToList();
-            return new CustomizeSettings { Bar = copy(s.Bar), Groups = copy(s.Groups), Blocks = copy(s.Blocks), HiddenBlocks = copy(s.HiddenBlocks), Tiles = copy(s.Tiles), TilePlaces = places, TileCols = s.TileCols };
+            return new CustomizeSettings { Bar = copy(s.Bar), Groups = copy(s.Groups), Blocks = copy(s.Blocks), HiddenBlocks = copy(s.HiddenBlocks), Tiles = copy(s.Tiles), Actions = copy(s.Actions), TilePlaces = places, TileCols = s.TileCols };
         }
 
         public static bool Receive(string action, Dictionary<string, object> m)
@@ -96,6 +98,7 @@ namespace Lampfish
                     if (m.ContainsKey("blocks")) S.Blocks = Ids(m, "blocks");
                     if (m.ContainsKey("hiddenBlocks")) S.HiddenBlocks = Ids(m, "hiddenBlocks");
                     if (m.ContainsKey("tiles")) S.Tiles = Ids(m, "tiles");
+                    if (m.ContainsKey("actions")) S.Actions = Ids(m, "actions");
                     if (m.ContainsKey("places")) { S.TilePlaces = Places(m); S.TileCols = Cell(m, "cols", 0, 12, 0); }
                     Save();
                     return true;
@@ -111,7 +114,7 @@ namespace Lampfish
                     }
                     else
                     {
-                        S.Blocks = S.HiddenBlocks = S.Tiles = null;
+                        S.Blocks = S.HiddenBlocks = S.Tiles = S.Actions = null;
                         S.TilePlaces = null;
                         S.TileCols = 0;
                         Program.Undoable(Language.T("Home reset"), () => { S = before; Save(); });

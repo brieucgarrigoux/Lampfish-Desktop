@@ -1,4 +1,4 @@
-.view--duplicates { max-width: 900px; margin-inline: auto; container: duplicates / inline-size; }
+.view--duplicates { max-width: 1120px; margin-inline: auto; container: duplicates / inline-size; }
 .dup-card { margin-bottom: 4px; }
 .dup-keys { flex: none; display: flex; align-items: center; gap: 10px; }
 .dup-keep { display: flex; align-items: center; gap: 7px; }

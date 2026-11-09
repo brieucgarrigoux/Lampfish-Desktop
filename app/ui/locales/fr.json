@@ -1608,7 +1608,7 @@
  "Arrange the bar": "Ranger la barre",
  "Customize": "Personnaliser",
  "Done": "Terminé",
- "Drag a block, or a card to any cell of the grid. A click hides a block or unpins a card, and the corner button of a card changes its size.": "Glissez un bloc, ou une carte vers n'importe quelle case de la grille. Un clic masque un bloc ou retire une carte, et le bouton d'angle d'une carte change sa taille.",
+ "Drag a block, or a card to any cell of the grid. A click hides a block, unpins a card or shows an action, and the corner button of a card changes its size.": "Glisser un bloc, ou une carte vers n'importe quelle case de la grille. Un clic masque un bloc, retire une carte ou affiche une action, et le bouton d'angle d'une carte change sa taille.",
  "Reset Home": "Réinitialiser l'accueil",
  "Reset the bar": "Réinitialiser la barre",
  "Choose the cards of Home and their order": "Choisir les cartes de l'accueil et leur ordre",
