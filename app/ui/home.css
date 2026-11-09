@@ -74,14 +74,14 @@ body.home-editing .h-actions { display: none; }
 .h-tile .h-value { max-width: 100%; font: 600 var(--text-body)/1.3 var(--numbers); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .h-quick { display: flex; flex-direction: column; }
-.h-q { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto auto; align-items: center; gap: 0 10px; min-height: 44px; padding: 5px 14px; border: 0; background: none; color: inherit; text-align: left; }
+.h-q { display: grid; grid-template-columns: 30px minmax(0, 1fr) minmax(0, max-content) auto; align-items: center; gap: 0 10px; min-height: 44px; padding: 5px 14px; border: 0; background: none; color: inherit; text-align: left; }
 .h-q + .h-q { box-shadow: inset 0 1px 0 var(--hairline); }
 .h-q[hidden] { display: none; }
 .h-q:has(.toggler input:checked) .glyph { stroke: var(--accent); background: var(--accent-dim); }
 .h-q__what { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .h-q__name { font-size: var(--text-body); color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .h-q__what small { font-size: var(--text-caption); color: var(--text-pale); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.h-q input[type=range] { width: 92px; transition: opacity var(--fast); }
+.h-q input[type=range] { width: 92px; min-width: 0; max-width: 100%; transition: opacity var(--fast); }
 .h-q input[type=range]:disabled { opacity: .35; }
 .h-q--link { cursor: pointer; transition: background var(--fast); }
 .h-q--link:hover { background: var(--hover); }
