@@ -40,10 +40,12 @@
   body:not(.panel-open):not(.sheet-open):not(.mode-open):not([data-dock]) .panel { display: none !important; }
   body.panel-open .panel-close { display: grid; }
   .panel-toggle:not([hidden]) { display: flex; }
+  .statusbar { position: fixed; left: 76px; right: 0; bottom: 0; }
   body.panel-open .panel-toggle { display: none; }
 }
 @media (max-width: 900px) and (max-height: 1000px) {
   body { grid-template-columns: 60px minmax(0, 1fr) !important; }
+  .statusbar { left: 60px; }
   .rail .service, .rail .rail-title, .rail .rail-search { width: 46px; padding-block: 9px; font-size: 0; gap: 0; }
   .rail .rail-title > span::after { content: none; }
   .rail .logo { width: 38px; }

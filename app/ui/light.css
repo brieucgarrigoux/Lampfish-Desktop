@@ -188,7 +188,6 @@
 :root[data-theme="light"] .welcome__card { box-shadow: 0 0 0 1px var(--hairline-strong), var(--float); }
 :root[data-theme="light"] .dup-dialog { box-shadow: var(--shell-edge), var(--float); }
 :root[data-theme="light"] .panel { box-shadow: -10px 0 26px rgba(20, 40, 45, .22); }
-:root[data-theme="light"] .panel-toggle { box-shadow: var(--shell-edge), 0 6px 14px rgba(20, 40, 45, .22); }
 :root[data-theme="light"] .h-cover__label { box-shadow: 0 4px 14px rgba(20, 40, 45, .24); }
 :where(:root[data-theme="light"]) .home-editing .h-cover { background: rgba(195, 202, 203, .45); }
 :root[data-theme="light"] .an-text { background: #0d0f10; }
