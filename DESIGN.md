@@ -42,11 +42,11 @@ Turquoise marks a state (chosen, active, on). Surfaces are near-neutral dark gra
 | `--text-badge` | 11.5 | Small labels and counts |
 | `--text-caption` | 12 | Gray explanation lines, captions |
 | `--text-value` | 12.5 | Commands, values in a row |
-| `--text-body` | 13 | Buttons, row titles, list values |
+| `--text-body` | 14 | Buttons, row titles, list values (the body size of Windows) |
 | `--text-base` | 14 | Default body size |
-| `--text-title` | 16 | Card titles |
+| `--text-title` | 20 | Card titles (the subtitle of Windows) |
 | `--text-lead` | 18 | Wordmark, weather temperature |
-| `--text-heading` | 20 | Page titles, IP address, the plus sign of add tiles |
+| `--text-heading` | 28 | Page titles, semibold (the title of Windows), IP address, the plus sign of add tiles |
 | `--text-clock` | 28 | Clock, large values of Network |
 | `--text-counter` | 30 | Counter values |
 | `--text-rate` | 40 | Speed test result |
@@ -57,7 +57,7 @@ Fonts: `--display` (Geist, the font of the logo) for titles, the clock and lit t
 
 ### Shape and time
 
-- Radius: `--radius-shell` 16 (relief shells), `--radius-card` 12 (flat cards, previews, toasts), `--radius-group` 10 (lists, wells), `--radius-control` 8 (buttons, fields, tiles), `--radius-small` 6 (inner parts), 99px for switches, scroll bars and round controls only. A nested element keeps a concentric radius. Only bars and strokes of 1 to 4 px may use a raw radius.
+- Radius, as Windows 11 draws them: `--radius-control` and `--radius-small` 4 (buttons, fields, cards of a settings list, anything inside the page), `--radius-group`, `--radius-card` and `--radius-shell` 8 (cards, shells, toasts, flyouts). The assistant keeps its compact text sizes (`companion.css`).
 - Spacing: 28 above and 12 below a section title on a page, 18 and 10 in the side panel.
 - Icon tiles: 26, 30 or 44 px.
 - Time: `--fast` (.12 s) for hover and color changes, .2 to .45 s for fades and reveals. Motion stops when the system asks for reduced motion.
@@ -82,7 +82,9 @@ Fonts: `--display` (Geist, the font of the logo) for titles, the clock and lit t
 
 - **Row** (`.row`, `.toggle`, `.setting`): icon in a `.glyph`, title and one gray line, control on the right. Title and line each fit on one line.
 - **Glyph** (`.glyph`): every list icon, stroke in `--text-soft` on `--raised`, 30 px. It turns turquoise only when its row is on or chosen.
-- **Switch**: one drawing (`.toggle input`, `.toggler input` compact, `.cr-switch`).
+- **Switch**: the switch of Windows, one size for all (`.toggle input`, `.toggler input`, `.cr-switch`): 40 by 20, empty with a ring and a 12 px dot when off, filled with the accent and a dark dot (white in day mode) when on, the dot grows to 14 px under the pointer.
+- **Settings cards**: a `.group` made of settings (`.toggle`, `.row--setting`, `.setting`, `.row.action`, `.h-q`, `.tr-row`) shows each setting as its own card, 3 px apart, like the Settings app of Windows. Lists of data (programs, files) stay one block.
+- **Appearance words**: Light, Dark, Use system setting, with a link to the Colors page of Windows (`display.colors`).
 - **Slider**: `fill()` of `main.js` paints the filled part from `min` and `max`. A muted slider is dimmed (`.is-muted`), a disabled one too.
 - **Segments**, **time select** (`.time-select`), **chips** (`.tool-chip`), **links** (`.link` with a 14 px icon).
 - **Buttons**: main `.button--accent`, or `.keycap-pill` for the main action of a shell; secondary `.button`; card header action = chip; title line action = link. Armed red (`--danger-dim`, text and ring `--danger`) is the only red button.
