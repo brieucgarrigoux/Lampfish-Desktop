@@ -13,7 +13,7 @@
   .network-header { flex-wrap: wrap; row-gap: 12px; }
   .network-header .network-ip { flex: 1 1 100%; flex-direction: row; justify-content: space-between; align-items: baseline; padding: 12px 0 0; border-left: 0; border-top: 1px solid var(--hairline); }
 }
-.network-ip .ip { border: 0; padding: 0; background: none; font: 600 var(--text-heading)/1.1 var(--display); font-variant-numeric: tabular-nums; }
+.network-ip .ip { border: 0; padding: 0; background: none; font: 600 var(--text-heading)/1.1 var(--figures); font-variant-numeric: tabular-nums; }
 
 .tester { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 32px; align-items: stretch; margin-top: 16px; padding: 24px 28px; }
 @container network (max-width: 760px) { .tester { grid-template-columns: minmax(0, 1fr); justify-items: center; } .tester__side { width: 100%; } }
@@ -42,7 +42,7 @@
 #r-ticks text { fill: #848c8e; font: var(--text-micro) var(--numbers); text-anchor: middle; font-variant-numeric: tabular-nums; }
 
 .playback { min-height: 62px; display: flex; align-items: baseline; justify-content: center; flex-wrap: wrap; column-gap: 6px; min-width: 200px; }
-.playback__value { font: 600 var(--text-rate)/1 var(--display); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.playback__value { font: 600 var(--text-rate)/1 var(--figures); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
 .playback__unit { font-size: var(--text-base); color: var(--text-soft); }
 .playback__value.idle, .playback__value.idle + .playback__unit { color: var(--text-pale); }
 .playback__phase { flex-basis: 100%; text-align: center; margin-top: 4px; font-size: var(--text-value); color: var(--accent); }
@@ -101,7 +101,7 @@
 .key { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border-radius: var(--radius-card); background: var(--sunken); box-shadow: inset 0 0 0 1px var(--hairline); }
 .key__title { display: flex; align-items: center; gap: 8px; font-size: var(--text-value); color: var(--text-soft); }
 .key__title .glyph { width: 26px; height: 26px; padding: 5px; border-radius: var(--radius-small); }
-.key__value { font: 600 var(--text-clock)/1.1 var(--display); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.key__value { font: 600 var(--text-clock)/1.1 var(--figures); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .key__value small { margin-left: 5px; font: 400 var(--text-caption) var(--numbers); color: var(--text-pale); }
 .key--empty .key__value { display: flex; align-items: center; min-height: 31px; white-space: normal; }
 .key--empty .key__value b { line-height: 1.25; font: 400 var(--text-body) "LF Text", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif; color: var(--text-pale); }

@@ -118,7 +118,7 @@
 @container home (max-width: 480px) { .h-stage { display: flex; } }
 
 .h-clock { display: flex; align-items: baseline; gap: 12px; padding-left: 2px; }
-.h-time { font: 600 var(--text-clock)/1 var(--display); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.h-time { font: 600 var(--text-clock)/1 var(--figures); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
 .h-date { font-size: var(--text-body); color: var(--text-soft); }
 .h-date::first-letter { text-transform: uppercase; }
 
@@ -134,7 +134,7 @@
 .h-weather__icon .m-lightning { stroke: #e8b65a; }
 .h-weather__icon .m-stroke { stroke: var(--text-soft); }
 .h-weather__text { display: flex; align-items: baseline; gap: 8px; }
-.h-weather__temp { font: 600 var(--text-lead)/1.15 var(--display); font-variant-numeric: tabular-nums; }
+.h-weather__temp { font: 600 var(--text-lead)/1.15 var(--figures); font-variant-numeric: tabular-nums; }
 .h-weather__what { font-size: var(--text-body); color: var(--text-soft); }
 .h-weather__details { grid-column: 2; display: flex; gap: 8px; font: var(--text-caption) var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); white-space: nowrap; }
 .h-weather__details span:first-child { color: var(--text-soft); }

@@ -78,7 +78,7 @@
 .security--low { --lamp-hi: #ffc2c8; --lamp: #ff5566; --lamp-lo: #9d1424; }
 .seal__ring { position: absolute; inset: 0; z-index: 1; border-radius: 50%; background: conic-gradient(from 0deg, var(--lamp) calc(var(--part, 0) * 1%), var(--track) 0);
   -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4px)); mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4px)); transition: background .4s; }
-.seal__text { position: relative; z-index: 2; text-box: trim-both cap alphabetic; font: 700 var(--text-title) var(--display); font-variant-numeric: tabular-nums; color: var(--text); white-space: nowrap; }
+.seal__text { position: relative; z-index: 2; text-box: trim-both cap alphabetic; font: 700 var(--text-title) var(--figures); font-variant-numeric: tabular-nums; color: var(--text); white-space: nowrap; }
 .seal__text small { margin-left: 1px; font-size: var(--text-badge); font-weight: 600; opacity: .75; }
 .seal .seal__face { position: relative; z-index: 1; width: 56px; height: 56px; }
 .security--off { --lamp-hi: #c9cccd; --lamp: #6c6f70; --lamp-lo: #3a4042; }
@@ -88,7 +88,7 @@
 .dials--small .dial .seal { width: 60px; height: 60px; margin-bottom: 6px; }
 .dials--small .seal__text { font-family: var(--numbers); font-size: var(--text-body); }
 .dials--small .seal__text small { font-size: var(--text-badge); }
-.dials--led .seal__text { font-family: var(--display); color: var(--lamp-hi); }
+.dials--led .seal__text { font-family: var(--figures); color: var(--lamp-hi); }
 .dials--led .seal__text small { opacity: .8; }
 .seal__text--long { font-family: var(--numbers); font-size: var(--text-body); }
 .seal__text--long small { font-size: var(--text-badge); }
@@ -99,7 +99,7 @@
 .meter__what { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .meter__label { font-size: var(--text-body); font-weight: 600; }
 .meter__sub { font-size: var(--text-caption); color: var(--text-pale); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.meter__value { font: 600 var(--text-title)/1 var(--display); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.meter__value { font: 600 var(--text-title)/1 var(--figures); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
 .meter__value small { margin-left: 2px; font: 600 var(--text-caption) var(--numbers); color: var(--text-soft); }
 .meter__track { height: round(8px, var(--device-px, 1px)); border-radius: 99px; background: var(--track); overflow: hidden; }
 .meter__fill { display: block; height: 100%; border-radius: 99px; background: var(--lamp); transition: width .4s; }

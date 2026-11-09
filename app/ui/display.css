@@ -8,7 +8,7 @@
 .d-screen:hover { background: linear-gradient(160deg, #2a3132, #181e20); color: var(--text); }
 .d-screen:active { transform: scale(.98); }
 .d-screen[aria-pressed="true"] { box-shadow: var(--chosen); color: var(--text); }
-.d-screen b { font: 600 26px/1 var(--display); }
+.d-screen b { font: 600 26px/1 var(--figures); }
 .d-screen span { font-size: var(--text-badge); color: var(--accent); }
 .d-screen span:empty { display: none; }
 .d-help { margin: 0 2px 12px; }

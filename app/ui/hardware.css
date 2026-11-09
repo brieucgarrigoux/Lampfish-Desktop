@@ -33,7 +33,7 @@
 .m-card h3 { margin: 0; font-size: var(--text-body); font-weight: 600; color: var(--text-soft); }
 .m-model { margin: 1px 0 0; font-size: var(--text-body); color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .m-measure { display: flex; align-items: baseline; gap: 10px; }
-.m-value { font: 600 var(--text-counter)/1 var(--display); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.m-value { font: 600 var(--text-counter)/1 var(--figures); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
 .m-word { font-size: var(--text-body); color: var(--text-soft); }
 .m-card[data-level="medium"] .m-word { color: var(--accent); }
 .m-card[data-level="up"] .m-word, .m-card[data-level="up"] .m-value { color: var(--danger); }
