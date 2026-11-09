@@ -1010,7 +1010,7 @@ $('folder').addEventListener('click', () => send('folder'));
     if (h1) h1.append(button(view));
     else if (view === 'home') section.querySelector('.h-tools').append(button(view));
   }
-  document.addEventListener('pointerdown', e => { if (openFor && !tip.contains(e.target) && e.target !== openFor) close(); }, true);
+  document.addEventListener('pointerdown', e => { if (openFor && !tip.contains(e.target) && !openFor.contains(e.target)) close(); }, true);
   addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
   addEventListener('scroll', close, true);
 })();
