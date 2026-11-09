@@ -236,7 +236,6 @@ body[data-view="tasks"]:not(.sheet-open) .panel, body[data-view="modes"]:not(.mo
 .view--settings > h1 + .settings-title { margin-top: 0; }
 .row--setting .segments { flex: 0 0 300px; }
 .view--settings .caption small { white-space: normal; }
-.plugin-tag { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 99px; box-shadow: inset 0 0 0 1px var(--plugin-claude); color: var(--plugin-claude); font-size: var(--text-micro); font-weight: 600; line-height: 1.5; vertical-align: 2px; }
 .chips { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
 .chips .tool-chip { padding: 5px 10px; }
 /* The page help: a question mark by the title opens a short note on the page, taken from What lampfish reads and changes. */
