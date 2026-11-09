@@ -75,8 +75,8 @@ body.companion:not(.is-ready) { visibility: hidden; }
 .c-meter__drawing { display: grid; place-items: center; width: 100%; height: 60px; margin-bottom: 6px; }
 .c-meter .wifi-relief { width: 100%; max-width: 68px; height: auto; }
 .c-meter .cell-relief { margin: 0; padding: 0; align-self: center; }
-.c-meter .cell-relief__segments { gap: 2px; padding: 3px; }
-.c-meter .cell-relief__segments i { width: 3px; height: 18px; border-radius: 1px; }
+.c-meter .cell-relief__segments { gap: round(2px, var(--device-px, 1px)); padding: round(3px, var(--device-px, 1px)); }
+.c-meter .cell-relief__segments i { width: round(3px, var(--device-px, 1px)); height: round(18px, var(--device-px, 1px)); border-radius: 1px; }
 .c-meter .cell-relief__tip { width: 3px; height: 9px; }
 .c-meter b { font: 600 var(--text-body) var(--numbers); font-variant-numeric: tabular-nums; }
 .c-meter.alert b { color: var(--danger); }

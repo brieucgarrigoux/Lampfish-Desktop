@@ -59,7 +59,7 @@ body.home-editing .h-actions { display: none; }
 .h-instrument__label { margin-bottom: auto; align-self: stretch; font-size: var(--text-caption); color: var(--text-soft); text-align: left; }
 .h-instrument .thermo, .h-instrument .wifi-relief { width: 100%; max-width: 104px; height: auto; margin: 0; }
 .h-instrument .cell-relief { align-self: center; display: flex; align-items: center; margin: 0; padding: 0; }
-.h-instrument .cell-relief__segments i { width: 6px; height: 20px; }
+.h-instrument .cell-relief__segments i { width: round(6px, var(--device-px, 1px)); height: round(20px, var(--device-px, 1px)); }
 .h-instrument__value { display: flex; flex-direction: column; align-items: center; gap: 1px; max-width: 100%; }
 .h-instrument__value b { font: 600 var(--text-body) var(--numbers); font-variant-numeric: tabular-nums; }
 .h-instrument__value span { max-width: 100%; font-size: var(--text-caption); color: var(--text-pale); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -153,8 +153,8 @@ body.home-editing .h-actions { display: none; }
 .h-images { display: flex; gap: 8px; align-items: center; }
 .h-images img { width: 24px; height: 24px; object-fit: contain; }
 .h-images img.retro { image-rendering: pixelated; }
-.h-leds { display: flex; gap: 4px; overflow: hidden; }
-.h-leds i { flex: none; width: 6px; height: 6px; border-radius: 50%; background: #232a2b; }
+.h-leds { display: flex; gap: round(4px, var(--device-px, 1px)); overflow: hidden; }
+.h-leds i { flex: none; width: round(6px, var(--device-px, 1px)); height: round(6px, var(--device-px, 1px)); border-radius: 50%; background: #232a2b; }
 .h-leds i.on { background: var(--accent); box-shadow: 0 0 5px color-mix(in srgb, var(--accent) 80%, transparent); }
 .h-thumbnail svg { width: 52px; height: 35px; }
 .h-thumbnail .screen-v { fill: var(--screen); stroke: var(--hairline-strong); }

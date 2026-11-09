@@ -5,6 +5,12 @@ const webview = window.chrome.webview;
 const send = (action, data = {}) => webview.postMessage({ action, ...data });
 const $ = id => document.getElementById(id);
 
+// Small parts repeated in a row (battery segments, lamps) are sized in whole screen pixels: at 125 %, 6 px is 7.5 pixels
+// and the screen would round one part down and the next one up.
+const devicePx = () => document.documentElement.style.setProperty('--device-px', (1 / devicePixelRatio) + 'px');
+devicePx();
+addEventListener('resize', devicePx);
+
 // Day or night: a page opens in the mode it is told and follows the app when it changes. The fish is black on a light page.
 const isDay = () => document.documentElement.dataset.theme === 'light';
 function applyLight(light) {
