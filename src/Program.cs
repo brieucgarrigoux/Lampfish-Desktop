@@ -996,7 +996,7 @@ namespace Lampfish
                 weatherPlace = R.WeatherPlace == null ? null : R.WeatherPlace.Label,
                 reactive = R.Reactive,
                 zoom = R.Zoom,
-                skin = R.Skin, day = Appearance.Light,
+                skin = R.Skin, day = Appearance.Light, mica = SettingsForm.Mica,
                 moods = Moods.State(),
                 moodModels = Moods.Models(),
                 display = Display.State(),

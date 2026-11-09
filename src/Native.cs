@@ -40,6 +40,8 @@ namespace Lampfish
         [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern int RegisterWindowMessage(string name);
         [DllImport("user32.dll")] public static extern bool DestroyIcon(IntPtr icon);
         [DllImport("dwmapi.dll")] public static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
+        [StructLayout(LayoutKind.Sequential)] public struct MARGINS { public int Left, Right, Top, Bottom; }
+        [DllImport("dwmapi.dll")] public static extern int DwmExtendFrameIntoClientArea(IntPtr hwnd, ref MARGINS margins);
 
         public static readonly int Build = ReadBuild();
 
@@ -56,15 +58,27 @@ namespace Lampfish
             catch { return 0; }
         }
 
-        public static void DarkFrame(IntPtr hwnd, bool light = false)
+        public static void DarkFrame(IntPtr hwnd, bool light = false, bool mica = false)
         {
             int on = light ? 0 : 1;
             if (DwmSetWindowAttribute(hwnd, 20, ref on, 4) != 0) DwmSetWindowAttribute(hwnd, 19, ref on, 4);
             if (Build < 22000) return;
-            int caption = light ? 0xCBCAC3 : 0x0D0C09, text = light ? 0x15130D : 0xFFFFFF, border = light ? 0xB0AEA5 : 0x2F2E27;
+            const int Default = unchecked((int)0xFFFFFFFF);
+            int caption = mica ? Default : light ? 0xCBCAC3 : 0x0D0C09, text = light ? 0x15130D : 0xFFFFFF, border = light ? 0xB0AEA5 : 0x2F2E27;
             DwmSetWindowAttribute(hwnd, 35, ref caption, 4);
             DwmSetWindowAttribute(hwnd, 36, ref text, 4);
             DwmSetWindowAttribute(hwnd, 34, ref border, 4);
+        }
+
+        // Mica, the material Windows 11 paints behind long-lived windows from the wallpaper. Windows itself falls back to a plain
+        // color when the window is inactive, on battery saver or with transparency turned off. Before 22H2 the attribute does not exist.
+        public static bool Mica(IntPtr hwnd)
+        {
+            if (Build < 22621) return false;
+            var margins = new MARGINS { Left = -1, Right = -1, Top = -1, Bottom = -1 };
+            if (DwmExtendFrameIntoClientArea(hwnd, ref margins) != 0) return false;
+            int main = 2;
+            return DwmSetWindowAttribute(hwnd, 38, ref main, 4) == 0;
         }
 
         public static void Rounded(IntPtr hwnd)

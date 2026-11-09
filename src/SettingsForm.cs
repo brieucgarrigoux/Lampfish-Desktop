@@ -38,12 +38,20 @@ namespace Lampfish
             Appearance.Changed += Restyle;
         }
 
+        // True once Windows paints Mica behind this window: the page is then transparent and tints it.
+        public static bool Mica { get; private set; }
+
+        void Colors()
+        {
+            BackColor = Mica ? Color.Black : Appearance.Back;
+            view.DefaultBackgroundColor = Mica ? Color.Transparent : BackColor;
+        }
+
         void Restyle()
         {
-            BackColor = Appearance.Back;
-            view.DefaultBackgroundColor = BackColor;
-            if (IsHandleCreated) Native.DarkFrame(Handle, Appearance.Light);
-            Send(new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(Appearance.Message()));
+            Colors();
+            if (IsHandleCreated) Native.DarkFrame(Handle, Appearance.Light, Mica);
+            Send(new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(new { type = "appearance", light = Appearance.Light, mica = Mica }));
         }
 
         public async Task Initialize(CoreWebView2Environment environment, Action<string, List<string>> receive)
@@ -98,7 +106,9 @@ namespace Lampfish
         protected override void OnHandleCreated(EventArgs e)
         {
             base.OnHandleCreated(e);
-            Native.DarkFrame(Handle, Appearance.Light);
+            Mica = Native.Mica(Handle);
+            Native.DarkFrame(Handle, Appearance.Light, Mica);
+            Colors();
         }
 
         FormWindowState shape = FormWindowState.Normal;

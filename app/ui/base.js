@@ -20,7 +20,11 @@ function applyLight(light) {
   if (changed) document.dispatchEvent(new Event('themechange'));
 }
 applyLight(!!window.LIGHT);
-webview.addEventListener('message', e => { if (e.data && e.data.type === 'appearance') applyLight(e.data.light); });
+webview.addEventListener('message', e => {
+  if (!e.data || e.data.type !== 'appearance') return;
+  applyLight(e.data.light);
+  if (e.data.mica !== undefined) document.documentElement.classList.toggle('mica', !!e.data.mica);
+});
 
 addEventListener('error', e => { if (/ResizeObserver loop/.test(e.message)) return;  try { send('pageError', { text: e.message + ' · ' + (e.filename || '').replace(/^.*\//, '') + ':' + e.lineno }); } catch (x) { } });
 addEventListener('unhandledrejection', e => { try { send('pageError', { text: String(e.reason) }); } catch (x) { } });

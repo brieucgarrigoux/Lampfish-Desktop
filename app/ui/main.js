@@ -169,6 +169,7 @@ function render(state) {
   check('zoom', String(state.zoom || 100));
   check('skin', state.skin || 'dark');
   if (state.day !== undefined) applyLight(state.day);
+  if (state.mica !== undefined) document.documentElement.classList.toggle('mica', !!state.mica);
   if (zoomAsked == null) { zoomNow = state.zoom || 100; settleZoom(); }
   renderUpdates(state.updates);
   if (state.about) {
