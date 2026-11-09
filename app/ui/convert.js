@@ -133,7 +133,7 @@
 
   const CHOICES = {
     maxSide: { label: 'Largest side', help: 'Smaller pictures weigh less', values: [[0, 'Original'], [3840, '3840 px'], [1920, '1920 px'], [1280, '1280 px'], [800, '800 px']] },
-    scale: { label: 'Sharpness', help: 'A page drawn larger is sharper and heavier', values: [[1, 'Light'], [2, 'Sharp'], [3, 'Very sharp']] },
+    scale: { label: 'Sharpness', help: 'A page drawn larger is sharper and heavier', values: [[1, 'Normal'], [2, 'Sharp'], [3, 'Very sharp']] },
     angle: { label: 'Turn', help: 'Clockwise', values: [[90, '90°'], [180, '180°'], [270, '270°']] },
   };
 

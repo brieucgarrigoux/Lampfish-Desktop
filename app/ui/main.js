@@ -975,6 +975,7 @@ $('pauseOnBattery').addEventListener('change', e => send('pauseOnBattery', { val
 $('reactive').addEventListener('change', e => send('reactive', { value: e.target.checked }));
 $('pause').addEventListener('click', () => send('pause'));
 $('folder').addEventListener('click', () => send('folder'));
+$('windows-colors').addEventListener('click', () => send('display.colors'));
 
 // A question mark by the title of every page: what the page is for, what it reads and changes, taken from Settings, with a link to the full list.
 (function pageHelp() {

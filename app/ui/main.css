@@ -42,21 +42,21 @@
   --text-micro: 10.5px;
   --text-badge: 11.5px;
   --text-caption: 12px;
-  --text-value: 12.5px;
-  --text-body: 13px;
+  --text-value: 13px;
+  --text-body: 14px;
   --text-base: 14px;
-  --text-title: 16px;
+  --text-title: 20px;
   --text-lead: 18px;
-  --text-heading: 20px;
+  --text-heading: 28px;
   --text-clock: 28px;
   --text-counter: 30px;
   --text-rate: 40px;
 
-  --radius-shell: 16px;
-  --radius-card: 12px;
-  --radius-group: 10px;
-  --radius-control: 8px;
-  --radius-small: 6px;
+  --radius-shell: 8px;
+  --radius-card: 8px;
+  --radius-group: 8px;
+  --radius-control: 4px;
+  --radius-small: 4px;
 
   --fast: .12s;
   --system: "LF Display", "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
@@ -100,7 +100,7 @@ body {
 }
 button { font: inherit; color: inherit; cursor: pointer; }
 h1, h2 { margin: 0; }
-h1 { font: 700 var(--text-heading)/1 var(--display); letter-spacing: -.01em; }
+h1 { font: 600 var(--text-heading)/1.15 var(--display); letter-spacing: -.01em; }
 h2 { font-size: var(--text-body); font-weight: 600; color: var(--text-soft); }
 h2 .count { margin-left: 8px; font: 400 var(--text-caption) var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -404,20 +404,18 @@ input[type=range]:focus-visible { outline-offset: 4px; border-radius: 4px; }
 .toggle > .caption, .toggle > span { order: -1; }
 .toggle:has(input:disabled) { opacity: .4; cursor: default; }
 .toggle input, .toggler input, .cr-switch {
-  appearance: none; flex: none; position: relative; margin: 0; width: 40px; height: 24px; border-radius: 99px; cursor: pointer;
-  background: var(--track); box-shadow: inset 0 1px 2px rgba(0, 0, 0, .45); transition: background var(--fast);
+  appearance: none; flex: none; position: relative; margin: 0; width: 40px; height: 20px; border-radius: 99px; cursor: pointer;
+  background: transparent; box-shadow: inset 0 0 0 1px var(--text-soft); transition: background var(--fast), box-shadow var(--fast);
 }
 .toggle input::after, .toggler input::after, .cr-switch::after {
-  content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%;
-  background: #f2f2f6; box-shadow: 0 1px 2px rgba(0, 0, 0, .4); transition: transform var(--fast) ease-out;
+  content: ""; position: absolute; top: 4px; left: 4px; width: 12px; height: 12px; border-radius: 50%;
+  background: var(--text-soft); transition: transform var(--fast) ease-out, width var(--fast), height var(--fast), top var(--fast), left var(--fast);
 }
-.toggle input:checked, .toggler input:checked, .cr-switch:checked { background: var(--accent-strong); box-shadow: inset 0 1px 2px rgba(0, 0, 0, .3); }
-.toggle input:checked::after, .cr-switch:checked::after { transform: translateX(16px); }
+.toggle input:hover::after, .toggler input:hover::after, .cr-switch:hover::after { top: 3px; left: 3px; width: 14px; height: 14px; }
+.toggle input:checked, .toggler input:checked, .cr-switch:checked { background: var(--accent-strong); box-shadow: none; }
+.toggle input:checked::after, .toggler input:checked::after, .cr-switch:checked::after { transform: translateX(20px); background: var(--switch-on, #0b0f10); }
 .toggle input:disabled, .cr-switch:disabled { cursor: default; }
 .toggler { flex: none; display: flex; cursor: pointer; }
-.toggler input { width: 34px; height: 20px; }
-.toggler input::after { width: 14px; height: 14px; }
-.toggler input:checked::after { transform: translateX(14px); }
 
 .save { display: flex; gap: 8px; margin-top: 2px; }
 .save input {

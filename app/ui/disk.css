@@ -16,8 +16,8 @@
 }
 .center span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .name-center { font-size: clamp(11px, calc(var(--d, 120px) * .11), 12.5px); font-weight: 600; }
-.value-center { font: 600 clamp(14px, calc(var(--d, 120px) * .165), 19px)/1.1 var(--figures); font-variant-numeric: tabular-nums; }
-.detail-center { font: clamp(9.5px, calc(var(--d, 120px) * .095), 11px) var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); }
+.value-center { font: 600 clamp(13px, calc(var(--d, 120px) * .145), 17px)/1.1 var(--figures); font-variant-numeric: tabular-nums; }
+.detail-center { font: clamp(9.5px, calc(var(--d, 120px) * .095), 11px)/1.15 var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); white-space: normal; text-align: center; }
 
 .center.up::before {
   content: ""; width: 7px; height: 7px; margin: 0 0 4px; transform: rotate(45deg);

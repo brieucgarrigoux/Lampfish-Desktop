@@ -1,3 +1,5 @@
+/* A small window that comes and goes: the compact sizes it was drawn with, not the type ramp of the main window. */
+:root { --text-value: 12.5px; --text-body: 13px; --text-title: 16px; --text-heading: 20px; }
 body.companion { display: flex; flex-direction: column; gap: 12px; height: 100vh; padding: 14px 16px; overflow: hidden; background: var(--wallpaper); }
 /* Nothing shows until the window has its data: the last contents never flash. It grows out of the button. */
 body.companion:not(.is-ready) { visibility: hidden; }

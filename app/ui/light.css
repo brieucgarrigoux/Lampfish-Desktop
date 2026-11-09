@@ -1,6 +1,7 @@
 /* Day: the same design on a light page. The instruments exist in daylight too: steel frames, pale faces, dark print, no glow. Depth comes from shadow and outline.
    A rule under :where() has the weight of the rule it replaces, so that a state (chosen, hover, lit) still wins over it. */
 :root[data-theme="light"] {
+  --switch-on: #ffffff;
   --wallpaper: #c3cacb;
   --group: #d3d9da;
   --group-up: #dbe0e1;

@@ -178,7 +178,7 @@
     look.innerHTML = `<span class="caption">${glyph('theme')}<span></span></span><div class="segments" role="radiogroup"></div>`;
     look.querySelector('.caption > span').append(tr('Appearance'), el('small', '', tr('The windows of lampfish, this one too')));
     look.querySelector('.segments').setAttribute('aria-label', tr('Appearance'));
-    for (const [value, label] of [['dark', 'Dark'], ['light', 'Day'], ['auto', 'Like Windows']]) {
+    for (const [value, label] of [['light', 'Light'], ['dark', 'Dark'], ['auto', 'Use system setting']]) {
       const b = el('button');
       b.type = 'button';
       b.setAttribute('role', 'radio');

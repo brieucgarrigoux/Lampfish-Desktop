@@ -167,3 +167,13 @@ button.dial:active { transform: scale(.98); }
 .state--bad::before { background: var(--bad); box-shadow: 0 0 6px color-mix(in srgb, var(--bad) 55%, transparent); }
 .state--idle::before { background: var(--text-pale); box-shadow: none; }
 .state[hidden] { display: none; }
+
+/* Settings as separate cards, like the Settings app of Windows. Only groups made of settings; lists of data stay lists. */
+.group:has(> :is(.toggle, .row--setting, .setting, .row.action, .h-q, details.tr-row)) { display: flex; flex-direction: column; gap: 3px; background: none; box-shadow: none; }
+.group:has(> :is(.toggle, .row--setting, .setting, .row.action, .h-q, details.tr-row)) > * { background: var(--group); border-radius: var(--radius-control); box-shadow: none; }
+.group:has(> :is(.toggle, .row--setting, .setting, .row.action, .h-q, details.tr-row)) > :is(.toggle, .row--setting, .setting, .row.action) { padding: 13px 16px; min-height: 44px; }
+.group:has(> :is(.toggle, .row--setting, .setting, .row.action, .h-q, details.tr-row)) > *:is(:hover):is(.row.action, .h-q--link, .toggle) { background: var(--group-up); }
+
+/* The appearance choice keeps the full words of Windows: the row wraps before a word is cut. */
+.row--setting:has(> #skin) { flex-wrap: wrap; }
+#skin button { flex: 1 0 auto; padding-inline: 10px; }

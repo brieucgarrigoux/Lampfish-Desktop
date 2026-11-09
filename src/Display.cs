@@ -288,6 +288,9 @@ namespace Lampfish
                     if (int.TryParse(Text(m, "value"), out value)) Brighten(Text(m, "key"), Math.Max(0, Math.Min(100, value)));
                     return false;
                 }
+                case "colors":
+                    try { System.Diagnostics.Process.Start("ms-settings:colors"); } catch (Exception ex) { Program.Log(ex); }
+                    return false;
                 case "nightLight":
                     try { System.Diagnostics.Process.Start("ms-settings:nightlight"); } catch (Exception ex) { Program.Log(ex); }
                     return false;
