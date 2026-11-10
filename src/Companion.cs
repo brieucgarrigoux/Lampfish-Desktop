@@ -290,8 +290,8 @@ namespace Lampfish
         // Whatever changed the wallpaper (the window, the tray, a theme, the slideshow), an open assistant shows the new one.
         public static void WallpaperChanged()
         {
-            if (popup != null && !popup.IsDisposed && popup.Visible) SendStill(1600);
-            Glass(1600);
+            if (popup != null && !popup.IsDisposed && popup.Visible) SendStill(-1);
+            Glass(2000);
         }
 
         // The glass of the round button: the wallpaper under it, blurred, as the assistant paints its own backdrop. Windows gives
@@ -365,6 +365,7 @@ namespace Lampfish
         // A picture of the wallpaper of the screen the assistant is on, for the top of Desktop.
         static int stillTurn;
         static Rectangle rest;
+        // A negative delay: after a change of wallpaper, as soon as the new one has loaded and shows (at most 3 s).
         static async void SendStill(int delay)
         {
             int mine = ++stillTurn;
@@ -374,6 +375,12 @@ namespace Lampfish
             var center = new Point(popup.Left + popup.Width / 2, popup.Top + popup.Height / 2);
             Program.ForEachWallpaper(f => { if (form == null || f.Screen.Contains(center)) form = f; });
             if (form == null) return;
+            if (delay < 0)
+            {
+                await System.Threading.Tasks.Task.Delay(400);
+                for (int i = 0; i < 33 && !form.Settled; i++) await System.Threading.Tasks.Task.Delay(80);
+                if (mine != stillTurn || popup == null || popup.IsDisposed || form.IsDisposed) return;
+            }
             byte[] jpg = await form.Snapshot();
             if (jpg == null) return;
             try
@@ -568,7 +575,7 @@ namespace Lampfish
                     else if (op == "pause") Program.TogglePause();
                     SendData();
                     // The new wallpaper needs a moment to load and fade in before its picture is taken.
-                    if (op != "pause") SendStill(1600);
+                    if (op != "pause") SendStill(-1);
                     return;
                 }
                 case "companion.theme": Moods.Step(Convert.ToInt32(m["step"]) < 0 ? -1 : 1); SendData(); return;

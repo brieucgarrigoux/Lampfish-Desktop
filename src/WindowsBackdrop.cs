@@ -111,6 +111,7 @@ namespace Lampfish
                         shots[m.Key] = path;
                     }
                     if (shots.Count == 0) return;
+                    Program.WatchDesktop(5000);
                     wallpaper.SetPosition(4);
                     // A running slideshow puts its next picture back at once: it gets the still as its only picture instead.
                     if (before.Slideshow) { SetSlideshowItem(wallpaper, shots.Values.First()); wallpaper.AdvanceSlideshow(null, 0); }

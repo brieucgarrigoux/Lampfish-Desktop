@@ -382,6 +382,25 @@ namespace Lampfish
             screens.Clear();
         }
 
+        // Windows rebuilds its desktop window when its own picture changes: for a few seconds the wallpapers are put back as soon
+        // as that happens, instead of at the next check, a second later, which showed as a flash.
+        static System.Windows.Forms.Timer watchDesktop;
+        static DateTime watchUntil;
+        public static void WatchDesktop(int ms)
+        {
+            watchUntil = DateTime.Now.AddMilliseconds(ms);
+            if (watchDesktop == null)
+            {
+                watchDesktop = new System.Windows.Forms.Timer { Interval = 40 };
+                watchDesktop.Tick += (s, e) =>
+                {
+                    if (DateTime.Now > watchUntil) { watchDesktop.Stop(); return; }
+                    if (screens.Count > 0 && !building && !Desktop.Valid() && Desktop.Recover()) Desktop.ArrangeWallpaperWindows();
+                };
+            }
+            watchDesktop.Start();
+        }
+
         public static void RebuildSoon()
         {
             rebuild.Stop();

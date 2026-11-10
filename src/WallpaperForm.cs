@@ -17,7 +17,10 @@ namespace Lampfish
         Settings last;
         string shown;
         int ticket;
-        bool loaded;
+        bool loaded, navigating;
+        // When the page now shown finished loading: a still taken before shows the old wallpaper or the fade.
+        public DateTime LoadedAt { get; private set; }
+        public bool Settled { get { return loaded && !navigating && (DateTime.Now - LoadedAt).TotalMilliseconds > 350; } }
         public bool Suspended { get; private set; }
 
         public WallpaperForm(Rectangle screen)
@@ -67,6 +70,8 @@ namespace Lampfish
             view.CoreWebView2.NavigationCompleted += (s, e) =>
             {
                 loaded = true;
+                navigating = false;
+                LoadedAt = DateTime.Now;
                 if (Suspended) Freeze(true);
                 if (last != null) Effects(last);
                 FrameRate(Program.R.FrameRate);
@@ -269,6 +274,7 @@ namespace Lampfish
 
         void Navigate(CoreWebView2 core, Settings r, string wallpaper)
         {
+            navigating = true;
             string path = string.IsNullOrEmpty(wallpaper) ? null : Path.Combine(Program.WallpapersFolder, wallpaper);
             if (path == null || !(File.Exists(path) || Directory.Exists(path)))
             {
