@@ -72,13 +72,13 @@ namespace Lampfish
 
         // Mica, the material Windows 11 paints behind long-lived windows from the wallpaper. Windows itself falls back to a plain
         // color when the window is inactive, on battery saver or with transparency turned off. Before 22H2 the attribute does not exist.
-        // Kind 3 is Acrylic, the material of passing windows: it blurs what is right behind the window, live.
-        public static bool Mica(IntPtr hwnd, int kind = 2)
+        public static bool Mica(IntPtr hwnd)
         {
             if (Build < 22621) return false;
             var margins = new MARGINS { Left = -1, Right = -1, Top = -1, Bottom = -1 };
             if (DwmExtendFrameIntoClientArea(hwnd, ref margins) != 0) return false;
-            return DwmSetWindowAttribute(hwnd, 38, ref kind, 4) == 0;
+            int main = 2;
+            return DwmSetWindowAttribute(hwnd, 38, ref main, 4) == 0;
         }
 
         public static void Rounded(IntPtr hwnd)

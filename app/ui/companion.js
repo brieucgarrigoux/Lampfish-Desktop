@@ -25,6 +25,49 @@
     render();
   }
 
+  // The picture of the wallpaper shows at the top of Desktop and, blurred, behind the whole window, cut where the window rests.
+  function still(m) {
+    $('c-still-img').src = m.url || '';
+    $('c-still-name').textContent = m.name || '';
+    const root = document.documentElement;
+    root.classList.toggle('still', !!(m.url && m.w));
+    root.classList.toggle('mica', !!(m.url && m.w));
+    if (!m.url || !m.w) return;
+    // The pseudo-element overflows the window by 60 px on each side, so that the blur has no light edge.
+    const W = innerWidth / m.w, H = innerHeight / m.h;
+    root.style.setProperty('--still-image', `url("${m.url}")`);
+    root.style.setProperty('--still-w', W + 'px');
+    root.style.setProperty('--still-h', H + 'px');
+    root.style.setProperty('--still-x', (60 - m.x * W) + 'px');
+    root.style.setProperty('--still-y', (60 - m.y * H) + 'px');
+    veil(m);
+  }
+
+  // The veil gets as thick as the picture asks: on a bright wallpaper the palest text keeps 4.5:1, as in the main window.
+  function veil(m) {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas'); c.width = 24; c.height = 24;
+      const g = c.getContext('2d');
+      g.drawImage(img, m.x * img.width, m.y * img.height, m.w * img.width, m.h * img.height, 0, 0, 24, 24);
+      const px = g.getImageData(0, 0, 24, 24).data;
+      let r = 0, gr = 0, b = 0;
+      for (let i = 0; i < px.length; i += 4) { r += px[i]; gr += px[i + 1]; b += px[i + 2]; }
+      const n = px.length / 4, mean = [r / n, gr / n, b / n];
+      const light = document.documentElement.dataset.theme === 'light';
+      const tint = light ? [214, 220, 221] : [16, 20, 21];
+      const lin = v => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; };
+      const lum = c => .2126 * lin(c[0]) + .7152 * lin(c[1]) + .0722 * lin(c[2]);
+      let a = light ? .55 : .45;
+      for (; a < .95; a += .05) {
+        const mix = mean.map((v, i) => v * (1 - a) + tint[i] * a);
+        if (light ? lum(mix) >= .55 : lum(mix) <= .02) break;
+      }
+      document.documentElement.style.setProperty('--still-veil', `rgba(${tint.join(', ')}, ${a.toFixed(2)})`);
+    };
+    img.src = m.url;
+  }
+
   function clock() {
     const now = new Date();
     $('c-clock').textContent = now.toLocaleTimeString(LOCALE, { hour: '2-digit', minute: '2-digit' });
@@ -405,7 +448,7 @@
   webview.addEventListener('message', e => {
     const m = e.data;
     if (m.type === 'companion.shown') { document.body.classList.add('is-shown'); return; }
-    if (m.type === 'companion.still') { $('c-still-img').src = m.url || ''; $('c-still-name').textContent = m.name || ''; return; }
+    if (m.type === 'companion.still') { still(m); return; }
     if (m.type === 'companion.leaving') { document.body.classList.remove('is-shown'); return; }
     if (m.type === 'companion.data') {
       data = m;

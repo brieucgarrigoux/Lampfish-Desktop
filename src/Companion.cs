@@ -289,6 +289,7 @@ namespace Lampfish
 
         // A picture of the wallpaper of the screen the assistant is on, for the top of Desktop.
         static int stillTurn;
+        static Rectangle rest;
         static async void SendStill(int delay)
         {
             int mine = ++stillTurn;
@@ -304,7 +305,10 @@ namespace Lampfish
             {
                 string url = "data:image/jpeg;base64," + Convert.ToBase64String(File.ReadAllBytes(path));
                 string name = string.IsNullOrEmpty(form.ShownWallpaper) ? "" : Path.GetFileNameWithoutExtension(form.ShownWallpaper.TrimEnd('\\', '/'));
-                if (mine == stillTurn && popup != null && !popup.IsDisposed) popup.Send(new { type = "companion.still", url, name });
+                // Where the window rests on its screen, as parts of the screen: the page lays the same picture, blurred, behind itself.
+                var s = form.Screen;
+                if (mine == stillTurn && popup != null && !popup.IsDisposed)
+                    popup.Send(new { type = "companion.still", url, name, x = (double)(rest.X - s.X) / s.Width, y = (double)(rest.Y - s.Y) / s.Height, w = (double)rest.Width / s.Width, h = (double)rest.Height / s.Height });
             }
             catch (Exception ex) { Program.Log(ex); }
         }
@@ -385,6 +389,7 @@ namespace Lampfish
             int y = anchor.Top + anchor.Height / 2 - h / 2;
             slide = (int)((left ? 28 : -28) * k);
             popup.Bounds = new Rectangle(Math.Max(area.Left, Math.Min(area.Right - w, x)), Math.Max(area.Top, Math.Min(area.Bottom - h, y)), w, h);
+            rest = popup.Bounds;
             popup.Left += slide;
         }
 

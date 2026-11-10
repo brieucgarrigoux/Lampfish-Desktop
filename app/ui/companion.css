@@ -6,10 +6,16 @@ body.companion:not(.is-ready) { visibility: hidden; }
 /* The window slides out of the button; only its page fades, a material cannot show under a window that fades by transparency. */
 body.companion { transition: opacity .16s ease-out; }
 body.companion:not(.is-shown) { opacity: 0; transition-duration: .12s; }
-/* Acrylic blurs what is behind the window: a light veil is enough, the main window keeps its own. */
-:root.mica:has(> body.companion) { background: rgba(9, 12, 13, .3); }
-:root.mica[data-theme="light"]:has(> body.companion) { background: rgba(195, 202, 203, .3); }
-:root.mica body.companion { background: transparent; }
+/* Behind the page, the wallpaper of its screen, blurred, at the very place of the window: Windows paints no material
+   under this window, so the page paints what Acrylic would show over the desktop. Its cards take the translucent tokens of Mica. */
+:root.still { background: var(--wallpaper); }
+:root.still body.companion { position: relative; isolation: isolate; background: transparent; }
+:root.still body.companion::before { content: ""; position: fixed; inset: -60px; z-index: -1; pointer-events: none;
+  background: linear-gradient(var(--still-veil), var(--still-veil)), var(--still-image) var(--still-x) var(--still-y) / var(--still-w) var(--still-h) no-repeat;
+  filter: blur(38px) saturate(1.15); }
+:root.still { --still-veil: rgba(16, 20, 21, .45); }
+:root.still[data-theme="light"] { --still-veil: rgba(214, 220, 221, .55); }
+/* The thickness set by veil() of companion.js wins over these starting values. */
 .c-head { display: flex; align-items: center; gap: 10px; }
 .c-logo { width: 40px; height: 32px; object-fit: contain; }
 .c-open { flex: none; display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; font-size: var(--text-caption); }

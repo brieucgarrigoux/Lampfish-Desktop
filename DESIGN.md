@@ -76,6 +76,7 @@ Fonts: `--display` (Geist, the font of the logo) for titles, the clock and lit t
 | Light | `--lit`, `--warn`, `--bad`, `.led-text` | Lit letters, rings and drawings on glass |
 
 - **Mica** (`material.css`, `Native.Mica`): on Windows 11 22H2 and later the main window is painted with Mica; the page lays a veil halfway between its gray and Mica (`rgba(9, 12, 13, .5)`, light `rgba(195, 202, 203, .5)`) and cards and shells turn translucent. `--wallpaper` stays opaque: it prints on accent chips and fills the drawer. Windows falls back to a plain color when inactive, on battery saver or without transparency.
+- **The assistant's backdrop** (`companion.css`, `still()` and `veil()` of `companion.js`): Windows paints no material under the borderless assistant (Acrylic and Mica tried, it shows its plain fallback color). The page paints the wallpaper of its screen instead, blurred, cut where the window rests, from the still `Companion.SendStill` takes; the veil thickens on a bright wallpaper so the palest text keeps 4.5:1. The window slides; only its page fades (a window fading by transparency could never get a material).
 - **The picture of the page** (`.contents::before`, `::after`): the fish of the brand in its glow, faint, at the head of every page, behind the content.
 
 ## Components
