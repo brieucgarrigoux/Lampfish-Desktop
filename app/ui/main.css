@@ -260,7 +260,7 @@ body[data-view="tasks"]:not(.sheet-open) .panel, body[data-view="modes"]:not(.mo
 .page-help__tip dd { margin: 0; }
 .page-help__tip .link { margin-top: 8px; }
 .about { display: flex; align-items: center; gap: 16px; padding: 16px; }
-.about img { width: 56px; height: 56px; object-fit: contain; }
+.about img, .about svg { flex: none; width: 56px; height: 56px; object-fit: contain; }
 .about div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .about strong { font: 600 var(--text-title) var(--display); }
 .about span { font: var(--text-value) var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-soft); }

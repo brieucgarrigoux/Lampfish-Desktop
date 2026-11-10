@@ -38,7 +38,7 @@
 <body data-view="wallpaper">
 
 <nav class="rail" aria-label="Services" data-resizable="right" data-variable="--width-rail" data-key="rail-width" data-min="76" data-max="230" data-initial="180">
-  <button type="button" class="logo-home" title="Home" aria-label="Home"><img class="logo" src="/brand/logo/logo-lampfish-192.png" alt=""></button>
+  <button type="button" class="logo-home" title="Home" aria-label="Home"><img class="logo" src="/brand/logo/logo-lampfish-192.png" alt="" data-live-mark></button>
   <button class="service rail-home" data-view="home">
     <svg class="ph" aria-hidden="true"><use href="icons.svg#house"/></svg>
     Home
@@ -934,7 +934,7 @@
     <h2 class="settings-title">About</h2>
     <div class="group">
       <div class="about">
-        <img src="/brand/logo/logo-lampfish-192.png" alt="">
+        <img src="/brand/logo/logo-lampfish-192.png" alt="" data-live-mark="swim">
         <div><strong>lampfish</strong><span id="about-version"></span><small>Customize and monitor Windows, in one window</small></div>
       </div>
       <div class="row update-row"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#arrows-clockwise"/></svg><span>Updates<small id="update-state">Not checked yet</small></span></span><button class="button" id="update-check"><svg class="ph" aria-hidden="true"><use href="icons.svg#arrows-clockwise"/></svg>Check now</button></div>
@@ -1338,7 +1338,7 @@
   <div class="welcome__card">
     <div class="welcome__top"><div class="welcome__dots" aria-hidden="true"><i></i><i></i><i></i></div><button type="button" class="link" id="welcome-skip"><svg class="ph" aria-hidden="true"><use href="icons.svg#arrow-right"/></svg>Skip</button></div>
     <section class="welcome__step" data-step="0">
-      <img class="welcome__logo" src="/brand/logo/logo-lampfish-192.png" alt="">
+      <img class="welcome__logo" src="/brand/logo/logo-lampfish-192.png" alt="" data-live-mark="swim">
       <h1 id="welcome-title">Welcome to lampfish</h1>
       <p class="welcome__lead">One window to make Windows yours and keep an eye on your PC. Nothing leaves the PC without asking, and every change can be undone.</p>
       <div class="welcome__families" id="welcome-families"></div>
@@ -1366,6 +1366,8 @@
 <script src="dials.js"></script>
 <script src="instruments.js"></script>
 <script src="main.js"></script>
+<script src="mark-data.js"></script>
+<script src="mark.js"></script>
 <script src="sounds.js"></script>
 <script src="icons.js"></script>
 <script src="arrange.js"></script>
