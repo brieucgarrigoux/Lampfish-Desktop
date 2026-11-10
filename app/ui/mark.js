@@ -2,7 +2,7 @@
 
 // The moving mark. Every img[data-live-mark] becomes the official mark drawn as one path that bends: the tail sways and makes a
 // gesture now and then, the rod bends like a fishing rod and the lamp follows it, the little fin waves on its own, the eye blinks,
-// the glow breathes. The tail is still between its gestures, as a fish at rest. The pointer on the mark starts a gesture at once;
+// the glow breathes. Between its gestures the tail sways now and then, as a fish at rest, never all the time. The pointer on the mark starts a gesture at once;
 // while something loads (.loading) the gestures come more often. data-live-mark="swim" also floats.
 // Still when Windows asks for less motion; the image stays when the data is missing.
 (function () {
@@ -78,19 +78,22 @@
     if (S.start === null) S.start = now / 1000;
     const t = now / 1000 - S.start;
     if (!S.move && t >= S.nextMove) S.move = { m: pick(), at: t, s: Math.random() < .5 ? -1 : 1 };
-    if (S.move && t - S.move.at > S.move.m.len + .3) { S.move = null; S.nextMove = t + (S.busy ? .5 + Math.random() : 3 + Math.random() * 5); }
+    if (S.move && t - S.move.at > S.move.m.len + .3) { S.move = null; S.nextMove = t + (S.busy ? .5 + Math.random() : 2 + Math.random() * 2.5); }
     if (t >= S.nextBlink) { S.blinkAt = t; S.nextBlink = t + 3 + Math.random() * 4 + (Math.random() < .25 ? -2.8 : 0); }
     const b = (t - S.blinkAt) / .26, lid = b >= 0 && b < 1 ? Math.max(.08, Math.abs(1 - 2 * b)) : 1;
     const fin = (Math.sin(t * 2 * Math.PI / 3.3) * 3.6 + Math.sin(t * 2 * Math.PI / 1.9 + 1.3) * 1.4) * deg;
     const float = Math.sin(t * 2 * Math.PI / 9) * 1.5;
     const ru = (t % 7) - 5.6, rodAuto = ru < 0 || ru > 1.4 ? 0 : keys([0, -5, 3, -1, 0], .28)(ru);
     const gesture = (g, w) => g ? g.s * g.m.f(t - g.at - .12 * w) : 0;
+    // Between gestures the tail sways a little about half of the time: the sway rises and dies away over about ten seconds.
+    const env = Math.pow(Math.max(0, Math.sin(t * 2 * Math.PI / 11)), 2);
+    const sway = w => env * 2.2 * Math.sin(t * 2 * Math.PI / 2.6 - 1.4 * w);
     for (const m of marks) {
       if (m.own && t - m.own.at > m.own.m.len + .3) m.own = null;
       // The lamp swings with a gesture of the pointer and glows a little more meanwhile.
       const own = m.own ? Math.sin(Math.PI * Math.min(1, (t - m.own.at) / m.own.m.len)) : 0;
       m.lit += (own - m.lit) * .2;
-      const tail = w => (gesture(S.move, w) + gesture(m.own, w)) * deg;
+      const tail = w => (sway(w) + gesture(S.move, w) + gesture(m.own, w)) * deg;
       const rod = (float + rodAuto - own * 4 * Math.sin((t - (m.own ? m.own.at : 0)) * 2 * Math.PI / 1.1)) * deg;
       m.body.setAttribute('d', path(tail, rod, lid, fin));
       m.dots.setAttribute('transform', `translate(0 ${D.lid}) scale(1 ${lid.toFixed(3)}) translate(0 ${-D.lid})`);
