@@ -775,7 +775,20 @@
 
   <section class="view view--help only-help" aria-label="Help">
     <h1>Help</h1>
-    <div class="hp-log" id="help-log" aria-live="polite"><img class="hp-live" src="/brand/logo/mark-lampfish-white.png" alt="" data-live-mark="bare"></div>
+    <p class="help-section hp-lead">The answers live on this PC, nothing is sent.</p>
+    <div class="hp-board">
+      <div class="hp-chat">
+        <div class="hp-log" id="help-log" aria-live="polite"><img class="hp-live" src="/brand/logo/mark-lampfish-white.png" alt="" data-live-mark="bare"></div>
+      </div>
+      <aside class="hp-side">
+        <h2 class="settings-title">Often asked</h2>
+        <div class="group" id="help-often"></div>
+        <div id="help-assistant" hidden>
+          <h2 class="settings-title">In the assistant</h2>
+          <div class="group"><div class="row"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#lf-assistant"/></svg><span>The same help<small>Its Help tab, from the round button</small></span></span></div></div>
+        </div>
+      </aside>
+    </div>
   </section>
 
   <section class="view view--settings only-settings" aria-label="Settings">

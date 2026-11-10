@@ -8,7 +8,8 @@
 // every action and every text against the app.
 const HELP_BOT = {
   greeting: 'Hi. Where to start?',
-  start: ['slow', 'wallpaper', 'paused', 'undo', 'theme', 'icons-hide', 'notes', 'capture'],
+  start: ['slow', 'wallpaper', 'undo', 'theme', 'icons-hide', 'other'],
+  often: ['paused', 'notes', 'undo', 'capture'],
   pages: {
     home: 'Home', modes: 'Themes', wallpaper: 'Wallpaper', create: 'Create', icons: 'Icons', mouse: 'Mouse', station: 'Sounds',
     display: 'Display', audio: 'Audio', taskbar: 'Taskbar', arrange: 'Arrange', notes: 'Notes', shelf: 'Shelf', convert: 'Convert',

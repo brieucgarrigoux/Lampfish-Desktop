@@ -139,6 +139,7 @@ const HELP_CARDS = {
   ],
   help: [
     ['#help-log', 'Questions as buttons', 'A click on a question gives a short answer, with buttons that open the page or do it.'],
+    ['#help-often', 'Often asked', 'The questions that come up most, one click away.'],
   ],
   settings: [
     ['#zoom', 'Size of the interface', 'Also Ctrl + wheel, or the buttons at the bottom left of the window.'],
