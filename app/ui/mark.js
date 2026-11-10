@@ -61,8 +61,15 @@
     svg.setAttribute('class', img.getAttribute('class') || '');
     svg.setAttribute('aria-hidden', 'true');
     svg.style.aspectRatio = '1';
-    svg.innerHTML = `${D.plate}<g class="mark-swim"><path class="mark-body" fill="#FFFFFF" fill-rule="evenodd"/>${inner(D.mouth)}<g class="mark-dots">${inner(D.eye)}</g>`
+    // "bare": the fish alone, without its plate, in the color of the text, the lamp lit.
+    const bare = img.dataset.liveMark === 'bare';
+    if (bare) svg.classList.add('mark-bare');
+    svg.innerHTML = `${bare ? '' : D.plate}<g class="mark-swim"><path class="mark-body" fill="#FFFFFF" fill-rule="evenodd"/>${inner(D.mouth)}<g class="mark-dots">${inner(D.eye)}</g>`
       + `<g class="mark-lamp"><g class="mark-glow">${inner(D.halos)}</g>${inner(D.tip + D.lamp)}</g></g>`;
+    if (bare) {
+      for (const e of svg.querySelectorAll('[fill="#FFFFFF"]')) e.setAttribute('fill', 'currentColor');
+      for (const e of svg.querySelectorAll('.mark-lamp circle, .mark-glow circle')) e.setAttribute('fill', 'var(--lit, #2ED9C6)');
+    }
     img.replaceWith(svg);
     const m = { svg, swims: img.dataset.liveMark === 'swim', body: svg.querySelector('.mark-body'), dots: svg.querySelector('.mark-dots'), lamp: svg.querySelector('.mark-lamp'),
       glow: svg.querySelector('.mark-glow'), swim: svg.querySelector('.mark-swim'), own: null, lit: 0 };

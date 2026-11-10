@@ -1047,15 +1047,13 @@ $('windows-colors').addEventListener('click', () => send('display.colors'));
       const line = Object.assign(document.createElement('span'), { className: 'help-card__line', textContent: c.line, hidden: c.i !== unfolded });
       card.append(title, line);
       // Hover only: a card unfolds its sentence while the pointer is on it.
-      card.addEventListener('pointerenter', () => { keep(); clearTimeout(fold); if (unfolded !== c.i) { unfolded = c.i; render(); } });
-      card.addEventListener('pointerleave', () => { leave(); fold = setTimeout(() => { if (openFor && unfolded === c.i) { unfolded = -1; render(); } }, 250); });
+      card.addEventListener('pointerenter', () => { clearTimeout(fold); if (unfolded !== c.i) { unfolded = c.i; render(); } });
+      card.addEventListener('pointerleave', () => { fold = setTimeout(() => { if (openFor && unfolded === c.i) { unfolded = -1; render(); } }, 250); });
       return card;
     });
     const more = Object.assign(document.createElement('button'), { type: 'button', className: 'link help-more', innerHTML: icon('info') });
     more.append(tr('Details in Settings'));
     const row = rows[openView];
-    more.addEventListener('pointerenter', keep);
-    more.addEventListener('pointerleave', leave);
     more.addEventListener('click', () => { close(); showView('settings'); row.open = true; row.closest('.tr-fold').open = true; row.scrollIntoView({ block: 'center' }); });
     layer.replaceChildren(veil, ...cards, more);
     layer.hidden = false;
@@ -1100,9 +1098,7 @@ $('windows-colors').addEventListener('click', () => send('display.colors'));
     clearTimeout(again);
     cancelAnimationFrame(frame);
   };
-  let closing = 0, fold = 0;
-  function keep() { clearTimeout(closing); }
-  function leave() { clearTimeout(closing); closing = setTimeout(() => { if (openFor && !document.querySelector('.help-card:hover, .help-more:hover, .page-help:hover')) close(); }, 700); }
+  let fold = 0;
   const open = (button, view) => {
     openFor = button;
     openView = view;
@@ -1118,13 +1114,8 @@ $('windows-colors').addEventListener('click', () => send('display.colors'));
     b.translate = false;
     b.querySelector('.page-help__label').textContent = tr('About this page');
     b.setAttribute('aria-expanded', 'false');
-    // The cards come with the pointer on the question mark (or the keyboard focus on it), not with a press, and go a moment
-    // after the pointer has left the mark and the cards, which leaves the time to reach a card far away.
-    const show = () => { keep(); if (openFor !== b) { close(); open(b, view); } };
-    b.addEventListener('pointerenter', show);
-    b.addEventListener('pointerleave', leave);
-    b.addEventListener('focus', show);
-    b.addEventListener('blur', () => { if (!b.matches(':hover')) leave(); });
+    // The question mark is a button: a press lays the cards, another takes them away; only the cards answer the pointer.
+    b.addEventListener('click', e => { e.stopPropagation(); if (openFor === b) close(); else { close(); open(b, view); } });
     return b;
   };
   for (const section of document.querySelectorAll('.view')) {

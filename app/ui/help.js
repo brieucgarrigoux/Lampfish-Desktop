@@ -125,7 +125,8 @@ function helpChat({ log, ask, found, run, can, facts, avatar }) {
   }
 
   const avatar = () => {
-    const mark = document.querySelector('.rail svg.logo') || document.querySelector('.rail img.logo');
+    // The fish alone, without the turquoise plate of the logo.
+    const mark = document.querySelector('.hp-head .help-avatar');
     if (!mark) return null;
     const copy = mark.cloneNode(true);
     copy.removeAttribute('class');

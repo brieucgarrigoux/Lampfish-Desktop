@@ -5,7 +5,7 @@
 .hp-board { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; }
 .hp-chat { min-height: 0; display: flex; flex-direction: column; gap: 12px; max-width: 720px; }
 .hp-head { flex: none; display: flex; align-items: center; gap: 10px; }
-.hp-head .help-avatar { flex: none; width: 36px; height: 36px; clip-path: inset(0 round 21.9%); }
+.hp-head .help-avatar { flex: none; width: 36px; height: 36px; color: var(--text); }
 .hp-head b { font: 600 var(--text-body) var(--display); }
 .hp-log { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; gap: 12px; padding: 2px; margin: -2px; }
 .hp-ask { flex: none; display: flex; flex-direction: column; gap: 8px; }
