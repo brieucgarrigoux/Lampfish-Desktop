@@ -2,7 +2,7 @@
 
 // The moving mark. Every img[data-live-mark] becomes the official mark drawn as one path that bends: the tail sways and makes a
 // gesture now and then, the rod bends like a fishing rod and the lamp follows it, the little fin waves on its own, the eye blinks,
-// the glow breathes. Between its gestures the tail sways unevenly, between faint and clear. The pointer on the mark starts a gesture at once;
+// the glow breathes, and the whole fish rocks gently. Between its gestures the tail sways unevenly, between faint and clear. The pointer on the mark starts a gesture at once;
 // while something loads (.loading) the gestures come more often. data-live-mark="swim" also floats.
 // Still when Windows asks for less motion; the image stays when the data is missing.
 (function () {
@@ -51,6 +51,9 @@
   // One clock and one throw of the dice for every mark of the page.
   const S = { move: null, nextMove: 1.5, blinkAt: -9, nextBlink: 2.5, start: null, busy: false };
 
+  // The middle of the fish, around which it rocks.
+  const xs = D.rings[0].map(p => p[0]), ys = D.rings[0].map(p => p[1]);
+  const middle = [(Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...ys) + Math.max(...ys)) / 2];
   const marks = [];
   for (const img of document.querySelectorAll('img[data-live-mark]')) {
     const svg = document.createElementNS(NS, 'svg');
@@ -104,7 +107,9 @@
       m.lamp.setAttribute('transform', `rotate(${(rod / deg).toFixed(2)} ${D.root[0]} ${D.root[1]})`);
       const g = 1 + .05 * Math.sin(t * 2 * Math.PI / 3.6) + .1 * m.lit;
       m.glow.setAttribute('transform', `translate(${D.light[0]} ${D.light[1]}) scale(${g.toFixed(3)}) translate(${-D.light[0]} ${-D.light[1]})`);
-      if (m.swims) m.swim.setAttribute('transform', `translate(0 ${(Math.sin(t * 2 * Math.PI / 5.5) * 4).toFixed(2)})`);
+      // The whole fish rocks gently from side to side, as if held by the water, on two slow waves that never quite repeat.
+      const rock = Math.sin(t * 2 * Math.PI / 5.3) * 1.8 + Math.sin(t * 2 * Math.PI / 8.9 + .7) * .9;
+      m.swim.setAttribute('transform', (m.swims ? `translate(0 ${(Math.sin(t * 2 * Math.PI / 5.5) * 4).toFixed(2)}) ` : '') + `rotate(${rock.toFixed(2)} ${middle[0].toFixed(1)} ${middle[1].toFixed(1)})`);
     }
   }
   requestAnimationFrame(frame);
