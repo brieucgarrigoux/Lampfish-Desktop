@@ -1019,6 +1019,7 @@ $('windows-colors').addEventListener('click', () => send('display.colors'));
       if (!fits(b) || placed.some(p => meets(p, b)) || avoid.some(a => a !== r && meets(a, b))) continue;
       if (side === 'over' && !within(b, r)) continue;
       card.dataset.side = side;
+      card.dataset.align = align || '';
       card.style.left = left + 'px';
       card.style.top = top + 'px';
       if (side === 'below' || side === 'above') card.style.setProperty('--tip', clamp((align === 'end' ? r.right - Math.min(40, r.width / 2) : r.left + Math.min(40, r.width / 2)) - left - 5, 10, w - 20) + 'px');
@@ -1026,6 +1027,30 @@ $('windows-colors').addEventListener('click', () => send('display.colors'));
       return b;
     }
     return null;
+  }
+
+  // A card above its part grows upward and a card on the left of its part grows leftward, so its pointer stays on the part;
+  // it is kept inside the window, and its pointer follows the shift.
+  function unfold(card, on) {
+    const line = card.querySelector('.help-card__line');
+    if (!line || on === !line.hidden) return;
+    if (on) for (const other of layer.querySelectorAll('.help-card.is-open')) if (other !== card) unfold(other, false);
+    if (on) Object.assign(card.dataset, { left: card.style.left, top: card.style.top, tip: card.style.getPropertyValue('--tip') });
+    const w0 = card.offsetWidth, h0 = card.offsetHeight;
+    line.hidden = !on;
+    card.classList.toggle('is-open', on);
+    card.setAttribute('aria-expanded', String(on));
+    if (!on) { card.style.left = card.dataset.left; card.style.top = card.dataset.top; card.style.setProperty('--tip', card.dataset.tip); return; }
+    const side = card.dataset.side, left0 = parseFloat(card.dataset.left), top0 = parseFloat(card.dataset.top);
+    const w = card.offsetWidth, h = card.offsetHeight;
+    let left = side === 'left' || card.dataset.align === 'end' ? left0 - (w - w0) : left0;
+    let top = side === 'above' ? top0 - (h - h0) : top0;
+    left = clampX(left, w); top = clampY(top, h);
+    card.style.left = left + 'px';
+    card.style.top = top + 'px';
+    const tip = parseFloat(card.dataset.tip) || 0;
+    if (side === 'below' || side === 'above') card.style.setProperty('--tip', clamp(tip + left0 - left, 10, w - 20) + 'px');
+    else card.style.setProperty('--tip', clamp(tip + top0 - top, 8, h - 18) + 'px');
   }
 
   function render() {
@@ -1044,11 +1069,12 @@ $('windows-colors').addEventListener('click', () => send('display.colors'));
       card.dataset.card = c.i;
       card.setAttribute('aria-expanded', String(c.i === unfolded));
       const title = Object.assign(document.createElement('span'), { className: 'help-card__title', textContent: c.title });
-      const line = Object.assign(document.createElement('span'), { className: 'help-card__line', textContent: c.line, hidden: c.i !== unfolded });
+      const line = Object.assign(document.createElement('span'), { className: 'help-card__line', textContent: c.line, hidden: true });
       card.append(title, line);
-      // Hover only: a card unfolds its sentence while the pointer is on it.
-      card.addEventListener('pointerenter', () => { clearTimeout(fold); if (unfolded !== c.i) { unfolded = c.i; render(); } });
-      card.addEventListener('pointerleave', () => { fold = setTimeout(() => { if (openFor && unfolded === c.i) { unfolded = -1; render(); } }, 250); });
+      // Hover only: a card unfolds its sentence while the pointer is on it, in place, over its neighbors. Laying all the cards
+      // out again made the taller card jump elsewhere, leave the pointer, fold and come back, over and over.
+      card.addEventListener('pointerenter', () => { clearTimeout(fold); unfolded = c.i; unfold(card, true); });
+      card.addEventListener('pointerleave', () => { fold = setTimeout(() => { if (openFor && unfolded === c.i) { unfolded = -1; unfold(card, false); } }, 250); });
       return card;
     });
     const more = Object.assign(document.createElement('button'), { type: 'button', className: 'link help-more', innerHTML: icon('info') });
@@ -1066,22 +1092,17 @@ $('windows-colors').addEventListener('click', () => send('display.colors'));
       .map(([left, top]) => ({ left, top, right: left + w, bottom: top + h })).find(b => fits(b) && !start.some(p => meets(p, b)));
     if (linkSpot) { more.style.left = linkSpot.left + 'px'; more.style.top = linkSpot.top + 'px'; start.push(linkSpot); }
     else more.hidden = true;
-    // Cards are placed in order; the unfolded one goes first only if it would otherwise find no room.
-    const layout = order => {
-      const placed = [...start], shown = new Set();
-      for (const k of order) {
-        const b = place(cards[k], rects[k], placed, small) || place(cards[k], rects[k], placed, []);
-        if (b) { placed.push(b); shown.add(k); }
-      }
-      return shown;
-    };
-    const order = list.map((c, k) => k), first = list.findIndex(c => c.i === unfolded);
-    let shown = layout(order);
-    if (first >= 0 && !shown.has(first)) shown = layout([first, ...order.filter(k => k !== first)]);
+    // Cards are placed folded, in order, and never move after: unfolding one only lets it grow where it is.
+    const placed = [...start], shown = new Set();
+    cards.forEach((card, k) => {
+      const b = place(card, rects[k], placed, small) || place(card, rects[k], placed, []);
+      if (b) { placed.push(b); shown.add(k); }
+    });
     cards.forEach((card, k) => {
       if (!shown.has(k)) { card.remove(); return; }
       const r = rects[k];
       veil.after(Object.assign(document.createElement('div'), { className: 'help-ring', style: `left:${r.left - 3}px;top:${r.top - 3}px;width:${r.width + 6}px;height:${r.height + 6}px` }));
+      if (list[k].i === unfolded) unfold(card, true);
     });
     const target = focused != null ? layer.querySelector(`.help-card[data-card="${focused}"]`) : layer.querySelector('.help-card');
     if (target) target.focus({ preventScroll: true });

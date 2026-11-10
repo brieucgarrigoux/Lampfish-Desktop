@@ -257,6 +257,7 @@ body[data-view="tasks"]:not(.sheet-open) .panel, body[data-view="modes"]:not(.mo
 .help-veil { position: absolute; inset: 0; background: rgba(0, 0, 0, .38); }
 .help-ring { position: fixed; border-radius: var(--radius-card); box-shadow: 0 0 0 2px color-mix(in srgb, var(--lit) 80%, transparent); pointer-events: none; }
 .help-card { position: fixed; left: 0; top: 0; display: block; max-width: 220px; margin: 0; padding: 8px 11px; border: 0; border-radius: var(--radius-card); background: var(--help-card); color: var(--text); font: 600 12.5px/1.35 var(--numbers); letter-spacing: 0; text-align: left; cursor: pointer; box-shadow: 0 0 0 1px var(--lit), 0 0 18px color-mix(in srgb, var(--lit) 35%, transparent); transition: background var(--fast); }
+.help-card.is-open { z-index: 1; }
 .help-card:hover { --help-card: color-mix(in srgb, var(--lit) 12%, var(--wallpaper)); }
 .help-card__title, .help-card__line { display: block; }
 .help-card__line { margin-top: 4px; font-weight: 400; font-size: var(--text-caption); color: var(--text-soft); }
