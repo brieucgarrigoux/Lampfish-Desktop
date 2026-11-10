@@ -1,6 +1,9 @@
 /* The bar on the left: Home and a search, then one button per family that opens its services in a flyout beside the bar. */
 .logo-home { flex: none; display: flex; align-items: center; justify-content: center; width: 100%; padding: 6px 0; margin-bottom: 6px; border: 0; background: none; cursor: pointer; }
 .logo-home:hover .logo { transform: scale(1.04); }
+/* Only the turquoise plate of the logo takes the pointer, not the whole width of the bar: the clicks still reach the button. */
+.logo-home { cursor: default; pointer-events: none; }
+.logo-home .logo { pointer-events: auto; cursor: pointer; clip-path: inset(0 round 21.9%); }
 
 .rail-family { flex: none; display: flex; flex-direction: column; align-items: center; width: 100%; gap: 2px; }
 
