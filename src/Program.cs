@@ -616,7 +616,7 @@ namespace Lampfish
             SendState();
         }
 
-        static readonly string[] Featured = { "lampfish-logo.html", "lampfish-dusk.html", "lampfish.html", "aurora.html" };
+        static readonly string[] Featured = { "lampfish-logo.html", "lampfish-lamp.html", "lampfish-dusk.html", "lampfish.html", "aurora.html" };
 
         static IEnumerable<string> ListWallpapers()
         {

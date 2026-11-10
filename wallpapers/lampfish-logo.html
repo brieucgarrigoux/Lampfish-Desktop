@@ -46,13 +46,13 @@
     if (m.lampfish === 'config') { config = m.config; dirty = true; apply(); }
     if (m.lampfish === 'audio') window.__audio(m.level);
   });
-  Promise.resolve().then(() => { config = {"v":2,"background":{"type":"gradient","color":"#08171A","color2":"#0B3F42","angle":183,"fit":"cover","dim":0,"vignette":100,"drift":0,"image":null},"logo":{"size":25,"x":50,"y":48,"shadow":60,"float":true,"image":"https://app.example/brand/logo/sticker-lampfish.png"},"title":{"text":"","size":6,"weight":600,"color":"#E8F6F4","x":50,"y":72,"font":"sans"},"particles":{"type":"embers","color":"#2ED9C6","amount":70,"size":150,"speed":130},"glow":{"on":true,"color":"#1EBBAA","strength":90},"sound":{"on":true,"pulse":true,"ripples":true,"ring":true,"vibe":true,"vibeAmount":15,"particles":true,"color":""}}; apply(); });
+  Promise.resolve().then(() => { config = {"v":2,"background":{"type":"gradient","color":"#08171A","color2":"#0B3F42","angle":183,"fit":"cover","dim":0,"vignette":100,"drift":0,"image":null},"logo":{"size":30,"x":50,"y":48,"shadow":60,"float":false,"image":"https://app.example/brand/logo/mark-lampfish-white.svg"},"title":{"text":"","size":6,"weight":600,"color":"#E8F6F4","x":50,"y":72,"font":"sans"},"particles":{"type":"embers","color":"#2ED9C6","amount":70,"size":150,"speed":110,"depth":60},"glow":{"on":true,"color":"#1EBBAA","strength":90},"sound":{"on":true,"pulse":true,"ripples":true,"ring":true,"vibe":true,"vibeAmount":15,"particles":true,"color":""}}; apply(); });
   if (parent !== window) parent.postMessage({ lampfish: 'ready' }, '*');
 
   const $ = id => document.getElementById(id);
   const bg = $('bg'), dim = $('dim'), vignette = $('vignette'), logo = $('logo'), title = $('title');
   const canvas = $('fx'), ctx = canvas.getContext('2d');
-  let w = 0, h = 0, particles = [], sprites = new Map(), particleType = '', particleScale = 1, angle = 160;
+  let w = 0, h = 0, particles = [], sprites = new Map(), particleType = '', particleScale = 1, angle = 160, lastDepth = null;
 
   const num = (v, d) => (v === undefined || v === null || v === '' || isNaN(Number(v))) ? d : Number(v);
   function rgb(c) {
@@ -134,6 +134,7 @@
       make: (s, k) => ({ x: Math.random() * w, y: Math.random() * h, r: (3 + Math.random() * 6) * s, ph: Math.random() * 6.28, sp: .12 + Math.random() * .3, a: Math.random() * 6.28 }),
       step(p, dt, t, k) { p.x += Math.sin(t * p.sp + p.a) * 16 * dt * k; p.y += (Math.cos(t * p.sp * .8 + p.a) * 11 - 2.5) * dt * k; wrap(p, 30); },
       draw(p, t, c, pulse) { const a = (.18 + .82 * Math.pow(.5 + .5 * Math.sin(t * 1.5 + p.ph), 2)) * (1 + pulse * .8); put(sprite(c, .18), p.x, p.y, p.r * 4, Math.min(1, a)); put(sprite('#ffffff', .1), p.x, p.y, p.r * .9, Math.min(1, a * .8)); },
+      sharp(p, t, c, pulse) { const a = Math.min(1, (.25 + .75 * Math.pow(.5 + .5 * Math.sin(t * 1.5 + p.ph), 2)) * (1 + pulse * .8)); put(halo(c), p.x, p.y, p.r * 2.6, a * .55); dot(p.x, p.y, p.r * .38, '#F2FFFC', a); },
     },
     stars: {
       density: 1 / 9000,
@@ -148,18 +149,42 @@
           ctx.globalAlpha = 1;
         }
       },
+      sharp(p, t, c, pulse) {
+        const a = Math.min(1, (.35 + .65 * (.5 + .5 * Math.sin(t * p.sp + p.ph))) * (1 + pulse * .6));
+        put(halo(c), p.x, p.y, p.r * 2.4, a * .45); dot(p.x, p.y, Math.max(.6, p.r * .45), '#F2FFFC', a);
+        if (p.r > 1.9) {
+          const px = 1 / (devicePixelRatio || 1), x = Math.round(p.x / px) * px, y = Math.round(p.y / px) * px;
+          ctx.globalAlpha = a * .5; ctx.fillStyle = c; ctx.fillRect(x - p.r * 5, y, p.r * 10, px); ctx.fillRect(x, y - p.r * 5, px, p.r * 10); ctx.globalAlpha = 1;
+        }
+      },
     },
     embers: {
       density: 1 / 24000,
       make: (s, k, init) => ({ x: Math.random() * w, y: init ? Math.random() * h : h + 20, vy: 26 + Math.random() * 60, r: (1.4 + Math.random() * 2.6) * s, ph: Math.random() * 6.28, life: init ? Math.random() : 1 }),
       step(p, dt, t, k) { p.y -= p.vy * dt * k; p.x += Math.sin(t * .9 + p.ph) * 22 * dt * k; p.life -= dt * .11 * k; if (p.life <= 0 || p.y < -20) Object.assign(p, this.make(1, 1, false)); },
       draw(p, t, c, pulse) { const a = Math.max(0, p.life) * (.55 + .45 * Math.sin(t * 7 + p.ph)); put(sprite(c, .16), p.x, p.y, p.r * 4.2 * (.5 + p.life * .5), Math.min(1, a * (1 + pulse))); put(sprite('#fff3d6', .1), p.x, p.y, p.r * .8, Math.min(1, a)); },
+      sharp(p, t, c, pulse) { const a = Math.min(1, Math.max(0, p.life) * 1.2 * (.7 + .3 * Math.sin(t * 5 + p.ph)) * (1 + pulse)); const r = p.r * (.6 + p.life * .4); put(halo(c), p.x, p.y, r * 3.2, a * .5); dot(p.x, p.y, Math.max(.7, r * .55), '#F2FFFC', a); },
     },
     snow: {
       density: 1 / 11000,
       make: (s, k, init) => ({ x: Math.random() * w, y: init ? Math.random() * h : -10, vy: 12 + Math.random() * 26, r: (.9 + Math.random() * 2.6) * s, ph: Math.random() * 6.28 }),
       step(p, dt, t, k) { p.y += p.vy * dt * k; p.x += Math.sin(t * .5 + p.ph) * 10 * dt * k; if (p.y > h + 10) { p.y = -10; p.x = Math.random() * w; } },
       draw(p, t, c, pulse) { put(sprite(c, .35), p.x, p.y, p.r * 2.4, Math.min(1, .22 + p.r * .13 + pulse * .2)); },
+      sharp(p, t, c, pulse) { const a = Math.min(1, .35 + p.r * .14 + pulse * .2); put(halo(c), p.x, p.y, p.r * 1.8, a * .35); dot(p.x, p.y, p.r * .7, c, a); },
+    },
+    bubbles: {
+      density: 1 / 30000,
+      make: (s, k, init) => ({ x: Math.random() * w, y: init ? Math.random() * h : h + 20, vy: 22 + Math.random() * 40, r: (1.6 + Math.random() * 3.4) * s, ph: Math.random() * 6.28 }),
+      step(p, dt, t, k) { p.y -= p.vy * dt * k; p.x += Math.sin(t * 1.6 + p.ph) * 9 * dt * k; if (p.y < -20) { p.y = h + 20; p.x = Math.random() * w; } },
+      draw(p, t, c, pulse) { bubble(p.x, p.y, p.r * 1.2, c, Math.min(1, .55 + pulse * .4)); },
+      sharp(p, t, c, pulse) { bubble(p.x, p.y, p.r * 1.2, c, Math.min(1, .6 + pulse * .4)); },
+    },
+    marine: {
+      density: 1 / 9000,
+      make: (s, k, init) => ({ x: Math.random() * w, y: init ? Math.random() * h : -10, vy: 5 + Math.random() * 12, r: (.6 + Math.pow(Math.random(), 2) * 2) * s, ph: Math.random() * 6.28 }),
+      step(p, dt, t, k) { p.y += p.vy * dt * k; p.x += Math.sin(t * .35 + p.ph) * 7 * dt * k; if (p.y > h + 10) { p.y = -10; p.x = Math.random() * w; } },
+      draw(p, t, c, pulse) { const a = .25 + .3 * (.5 + .5 * Math.sin(t * .7 + p.ph)); put(sprite(c, .4), p.x, p.y, p.r * 2, Math.min(1, a + pulse * .2)); },
+      sharp(p, t, c, pulse) { const a = .35 + .35 * (.5 + .5 * Math.sin(t * .7 + p.ph)); dot(p.x, p.y, p.r * .7, c, Math.min(1, a + pulse * .2)); },
     },
     orbs: {
       density: 1 / 90000,
@@ -168,6 +193,46 @@
       draw(p, t, c, pulse) { put(sprite(c, .05), p.x, p.y, p.r, Math.min(.5, p.a * (1 + pulse * 2.2) * (.8 + .2 * Math.sin(t * .8 + p.ph)))); },
     },
   };
+
+  // The look with depth: a halo from a 128 px image (soft anyway), a core drawn as a vector at the size of the screen.
+  function halo(color) {
+    const key = 'halo' + color;
+    if (sprites.has(key)) return sprites.get(key);
+    const c = document.createElement('canvas');
+    c.width = c.height = 128;
+    const g = c.getContext('2d'), [r, gr, b] = rgb(color), q = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+    q.addColorStop(0, `rgba(${r},${gr},${b},.9)`); q.addColorStop(.35, `rgba(${r},${gr},${b},.32)`); q.addColorStop(1, `rgba(${r},${gr},${b},0)`);
+    g.fillStyle = q; g.fillRect(0, 0, 128, 128);
+    sprites.set(key, c);
+    return c;
+  }
+  // Out of focus, close to the eye: an even disc with a soft edge.
+  function bokeh(color) {
+    const key = 'bokeh' + color;
+    if (sprites.has(key)) return sprites.get(key);
+    const c = document.createElement('canvas');
+    c.width = c.height = 128;
+    const g = c.getContext('2d'), [r, gr, b] = rgb(color), q = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+    q.addColorStop(0, `rgba(${r},${gr},${b},.85)`); q.addColorStop(.62, `rgba(${r},${gr},${b},.6)`); q.addColorStop(1, `rgba(${r},${gr},${b},0)`);
+    g.fillStyle = q; g.fillRect(0, 0, 128, 128);
+    sprites.set(key, c);
+    return c;
+  }
+  function dot(x, y, r, color, a) { ctx.globalAlpha = a; ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.283); ctx.fill(); }
+  function bubble(x, y, r, color, a) {
+    ctx.globalAlpha = a * .8; ctx.strokeStyle = color; ctx.lineWidth = Math.max(.8, r * .18); ctx.beginPath(); ctx.arc(x, y, r, 0, 6.283); ctx.stroke();
+    ctx.globalAlpha = a * .7; ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(x - r * .35, y - r * .35, r * .25, 0, 6.283); ctx.fill();
+  }
+  // Three planes: far (tiny, pale, slow), middle (sharp), near (large, soft, fast). depth (0 to 1) sets how many leave the middle.
+  const PLANES = [{ v: .35, r: .45, a: .5 }, { v: 1, r: 1, a: 1 }, { v: 1.9, r: 4.2, a: .17 }];
+  function plane(depth) { const u = Math.random(); return u < depth * .55 ? 0 : u > 1 - depth * .12 ? 2 : 1; }
+  function drawDeep(kind, p, t, c, pulse) {
+    const z = p.z, pl = PLANES[z];
+    if (z === 1) return (kind.sharp || kind.draw).call(kind, p, t, c, pulse);
+    const tw = .7 + .3 * Math.sin(t * (1.2 + z) + p.ph);
+    if (z === 0) dot(p.x, p.y, Math.max(.5, p.r * pl.r), c, Math.min(1, pl.a * tw * (1 + pulse * .5)));
+    else put(bokeh(c), p.x, p.y, p.r * pl.r, Math.min(1, pl.a * tw * (1 + pulse)));
+  }
 
   function wrap(p, m) { if (p.x < -m) p.x = w + m; if (p.x > w + m) p.x = -m; if (p.y < -m) p.y = h + m; if (p.y > h + m) p.y = -m; }
   function put(img, x, y, r, a) { ctx.globalAlpha = a; ctx.drawImage(img, x - r, y - r, r * 2, r * 2); }
@@ -187,8 +252,11 @@
     if (!kind) { particles = []; return; }
     if (fresh) particles = [];
     const count = Math.min(900, Math.round(w * h * kind.density * num(pc.amount, 50) / 50));
-    while (particles.length < count) particles.push(kind.make(1, 1, true));
+    const depth = typeof pc.depth === 'number' ? Math.max(0, Math.min(100, pc.depth)) / 100 : null;
+    while (particles.length < count) { const p = kind.make(1, 1, true); if (depth !== null) p.z = plane(depth); particles.push(p); }
     particles.length = Math.min(particles.length, count);
+    if (depth !== null && depth !== lastDepth) for (const p of particles) p.z = plane(depth);
+    lastDepth = depth;
   }
 
   let t = 0, before = performance.now(), frames = 0, historyClock = 0;
@@ -230,7 +298,14 @@
     const kind = KINDS[pc.type];
     if (kind) {
       const k = (frozen ? 0 : speed * num(pc.speed, 100) / 100) * (1 + pulseP * 3), color = pc.color || '#c9a2e6';
-      for (const p of particles) { kind.step(p, dt, t, k); const r = p.r; p.r = r * particleScale; kind.draw(p, t, color, pulseP); p.r = r; }
+      // A wallpaper made before the depth existed keeps the drawing it was made with.
+      const deep = typeof pc.depth === 'number';
+      for (const p of particles) {
+        kind.step(p, dt, t, deep && p.z !== undefined ? k * PLANES[p.z].v : k);
+        const r = p.r; p.r = r * particleScale;
+        if (deep && p.z !== undefined) drawDeep(kind, p, t, color, pulseP); else kind.draw(p, t, color, pulseP);
+        p.r = r;
+      }
       ctx.globalAlpha = 1;
     }
     ctx.globalCompositeOperation = 'source-over';

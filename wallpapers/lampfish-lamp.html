@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lampfish lamp</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #040b0c; }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; }
+</style>
+</head>
+<body>
+<canvas></canvas>
+<script src="https://app.example/app/ui/mark-data.js"></script>
+<script src="https://app.example/app/ui/mark-swim.js"></script>
+<script>
+// The lamp is the only light: the fish swims in the dark, lit around its lamp, bubbles rise from its mouth, dust drifts in the glow.
+(() => {
+  const params = new URLSearchParams(location.search);
+  const thumbnail = params.has('thumbnail');
+  let light = 1, speed = 1, frozen = false, audio = 0, audioTarget = 0;
+  window.__adjust = (l, v) => { light = Number(l) / 50; speed = Math.pow(2, (Number(v) - 50) / 25); };
+  window.__adjust(params.get('light') ?? 50, params.get('speed') ?? 50);
+  window.__audio = l => { audioTarget = Number(l); };
+  addEventListener('message', e => {
+    const m = e.data || {};
+    if (m.lampfish === 'adjust') window.__adjust(m.light, m.speed);
+    if (m.lampfish === 'freeze') frozen = m.value;
+    if (m.lampfish === 'audio') window.__audio(m.level);
+  });
+  if (parent !== window) parent.postMessage({ lampfish: 'ready' }, '*');
+
+  const TAU = Math.PI * 2, MOUTH = [376, 300], BG = [4, 11, 12];
+  const canvas = document.querySelector('canvas'), ctx = canvas.getContext('2d');
+  const fish = MarkSwim ? MarkSwim.swimmer() : null;
+  let w = 0, h = 0, dust = [], bubbles = [], sprites = new Map();
+  const rnd = (a, b) => a + Math.random() * (b - a);
+
+  function sprite(key, stops) {
+    if (sprites.has(key)) return sprites.get(key);
+    const c = document.createElement('canvas'); c.width = c.height = 128;
+    const g = c.getContext('2d'), q = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+    for (const [at, color] of stops) q.addColorStop(at, color);
+    g.fillStyle = q; g.fillRect(0, 0, 128, 128);
+    sprites.set(key, c); return c;
+  }
+  const halo = () => sprite('halo', [[0, 'rgba(46,217,198,.9)'], [.35, 'rgba(46,217,198,.32)'], [1, 'rgba(46,217,198,0)']]);
+  const bokeh = () => sprite('bokeh', [[0, 'rgba(120,230,215,.85)'], [.62, 'rgba(120,230,215,.6)'], [1, 'rgba(120,230,215,0)']]);
+  const put = (img, x, y, r, a) => { ctx.globalAlpha = a; ctx.drawImage(img, x - r, y - r, r * 2, r * 2); };
+  const glow = (x, y, r, rgb, a) => { const q = ctx.createRadialGradient(x, y, 0, x, y, r); q.addColorStop(0, `rgba(${rgb},${a})`); q.addColorStop(.45, `rgba(${rgb},${a * .35})`); q.addColorStop(1, `rgba(${rgb},0)`); ctx.globalAlpha = 1; ctx.fillStyle = q; ctx.fillRect(x - r, y - r, r * 2, r * 2); };
+
+  function resize() {
+    const r = devicePixelRatio || 1;
+    w = innerWidth; h = innerHeight;
+    canvas.width = Math.round(w * r); canvas.height = Math.round(h * r);
+    ctx.setTransform(r, 0, 0, r, 0, 0);
+    const n = Math.round(w * h / 100000 * 14) + 8;
+    dust = Array.from({ length: n }, () => ({ x: rnd(0, w), y: rnd(0, h), z: Math.random() < .55 ? 0 : Math.random() < .85 ? 1 : 2, ph: rnd(0, TAU), vy: rnd(.6, 1.4) }));
+    bubbles = Array.from({ length: 14 }, () => ({ age: rnd(0, 6), y: 0 }));
+  }
+
+  // Where the fish is: a slow loop around the left third, never quite the same.
+  const place = t => {
+    const size = Math.min(h * .62, w * .42);
+    return { size, x: w * .3 - size / 2 + Math.sin(t * .11) * w * .03, y: h * .5 - size / 2 + Math.sin(t * .17 + 1) * h * .03 };
+  };
+
+  let t = 0, before = performance.now(), frames = 0;
+  function draw(now) {
+    if (innerWidth !== w || innerHeight !== h) resize();
+    if (frozen) { before = now; setTimeout(() => requestAnimationFrame(draw), 250); return; }
+    if (now - before < 1000 / 62) { requestAnimationFrame(draw); return; }
+    const dt = Math.min(.05, (now - before) / 1000) * speed;
+    before = now; t += dt;
+    audio += (audioTarget - audio) * Math.min(1, dt * 14);
+    const pose = fish ? fish.step(dt, false) : null;
+    const f = place(t);
+    const [lx, ly] = pose ? MarkSwim.lampAt(pose, f.x, f.y, f.size) : [f.x + f.size * .82, f.y + f.size * .4];
+    const breathe = 1 + .06 * Math.sin(t * 1.1) + audio * .25, lit = Math.min(1.6, light);
+
+    ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+    ctx.fillStyle = `rgb(${BG})`; ctx.fillRect(0, 0, w, h);
+    ctx.globalCompositeOperation = 'lighter';
+    glow(lx, ly, Math.max(w, h) * .55 * breathe, '30,187,170', .3 * lit);
+    for (const p of dust) {
+      const v = [14, 46, 95][p.z];
+      p.y += v * p.vy * dt * .25; p.x += Math.sin(t * .6 + p.ph) * (6 + p.z * 10) * dt * .25;
+      const m = p.z === 2 ? 60 : 20;
+      if (p.y > h + m) { p.y = -m; p.x = rnd(0, w); }
+      // Dust only shows near the lamp, as in water lit by one light.
+      const near = Math.max(0, 1 - Math.hypot(p.x - lx, p.y - ly) / (Math.max(w, h) * .6));
+      const a = near * (.65 + .35 * Math.sin(t * (1.5 + p.z) + p.ph)) * lit;
+      if (p.z === 0) { ctx.globalAlpha = a * .5; ctx.fillStyle = 'rgb(120,230,215)'; ctx.beginPath(); ctx.arc(p.x, p.y, .8, 0, TAU); ctx.fill(); }
+      else if (p.z === 1) { put(halo(), p.x, p.y, 6, a * .45); ctx.globalAlpha = a; ctx.fillStyle = '#E9FFFB'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.2, 0, TAU); ctx.fill(); }
+      else put(bokeh(), p.x, p.y, 22, a * .16);
+    }
+    ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+    if (pose) MarkSwim.draw(ctx, pose, f.x, f.y, f.size, 'rgba(244,252,251,.96)', '#E9FFFB');
+    // The dark closes in away from the lamp: the fish comes out of the shadow around its light.
+    const shade = ctx.createRadialGradient(lx, ly, f.size * .12, lx, ly, f.size * 1.15);
+    shade.addColorStop(0, `rgba(${BG},0)`); shade.addColorStop(1, `rgba(${BG},.84)`);
+    ctx.fillStyle = shade; ctx.fillRect(0, 0, w, h);
+    ctx.globalCompositeOperation = 'lighter';
+    glow(lx, ly, f.size * .2 * breathe, '46,217,198', .75 * lit);
+    ctx.globalCompositeOperation = 'source-over';
+
+    // Bubbles leave the mouth now and then, wobble and fade as they rise.
+    const mx = f.x + f.size * MOUTH[0] / 512, my = f.y + f.size * MOUTH[1] / 512;
+    for (const b of bubbles) {
+      b.age += dt;
+      if (b.age > 6 || !b.y) { b.age = 0; b.x = mx + rnd(-5, 5); b.y = my; b.r = rnd(1.4, 3.6) * f.size / 400; b.vy = rnd(26, 58); b.ph = rnd(0, TAU); }
+      b.y -= b.vy * dt;
+      const x = b.x + Math.sin(t * 2 + b.ph) * 3, a = Math.max(0, 1 - b.age / 6) * .7;
+      ctx.globalAlpha = a; ctx.strokeStyle = 'rgb(210,250,245)'; ctx.lineWidth = Math.max(.8, b.r * .2);
+      ctx.beginPath(); ctx.arc(x, b.y, b.r, 0, TAU); ctx.stroke();
+      ctx.globalAlpha = a * .6; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x - b.r * .35, b.y - b.r * .35, b.r * .28, 0, TAU); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    if (thumbnail && ++frames > 2) return;
+    requestAnimationFrame(draw);
+  }
+  addEventListener('resize', resize);
+  resize();
+  requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>

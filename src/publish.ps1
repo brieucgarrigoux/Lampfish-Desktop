@@ -19,7 +19,7 @@ foreach ($d in 'app\ui', 'app\player', 'app\sounds', 'app\templates', 'app\lib',
 }
 # Only the wallpapers that come with Lampfish: the ones made or added on this PC stay here.
 New-Item -ItemType Directory -Force (Join-Path $target 'wallpapers') | Out-Null
-foreach ($f in 'lampfish-logo.html', 'lampfish-dusk.html', 'lampfish.html', 'aurora.html') { Copy-Item (Join-Path $root "wallpapers\$f") (Join-Path $target 'wallpapers') }
+foreach ($f in 'lampfish-logo.html', 'lampfish-lamp.html', 'lampfish-dusk.html', 'lampfish.html', 'aurora.html') { Copy-Item (Join-Path $root "wallpapers\$f") (Join-Path $target 'wallpapers') }
 Get-ChildItem (Join-Path $target 'brand\badge') | Where-Object { $_.Name -notin 'powered-by-lampfish-color-dark.png', 'powered-by-lampfish-pill.png' } | Remove-Item -Force
 New-Item -ItemType Directory -Force (Join-Path $target 'sounds') | Out-Null
 Get-ChildItem (Join-Path $root 'sounds') -Directory | Where-Object { $_.Name -ne 'My sounds' } | ForEach-Object {
