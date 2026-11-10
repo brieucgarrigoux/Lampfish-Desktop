@@ -475,7 +475,7 @@
   });
   $('f-show').addEventListener('click', () => send('files.show', { path: chosen ? chosen.path : view && view.path }));
   addEventListener('keydown', e => {
-    if (!shown || e.target.closest('input')) return;
+    if (!shown || (e.target instanceof Element && e.target.closest('input'))) return;
     if (e.key === 'Escape' || e.key === 'Backspace') {
       if (chosen) { chosen = null; draw(); renderCenter(); renderFooter(); }
       else up();
