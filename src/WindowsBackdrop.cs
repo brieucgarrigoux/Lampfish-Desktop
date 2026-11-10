@@ -105,7 +105,10 @@ namespace Lampfish
                         if (form == null) continue;
                         // A new name each time: Windows keeps the old picture when the path does not change.
                         string path = Path.Combine(Folder, "windows-backdrop-" + monitors.IndexOf(m) + "-" + (turn % 2) + ".jpg");
-                        if (await form.Snapshot(path)) shots[m.Key] = path;
+                        byte[] jpg = await form.Snapshot();
+                        if (jpg == null) continue;
+                        File.WriteAllBytes(path, jpg);
+                        shots[m.Key] = path;
                     }
                     if (shots.Count == 0) return;
                     wallpaper.SetPosition(4);

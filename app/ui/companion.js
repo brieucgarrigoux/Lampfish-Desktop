@@ -35,7 +35,7 @@
     if (!m.url || !m.w) return;
     // The pseudo-element overflows the window by 60 px on each side, so that the blur has no light edge.
     const W = innerWidth / m.w, H = innerHeight / m.h;
-    root.style.setProperty('--still-image', `url("${m.url}")`);
+    root.style.setProperty('--still-image', `url("${m.back || m.url}")`);
     root.style.setProperty('--still-w', W + 'px');
     root.style.setProperty('--still-h', H + 'px');
     root.style.setProperty('--still-x', (60 - m.x * W) + 'px');
@@ -65,7 +65,7 @@
       }
       document.documentElement.style.setProperty('--still-veil', `rgba(${tint.join(', ')}, ${a.toFixed(2)})`);
     };
-    img.src = m.url;
+    img.src = m.back || m.url;
   }
 
   function clock() {

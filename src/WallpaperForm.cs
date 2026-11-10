@@ -229,17 +229,42 @@ namespace Lampfish
         public string ShownWallpaper { get { return shown; } }
 
         // A still of what this screen shows, for the picture Windows keeps behind the live wallpaper.
-        public async Task<bool> Snapshot(string path)
+        // In memory and within 3 s: a page that is paused or still loading can leave the capture waiting, which kept a file
+        // locked at 0 bytes, or give a black picture; a black one is taken again, up to three times.
+        public async Task<byte[]> Snapshot()
         {
-            var core = view.CoreWebView2;
-            if (core == null || !loaded) return false;
-            try
+            for (int attempt = 0; attempt < 3; attempt++)
             {
-                using (var file = File.Create(path))
-                    await core.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Jpeg, file);
-                return new FileInfo(path).Length > 0;
+                if (attempt > 0) await Task.Delay(700);
+                var core = view.CoreWebView2;
+                if (core == null || !loaded || IsDisposed) return null;
+                try
+                {
+                    var memory = new MemoryStream();
+                    var capture = core.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Jpeg, memory);
+                    if (await Task.WhenAny(capture, Task.Delay(3000)) != capture) continue;
+                    await capture;
+                    byte[] jpg = memory.ToArray();
+                    if (jpg.Length > 0 && !Dark(jpg)) return jpg;
+                }
+                catch (Exception ex) { Program.Log(ex); }
             }
-            catch (Exception ex) { Program.Log(ex); return false; }
+            return null;
+        }
+
+        static bool Dark(byte[] jpg)
+        {
+            using (var image = new Bitmap(new MemoryStream(jpg)))
+            {
+                long sum = 0;
+                for (int i = 0; i < 8; i++)
+                    for (int j = 0; j < 8; j++)
+                    {
+                        var c = image.GetPixel(image.Width * (2 * i + 1) / 16, image.Height * (2 * j + 1) / 16);
+                        sum += c.R + c.G + c.B;
+                    }
+                return sum / 192 < 3;
+            }
         }
 
         void Navigate(CoreWebView2 core, Settings r, string wallpaper)

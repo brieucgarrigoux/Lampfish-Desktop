@@ -954,6 +954,7 @@ namespace Lampfish
             Adjust(false);
             RestartSlideshow();
             UpdateVisibility();
+            Companion.WallpaperChanged();
         }
 
         public static void SendAudio(double level)

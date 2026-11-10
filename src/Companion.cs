@@ -279,12 +279,33 @@ namespace Lampfish
             }
             catch (Exception ex) { Program.Log(ex); opening = false; if (dot != null) dot.Opening(false); return; }
             refresh.Start();
-            SendStill(0);
+            SendStill(400);
             AudioDevices.Watch("companion", tab == "audio");
             // If the page never answers, the window shows anyway.
             var guard = new Timer { Interval = 2500 };
             guard.Tick += (s, e) => { guard.Stop(); guard.Dispose(); Reveal(); };
             guard.Start();
+        }
+
+        // Whatever changed the wallpaper (the window, the tray, a theme, the slideshow), an open assistant shows the new one.
+        public static void WallpaperChanged()
+        {
+            if (popup != null && !popup.IsDisposed && popup.Visible) SendStill(1600);
+        }
+
+        static string Small(byte[] jpg, int w, int h, long quality)
+        {
+            using (var source = new Bitmap(new MemoryStream(jpg)))
+            using (var small = new Bitmap(w, h))
+            using (var memory = new MemoryStream())
+            {
+                using (var g = Graphics.FromImage(small)) { g.InterpolationMode = InterpolationMode.HighQualityBicubic; g.DrawImage(source, 0, 0, w, h); }
+                var codec = ImageCodecInfo.GetImageEncoders().First(c => c.FormatID == ImageFormat.Jpeg.Guid);
+                var options = new EncoderParameters(1);
+                options.Param[0] = new EncoderParameter(Encoder.Quality, quality);
+                small.Save(memory, codec, options);
+                return "data:image/jpeg;base64," + Convert.ToBase64String(memory.ToArray());
+            }
         }
 
         // A picture of the wallpaper of the screen the assistant is on, for the top of Desktop.
@@ -299,16 +320,17 @@ namespace Lampfish
             var center = new Point(popup.Left + popup.Width / 2, popup.Top + popup.Height / 2);
             Program.ForEachWallpaper(f => { if (form == null || f.Screen.Contains(center)) form = f; });
             if (form == null) return;
-            string path = Path.Combine(Program.DataFolder("Wallpaper"), "assistant-still.jpg");
-            if (!await form.Snapshot(path)) return;
+            byte[] jpg = await form.Snapshot();
+            if (jpg == null) return;
             try
             {
-                string url = "data:image/jpeg;base64," + Convert.ToBase64String(File.ReadAllBytes(path));
+                // Two small pictures: a full screen one sent to the page and blurred there over the whole window made it slow to open.
+                string url = Small(jpg, 640, 360, 82), back = Small(jpg, 64, 36, 90);
                 string name = string.IsNullOrEmpty(form.ShownWallpaper) ? "" : Path.GetFileNameWithoutExtension(form.ShownWallpaper.TrimEnd('\\', '/'));
                 // Where the window rests on its screen, as parts of the screen: the page lays the same picture, blurred, behind itself.
                 var s = form.Screen;
                 if (mine == stillTurn && popup != null && !popup.IsDisposed)
-                    popup.Send(new { type = "companion.still", url, name, x = (double)(rest.X - s.X) / s.Width, y = (double)(rest.Y - s.Y) / s.Height, w = (double)rest.Width / s.Width, h = (double)rest.Height / s.Height });
+                    popup.Send(new { type = "companion.still", url, back, name, x = (double)(rest.X - s.X) / s.Width, y = (double)(rest.Y - s.Y) / s.Height, w = (double)rest.Width / s.Width, h = (double)rest.Height / s.Height });
             }
             catch (Exception ex) { Program.Log(ex); }
         }
@@ -472,7 +494,7 @@ namespace Lampfish
             string action = Text(m, "action");
             switch (action)
             {
-                case "companion.ready": SendData(opening); if (opening) SendStill(0); return;
+                case "companion.ready": SendData(opening); if (opening) SendStill(400); return;
                 case "companion.painted": Reveal(); return;
                 case "companion.tab": tab = Text(m, "tab"); AudioDevices.Watch("companion", tab == "audio"); SendData(); return;
                 case "companion.convert":
