@@ -41,7 +41,7 @@ $('w-slide-go').addEventListener('click', () => send('winbg.slow'));
 
 const OWN_PANEL = ['home', 'help', 'settings', 'display', 'audio', 'taskbar', 'convert', 'shelf', 'tasks', 'modes'];
 // Services that live inside another page since November 2026: their old name opens that page at their part.
-const PART_OF = { hardware: 'health', duplicates: 'files', assistant: 'settings', plugins: 'settings' };
+const PART_OF = { duplicates: 'files', assistant: 'settings', plugins: 'settings' };
 const setPanel = open => document.body.classList.toggle('panel-open', open);
 $('panel-toggle').addEventListener('click', () => setPanel(true));
 $('panel-close').addEventListener('click', () => setPanel(false));
@@ -74,7 +74,7 @@ function showView(view) {
   if (Lampfish.network) Lampfish.network.visible(view === 'network');
   if (Lampfish.arrange) Lampfish.arrange.visible(view === 'arrange');
   if (Lampfish.files) Lampfish.files.visible(view === 'files');
-  if (Lampfish.hardware) Lampfish.hardware.visible(view === 'health');
+  if (Lampfish.hardware) Lampfish.hardware.visible(view === 'hardware');
   if (Lampfish.tasks) Lampfish.tasks.visible(view === 'tasks');
   if (Lampfish.creator) Lampfish.creator.visible(view === 'create');
   if (Lampfish.display) Lampfish.display.visible(view === 'display');

@@ -1,4 +1,4 @@
-.view--health { max-width: 1120px; margin-inline: auto; container: health / inline-size; }
+.view--health { max-width: 900px; margin-inline: auto; container: health / inline-size; }
 .view--health > h1 + .settings-title { margin-top: 0; }
 .health-card { margin-bottom: 4px; }
 .health-card:empty { display: none; }
