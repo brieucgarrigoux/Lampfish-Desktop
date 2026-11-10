@@ -252,13 +252,23 @@ body[data-view="tasks"]:not(.sheet-open) .panel, body[data-view="modes"]:not(.mo
 .page-help[aria-expanded="true"] { box-shadow: var(--pressed); }
 .page-help:active { transform: scale(.97); }
 .home-header .page-help { margin-left: 0; }
-.page-help__tip { position: fixed; z-index: 45; width: 330px; max-width: calc(100vw - 32px); padding: 12px 14px; border-radius: var(--radius-card); background: var(--group-up); box-shadow: 0 0 0 1px var(--hairline-strong), var(--float); font-size: var(--text-caption); line-height: 1.4; color: var(--text-soft); }
-.page-help__tip > b { display: block; margin-bottom: 2px; font-size: var(--text-body); color: var(--text); }
-.page-help__tip > p { margin: 0 0 8px; }
-.page-help__tip dl { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; margin: 0; }
-.page-help__tip dt { color: var(--text-pale); }
-.page-help__tip dd { margin: 0; }
-.page-help__tip .link { margin-top: 8px; }
+/* The cards of the question mark: dark and lit like the lamp, opaque under Mica, above everything the page floats. */
+.help-layer { --help-card: color-mix(in srgb, var(--lit) 7%, var(--wallpaper)); position: fixed; inset: 0; z-index: 70; }
+.help-veil { position: absolute; inset: 0; background: rgba(0, 0, 0, .38); }
+.help-ring { position: fixed; border-radius: var(--radius-card); box-shadow: 0 0 0 2px color-mix(in srgb, var(--lit) 80%, transparent); pointer-events: none; }
+.help-card { position: fixed; left: 0; top: 0; display: block; max-width: 220px; margin: 0; padding: 8px 11px; border: 0; border-radius: var(--radius-card); background: var(--help-card); color: var(--text); font: 600 12.5px/1.35 var(--numbers); letter-spacing: 0; text-align: left; cursor: pointer; box-shadow: 0 0 0 1px var(--lit), 0 0 18px color-mix(in srgb, var(--lit) 35%, transparent); transition: background var(--fast); }
+.help-card:hover { --help-card: color-mix(in srgb, var(--lit) 12%, var(--wallpaper)); }
+.help-card__title, .help-card__line { display: block; }
+.help-card__line { margin-top: 4px; font-weight: 400; font-size: var(--text-caption); color: var(--text-soft); }
+.help-card__line[hidden] { display: none; }
+.help-card::after { content: ""; position: absolute; width: 10px; height: 10px; background: inherit; transform: rotate(45deg); }
+.help-card[data-side="below"]::after { top: -5px; left: var(--tip); box-shadow: -1px -1px 0 var(--lit); }
+.help-card[data-side="above"]::after { bottom: -5px; left: var(--tip); box-shadow: 1px 1px 0 var(--lit); }
+.help-card[data-side="right"]::after { left: -5px; top: var(--tip); box-shadow: -1px 1px 0 var(--lit); }
+.help-card[data-side="left"]::after { right: -5px; top: var(--tip); box-shadow: 1px -1px 0 var(--lit); }
+.help-card[data-side="over"]::after { display: none; }
+.help-more { position: fixed; left: 0; top: 0; padding: 5px 10px; border-radius: var(--radius-card); background: var(--help-card); box-shadow: 0 0 0 1px var(--hairline-strong); color: var(--text); font-size: var(--text-caption); }
+.help-more[hidden] { display: none; }
 .about { display: flex; align-items: center; gap: 16px; padding: 16px; }
 .about img, .about svg { flex: none; width: 56px; height: 56px; object-fit: contain; }
 .about div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }

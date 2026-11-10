@@ -983,33 +983,124 @@ $('pause').addEventListener('click', () => send('pause'));
 $('folder').addEventListener('click', () => send('folder'));
 $('windows-colors').addEventListener('click', () => send('display.colors'));
 
-// A question mark by the title of every page: what the page is for, what it reads and changes, taken from Settings, with a link to the full list.
+// A question mark by the title of every page lays small cards over the page, each pointing at one of its parts (HELP_CARDS of
+// help-cards.js). The veil under them takes the clicks, so a click beside the cards closes them without touching the page.
 (function pageHelp() {
   const rows = {};
   for (const r of document.querySelectorAll('.tr-row[data-view]')) rows[r.dataset.view] = r;
-  const tip = document.createElement('div');
-  tip.className = 'page-help__tip';
-  tip.hidden = true;
-  tip.setAttribute('role', 'dialog');
-  document.body.append(tip);
-  let openFor = null;
-  const close = () => { if (!openFor) return; tip.hidden = true; openFor.setAttribute('aria-expanded', 'false'); openFor = null; };
-  const open = (button, view) => {
-    const r = rows[view];
-    if (!r) return;
-    openFor = button;
-    button.setAttribute('aria-expanded', 'true');
-    const title = Object.assign(document.createElement('b'), { textContent: r.querySelector('summary .caption > span').firstChild.textContent.trim() });
-    const line = Object.assign(document.createElement('p'), { textContent: r.querySelector('summary small').textContent });
-    const dl = r.querySelector('.tr-body').cloneNode(true);
-    const more = Object.assign(document.createElement('button'), { type: 'button', className: 'link', innerHTML: icon('info') });
+  const layer = document.createElement('div');
+  layer.className = 'help-layer';
+  layer.hidden = true;
+  layer.setAttribute('role', 'dialog');
+  layer.setAttribute('aria-label', tr('About this page'));
+  document.body.append(layer);
+  let openFor = null, openView = '', unfolded = -1, anchors = [], again = 0, frame = 0;
+  const onScreen = r => r.width > 0 && r.height > 0 && r.bottom > 8 && r.top < innerHeight - 8 && r.right > 8 && r.left < innerWidth - 8;
+  const find = selector => [...document.querySelectorAll(selector)].find(e => !layer.contains(e) && e.checkVisibility() && onScreen(e.getBoundingClientRect()));
+  const meets = (a, b) => a.left < b.right + 6 && a.right + 6 > b.left && a.top < b.bottom + 6 && a.bottom + 6 > b.top;
+  const fits = b => b.left >= 8 && b.top >= 8 && b.right <= innerWidth - 8 && b.bottom <= innerHeight - 8;
+  const within = (b, r) => b.left >= r.left && b.top >= r.top && b.right <= r.right && b.bottom <= r.bottom;
+  const clampX = (x, w) => Math.max(8, Math.min(innerWidth - w - 8, x));
+  const clampY = (y, h) => Math.max(8, Math.min(innerHeight - h - 8, y));
+  const clamp = (v, low, high) => Math.max(low, Math.min(high, v));
+
+  // Below, above, the same on the other side, then beside the element, and over it when it is large enough.
+  const spots = (r, w, h) => [
+    ['below', clampX(r.left + 12, w), r.bottom + 10, 'start'], ['above', clampX(r.left + 12, w), r.top - h - 10, 'start'],
+    ['below', clampX(r.right - w - 12, w), r.bottom + 10, 'end'], ['above', clampX(r.right - w - 12, w), r.top - h - 10, 'end'],
+    ['right', r.right + 10, clampY(r.top, h)], ['left', r.left - w - 10, clampY(r.top, h)],
+    ['over', clampX(r.left + 12, w), r.top + 12], ['over', clampX(r.left + 12, w), r.bottom - h - 12],
+  ];
+  function place(card, r, placed, avoid) {
+    const w = card.offsetWidth, h = card.offsetHeight;
+    for (const [side, left, top, align] of spots(r, w, h)) {
+      const b = { left, top, right: left + w, bottom: top + h };
+      if (!fits(b) || placed.some(p => meets(p, b)) || avoid.some(a => a !== r && meets(a, b))) continue;
+      if (side === 'over' && !within(b, r)) continue;
+      card.dataset.side = side;
+      card.style.left = left + 'px';
+      card.style.top = top + 'px';
+      if (side === 'below' || side === 'above') card.style.setProperty('--tip', clamp((align === 'end' ? r.right - Math.min(40, r.width / 2) : r.left + Math.min(40, r.width / 2)) - left - 5, 10, w - 20) + 'px');
+      else card.style.setProperty('--tip', clamp(r.top + Math.min(20, r.height / 2) - top - 5, 8, h - 18) + 'px');
+      return b;
+    }
+    return null;
+  }
+
+  function render() {
+    if (!openFor) return;
+    const focused = layer.contains(document.activeElement) ? document.activeElement.dataset.card : null;
+    let list = (HELP_CARDS[openView] || []).map(([selector, title, line], i) => ({ i, el: find(selector), title: tr(title), line: tr(line) })).filter(c => c.el).slice(0, 6);
+    if (!list.length && rows[openView]) {
+      const row = rows[openView];
+      list = [{ i: 0, el: openFor, title: row.querySelector('summary .caption > span').firstChild.textContent.trim(), line: row.querySelector('summary small').textContent }];
+    }
+    anchors = list.map(c => c.el);
+    const veil = Object.assign(document.createElement('div'), { className: 'help-veil' });
+    veil.addEventListener('click', close);
+    const cards = list.map(c => {
+      const card = Object.assign(document.createElement('button'), { type: 'button', className: 'help-card' });
+      card.dataset.card = c.i;
+      card.setAttribute('aria-expanded', String(c.i === unfolded));
+      const title = Object.assign(document.createElement('span'), { className: 'help-card__title', textContent: c.title });
+      const line = Object.assign(document.createElement('span'), { className: 'help-card__line', textContent: c.line, hidden: c.i !== unfolded });
+      card.append(title, line);
+      card.addEventListener('click', () => { unfolded = unfolded === c.i ? -1 : c.i; render(); });
+      return card;
+    });
+    const more = Object.assign(document.createElement('button'), { type: 'button', className: 'link help-more', innerHTML: icon('info') });
     more.append(tr('Details in Settings'));
-    more.addEventListener('click', () => { close(); showView('settings'); r.open = true; r.closest('.tr-fold').open = true; r.scrollIntoView({ block: 'center' }); });
-    tip.replaceChildren(title, line, dl, more);
-    tip.hidden = false;
-    const b = button.getBoundingClientRect(), t = tip.getBoundingClientRect();
-    tip.style.left = Math.max(8, Math.min(innerWidth - t.width - 8, b.left)) + 'px';
-    tip.style.top = (b.bottom + 8 + t.height <= innerHeight ? b.bottom + 8 : Math.max(8, b.top - t.height - 8)) + 'px';
+    const row = rows[openView];
+    more.addEventListener('click', () => { close(); showView('settings'); row.open = true; row.closest('.tr-fold').open = true; row.scrollIntoView({ block: 'center' }); });
+    layer.replaceChildren(veil, ...cards, more);
+    layer.hidden = false;
+
+    const rects = list.map(c => c.el.getBoundingClientRect());
+    const small = rects.filter(r => r.width * r.height < innerWidth * innerHeight * .12);
+    const button = openFor.getBoundingClientRect(), start = onScreen(button) ? [button] : [];
+    const w = more.offsetWidth, h = more.offsetHeight;
+    const linkSpot = [[button.right + 8, button.top + (button.height - h) / 2], [clampX(button.left, w), button.bottom + 8], [clampX(button.left, w), button.top - h - 8], [innerWidth - w - 8, innerHeight - h - 8]]
+      .map(([left, top]) => ({ left, top, right: left + w, bottom: top + h })).find(b => fits(b) && !start.some(p => meets(p, b)));
+    if (linkSpot) { more.style.left = linkSpot.left + 'px'; more.style.top = linkSpot.top + 'px'; start.push(linkSpot); }
+    else more.hidden = true;
+    // Cards are placed in order; the unfolded one goes first only if it would otherwise find no room.
+    const layout = order => {
+      const placed = [...start], shown = new Set();
+      for (const k of order) {
+        const b = place(cards[k], rects[k], placed, small) || place(cards[k], rects[k], placed, []);
+        if (b) { placed.push(b); shown.add(k); }
+      }
+      return shown;
+    };
+    const order = list.map((c, k) => k), first = list.findIndex(c => c.i === unfolded);
+    let shown = layout(order);
+    if (first >= 0 && !shown.has(first)) shown = layout([first, ...order.filter(k => k !== first)]);
+    cards.forEach((card, k) => {
+      if (!shown.has(k)) { card.remove(); return; }
+      const r = rects[k];
+      veil.after(Object.assign(document.createElement('div'), { className: 'help-ring', style: `left:${r.left - 3}px;top:${r.top - 3}px;width:${r.width + 6}px;height:${r.height + 6}px` }));
+    });
+    const target = focused != null ? layer.querySelector(`.help-card[data-card="${focused}"]`) : layer.querySelector('.help-card');
+    if (target) target.focus({ preventScroll: true });
+  }
+
+  const close = () => {
+    if (!openFor) return;
+    layer.hidden = true;
+    layer.replaceChildren();
+    openFor.setAttribute('aria-expanded', 'false');
+    openFor = null;
+    anchors = [];
+    unfolded = -1;
+    clearTimeout(again);
+    cancelAnimationFrame(frame);
+  };
+  const open = (button, view) => {
+    openFor = button;
+    openView = view;
+    unfolded = -1;
+    button.setAttribute('aria-expanded', 'true');
+    render();
   };
   const button = view => {
     const b = document.createElement('button');
@@ -1029,9 +1120,17 @@ $('windows-colors').addEventListener('click', () => send('display.colors'));
     if (h1) h1.append(button(view));
     else if (view === 'home') section.querySelector('.h-tools').append(button(view));
   }
-  document.addEventListener('pointerdown', e => { if (openFor && !tip.contains(e.target) && !openFor.contains(e.target)) close(); }, true);
-  addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
-  addEventListener('scroll', close, true);
+  addEventListener('keydown', e => { if (e.key === 'Escape' && openFor) { const b = openFor; close(); b.focus({ preventScroll: true }); } });
+  addEventListener('scroll', e => { if (openFor && (e.target === document || [openFor, ...anchors].some(a => e.target.contains && e.target.contains(a)))) close(); }, true);
+  // A zoom of the interface resizes the page as a window would; the page settles its layout a moment later.
+  addEventListener('resize', () => {
+    if (!openFor) return;
+    cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(render);
+    clearTimeout(again);
+    again = setTimeout(render, 350);
+  });
+  new MutationObserver(close).observe(document.body, { attributes: true, attributeFilter: ['data-view', 'data-dock'] });
 })();
 
 addEventListener('DOMContentLoaded', () => {
