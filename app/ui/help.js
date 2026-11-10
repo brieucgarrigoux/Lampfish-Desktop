@@ -1,7 +1,8 @@
 'use strict';
 
-// The guided help: the bot greets, then everything goes through chips and action buttons (HELP_BOT of help-bot.js).
-// helpChat draws it in a page; the page gives how to run an action, what it knows (facts) and the avatar.
+// The guided help (HELP_BOT of help-bot.js): a conversation where every choice is a tile with its icon and gray line. Once a
+// tile is chosen the others go away, the question shows on the right and the answer under it, and the newest answer carries the
+// next tiles. helpChat draws it in a page; the page gives how to run an action, what it knows (facts) and the avatar.
 function helpChat({ log, run, can, facts, avatar }) {
   const still = matchMedia('(prefers-reduced-motion: reduce)');
   const node = (tag, className, text) => Object.assign(document.createElement(tag), { className, textContent: text || '' });
@@ -36,35 +37,52 @@ function helpChat({ log, run, can, facts, avatar }) {
 
   const me = text => keep(node('div', 'hb-me', text));
 
-  function chip(label, go) {
-    const b = node('button', 'hb-chip', label);
+  // A tile shows the icon of the first thing its answer does, and the gray line of the topic when it has one.
+  function tile(id) {
+    const t = HELP_BOT.topics[id];
+    const b = node('button', 'hb-tile');
     b.type = 'button';
-    b.addEventListener('click', () => { b.closest('.hb-chips').classList.add('is-past'); b.setAttribute('aria-pressed', 'true'); go(); });
+    b.innerHTML = icon((t.do && t.do[0] && t.do[0].icon) || 'question', 'glyph');
+    const words = node('span', 'hb-tile__q', tr(t.q));
+    if (t.hint) words.append(node('small', '', tr(t.hint)));
+    b.append(words);
+    b.addEventListener('click', () => topic(id));
     return b;
   }
-  function chips(list) {
-    const row = node('div', 'hb-chips');
-    row.append(...list);
-    return keep(row);
+  function link(iconName, label, go) {
+    const b = node('button', 'link hb-link');
+    b.type = 'button';
+    b.innerHTML = icon(iconName);
+    b.append(label);
+    b.addEventListener('click', go);
+    return b;
   }
-  const topicChip = id => chip(tr(HELP_BOT.topics[id].q), () => topic(id));
-  const back = () => chip(tr('Back to the start'), start);
+  function choices(ids, pages, end) {
+    const box = node('div', 'hb-choices');
+    if (ids.length) { const grid = node('div', 'hb-tiles'); grid.append(...ids.map(tile)); box.append(grid); }
+    if (pages) {
+      const row = node('div', 'hb-chips');
+      row.append(...Object.entries(HELP_BOT.pages).map(([view, name]) => { const c = node('button', 'hb-chip', tr(name)); c.type = 'button'; c.addEventListener('click', () => run({ view })); return c; }));
+      box.append(row);
+    }
+    box.append(end);
+    return keep(box);
+  }
 
   function topic(id) {
     const t = HELP_BOT.topics[id];
     if (!t) return;
+    for (const box of log.querySelectorAll('.hb-choices')) box.remove();
     me(tr(t.q));
     const live = t.live && HELP_LIVE[t.live] ? HELP_LIVE[t.live](facts() || {}) : '';
     bot([live, tr(t.a)].filter(Boolean).join(' '), t.do);
-    const list = (t.next || []).map(topicChip);
-    if (t.pages) list.push(...Object.entries(HELP_BOT.pages).map(([view, name]) => chip(tr(name), () => run({ view }))));
-    chips([...list, back()]);
+    choices(t.next || [], t.pages, link('arrow-counter-clockwise', tr('Start over'), start));
   }
 
   function start() {
     log.replaceChildren();
     bot(tr(HELP_BOT.greeting));
-    chips(HELP_BOT.start.map(topicChip));
+    choices(HELP_BOT.start, false, link('list', tr(HELP_BOT.topics.other.q), () => topic('other')));
   }
 
   start();
@@ -117,20 +135,6 @@ function liveAvatar(log) {
     else if (a.send) send(a.send, a.args || {});
     else if (a.view) showView(a.view);
   };
-  const chat = helpChat({ log: $('help-log'), run, can: a => !!(a.call || a.send || a.view), facts, avatar: liveAvatar($('help-log')) });
+  helpChat({ log: $('help-log'), run, can: a => !!(a.call || a.send || a.view), facts, avatar: liveAvatar($('help-log')) });
 
-  $('help-often').replaceChildren(...HELP_BOT.often.map(id => {
-    const t = HELP_BOT.topics[id];
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'row action';
-    b.innerHTML = `<span class="caption"><span><span class="hp-q"></span><small></small></span></span>${icon('caret-right', 'chevron')}`;
-    b.querySelector('.hp-q').textContent = tr(t.q);
-    b.querySelector('small').textContent = tr(t.hint || '');
-    b.addEventListener('click', () => chat.topic(id));
-    return b;
-  }));
-  // The assistant has the same help as a tab, said only when the assistant is on.
-  const state = () => { const c = Lampfish.state && Lampfish.state.companion; $('help-assistant').hidden = !(c && c.on); };
-  Lampfish.help = { state };
 })();

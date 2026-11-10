@@ -156,5 +156,8 @@ body.companion:not(.is-shown) { opacity: 0; transition-duration: .12s; }
 .c-help .hb-act { margin-top: 8px; gap: 6px; }
 .c-help .hb-act .button { padding: 6px 10px; font-size: var(--text-caption); }
 .c-help .hb-me { max-width: 85%; padding: 6px 11px; }
-.c-help .hb-chips { margin-left: 32px; gap: 6px; }
+.c-help .hb-choices { margin-left: 32px; gap: 8px; }
+.c-help .hb-tiles { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+.c-help .hb-tile { padding: 8px 10px; gap: 10px; font-size: var(--text-value); }
+.c-help .hb-chips { gap: 6px; }
 .c-help .hb-chip { height: 28px; padding: 0 11px; font-size: var(--text-caption); }

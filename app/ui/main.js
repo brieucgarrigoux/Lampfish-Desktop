@@ -172,7 +172,6 @@ function render(state) {
   $('claude-row').hidden = !(state.claude && state.claude.on);
   $('claude-state').textContent = claudeText(state.claude);
   renderCompanion(state.companion);
-  if (Lampfish.help) Lampfish.help.state();
   $('place-row').hidden = !state.weather;
   if (!state.weather) $('place-results').hidden = true;
   $('place-state').textContent = state.weatherPlace || tr('Automatic, from the IP address');

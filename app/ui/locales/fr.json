@@ -2251,19 +2251,12 @@
  "Plugins start off": "Les plugins démarrent éteints",
  "A plugin works only once turned on, and shows in its own color.": "Un plugin ne marche qu'une fois allumé, et s'affiche dans sa propre couleur.",
  "Hi. Where to start?": "Bonjour. Par où commencer ?",
- "The answers live on this PC, nothing is sent.": "Les réponses sont sur ce PC, rien n'est envoyé.",
- "Often asked": "Questions fréquentes",
- "In the assistant": "Dans l'assistant",
- "The same help": "La même aide",
- "Its Help tab, from the round button": "Son onglet Aide, depuis le bouton rond",
- "Back to the start": "Revenir au début",
  "Open Help in lampfish": "Ouvrir Aide dans lampfish",
  "Reads and changes nothing by itself": "Ne lit rien et ne change rien d'elle-même",
  "Nothing: it shows what the other services already read": "Rien : elle montre ce que les autres services lisent déjà",
  "Nothing: its buttons use the other services": "Rien : ses boutons passent par les autres services",
  "Questions as buttons": "Des questions en boutons",
  "A click on a question gives a short answer, with buttons that open the page or do it.": "Un clic sur une question donne une réponse courte, avec des boutons qui ouvrent la page ou le font.",
- "The questions that come up most, one click away.": "Les questions les plus courantes, à un clic.",
  "My PC is slow": "Mon PC est lent",
  "Health names what slows the PC: memory, startup programs, a full disk or heat.": "Santé nomme ce qui ralentit le PC : la mémoire, les programmes au démarrage, un disque plein ou la chaleur.",
  "Memory is {0} % full right now: that is the main cause.": "La mémoire est pleine à {0} % en ce moment : c'est la cause principale.",
@@ -2334,5 +2327,6 @@
  "Change the language": "Changer de langue",
  "Settings, General: Automatic follows Windows, or English and French.": "Réglages, Général : Automatique suit Windows, sinon anglais ou français.",
  "Something else": "Autre chose",
- "Each page has a question mark by its title that shows what its parts do. All the pages:": "Chaque page a un point d'interrogation près de son titre, qui montre à quoi servent ses parties. Toutes les pages :"
+ "Each page has a question mark by its title that shows what its parts do. All the pages:": "Chaque page a un point d'interrogation près de son titre, qui montre à quoi servent ses parties. Toutes les pages :",
+ "Start over": "Recommencer"
 }

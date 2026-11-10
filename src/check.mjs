@@ -179,11 +179,11 @@ step('actions and texts of Help', () => {
   const text = (value, where) => { if (typeof value !== 'string' || !value) problems.push(`${where}: missing text`); else if (!(value in french)) problems.push(`${where}: "${value}" has no French`); };
   const topics = bot.topics || {};
   text(bot.greeting, 'greeting');
-  for (const id of [...(bot.start || []), ...(bot.often || [])]) if (!topics[id]) problems.push(`start or often: no topic "${id}"`);
+  for (const id of bot.start || []) if (!topics[id]) problems.push(`start: no topic "${id}"`);
   for (const [view, name] of Object.entries(bot.pages || {})) { if (!views.has(view)) problems.push(`pages: "${view}" is not a view`); text(name, `pages.${view}`); }
   for (const [id, t] of Object.entries(topics)) {
     for (const key of ['q', 'a']) text(t[key], `${id}.${key}`);
-    if ((bot.often || []).includes(id)) text(t.hint, `${id}.hint`);
+    if (t.hint) text(t.hint, `${id}.hint`);
     for (const next of t.next || []) if (!topics[next]) problems.push(`${id}: no topic "${next}" to follow`);
     if ((t.do || []).length > 2) problems.push(`${id}: more than two actions`);
     (t.do || []).forEach((a, i) => {
