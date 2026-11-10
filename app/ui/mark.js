@@ -13,13 +13,8 @@
   const deg = Math.PI / 180;
   const rot = (x, y, cx, cy, a) => { const c = Math.cos(a), s = Math.sin(a); return [cx + (x - cx) * c - (y - cy) * s, cy + (x - cx) * s + (y - cy) * c]; };
   const ease = k => .5 - Math.cos(Math.max(0, Math.min(1, k)) * Math.PI) / 2;
-  // Through the keys on one curve (Catmull-Rom): easing each step alone stopped the motion at every key, which looked jerky.
-  const keys = (list, step) => u => {
-    const i = Math.floor(u / step), k = u / step - i;
-    if (i < 0 || i >= list.length - 1) return 0;
-    const p0 = list[Math.max(0, i - 1)], p1 = list[i], p2 = list[i + 1], p3 = list[Math.min(list.length - 1, i + 2)];
-    return .5 * (2 * p1 + (p2 - p0) * k + (2 * p0 - 5 * p1 + 4 * p2 - p3) * k * k + (3 * p1 - p0 - 3 * p2 + p3) * k * k * k);
-  };
+  // A value that follows its target like a weight on a spring: it never jumps, in place or in speed, whenever the target moves.
+  const spring = (s, target, w, dt) => { s.v += (w * w * (target - s.x) - 2 * w * s.v) * dt; s.x += s.v * dt; };
   const inner = s => `${D.inner}${s}</g>`;
 
   function path(tail, rod, lid, fin) {
@@ -39,17 +34,19 @@
     return d;
   }
 
-  // The gestures of the tail, as a fish never makes the same one twice.
-  const MOVES = [
-    { w: 3, len: 1.3, f: keys([0, 9, -7, 6, -3, 0], .25) },
-    { w: 2, len: 1.5, f: u => 11 * Math.sin(Math.PI * Math.min(1, u / 1.5)) },
-    { w: 2, len: .8, f: u => 3.2 * Math.sin(2 * Math.PI * u / .13) * (1 - u / .8) },
-    { w: 2, len: 1.2, f: keys([0, 14, -5, 2, 0], .29) },
-    { w: 1, len: 1.6, f: u => 8 * (u < .4 ? ease(u / .4) : u < 1.1 ? 1 : 1 - ease((u - 1.1) / .5)) },
+  // The tail swims as a wave that runs from the body to the tip. A gesture only changes where the wave goes: stronger, faster,
+  // bent to one side, or calmer; the springs carry it there. Keyframes and a fast quiver used to make the tail jerk.
+  const GESTURES = [
+    { w: 3, len: 1.4, amp: 6, beat: .75 },
+    { w: 2, len: .8, amp: 9, beat: 1.1 },
+    { w: 2, len: 1.3, bend: 9, amp: -1.2 },
+    { w: 2, len: .6, bend: 12 },
+    { w: 1, len: 2.2, amp: -1.6, beat: -.1 },
   ];
-  const pick = () => { let r = Math.random() * MOVES.reduce((s, m) => s + m.w, 0); for (const m of MOVES) if ((r -= m.w) < 0) return m; return MOVES[0]; };
+  const pick = () => { let r = Math.random() * GESTURES.reduce((s, g) => s + g.w, 0); for (const g of GESTURES) if ((r -= g.w) < 0) return g; return GESTURES[0]; };
+  const weight = (g, t) => g ? Math.min(ease((t - g.at) / .3), ease((g.g.len - (t - g.at)) / .3)) : 0;
   // One clock and one throw of the dice for every mark of the page.
-  const S = { move: null, nextMove: 1.5, blinkAt: -9, nextBlink: 2.5, start: null, busy: false };
+  const S = { move: null, nextMove: 1.5, blinkAt: -9, nextBlink: 2.5, nextRod: 4, start: null, last: null, busy: false };
 
   // The middle of the fish, around which it rocks.
   const xs = D.rings[0].map(p => p[0]), ys = D.rings[0].map(p => p[1]);
@@ -72,13 +69,21 @@
     }
     img.replaceWith(svg);
     const m = { svg, swims: img.dataset.liveMark === 'swim', body: svg.querySelector('.mark-body'), dots: svg.querySelector('.mark-dots'), lamp: svg.querySelector('.mark-lamp'),
-      glow: svg.querySelector('.mark-glow'), swim: svg.querySelector('.mark-swim'), own: null, lit: 0 };
+      glow: svg.querySelector('.mark-glow'), swim: svg.querySelector('.mark-swim'), own: null, lit: 0,
+      amp: { x: 2, v: 0 }, beat: { x: .385, v: 0 }, bend: { x: 0, v: 0 }, phase: 0, rod: { x: 0, v: 0 }, pluck: null };
     // Only the mark itself reacts, not the whole button around it: one lively gesture, then rest.
-    svg.addEventListener('pointerenter', () => { if (S.start !== null && !m.own) m.own = { m: MOVES[Math.random() < .5 ? 0 : 3], at: performance.now() / 1000 - S.start, s: Math.random() < .5 ? -1 : 1 }; });
+    svg.addEventListener('pointerenter', () => {
+      if (S.last === null || m.own) return;
+      m.own = { g: GESTURES[Math.random() < .5 ? 0 : 1], at: S.last, s: Math.random() < .5 ? -1 : 1 };
+      m.pluck = { at: S.last, s: -1 };
+    });
     m.body.setAttribute('d', path(() => 0, 0, 1, 0));
     marks.push(m);
   }
   if (!marks.length) return;
+  // A mark out of sight (a hidden page, an answer scrolled away) keeps its pose and costs nothing.
+  const sight = new IntersectionObserver(list => { for (const e of list) { const m = marks.find(x => x.svg === e.target); if (m) m.seen = e.isIntersecting; } });
+  for (const m of marks) { m.seen = true; sight.observe(m.svg); }
 
   // A wait anywhere in the window (the spinning .loading) makes the fish move openly, as if it worked too.
   // Only a wait that shows counts: hidden pages keep their placeholders marked .loading.
@@ -87,27 +92,43 @@
   function frame(now) {
     if (reduce.matches) { for (const m of marks) m.body.setAttribute('d', path(() => 0, 0, 1, 0)); return; }
     requestAnimationFrame(frame);
-    if (S.start === null) S.start = now / 1000;
-    const t = now / 1000 - S.start;
-    if (!S.move && t >= S.nextMove) S.move = { m: pick(), at: t, s: Math.random() < .5 ? -1 : 1 };
-    if (S.move && t - S.move.at > S.move.m.len + .3) { S.move = null; S.nextMove = t + (S.busy ? .5 + Math.random() : 1.8 + Math.random() * 1.7); }
+    // The clock moves by the real time between frames, at most a twentieth of a second, so a late frame never makes the fish leap.
+    if (S.start === null) { S.start = now / 1000; S.last = 0; }
+    const t = now / 1000 - S.start, dt = Math.max(0, Math.min(.05, t - S.last));
+    S.last = t;
+    if (!S.move && t >= S.nextMove) S.move = { g: pick(), at: t, s: Math.random() < .5 ? -1 : 1 };
+    if (S.move && t - S.move.at > S.move.g.len) { S.move = null; S.nextMove = t + (S.busy ? .5 + Math.random() : 1.8 + Math.random() * 1.7); }
     if (t >= S.nextBlink) { S.blinkAt = t; S.nextBlink = t + 3 + Math.random() * 4 + (Math.random() < .25 ? -2.8 : 0); }
+    const plucked = t >= S.nextRod;
+    if (plucked) S.nextRod = t + 6 + Math.random() * 3;
     const b = (t - S.blinkAt) / .26, lid = b >= 0 && b < 1 ? Math.max(.08, Math.abs(1 - 2 * b)) : 1;
     const fin = (Math.sin(t * 2 * Math.PI / 3.3) * 3.6 + Math.sin(t * 2 * Math.PI / 1.9 + 1.3) * 1.4) * deg;
     const float = Math.sin(t * 2 * Math.PI / 9) * 1.5;
-    const ru = (t % 7) - 5.6, rodAuto = ru < 0 || ru > 1.4 ? 0 : keys([0, -5, 3, -1, 0], .28)(ru);
-    const gesture = (g, w) => g ? 1.15 * g.s * g.m.f(t - g.at - .12 * w) : 0;
     // Between gestures the tail always sways, but unevenly: its strength drifts between faint and clear, so it never ticks
     // like a metronome (a steady sway looked unnatural, a tail at rest looked dead).
     const env = .35 + .65 * Math.pow(Math.sin(t * 2 * Math.PI / 11) * .6 + Math.sin(t * 2 * Math.PI / 6.7 + 1) * .4, 2);
-    const sway = w => env * 2.8 * Math.sin(t * 2 * Math.PI / 2.6 - 1.4 * w);
+    const shared = weight(S.move, t);
     for (const m of marks) {
-      if (m.own && t - m.own.at > m.own.m.len + .3) m.own = null;
-      // The lamp swings with a gesture of the pointer and glows a little more meanwhile.
-      const own = m.own ? Math.sin(Math.PI * Math.min(1, (t - m.own.at) / m.own.m.len)) : 0;
+      if (!m.seen) continue;
+      if (m.own && t - m.own.at > m.own.g.len) m.own = null;
+      const own = weight(m.own, t);
+      const add = key => (S.move ? shared * (S.move.g[key] || 0) : 0) + (m.own ? own * (m.own.g[key] || 0) : 0);
+      const side = (S.move ? shared * S.move.s * (S.move.g.bend || 0) : 0) + (m.own ? own * m.own.s * (m.own.g.bend || 0) : 0);
+      spring(m.amp, Math.max(.6, 2.8 * env + add('amp')), 6, dt);
+      spring(m.beat, .385 * (1 + .08 * Math.sin(t * 2 * Math.PI / 13)) + add('beat'), 5, dt);
+      spring(m.bend, side, 7, dt);
+      m.phase = (m.phase + 2 * Math.PI * m.beat.x * dt) % (2 * Math.PI * 1000);
+      // The rod is a fishing rod: now and then, or when the pointer comes, a short push sets it bouncing, and it settles by itself.
+      if (plucked && !m.pluck) m.pluck = { at: t, s: Math.random() < .7 ? -1 : 1 };
+      const pu = m.pluck ? (t - m.pluck.at) / .3 : 1;
+      const push = pu < 1 ? m.pluck.s * 300 * Math.pow(Math.sin(Math.PI * pu), 2) : 0;
+      if (pu >= 1) m.pluck = null;
+      m.rod.v += (push - 81 * m.rod.x - 5.4 * m.rod.v) * dt;
+      m.rod.x += m.rod.v * dt;
+      // The lamp glows a little more during a gesture of the pointer.
       m.lit += (own - m.lit) * .2;
-      const tail = w => (sway(w) + gesture(S.move, w) + gesture(m.own, w)) * deg;
-      const rod = (float + rodAuto - own * 4 * Math.sin((t - (m.own ? m.own.at : 0)) * 2 * Math.PI / 1.1)) * deg;
+      const tail = w => (m.amp.x * Math.sin(m.phase - 1.4 * w) + m.bend.x * w) * deg;
+      const rod = (float + m.rod.x) * deg;
       m.body.setAttribute('d', path(tail, rod, lid, fin));
       m.dots.setAttribute('transform', `translate(0 ${D.lid}) scale(1 ${lid.toFixed(3)}) translate(0 ${-D.lid})`);
       m.dots.setAttribute('opacity', Math.max(0, Math.min(1, (lid - .6) / .25)).toFixed(2));
