@@ -205,7 +205,9 @@
     if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.code === 'KeyK') { e.preventDefault(); if (palette.hidden) openPalette(); else closePalette(true); }
   });
 
-  // The arrow keys: in the bar they walk its buttons (and open the service they land on); anywhere else on the page they go to the previous or next service.
+  // The arrow keys: in the bar they walk its buttons (and open the service they land on, Home, Help or Settings); in the menu of a
+  // family they only move the focus and Enter opens the service (opening one on each key closed the menu and lost the focus, so
+  // the next keys changed page blindly); anywhere else on the page they go to the previous or next service.
   addEventListener('keydown', e => {
     if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey || editing() || !palette.hidden) return;
     const keys = { ArrowUp: -1, ArrowDown: 1, Home: 'first', End: 'last' };
@@ -222,8 +224,9 @@
       const target = buttons[next];
       if (!target) return;
       e.preventDefault();
+      if (!owner && open && target !== titleOf(open)) close(false);
       target.focus();
-      if (target.classList.contains('service') && target.dataset.view !== document.body.dataset.view) target.click();
+      if (!owner && target.classList.contains('service') && target.dataset.view !== document.body.dataset.view) target.click();
       return;
     }
     const bar = [...rail.querySelectorAll('.service[data-view]')].filter(b => !b.hidden).map(b => b.dataset.view);
