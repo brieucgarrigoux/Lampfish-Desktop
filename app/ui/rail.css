@@ -85,8 +85,8 @@ body:not(.bar-editing) .rail-group.is-shown { display: flex; animation: rail-fly
 .rail-home[aria-current="page"] { background: none; box-shadow: none; color: var(--text); }
 .rail-home[aria-current="page"]::before { content: ""; position: absolute; left: -9px; top: 50%; width: 3px; height: 18px; margin-top: -9px; border-radius: 0 3px 3px 0; background: var(--lit); box-shadow: 0 0 8px var(--lit); }
 @container rail (min-width: 140px) { .rail-home[aria-current="page"]::before { left: -10px; } }
-/* Settings, like Home, marks the open page with the lit stroke on the left, not a framed box. */
-.service--settings[aria-current="page"] { background: none; box-shadow: none; color: var(--text); overflow: visible; }
-.service--settings[aria-current="page"]::before { content: ""; position: absolute; left: -9px; top: 50%; width: 3px; height: 18px; margin-top: -9px; border-radius: 0 3px 3px 0; background: var(--lit); box-shadow: 0 0 8px var(--lit); }
-@container rail (min-width: 140px) { .service--settings[aria-current="page"]::before { left: -10px; } }
+/* Help and Settings, like Home, mark the open page with the lit stroke on the left, not a framed box. */
+.service--help[aria-current="page"], .service--settings[aria-current="page"] { background: none; box-shadow: none; color: var(--text); overflow: visible; }
+.service--help[aria-current="page"]::before, .service--settings[aria-current="page"]::before { content: ""; position: absolute; left: -9px; top: 50%; width: 3px; height: 18px; margin-top: -9px; border-radius: 0 3px 3px 0; background: var(--lit); box-shadow: 0 0 8px var(--lit); }
+@container rail (min-width: 140px) { .service--help[aria-current="page"]::before, .service--settings[aria-current="page"]::before { left: -10px; } }
 .rail-home { overflow: visible; }

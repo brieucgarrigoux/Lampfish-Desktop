@@ -137,6 +137,11 @@ const HELP_CARDS = {
     ['#r-security', 'Is this network safe', 'How the Wi-Fi is protected and how Windows treats this network.'],
     ['#r-addresses', 'Addresses of the network', 'Local, gateway and DNS, and the public IP when allowed in Settings.'],
   ],
+  help: [
+    ['#help-log', 'Questions as buttons', 'A click on a question gives a short answer, with buttons that open the page or do it.'],
+    ['#help-ask', 'Ask in your own words', 'The words are matched with the answers kept in the app; nothing goes online.'],
+    ['#help-often', 'Often asked', 'The questions that come up most, one click away.'],
+  ],
   settings: [
     ['#zoom', 'Size of the interface', 'Also Ctrl + wheel, or the buttons at the bottom left of the window.'],
     ['.group:has(#weather)', 'What goes online', 'Only the services of this list, each with its own switch.'],

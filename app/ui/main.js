@@ -1,7 +1,7 @@
 'use strict';
 
 const Lampfish = { state: null, station: null, icons: null, arrange: null, mouse: null, network: null, files: null, hardware: null, tasks: null, moods: null, creator: null };
-const VIEWS = ['home', 'modes', 'wallpaper', 'create', 'icons', 'mouse', 'station', 'display', 'audio', 'taskbar', 'arrange', 'notes', 'shelf', 'convert', 'assistant', 'plugins', 'health', 'tasks', 'files', 'duplicates', 'hardware', 'network', 'settings'];
+const VIEWS = ['home', 'modes', 'wallpaper', 'create', 'icons', 'mouse', 'station', 'display', 'audio', 'taskbar', 'arrange', 'notes', 'shelf', 'convert', 'assistant', 'plugins', 'health', 'tasks', 'files', 'duplicates', 'hardware', 'network', 'help', 'settings'];
 
 const scrolls = {}, narrowLayout = matchMedia('(max-width: 900px)');
 const scrollZones = () => narrowLayout.matches ? [document.scrollingElement] : [document.querySelector('.contents'), document.querySelector('.panel')];
@@ -39,7 +39,7 @@ function slideshowNote(s) {
 }
 $('w-slide-go').addEventListener('click', () => send('winbg.slow'));
 
-const OWN_PANEL = ['home', 'settings', 'display', 'audio', 'taskbar', 'convert', 'shelf', 'tasks', 'modes'];
+const OWN_PANEL = ['home', 'help', 'settings', 'display', 'audio', 'taskbar', 'convert', 'shelf', 'tasks', 'modes'];
 // Services that live inside another page since November 2026: their old name opens that page at their part.
 const PART_OF = { hardware: 'health', duplicates: 'files', assistant: 'settings', plugins: 'settings' };
 const setPanel = open => document.body.classList.toggle('panel-open', open);
@@ -172,6 +172,7 @@ function render(state) {
   $('claude-row').hidden = !(state.claude && state.claude.on);
   $('claude-state').textContent = claudeText(state.claude);
   renderCompanion(state.companion);
+  if (Lampfish.help) Lampfish.help.state();
   $('place-row').hidden = !state.weather;
   if (!state.weather) $('place-results').hidden = true;
   $('place-state').textContent = state.weatherPlace || tr('Automatic, from the IP address');
@@ -322,7 +323,7 @@ function showViews(list) {
 }
 for (const row of document.querySelectorAll('.tr-row[data-view]')) {
   const view = row.dataset.view;
-  if (view === 'home' || view === 'settings' || view in PART_OF) continue;
+  if (view === 'home' || view === 'help' || view === 'settings' || view in PART_OF) continue;
   const box = document.createElement('span');
   box.className = 'toggler tr-show';
   box.title = tr('Shown in the bar');
@@ -1045,12 +1046,16 @@ $('windows-colors').addEventListener('click', () => send('display.colors'));
       const title = Object.assign(document.createElement('span'), { className: 'help-card__title', textContent: c.title });
       const line = Object.assign(document.createElement('span'), { className: 'help-card__line', textContent: c.line, hidden: c.i !== unfolded });
       card.append(title, line);
-      card.addEventListener('click', () => { unfolded = unfolded === c.i ? -1 : c.i; render(); });
+      // Hover only: a card unfolds its sentence while the pointer is on it.
+      card.addEventListener('pointerenter', () => { keep(); clearTimeout(fold); if (unfolded !== c.i) { unfolded = c.i; render(); } });
+      card.addEventListener('pointerleave', () => { leave(); fold = setTimeout(() => { if (openFor && unfolded === c.i) { unfolded = -1; render(); } }, 250); });
       return card;
     });
     const more = Object.assign(document.createElement('button'), { type: 'button', className: 'link help-more', innerHTML: icon('info') });
     more.append(tr('Details in Settings'));
     const row = rows[openView];
+    more.addEventListener('pointerenter', keep);
+    more.addEventListener('pointerleave', leave);
     more.addEventListener('click', () => { close(); showView('settings'); row.open = true; row.closest('.tr-fold').open = true; row.scrollIntoView({ block: 'center' }); });
     layer.replaceChildren(veil, ...cards, more);
     layer.hidden = false;
@@ -1095,6 +1100,9 @@ $('windows-colors').addEventListener('click', () => send('display.colors'));
     clearTimeout(again);
     cancelAnimationFrame(frame);
   };
+  let closing = 0, fold = 0;
+  function keep() { clearTimeout(closing); }
+  function leave() { clearTimeout(closing); closing = setTimeout(() => { if (openFor && !document.querySelector('.help-card:hover, .help-more:hover, .page-help:hover')) close(); }, 700); }
   const open = (button, view) => {
     openFor = button;
     openView = view;
@@ -1110,7 +1118,13 @@ $('windows-colors').addEventListener('click', () => send('display.colors'));
     b.translate = false;
     b.querySelector('.page-help__label').textContent = tr('About this page');
     b.setAttribute('aria-expanded', 'false');
-    b.addEventListener('click', e => { e.stopPropagation(); if (openFor === b) close(); else { close(); open(b, view); } });
+    // The cards come with the pointer on the question mark (or the keyboard focus on it), not with a press, and go a moment
+    // after the pointer has left the mark and the cards, which leaves the time to reach a card far away.
+    const show = () => { keep(); if (openFor !== b) { close(); open(b, view); } };
+    b.addEventListener('pointerenter', show);
+    b.addEventListener('pointerleave', leave);
+    b.addEventListener('focus', show);
+    b.addEventListener('blur', () => { if (!b.matches(':hover')) leave(); });
     return b;
   };
   for (const section of document.querySelectorAll('.view')) {

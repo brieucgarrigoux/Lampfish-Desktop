@@ -8,6 +8,7 @@
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="main.css">
 <link rel="stylesheet" href="shell.css">
+<link rel="stylesheet" href="help.css">
 <link rel="stylesheet" href="companion.css">
 <link rel="stylesheet" href="light.css">
 <link rel="stylesheet" href="material.css">
@@ -31,6 +32,7 @@
     <button type="button" role="tab" data-tab="audio" aria-selected="false" title="Audio"><svg class="ph" aria-hidden="true"><use href="icons.svg#speaker-high"/></svg><span>Audio</span></button>
     <button type="button" role="tab" data-tab="notes" aria-selected="false" title="Notes"><svg class="ph" aria-hidden="true"><use href="icons.svg#notebook"/></svg><span>Notes</span></button>
     <button type="button" role="tab" data-tab="convert" aria-selected="false" title="Convert"><svg class="ph" aria-hidden="true"><use href="icons.svg#arrows-left-right"/></svg><span>Convert</span></button>
+    <button type="button" role="tab" data-tab="help" aria-selected="false" title="Help"><svg class="ph" aria-hidden="true"><use href="icons.svg#lifebuoy"/></svg><span>Help</span></button>
   </nav>
 
   <section class="c-pane" data-pane="dashboard">
@@ -110,6 +112,14 @@
     <p class="c-hint">Everything stays on this PC: nothing is sent anywhere.</p>
   </section>
 
+  <section class="c-pane c-help" data-pane="help" hidden>
+    <div class="hp-log" id="c-help-log" aria-live="polite"></div>
+    <div class="hp-ask">
+      <div class="hp-found" id="c-help-found" hidden></div>
+      <label class="search c-search"><svg class="ph" aria-hidden="true"><use href="icons.svg#magnifying-glass"/></svg><input type="text" id="c-help-ask" placeholder="Or ask in your own words" aria-label="Or ask in your own words" autocomplete="off" spellcheck="false"></label>
+    </div>
+  </section>
+
   <section class="c-pane" data-pane="desktop" hidden>
     <div class="c-still">
       <img id="c-still-img" alt="">
@@ -140,6 +150,8 @@
 <script src="base.js"></script>
 <script src="dials.js"></script>
 <script src="instruments.js"></script>
+<script src="help-bot.js"></script>
+<script src="help.js"></script>
 <script src="companion.js"></script>
 </body>
 </html>

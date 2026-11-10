@@ -27,6 +27,7 @@
 <link rel="stylesheet" href="duplicates.css">
 <link rel="stylesheet" href="notes.css">
 <link rel="stylesheet" href="shelf.css">
+<link rel="stylesheet" href="help.css">
 <link rel="stylesheet" href="layout.css">
 <link rel="stylesheet" href="rail.css">
 <link rel="stylesheet" href="welcome.css">
@@ -135,6 +136,10 @@
     </button>
     </div>
   </section>
+  <button class="service service--help" data-view="help">
+    <svg class="ph" aria-hidden="true"><use href="icons.svg#lifebuoy"/></svg>
+    Help
+  </button>
   <button class="service service--settings" data-view="settings">
     <svg class="ph" aria-hidden="true"><use href="icons.svg#gear"/></svg>
     Settings
@@ -768,6 +773,29 @@
     <div class="empty" id="t-empty" hidden>Nothing here</div>
   </section>
 
+  <section class="view view--help only-help" aria-label="Help">
+    <h1>Help</h1>
+    <p class="help-section hp-lead">The answers live on this PC, nothing is sent.</p>
+    <div class="hp-board">
+      <div class="hp-chat">
+        <div class="hp-head"><img class="help-avatar" src="/brand/logo/logo-lampfish-192.png" alt="" data-live-mark><b translate="no">lampfish</b></div>
+        <div class="hp-log" id="help-log" aria-live="polite"></div>
+        <div class="hp-ask">
+          <div class="hp-found" id="help-found" hidden></div>
+          <label class="search"><svg class="ph" aria-hidden="true"><use href="icons.svg#magnifying-glass"/></svg><input type="text" id="help-ask" placeholder="Or ask in your own words" aria-label="Or ask in your own words" autocomplete="off" spellcheck="false"></label>
+        </div>
+      </div>
+      <aside class="hp-side">
+        <h2 class="settings-title">Often asked</h2>
+        <div class="group" id="help-often"></div>
+        <div id="help-assistant" hidden>
+          <h2 class="settings-title">In the assistant</h2>
+          <div class="group"><div class="row"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#lf-assistant"/></svg><span>The same help<small>Its Help tab, from the round button</small></span></span></div></div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
   <section class="view view--settings only-settings" aria-label="Settings">
     <h1>Settings</h1>
 
@@ -917,6 +945,10 @@
       <details class="tr-row" data-view="network">
         <summary class="row action"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#wifi-high"/></svg><span>Network<small>Reads, tests only when asked</small></span></span><svg class="ph chevron" aria-hidden="true"><use href="icons.svg#caret-right"/></svg></summary>
         <dl class="tr-body"><dt>Reads</dt><dd>The network adapter, the Wi-Fi and the addresses</dd><dt>Changes</dt><dd>Nothing: the speed test reaches Cloudflare or OVH only when you run it</dd><dt>To undo</dt><dd>Nothing to undo</dd></dl>
+      </details>
+      <details class="tr-row" data-view="help">
+        <summary class="row action"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#lifebuoy"/></svg><span>Help<small>Reads and changes nothing by itself</small></span></span><svg class="ph chevron" aria-hidden="true"><use href="icons.svg#caret-right"/></svg></summary>
+        <dl class="tr-body"><dt>Reads</dt><dd>Nothing: it shows what the other services already read</dd><dt>Changes</dt><dd>Nothing: its buttons use the other services</dd><dt>To undo</dt><dd>Nothing to undo</dd></dl>
       </details>
       <details class="tr-row" data-view="settings">
         <summary class="row action"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#gear"/></svg><span>Settings<small>Start with Windows and the window</small></span></span><svg class="ph chevron" aria-hidden="true"><use href="icons.svg#caret-right"/></svg></summary>
@@ -1366,6 +1398,7 @@
 <script src="dials.js"></script>
 <script src="instruments.js"></script>
 <script src="help-cards.js"></script>
+<script src="help-bot.js"></script>
 <script src="main.js"></script>
 <script src="mark-data.js"></script>
 <script src="mark.js"></script>
@@ -1390,6 +1423,7 @@
 <script src="md.js"></script>
 <script src="notes.js"></script>
 <script src="shelf.js"></script>
+<script src="help.js"></script>
 <script src="layout.js"></script>
 <script src="rail.js"></script>
 <script src="welcome.js"></script>

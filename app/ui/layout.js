@@ -2,7 +2,7 @@
 
 // The bar keeps its three families; a service moves inside its own, the families move between them.
 (function () {
-  const rail = document.querySelector('.rail'), settings = rail.querySelector('.service--settings');
+  const rail = document.querySelector('.rail'), foot = rail.querySelector('.service--help, .service--settings');
   const families = [...rail.querySelectorAll('.rail-family')].map(section => ({
     id: section.dataset.group, section, title: section.querySelector('.rail-title'), group: section.querySelector('.rail-group'), services: [...section.querySelectorAll('.service')],
   }));
@@ -19,7 +19,7 @@
     if (next === key) return;
     key = next;
     for (const f of sorted(families, l.Groups, f => f.id)) {
-      settings.before(f.section);
+      foot.before(f.section);
       for (const s of sorted(f.services, l.Bar, s => s.dataset.view)) f.group.append(s);
     }
     rail.dispatchEvent(new Event('arranged'));

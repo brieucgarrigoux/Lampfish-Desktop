@@ -1,6 +1,6 @@
 'use strict';
 
-// The bar on the left: Home and a search on top, one button per family that opens its services in a flyout, Settings and the arranging buttons at the foot.
+// The bar on the left: Home and a search on top, one button per family that opens its services in a flyout, Help, Settings and the arranging buttons at the foot.
 (function () {
   const rail = document.querySelector('.rail');
   if (!rail) return;
@@ -216,7 +216,7 @@
     const step = keys[e.key];
     if (inRail) {
       const group = active.closest('.rail-group'), owner = group && families.find(f => groupOf(f) === group);
-      const buttons = owner ? shown(owner) : [...rail.querySelectorAll(':scope > .rail-home, :scope > .rail-search, :scope > .rail-family > .rail-title, :scope > .service--settings')].filter(b => b.offsetParent);
+      const buttons = owner ? shown(owner) : [...rail.querySelectorAll(':scope > .rail-home, :scope > .rail-search, :scope > .rail-family > .rail-title, :scope > .service--help, :scope > .service--settings')].filter(b => b.offsetParent);
       const at = buttons.indexOf(active.closest('button'));
       const next = step === 'first' ? 0 : step === 'last' ? buttons.length - 1 : Math.max(0, Math.min(buttons.length - 1, (at < 0 ? 0 : at) + step));
       const target = buttons[next];

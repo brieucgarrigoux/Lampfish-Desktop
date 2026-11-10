@@ -8,6 +8,7 @@
     dashboard: ['Open Home in lampfish', 'home'], note: ['Open Notes in lampfish', 'notes'], capture: ['Open Shelf in lampfish', 'shelf'],
     shelf: ['Open Shelf in lampfish', 'shelf'], audio: ['Open Audio in lampfish', 'audio'], notes: ['Open Notes in lampfish', 'notes'], convert: ['Open Convert in lampfish', 'convert'], desktop: ['Open Arrange in lampfish', 'arrange'],
     quick: ['Open Settings in lampfish', 'settings'], claude: ['Open Plugins in lampfish', 'plugins'], customize: ['Open Assistant in lampfish', 'assistant'],
+    help: ['Open Help in lampfish', 'help'],
   };
   const ARRANGEMENTS = [['left', 'Left'], ['right', 'Right'], ['top', 'Top'], ['bottom', 'Bottom'], ['frame', 'Frame'], ['center', 'Center'], ['corners', 'Corners'], ['blocks', 'Blocks']];
   const SIZES = [[32, 'S'], [40, 'M'], [48, 'L'], [64, 'XL'], [96, 'XXL']];
@@ -22,6 +23,7 @@
     if (tell) send('companion.tab', { tab: name });
     if (name === 'note') setTimeout(() => $('c-text').focus(), 30);
     if (name === 'notes') setTimeout(() => $('c-find').focus(), 30);
+    if (name === 'help') setTimeout(() => $('c-help-ask').focus(), 30);
     render();
   }
 
@@ -260,7 +262,7 @@
   }
 
   // The tabs are arranged from here too, the same choice as the Assistant page of the app.
-  const TAB_NAMES = { dashboard: 'Dashboard', quick: 'Settings', claude: 'Modules', note: 'Note', capture: 'Capture', shelf: 'Shelf', audio: 'Audio', notes: 'Notes', convert: 'Convert', desktop: 'Desktop' };
+  const TAB_NAMES = { dashboard: 'Dashboard', quick: 'Settings', claude: 'Modules', note: 'Note', capture: 'Capture', shelf: 'Shelf', audio: 'Audio', notes: 'Notes', convert: 'Convert', desktop: 'Desktop', help: 'Help' };
   function saveTabs(order, hidden) { send('companion.tabs', { order, hidden }); }
   function customize() {
     const nav = document.querySelector('.c-tabs'), order = [...nav.children].map(b => b.dataset.tab), hidden = data.hiddenTabs || [];
@@ -455,6 +457,8 @@
       const off = (m.hiddenTabs || []).slice();
       const nav = document.querySelector('.c-tabs');
       for (const id of m.tabOrder || []) { const b = nav.querySelector(`[data-tab="${id}"]`); if (b) nav.append(b); }
+      // A tab added after the order was saved goes at the end, not before the tabs that were arranged.
+      if ((m.tabOrder || []).length) for (const b of [...nav.children]) if (!m.tabOrder.includes(b.dataset.tab)) nav.append(b);
       for (const b of document.querySelectorAll('[data-tab]')) b.hidden = off.includes(b.dataset.tab);
       if (off.includes(tab)) { const first = [...document.querySelectorAll('[data-tab]')].find(b => !b.hidden); if (first) show(first.dataset.tab, false); }
       if (m.tab && m.tab !== tab && tab !== 'customize' && GO[m.tab]) show(m.tab, false);
@@ -527,6 +531,20 @@
   $('c-modules').addEventListener('click', () => send('companion.open', { view: 'plugins' }));
   $('c-close').addEventListener('click', () => send('companion.close'));
   addEventListener('keydown', e => { if (e.key === 'Escape') send('companion.close'); });
+  // The Help tab: the same answers as the Help page, its actions through the bridge of the assistant.
+  helpChat({
+    log: $('c-help-log'), ask: $('c-help-ask'), found: $('c-help-found'),
+    facts: () => data ? { memory: data.memory, battery: data.battery, paused: data.desktop && data.desktop.paused, startup: data.quick ? data.quick.startup : null } : {},
+    avatar: () => { const logo = document.querySelector('.c-logo'), copy = logo && logo.cloneNode(true); if (copy) copy.removeAttribute('class'); return copy; },
+    can: a => !!(a.assistant || a.view),
+    run: a => {
+      const to = a.assistant || { view: a.view };
+      if (to.tab) show(to.tab, true);
+      else if (to.act) act(to.act, to.args || {});
+      else if (to.send) send(to.send, to.args || {});
+      else if (to.view) send('companion.open', { view: to.view });
+    },
+  });
   $('c-open').title = tr(GO[tab][0]);
   clock();
   setInterval(clock, 15000);

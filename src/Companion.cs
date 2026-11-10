@@ -44,7 +44,7 @@ namespace Lampfish
         static string tab = "dashboard";
         static DateTime hiddenAt, asideAt;
         static bool aside, opening, retried, closing;
-        static readonly string[] Tabs = { "dashboard", "quick", "desktop", "claude", "note", "capture", "shelf", "audio", "notes", "convert" };
+        static readonly string[] Tabs = { "dashboard", "quick", "desktop", "claude", "note", "capture", "shelf", "audio", "notes", "convert", "help" };
         // What the assistant may do on its own: the settings it shows, nothing else from the main window.
         static readonly HashSet<string> Shared = new HashSet<string>
         {

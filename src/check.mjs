@@ -1,6 +1,7 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { appendFileSync, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
+import { runInNewContext } from 'node:vm';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -14,7 +15,8 @@ const read = file => {
   return (text.charCodeAt(0) === 0xFEFF ? text.slice(1) : text).replace(/\r\n/g, '\n');
 };
 const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 1 << 28 }).replace(/\r\n/g, '\n');
-const tracked = git('ls-files').split('\n').filter(f => f && existsSync(join(root, f)));
+// New files count before their first commit, so a check run before committing sees them too.
+const tracked = git('ls-files', '--cached', '--others', '--exclude-standard').split('\n').filter(f => f && existsSync(join(root, f)));
 const ui = file => /^app\/ui\/[^/]+$/.test(file);
 
 function step(name, run) {
@@ -155,6 +157,53 @@ step('icons come from icons.svg', () => {
     }
   }
   return [...problems];
+});
+
+// Help answers with actions: each one must be something the app handles, and each text must have its French.
+step('actions and texts of Help', () => {
+  const problems = [];
+  let bot;
+  try { bot = runInNewContext(read('app/ui/help-bot.js') + '\n;({ HELP_BOT })', { tr: t => t }).HELP_BOT; }
+  catch (e) { return [`app/ui/help-bot.js: ${e.message}`]; }
+  const views = new Set(JSON.parse((/const VIEWS = (\[[^\]]*\])/.exec(read('app/ui/main.js')) || [, '[]'])[1].replace(/'/g, '"')));
+  const calls = new Set([...((/const HELP_CALLS = \{([\s\S]*?)\n  \};/.exec(read('app/ui/help.js')) || [, ''])[1]).matchAll(/^\s+'([a-z-]+)':/gm)].map(m => m[1]));
+  const csharp = tracked.filter(f => f.startsWith('src/') && f.endsWith('.cs')).map(read).join('\n');
+  const literals = new Set([...csharp.matchAll(/"([A-Za-z.]+)"/g)].map(m => m[1]));
+  const routed = new Set([...read('src/Program.cs').matchAll(/action\.StartsWith\("([a-z]+\.)"\)/g)].map(m => m[1]));
+  const companion = read('src/Companion.cs');
+  const shared = new Set([...((/HashSet<string> Shared = new HashSet<string>\s*\{([\s\S]*?)\};/.exec(companion) || [, ''])[1]).matchAll(/"([^"]+)"/g)].map(m => m[1]));
+  const tabs = new Set([...((/string\[\] Tabs = \{([^}]*)\}/.exec(companion) || [, ''])[1]).matchAll(/"([^"]+)"/g)].map(m => m[1]));
+  const tabNames = (/const TAB_NAMES = \{([^}]*)\}/.exec(read('app/ui/companion.js')) || [, ''])[1];
+  const symbols = new Set([...read('app/ui/icons.svg').matchAll(/<symbol id="([^"]+)"/g)].map(m => m[1]));
+  const handled = action => literals.has(action) || (action.includes('.') && routed.has(action.slice(0, action.indexOf('.') + 1)) && literals.has(action.slice(action.indexOf('.') + 1)));
+  const text = (value, where) => { if (typeof value !== 'string' || !value) problems.push(`${where}: missing text`); else if (!(value in french)) problems.push(`${where}: "${value}" has no French`); };
+  const topics = bot.topics || {};
+  text(bot.greeting, 'greeting');
+  for (const id of [...(bot.start || []), ...(bot.often || [])]) if (!topics[id]) problems.push(`start or often: no topic "${id}"`);
+  for (const [view, name] of Object.entries(bot.pages || {})) { if (!views.has(view)) problems.push(`pages: "${view}" is not a view`); text(name, `pages.${view}`); }
+  for (const [id, t] of Object.entries(topics)) {
+    for (const key of ['q', 'a', 'words']) text(t[key], `${id}.${key}`);
+    if ((bot.often || []).includes(id)) text(t.hint, `${id}.hint`);
+    for (const next of t.next || []) if (!topics[next]) problems.push(`${id}: no topic "${next}" to follow`);
+    if ((t.do || []).length > 2) problems.push(`${id}: more than two actions`);
+    (t.do || []).forEach((a, i) => {
+      const where = `${id}.do[${i}]`;
+      text(a.label, where);
+      if (!symbols.has(a.icon)) problems.push(`${where}: icon "${a.icon}" is not in icons.svg`);
+      if ([a.view, a.send, a.call].filter(Boolean).length !== 1) problems.push(`${where}: needs exactly one of view, send or call`);
+      if (a.view && !views.has(a.view)) problems.push(`${where}: "${a.view}" is not a view`);
+      if (a.send && !handled(a.send)) problems.push(`${where}: no C# code handles "${a.send}"`);
+      if (a.call && !calls.has(a.call)) problems.push(`${where}: "${a.call}" is not in HELP_CALLS of help.js`);
+      const to = a.assistant;
+      if (!to) return;
+      if ([to.view, to.send, to.act, to.tab].filter(Boolean).length !== 1) problems.push(`${where}.assistant: needs exactly one of view, send, act or tab`);
+      if (to.view && !views.has(to.view)) problems.push(`${where}.assistant: "${to.view}" is not a view`);
+      if (to.send && !(to.send.startsWith('companion.') && companion.includes(`case "${to.send}"`))) problems.push(`${where}.assistant: Companion.cs does not handle "${to.send}"`);
+      if (to.act && !shared.has(to.act)) problems.push(`${where}.assistant: "${to.act}" is not shared with the assistant`);
+      if (to.tab && !(tabs.has(to.tab) && new RegExp(`\\b${to.tab}:`).test(tabNames))) problems.push(`${where}.assistant: "${to.tab}" is not a tab of the assistant`);
+    });
+  }
+  return problems;
 });
 
 step('published versions of the changelog', () => {
