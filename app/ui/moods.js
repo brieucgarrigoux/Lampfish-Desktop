@@ -563,6 +563,58 @@
     if (m.type === 'moods.preview') showImport(m);
   }
 
+  // Save as a theme, from Home or the top of Themes: first what will be kept, then a name. The same save as the New theme tile.
+  let saveBox = null;
+  function closeSave() { if (saveBox) { saveBox.remove(); saveBox = null; } }
+  function saveDialog(anchor) {
+    if (saveBox && saveBox.isConnected) { closeSave(); return; }
+    const s = Lampfish.state || {}, st = s.station, events = st ? st.events.filter(x => x.active).length : 0;
+    const rows = [
+      ['Wallpaper', s.current ? s.current.replace(/\.[a-z0-9]+$/i, '') : tr('None')],
+      ['Cursors', s.mouse ? tr(s.mouse.themeTitle) : tr('Unchanged')],
+      ['Sounds', !st || !st.active || st.silence ? tr('Sounds off') : events === 1 ? tr('1 event on') : tr('{0} events on', events)],
+      ['React to sound', tr(s.reactive ? 'On' : 'Off')],
+    ];
+    saveBox = el('form', 'theme-save');
+    saveBox.setAttribute('role', 'dialog');
+    saveBox.append(el('b', '', tr('Save what you have now as a theme')));
+    const input = el('input');
+    input.placeholder = tr('Name of the theme');
+    input.maxLength = 40;
+    input.translate = false;
+    saveBox.append(input);
+    const list = el('ul');
+    for (const [label, value] of rows) { const li = el('li', '', tr(label)); const v = el('span', '', value); v.translate = false; li.append(v); list.append(li); }
+    saveBox.append(list);
+    const actions = el('div', 'theme-save__actions');
+    const cancel = el('button', 'button', tr('Cancel'));
+    cancel.type = 'button';
+    cancel.addEventListener('click', closeSave);
+    const save = el('button', 'button button--accent');
+    save.type = 'submit';
+    save.innerHTML = icon('floppy-disk');
+    save.append(tr('Save'));
+    actions.append(cancel, save);
+    saveBox.append(actions);
+    saveBox.addEventListener('submit', e => { e.preventDefault(); const name = input.value.trim(); if (!name) { input.focus(); return; } send('moods.save', { name }); closeSave(); });
+    document.body.append(saveBox);
+    const r = anchor.getBoundingClientRect(), w = saveBox.offsetWidth, h = saveBox.offsetHeight;
+    saveBox.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left)) + 'px';
+    saveBox.style.top = (r.bottom + 8 + h <= innerHeight - 8 ? r.bottom + 8 : Math.max(8, r.top - h - 8)) + 'px';
+    setTimeout(() => input.focus(), 30);
+  }
+  addEventListener('pointerdown', e => { if (saveBox && !saveBox.contains(e.target) && !e.target.closest('.theme-save-open')) closeSave(); }, true);
+  addEventListener('keydown', e => { if (e.key === 'Escape' && saveBox) { e.stopPropagation(); closeSave(); } }, true);
+  const saveButton = () => {
+    const b = el('button', 'button theme-save-open');
+    b.type = 'button';
+    b.innerHTML = icon('floppy-disk');
+    b.append(tr('Save as a theme'));
+    b.addEventListener('click', () => saveDialog(b));
+    return b;
+  };
+  document.querySelector('.view--modes h1').append(saveButton());
+
   function startNew() {
     showView('modes');
     naming = true;
@@ -573,5 +625,5 @@
   $('mood-import').addEventListener('click', () => send('moods.import'));
   addEventListener('keydown', e => { if (e.key === 'Escape' && chosen && document.body.dataset.view === 'modes' && !(e.target.matches && e.target.matches('input:not([type="checkbox"]), select'))) close(); });
 
-  Lampfish.moods = { state, event, startNew, icon: modeIcon, renderDock, visible() { } };
+  Lampfish.moods = { state, event, startNew, saveButton, icon: modeIcon, renderDock, visible() { } };
 })();

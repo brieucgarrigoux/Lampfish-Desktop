@@ -137,3 +137,15 @@
 .mood__chip .start__app { width: 16px; height: 16px; }
 .mood__chip:hover { color: var(--danger); }
 .mood__chips .link { height: 26px; }
+
+/* Save as a theme: a button at the top of Themes and next to the theme on Home, opening what will be kept and a name. */
+.view--modes h1 { display: flex; flex-wrap: wrap; align-items: center; gap: 0 12px; }
+.view--modes h1 .theme-save-open { margin-left: auto; font: 600 var(--text-value) var(--system); letter-spacing: 0; }
+.theme-save-open { display: inline-flex; align-items: center; gap: 6px; }
+.theme-save { position: fixed; z-index: 46; display: flex; flex-direction: column; gap: 10px; width: 300px; max-width: calc(100vw - 16px); padding: 14px; border-radius: var(--radius-card); background: var(--group-up); box-shadow: 0 0 0 1px var(--hairline-strong), var(--float); font-size: var(--text-value); }
+.theme-save b { font-size: var(--text-body); }
+.theme-save input { height: 32px; padding: 0 10px; border: 0; border-radius: var(--radius-control); background: var(--sunken); color: var(--text); box-shadow: inset 0 -1px 0 var(--accent); font: inherit; outline: none; }
+.theme-save ul { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.theme-save li { display: flex; justify-content: space-between; gap: 12px; color: var(--text-soft); }
+.theme-save li span { min-width: 0; overflow: hidden; color: var(--text); text-overflow: ellipsis; white-space: nowrap; }
+.theme-save__actions { display: flex; justify-content: flex-end; gap: 8px; }

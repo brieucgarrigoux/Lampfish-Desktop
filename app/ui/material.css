@@ -25,7 +25,7 @@
 /* What floats over the page or follows a drag is Acrylic, as Windows asks for passing surfaces: blurred and nearly opaque, so the page never shows through clearly. */
 :root.mica { --solid: #15191a; }
 :root.mica[data-theme="light"] { --solid: #d6dcdd; }
-:root.mica :is(.page-help__tip, .rail-group, .goto__box, .chart-tip, .toast, .s-menu, .welcome__card, .dup-dialog,
+:root.mica :is(.page-help__tip, .theme-save, .rail-group, .goto__box, .chart-tip, .toast, .s-menu, .welcome__card, .dup-dialog,
   .category.grabbed, .rail .service.grabbed, .h-tile.grabbed, .arrangement__remove, .h-size, .n-item__remove) { background-color: color-mix(in srgb, var(--solid) 88%, transparent); -webkit-backdrop-filter: blur(30px) saturate(1.3); backdrop-filter: blur(30px) saturate(1.3); }
 
 /* The picture at the head of every page: the fish of the brand in its glow, small, in the band of the title, never under a card. */

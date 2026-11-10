@@ -488,12 +488,8 @@
     title.querySelector('.h-name').textContent = tr('Themes');
     title.querySelector('.h-value').textContent = active ? active.name : moods.length === 1 ? tr('1 theme') : moods.length ? tr('{0} themes', moods.length) : tr('None yet');
     title.addEventListener('click', () => dockTo('modes'));
-    const more = document.createElement('button');
-    more.className = 'link h-modes__more';
-    more.innerHTML = icon('floppy-disk');
-    more.append(tr('Save the current setup as a theme'));
-    more.hidden = moods.length > 0;
-    more.addEventListener('click', () => { if (Lampfish.moods) Lampfish.moods.startNew(); });
+    // Next to the theme in use, a real button that shows what will be kept before it saves.
+    const more = Lampfish.moods ? Lampfish.moods.saveButton() : document.createElement('span');
     zone.replaceChildren(title, ...moods.slice(0, 4).map(m => {
       const b = document.createElement('button');
       b.className = 'tool-chip';
