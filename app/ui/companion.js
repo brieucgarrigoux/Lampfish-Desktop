@@ -23,7 +23,6 @@
     if (tell) send('companion.tab', { tab: name });
     if (name === 'note') setTimeout(() => $('c-text').focus(), 30);
     if (name === 'notes') setTimeout(() => $('c-find').focus(), 30);
-    if (name === 'help') setTimeout(() => $('c-help-ask').focus(), 30);
     render();
   }
 
@@ -533,9 +532,8 @@
   addEventListener('keydown', e => { if (e.key === 'Escape') send('companion.close'); });
   // The Help tab: the same answers as the Help page, its actions through the bridge of the assistant.
   helpChat({
-    log: $('c-help-log'), ask: $('c-help-ask'), found: $('c-help-found'),
+    log: $('c-help-log'), avatar: liveAvatar($('c-help-log')),
     facts: () => data ? { memory: data.memory, battery: data.battery, paused: data.desktop && data.desktop.paused, startup: data.quick ? data.quick.startup : null } : {},
-    avatar: () => { const logo = document.querySelector('.c-logo'), copy = logo && logo.cloneNode(true); if (copy) copy.removeAttribute('class'); return copy; },
     can: a => !!(a.assistant || a.view),
     run: a => {
       const to = a.assistant || { view: a.view };

@@ -182,7 +182,7 @@ step('actions and texts of Help', () => {
   for (const id of [...(bot.start || []), ...(bot.often || [])]) if (!topics[id]) problems.push(`start or often: no topic "${id}"`);
   for (const [view, name] of Object.entries(bot.pages || {})) { if (!views.has(view)) problems.push(`pages: "${view}" is not a view`); text(name, `pages.${view}`); }
   for (const [id, t] of Object.entries(topics)) {
-    for (const key of ['q', 'a', 'words']) text(t[key], `${id}.${key}`);
+    for (const key of ['q', 'a']) text(t[key], `${id}.${key}`);
     if ((bot.often || []).includes(id)) text(t.hint, `${id}.hint`);
     for (const next of t.next || []) if (!topics[next]) problems.push(`${id}: no topic "${next}" to follow`);
     if ((t.do || []).length > 2) problems.push(`${id}: more than two actions`);

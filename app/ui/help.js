@@ -1,8 +1,8 @@
 'use strict';
 
-// The guided help: the bot greets, then everything goes through chips, action buttons and a local search (HELP_BOT of help-bot.js).
+// The guided help: the bot greets, then everything goes through chips and action buttons (HELP_BOT of help-bot.js).
 // helpChat draws it in a page; the page gives how to run an action, what it knows (facts) and the avatar.
-function helpChat({ log, ask, found, run, can, facts, avatar }) {
+function helpChat({ log, run, can, facts, avatar }) {
   const still = matchMedia('(prefers-reduced-motion: reduce)');
   const node = (tag, className, text) => Object.assign(document.createElement(tag), { className, textContent: text || '' });
 
@@ -28,7 +28,7 @@ function helpChat({ log, ask, found, run, can, facts, avatar }) {
     });
     if (buttons.length) { const act = node('div', 'hb-act'); act.append(...buttons); bubble.append(act); }
     const face = node('span', 'hb-face');
-    const picture = avatar();
+    const picture = avatar && avatar();
     if (picture) face.append(picture);
     row.append(face, bubble);
     return keep(row);
@@ -67,31 +67,19 @@ function helpChat({ log, ask, found, run, can, facts, avatar }) {
     chips(HELP_BOT.start.map(topicChip));
   }
 
-  function search() {
-    const query = ask.value.trim();
-    found.hidden = !query;
-    if (!query) { found.replaceChildren(); return []; }
-    const ids = helpSearch(query);
-    if (ids.length) found.replaceChildren(...ids.map(id => pick(tr(HELP_BOT.topics[id].q), id)));
-    else found.replaceChildren(node('span', 'hb-none', tr('Nothing matches')), pick(tr(HELP_BOT.topics.other.q), 'other'));
-    // The suggestions take room from the chat: its last message stays in sight.
-    requestAnimationFrame(() => { log.scrollTop = log.scrollHeight; });
-    return ids;
-  }
-  function pick(label, id) {
-    const b = node('button', 'hb-chip', label);
-    b.type = 'button';
-    b.addEventListener('click', () => { ask.value = ''; search(); topic(id); });
-    return b;
-  }
-  ask.addEventListener('input', search);
-  ask.addEventListener('keydown', e => {
-    if (e.key === 'Enter') { e.preventDefault(); const ids = search(); if (ask.value.trim()) { ask.value = ''; search(); topic(ids[0] || 'other'); } }
-    else if (e.key === 'Escape' && ask.value) { e.preventDefault(); e.stopPropagation(); ask.value = ''; search(); }
-  });
-
   start();
-  return { start, topic, search };
+  return { start, topic };
+}
+
+// The fish of the newest answer is alive (mark.js); when a new answer comes, the one before keeps a still copy of it.
+function liveAvatar(log) {
+  const live = log.querySelector('.hp-live');
+  if (!live) return null;
+  live.remove();
+  return () => {
+    if (live.isConnected) { const still = live.cloneNode(true); still.classList.remove('hp-live'); live.replaceWith(still); }
+    return live;
+  };
 }
 
 // The Help page of the main window.
@@ -124,20 +112,12 @@ function helpChat({ log, ask, found, run, can, facts, avatar }) {
     };
   }
 
-  const avatar = () => {
-    // The fish alone, without the turquoise plate of the logo.
-    const mark = document.querySelector('.hp-head .help-avatar');
-    if (!mark) return null;
-    const copy = mark.cloneNode(true);
-    copy.removeAttribute('class');
-    return copy;
-  };
   const run = a => {
     if (a.call) HELP_CALLS[a.call]();
     else if (a.send) send(a.send, a.args || {});
     else if (a.view) showView(a.view);
   };
-  const chat = helpChat({ log: $('help-log'), ask: $('help-ask'), found: $('help-found'), run, can: a => !!(a.call || a.send || a.view), facts, avatar });
+  const chat = helpChat({ log: $('help-log'), run, can: a => !!(a.call || a.send || a.view), facts, avatar: liveAvatar($('help-log')) });
 
   $('help-often').replaceChildren(...HELP_BOT.often.map(id => {
     const t = HELP_BOT.topics[id];

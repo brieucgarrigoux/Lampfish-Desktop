@@ -1,17 +1,10 @@
-/* Help: a chat column that fills the window, the question field at its foot, and what is often asked on the right. */
+/* Help: a chat column that fills the window, and what is often asked on the right. */
 .view--help { max-width: 1120px; margin-inline: auto; height: calc(100vh - 78px); min-height: 440px; display: flex; flex-direction: column; }
 .view--help > h1 { margin-bottom: 4px; }
 .hp-lead { margin: 0 2px 18px; }
 .hp-board { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; }
 .hp-chat { min-height: 0; display: flex; flex-direction: column; gap: 12px; max-width: 720px; }
-.hp-head { flex: none; display: flex; align-items: center; gap: 10px; }
-.hp-head .help-avatar { flex: none; width: 36px; height: 36px; color: var(--text); }
-.hp-head b { font: 600 var(--text-body) var(--display); }
 .hp-log { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; gap: 12px; padding: 2px; margin: -2px; }
-.hp-ask { flex: none; display: flex; flex-direction: column; gap: 8px; }
-.hp-ask .search { flex: none; max-width: none; padding: 0 12px; }
-.hp-ask .search input { height: 40px; }
-.hp-found { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .hp-side { min-height: 0; overflow-y: auto; scrollbar-width: none; }
 .hp-side .settings-title:first-child { margin-top: 6px; }
 .hp-q { display: block; color: var(--text); }
@@ -19,7 +12,7 @@
 /* The messages: the bot on the left with the mark, the chosen answer on the right in the accent. */
 .hb-row { display: flex; align-items: flex-end; gap: 10px; }
 .hb-face { flex: none; width: 32px; height: 32px; }
-.hb-face svg, .hb-face img { display: block; width: 32px; height: 32px; clip-path: inset(0 round 21.9%); }
+.hb-face svg, .hb-face img { display: block; width: 32px; height: 32px; color: var(--text); }
 .hb-bot { min-width: 0; max-width: 480px; padding: 10px 14px; border-radius: var(--radius-card) var(--radius-card) var(--radius-card) 2px; background: var(--group); }
 .hb-bot p { margin: 0; font-size: var(--text-body); line-height: 1.45; user-select: text; }
 .hb-act { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
@@ -31,8 +24,6 @@
 .hb-chip:active { transform: scale(.97); }
 .hb-chip[aria-pressed="true"] { background: var(--accent-dim); color: var(--accent); }
 .hb-chips.is-past .hb-chip:not([aria-pressed="true"]) { opacity: .55; }
-.hb-none { font-size: var(--text-caption); color: var(--text-pale); }
-.hp-found .hb-chip { height: 28px; padding: 0 12px; }
 
 /* In a narrow window the page scrolls as a whole: the chat keeps its own height and the questions come under it. */
 @media (max-width: 900px) {

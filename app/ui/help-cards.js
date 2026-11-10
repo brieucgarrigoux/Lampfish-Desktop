@@ -139,7 +139,6 @@ const HELP_CARDS = {
   ],
   help: [
     ['#help-log', 'Questions as buttons', 'A click on a question gives a short answer, with buttons that open the page or do it.'],
-    ['#help-ask', 'Ask in your own words', 'The words are matched with the answers kept in the app; nothing goes online.'],
     ['#help-often', 'Often asked', 'The questions that come up most, one click away.'],
   ],
   settings: [

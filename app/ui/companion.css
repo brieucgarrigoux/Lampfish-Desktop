@@ -146,11 +146,11 @@ body.companion:not(.is-shown) { opacity: 0; transition-duration: .12s; }
 .c-convert span { font-size: var(--text-body); line-height: 1.5; }
 .c-convert .button { margin-top: 6px; }
 .c-convert small { font-size: var(--text-caption); color: var(--text-pale); }
-/* Help, compact: the messages take the width, the question field stays at the foot of the tab. */
+/* Help, compact: the messages take the width of the tab. */
 .c-help { overflow: hidden; gap: 8px; }
 .c-help .hp-log { flex: 1; gap: 8px; }
 .c-help .hb-row { gap: 8px; }
-.c-help .hb-face, .c-help .hb-face img { width: 24px; height: 24px; clip-path: none; object-fit: contain; }
+.c-help .hb-face, .c-help .hb-face svg { width: 24px; height: 24px; }
 .c-help .hb-bot { max-width: none; padding: 8px 11px; }
 .c-help .hb-bot p, .c-help .hb-me { font-size: var(--text-value); }
 .c-help .hb-act { margin-top: 8px; gap: 6px; }
@@ -158,4 +158,3 @@ body.companion:not(.is-shown) { opacity: 0; transition-duration: .12s; }
 .c-help .hb-me { max-width: 85%; padding: 6px 11px; }
 .c-help .hb-chips { margin-left: 32px; gap: 6px; }
 .c-help .hb-chip { height: 28px; padding: 0 11px; font-size: var(--text-caption); }
-.c-help .hp-ask .search input { height: 34px; }

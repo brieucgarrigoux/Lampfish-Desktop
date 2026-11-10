@@ -15,7 +15,7 @@
 </head>
 <body class="companion">
   <header class="c-head">
-    <img class="c-logo" src="/brand/logo/mark-lampfish-white.png" alt="">
+    <img class="c-logo" src="/brand/logo/mark-lampfish-white.png" alt="" data-live-mark>
     <span class="c-when"><b id="c-clock"></b><small id="c-date"></small></span>
     <button type="button" class="button button--accent c-open" id="c-open" title="Open lampfish"><svg class="ph" aria-hidden="true"><use href="icons.svg#arrow-square-out"/></svg><span>Open lampfish</span></button>
     <button type="button" class="c-icon" id="c-custom" title="Customize the assistant" aria-label="Customize the assistant" aria-pressed="false"><svg class="ph" aria-hidden="true"><use href="icons.svg#sliders-horizontal"/></svg></button>
@@ -113,11 +113,7 @@
   </section>
 
   <section class="c-pane c-help" data-pane="help" hidden>
-    <div class="hp-log" id="c-help-log" aria-live="polite"></div>
-    <div class="hp-ask">
-      <div class="hp-found" id="c-help-found" hidden></div>
-      <label class="search c-search"><svg class="ph" aria-hidden="true"><use href="icons.svg#magnifying-glass"/></svg><input type="text" id="c-help-ask" placeholder="Or ask in your own words" aria-label="Or ask in your own words" autocomplete="off" spellcheck="false"></label>
-    </div>
+    <div class="hp-log" id="c-help-log" aria-live="polite"><img class="hp-live" src="/brand/logo/mark-lampfish-white.png" alt="" data-live-mark="bare"></div>
   </section>
 
   <section class="c-pane" data-pane="desktop" hidden>
@@ -151,6 +147,8 @@
 <script src="dials.js"></script>
 <script src="instruments.js"></script>
 <script src="help-bot.js"></script>
+<script src="mark-data.js"></script>
+<script src="mark.js"></script>
 <script src="help.js"></script>
 <script src="companion.js"></script>
 </body>
