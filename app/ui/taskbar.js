@@ -20,7 +20,7 @@
     }
     const locked = state.items.filter(i => i.locked && TOGGLES[i.id]);
     $('tb-lockbox').hidden = !locked.length;
-    if (locked.length) $('tb-lock-text').textContent = locked.map(i => tr(TOGGLES[i.id])).join(', ') + ': ' + tr('Windows refuses the change on this version');
+    if (locked.length) $('tb-lock-text').textContent = locked.map(i => tr(TOGGLES[i.id])).join(', ') + ': ' + tr('only the Settings of Windows can change it');
     for (const id of Object.keys(CHOICES)) {
       const group = $('tb-' + id);
       group.closest('.row').hidden = !by[id];

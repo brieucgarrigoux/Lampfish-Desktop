@@ -1973,7 +1973,7 @@
  "Windows keeps a setting for itself": "Windows garde un réglage pour lui",
  "It refuses the change on this version": "Il refuse le changement sur cette version",
  "Open Windows Settings": "Ouvrir les Paramètres de Windows",
- "Windows refuses the change on this version": "Windows refuse le changement sur cette version",
+ "only the Settings of Windows can change it": "seuls les Paramètres de Windows peuvent le changer",
  "Change an image": "Changer une image",
  "PNG, JPG, BMP, GIF, TIFF or an icon": "PNG, JPG, BMP, GIF, TIFF ou une icône",
  "Images to PDF": "Images en PDF",

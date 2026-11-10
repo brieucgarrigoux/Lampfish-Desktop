@@ -77,6 +77,24 @@ namespace Lampfish
 
         static readonly HashSet<string> refused = new HashSet<string>();
 
+        // Windows 11 guards the Widgets value with its User Choice Protection driver (UCPD): only the Settings app may change it,
+        // and any other program is refused, even when it writes the value already there. While the driver is on, the switch says
+        // so from the start and the page offers the Taskbar page of Windows Settings, instead of a switch that does nothing.
+        static bool Guarded(Setting s)
+        {
+            if (s.Id != "widgets") return false;
+            try
+            {
+                using (var k = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\UCPD"))
+                {
+                    if (k == null) return false;
+                    object start = k.GetValue("Start");
+                    return start == null || Convert.ToInt32(start) != 4;
+                }
+            }
+            catch { return false; }
+        }
+
         [StructLayout(LayoutKind.Sequential)]
         struct APPBARDATA { public int cbSize; public IntPtr hWnd; public uint uCallbackMessage, uEdge; public Native.RECT rc; public IntPtr lParam; }
         [DllImport("shell32.dll")] static extern UIntPtr SHAppBarMessage(uint message, ref APPBARDATA data);
@@ -113,7 +131,7 @@ namespace Lampfish
                 type = "taskbar.state",
                 windows11 = Native.Build >= Windows11,
                 autoHide = AutoHide(),
-                items = Settings.Where(Supports).Select(s => new { id = s.Id, value = Read(s.Key, s.Name), fallback = s.Default, locked = refused.Contains(s.Id) }).ToArray(),
+                items = Settings.Where(Supports).Select(s => new { id = s.Id, value = Read(s.Key, s.Name), fallback = s.Default, locked = refused.Contains(s.Id) || Guarded(s) }).ToArray(),
                 changed = original.Count > 0,
             };
         }
