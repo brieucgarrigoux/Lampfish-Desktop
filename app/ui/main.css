@@ -80,7 +80,7 @@
   --glass-sheen: linear-gradient(135deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, 0) 42%);
   --glass: #0d0f10;
   --ink: #0b0d0e;
-  --glass-inset: inset 0 2px 6px rgba(0, 0, 0, .9), inset 0 0 0 1px rgba(0, 0, 0, .85), 0 1px 0 rgba(255, 255, 255, .06);
+  --glass-inset: 0 0 0 0 transparent;
   --chosen: 0 0 0 2px var(--accent), 0 0 22px rgba(30, 187, 170, .25);
   --fill: var(--accent);
   --button: rgba(255, 255, 255, .07);
@@ -89,8 +89,8 @@
   --pivot: #c5c8c9;
   --pivot-edge: #0b0e0f;
   --screen-face: var(--ink);
-  --screen-inset: inset 0 2px 5px rgba(0, 0, 0, .8), inset 0 0 0 1px rgba(0, 0, 0, .6), 0 1px 0 rgba(255, 255, 255, .05);
-  --well-inset: inset 0 2px 6px rgba(0, 0, 0, .75), 0 1px 0 rgba(255, 255, 255, .06);
+  --screen-inset: 0 0 0 0 transparent;
+  --well-inset: 0 0 0 0 transparent;
   --pressed: inset 0 0 0 1.5px var(--accent);
   color-scheme: dark;
 }

@@ -45,10 +45,10 @@
   --steel-edge: 0 0 0 1px rgba(30, 45, 50, .42), 0 3px 8px rgba(20, 40, 45, .22), inset 0 0 0 1px rgba(255, 255, 255, .55);
   --glass: #e8ebeb;
   --glass-sheen: linear-gradient(135deg, rgba(255, 255, 255, .55), rgba(255, 255, 255, 0) 42%);
-  --glass-inset: inset 0 2px 4px rgba(20, 40, 45, .26), inset 0 0 0 1px rgba(20, 40, 45, .2), 0 1px 0 rgba(255, 255, 255, .7);
+  --glass-inset: 0 0 0 0 transparent;
   --screen-face: var(--glass);
-  --screen-inset: var(--glass-inset);
-  --well-inset: inset 0 1px 3px rgba(20, 40, 45, .22), inset 0 0 0 1px rgba(20, 40, 45, .08), 0 1px 0 rgba(255, 255, 255, .55);
+  --screen-inset: 0 0 0 0 transparent;
+  --well-inset: 0 0 0 0 transparent;
   --needle: #1d282a;
   --pivot: #eef0f0;
   --pivot-edge: #2a3437;
@@ -84,7 +84,6 @@
 :root[data-theme="light"] .dials--led .seal__text { color: var(--lamp-hi); text-shadow: none; }
 :root[data-theme="light"] .led-text { text-shadow: none; }
 :root[data-theme="light"] .bezel__sub { color: var(--text-soft); opacity: 1; }
-:root[data-theme="light"] .bezel__glass { background: var(--glass-sheen), radial-gradient(130% 170% at 0% 0%, color-mix(in srgb, var(--lamp) 10%, var(--glass)), var(--glass) 70%); }
 :root[data-theme="light"] .seal__face g[filter] { opacity: 0; }
 :where(:root[data-theme="light"]) .level-arc__part { stroke: color-mix(in srgb, var(--lamp) 16%, #c3cacb); }
 :root[data-theme="light"] .level-arc__part.on { filter: none; }

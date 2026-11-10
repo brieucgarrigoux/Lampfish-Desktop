@@ -5,7 +5,7 @@ The rules every page of lampfish follows. Values live as tokens in `:root` of `a
 ## Principles
 
 - **The wallpaper is the star.** The window is dark, quiet and cold, so the desktop stays the most colorful thing on screen.
-- **Relief is measured.** Flat lists and cards are the default. Relief (shell, metal, glass, light) is for the PC family (Health, Tasks, Folders, Duplicates, Hardware, Network), which reads the machine itself, and for the one main action of a page.
+- **Flat, like Windows.** Cards, screens and wells are flat surfaces since November 2026: no light edge, metal frame, ring or inner shadow (the user saw them as old silver outlines). What stays drawn is light (lamps, lit text) and a few physical controls: the key of the security card, the knob of Sounds.
 - **Explain, then act.** Every setting has an icon and one gray line that says what it is for. Every change to Windows can be undone.
 - **Say what matters.** A verdict names the cause and its effect ("12 programs slow the start", "Windows takes longer to be ready"), never a bare count.
 
@@ -68,9 +68,9 @@ Fonts: `--display` (Geist, the font of the logo) for titles, the clock and lit t
 | Material | Tokens | Where |
 | --- | --- | --- |
 | Flat | `--group`, `--group-up` | Lists, settings, Personalization cards |
-| Shell | `--shell`, `--shell-edge`, `--shell-lift` | Cards in relief of the PC family |
-| Well | `--sunken`, `--well-inset` | Fields, readout lists, segment rails |
-| Brushed steel | `--steel`, `--steel-edge` | Frames of bezels only (seals, ring dials and the speed test are flat since November 2026): a turning sheen, the same thin edge all around so the frame keeps one width |
+| Shell | `--group`, `--group-up` | The former cards in relief (`shell.css`), now flat like the groups of settings |
+| Well | `--sunken` | Fields, readout lists, segment rails; `--well-inset`, `--glass-inset` and `--screen-inset` are kept empty |
+| Brushed steel | `--steel` | Unused since November 2026: no metal frame anywhere |
 | Glass | `--glass`, `--glass-sheen`, `--glass-inset` | Behind lit text and drawings in light |
 | Screen | `--screen-face`, `--screen-inset` | Faces of the meters and of the sound screen |
 | Light | `--lit`, `--warn`, `--bad`, `.led-text` | Lit letters, rings and drawings on glass |
@@ -91,7 +91,7 @@ Fonts: `--display` (Geist, the font of the logo) for titles, the clock and lit t
 - **Ring dial** (`.dials`, `.dial`, filled by `dials(zone, list)` of `dials.js`, shared by every page): a flat ring, no metal, no glow, the number alone in the middle. Only on Home, Network and in the assistant. a value and its share. `.dials--small` on Home and in the companion, `.dials--led` with lit figures in Health. Each dial shows details in a bubble on hover or keyboard focus.
 - **Instruments** (`thermometer`, `batteryRelief`, `wifiRelief` in `instruments.js`): used instead of a ring wherever they exist. A ring is only for what has no instrument.
 - **Measure rows** (`.dials--rows`, `.meter`, drawn by the same `dials()`): name and line, value, a bar, and the curve of the last minutes kept in memory (60 points, nothing written). Tasks, Health and Hardware.
-- **Bezel** (`.bezel`, `.bezel__glass`): a rectangular screen in a brushed steel frame with a verdict in `.led-text` and a gray line.
+- **Bezel** (`.bezel`, `.bezel__glass`): a flat screen tinted by its lamp, with a verdict in `.led-text` and a gray line.
 - **Seal** (`.seal`): a flat round tinted with its lamp color with a face or a shield drawn in light (`faceLight`, `shieldLight`). Never in a diagram.
 - **Readouts** (`.readouts`, `.readout`): a well with rows of icon, title, effect, value and action.
 - **Bubble** (`.chart-tip`): title, note and label and value lines.
@@ -129,7 +129,7 @@ Fonts: `--display` (Geist, the font of the logo) for titles, the clock and lit t
 
 ## Never
 
-- Screws, decorative separator lines, stripes of gloss, mirror chrome. Brushed steel is for frames only.
+- Screws, decorative separator lines, stripes of gloss, mirror chrome, metal frames, edges that stand out in relief.
 - Green, decorative gradients, red outside destructive actions.
 - Fixed-width fonts, whole words in capitals, em dashes.
 - Two radii for the same element type, a raw value used twice.
