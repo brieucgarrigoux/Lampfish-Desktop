@@ -341,7 +341,7 @@
   titleInput.addEventListener('input', () => { st.title.text = titleInput.value; push(); });
 
   const logoCard = card('Logo',
-    row('Logo', picker('logo', 'Choose a logo'), 'PNG with transparency'),
+    row('Logo', picker('logo', 'Choose a logo'), 'PNG with transparency, or SVG'),
     row('Size', slider('logoSize', 5, 70, () => st.logo.size, v => { st.logo.size = v; }, ' %', 28)),
     row('Left to right', slider('logoX', 0, 100, () => st.logo.x, v => { st.logo.x = v; }, ' %', 50)),
     row('Top to bottom', slider('logoY', 0, 100, () => st.logo.y, v => { st.logo.y = v; }, ' %', 44)),
