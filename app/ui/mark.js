@@ -2,7 +2,8 @@
 
 // The moving mark. Every img[data-live-mark] becomes the official mark drawn as one path that bends: the tail sways and makes a
 // gesture now and then, the rod bends like a fishing rod and the lamp follows it, the little fin waves on its own, the eye blinks,
-// the glow breathes. Under the pointer, or while something loads (.loading), it moves openly. data-live-mark="swim" also floats.
+// the glow breathes. The tail is still between its gestures, as a fish at rest. The pointer on the mark starts a gesture at once;
+// while something loads (.loading) the gestures come more often. data-live-mark="swim" also floats.
 // Still when Windows asks for less motion; the image stays when the data is missing.
 (function () {
   if (typeof MARK_DATA === 'undefined') return;
@@ -55,17 +56,17 @@
       + `<g class="mark-lamp"><g class="mark-glow">${inner(D.halos)}</g>${inner(D.tip + D.lamp)}</g></g>`;
     img.replaceWith(svg);
     const m = { svg, swims: img.dataset.liveMark === 'swim', body: svg.querySelector('.mark-body'), dots: svg.querySelector('.mark-dots'), lamp: svg.querySelector('.mark-lamp'),
-      glow: svg.querySelector('.mark-glow'), swim: svg.querySelector('.mark-swim'), hover: false, at: 0, calm: 0 };
-    const host = svg.closest('button') || svg;
-    host.addEventListener('pointerenter', () => { m.hover = true; m.at = S.start === null ? 0 : performance.now() / 1000 - S.start; });
-    host.addEventListener('pointerleave', () => { m.hover = false; });
+      glow: svg.querySelector('.mark-glow'), swim: svg.querySelector('.mark-swim'), own: null, lit: 0 };
+    // Only the mark itself reacts, not the whole button around it: one lively gesture, then rest.
+    svg.addEventListener('pointerenter', () => { if (S.start !== null && !m.own) m.own = { m: MOVES[Math.random() < .5 ? 0 : 3], at: performance.now() / 1000 - S.start, s: Math.random() < .5 ? -1 : 1 }; });
     m.body.setAttribute('d', path(() => 0, 0, 1, 0));
     marks.push(m);
   }
   if (!marks.length) return;
 
   // A wait anywhere in the window (the spinning .loading) makes the fish move openly, as if it worked too.
-  setInterval(() => { S.busy = !!document.querySelector('.loading'); }, 400);
+  // Only a wait that shows counts: hidden pages keep their placeholders marked .loading.
+  setInterval(() => { S.busy = [...document.querySelectorAll('.loading')].some(e => e.checkVisibility()); }, 400);
 
   let last = 0;
   function frame(now) {
@@ -77,24 +78,25 @@
     if (S.start === null) S.start = now / 1000;
     const t = now / 1000 - S.start;
     if (!S.move && t >= S.nextMove) S.move = { m: pick(), at: t, s: Math.random() < .5 ? -1 : 1 };
-    if (S.move && t - S.move.at > S.move.m.len + .3) { S.move = null; S.nextMove = t + 2.5 + Math.random() * 2.5; }
+    if (S.move && t - S.move.at > S.move.m.len + .3) { S.move = null; S.nextMove = t + (S.busy ? .5 + Math.random() : 3 + Math.random() * 5); }
     if (t >= S.nextBlink) { S.blinkAt = t; S.nextBlink = t + 3 + Math.random() * 4 + (Math.random() < .25 ? -2.8 : 0); }
     const b = (t - S.blinkAt) / .26, lid = b >= 0 && b < 1 ? Math.max(.08, Math.abs(1 - 2 * b)) : 1;
     const fin = (Math.sin(t * 2 * Math.PI / 3.3) * 3.6 + Math.sin(t * 2 * Math.PI / 1.9 + 1.3) * 1.4) * deg;
     const float = Math.sin(t * 2 * Math.PI / 9) * 1.5;
     const ru = (t % 7) - 5.6, rodAuto = ru < 0 || ru > 1.4 ? 0 : keys([0, -5, 3, -1, 0], .28)(ru);
-    const tailAuto = w => Math.sin(t * 2 * Math.PI / 2.8 - 1.4 * w) * 2.5 + (S.move ? S.move.s * S.move.m.f(t - S.move.at - .12 * w) : 0);
+    const gesture = (g, w) => g ? g.s * g.m.f(t - g.at - .12 * w) : 0;
     for (const m of marks) {
-      // Hover and waits blend in and out, so a change of motion never jumps.
-      m.calm += ((m.hover || S.busy ? 1 : 0) - m.calm) * .2;
-      const live = t - m.at;
-      const tail = w => (tailAuto(w) * (1 - m.calm) + Math.sin(live * 2 * Math.PI / .9 - 1.4 * w) * 8 * m.calm) * deg;
-      const rod = (float + rodAuto * (1 - m.calm) + Math.sin(live * 2 * Math.PI / 1.2) * 5 * m.calm) * deg;
+      if (m.own && t - m.own.at > m.own.m.len + .3) m.own = null;
+      // The lamp swings with a gesture of the pointer and glows a little more meanwhile.
+      const own = m.own ? Math.sin(Math.PI * Math.min(1, (t - m.own.at) / m.own.m.len)) : 0;
+      m.lit += (own - m.lit) * .2;
+      const tail = w => (gesture(S.move, w) + gesture(m.own, w)) * deg;
+      const rod = (float + rodAuto - own * 4 * Math.sin((t - (m.own ? m.own.at : 0)) * 2 * Math.PI / 1.1)) * deg;
       m.body.setAttribute('d', path(tail, rod, lid, fin));
       m.dots.setAttribute('transform', `translate(0 ${D.lid}) scale(1 ${lid.toFixed(3)}) translate(0 ${-D.lid})`);
       m.dots.setAttribute('opacity', Math.max(0, Math.min(1, (lid - .6) / .25)).toFixed(2));
       m.lamp.setAttribute('transform', `rotate(${(rod / deg).toFixed(2)} ${D.root[0]} ${D.root[1]})`);
-      const g = 1 + .05 * Math.sin(t * 2 * Math.PI / 3.6) + .1 * m.calm;
+      const g = 1 + .05 * Math.sin(t * 2 * Math.PI / 3.6) + .1 * m.lit;
       m.glow.setAttribute('transform', `translate(${D.light[0]} ${D.light[1]}) scale(${g.toFixed(3)}) translate(${-D.light[0]} ${-D.light[1]})`);
       if (m.swims) m.swim.setAttribute('transform', `translate(0 ${(Math.sin(t * 2 * Math.PI / 5.5) * 4).toFixed(2)})`);
     }

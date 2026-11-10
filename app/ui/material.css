@@ -25,14 +25,11 @@
 /* What floats over the page or follows a drag is Acrylic, as Windows asks for passing surfaces: blurred and nearly opaque, so the page never shows through clearly. */
 :root.mica { --solid: #15191a; }
 :root.mica[data-theme="light"] { --solid: #d6dcdd; }
-:root.mica :is(.page-help__tip, .theme-save, .rail-group, .goto__box, .chart-tip, .toast, .s-menu, .welcome__card, .dup-dialog,
+:root.mica :is(.theme-save, .rail-group, .goto__box, .chart-tip, .toast, .s-menu, .welcome__card, .dup-dialog,
   .category.grabbed, .rail .service.grabbed, .h-tile.grabbed, .arrangement__remove, .h-size, .n-item__remove) { background-color: color-mix(in srgb, var(--solid) 88%, transparent); -webkit-backdrop-filter: blur(30px) saturate(1.3); backdrop-filter: blur(30px) saturate(1.3); }
 
-/* The picture at the head of every page: the fish of the brand in its glow, small, in the band of the title, never under a card. */
+/* At the head of every page, a soft glow in the band of the title. The faded fish that sat in it is gone: it added nothing. */
 .contents { position: relative; isolation: isolate; }
-.contents::before, .contents::after { content: ""; position: absolute; z-index: -1; pointer-events: none; }
+.contents::before { content: ""; position: absolute; z-index: -1; pointer-events: none; }
 .contents::before { top: 0; right: 0; width: 420px; max-width: 70%; height: 150px; background: radial-gradient(ellipse at 85% 0%, color-mix(in srgb, var(--accent) 30%, transparent), transparent 65%); opacity: .45; }
-.contents::after { top: 16px; right: 28px; width: 56px; height: 56px; background: url("../../brand/logo/mark-lampfish-white.png") center / contain no-repeat; opacity: .12; }
-:root[data-theme="light"] .contents::after { background-image: url("../../brand/logo/mark-lampfish-black.png"); opacity: .1; }
 :root[data-theme="light"] .contents::before { opacity: .25; }
-body[data-view="home"] .contents::after { display: none; }
