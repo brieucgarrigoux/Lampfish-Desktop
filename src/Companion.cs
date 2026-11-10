@@ -291,6 +291,60 @@ namespace Lampfish
         public static void WallpaperChanged()
         {
             if (popup != null && !popup.IsDisposed && popup.Visible) SendStill(1600);
+            Glass(1600);
+        }
+
+        // The glass of the round button: the wallpaper under it, blurred, as the assistant paints its own backdrop. Windows gives
+        // no material to a window drawn with its own alpha, so the button paints the still the wallpaper gives.
+        static int glassTurn;
+        static async void Glass(int delay)
+        {
+            int mine = ++glassTurn;
+            if (delay > 0) await System.Threading.Tasks.Task.Delay(delay);
+            if (mine != glassTurn || dot == null || dot.IsDisposed || !dot.Visible) return;
+            var center = new Point(dot.Left + dot.Width / 2, dot.Top + dot.Height / 2);
+            WallpaperForm form = null;
+            Program.ForEachWallpaper(f => { if (form == null || f.Screen.Contains(center)) form = f; });
+            if (form == null) return;
+            byte[] jpg = await form.Snapshot();
+            if (jpg == null || mine != glassTurn || dot == null || dot.IsDisposed) return;
+            try { dot.Glass(Frost(jpg), form.Screen); }
+            catch (Exception ex) { Program.Log(ex); }
+        }
+
+        // A twelfth of the screen, blurred twice more: drawn back at the size of the button it reads as frosted glass.
+        static Bitmap Frost(byte[] jpg)
+        {
+            using (var source = new Bitmap(new MemoryStream(jpg)))
+            {
+                int w = Math.Max(8, source.Width / 12), h = Math.Max(8, source.Height / 12);
+                var small = new Bitmap(w, h, PixelFormat.Format32bppArgb);
+                using (var g = Graphics.FromImage(small)) { g.InterpolationMode = InterpolationMode.HighQualityBicubic; g.DrawImage(source, 0, 0, w, h); }
+                var data = small.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+                var px = new byte[data.Stride * h];
+                Marshal.Copy(data.Scan0, px, 0, px.Length);
+                for (int pass = 0; pass < 2; pass++)
+                {
+                    var copy = (byte[])px.Clone();
+                    for (int y = 0; y < h; y++)
+                        for (int x = 0; x < w; x++)
+                            for (int c = 0; c < 3; c++)
+                            {
+                                int sum = 0, n = 0;
+                                for (int dy = -1; dy <= 1; dy++)
+                                    for (int dx = -1; dx <= 1; dx++)
+                                    {
+                                        int xx = Math.Max(0, Math.Min(w - 1, x + dx)), yy = Math.Max(0, Math.Min(h - 1, y + dy));
+                                        sum += copy[yy * data.Stride + xx * 4 + c]; n++;
+                                    }
+                                px[y * data.Stride + x * 4 + c] = (byte)(sum / n);
+                            }
+                }
+                for (int i = 3; i < px.Length; i += 4) px[i] = 255;
+                Marshal.Copy(px, 0, data.Scan0, px.Length);
+                small.UnlockBits(data);
+                return small;
+            }
         }
 
         static string Small(byte[] jpg, int w, int h, long quality)
@@ -584,6 +638,16 @@ namespace Lampfish
             readonly Image logo, logoBlack;
             Point down, start;
             bool moving, hover, pressed, busy;
+            // The fish swims at the pace of the screen, on every other frame of Windows (DwmFlush), one drawing at a time: evenly
+            // spaced, at a third of the cost of 60 frames. A timer of 16 ms ticks every 15.6 or 31.2 ms, which made the motion uneven.
+            readonly Mark fish = Mark.Ready ? new Mark() : null;
+            readonly Stopwatch clock = Stopwatch.StartNew();
+            double fishAt;
+            volatile bool pacing, framePending;
+            int paceTurn;
+            Bitmap glass;
+            Rectangle glassScreen;
+            readonly Timer glassTimer = new Timer { Interval = 20000 };
 
             const int Diameter = 64, Pad = 10;
             readonly Timer glide = new Timer { Interval = 15 }, anim = new Timer { Interval = 16 };
@@ -626,7 +690,55 @@ namespace Lampfish
                     if (t >= 1) { glide.Stop(); Put(glideTo); }
                 };
                 anim.Tick += (s, e) => Step();
+                glassTimer.Tick += (s, e) => Companion.Glass(0);
+                VisibleChanged += (s, e) => { Pace(Visible); if (Visible) { glassTimer.Start(); Companion.Glass(300); } else glassTimer.Stop(); };
+                FormClosed += (s, e) => { Pace(false); glassTimer.Stop(); Release(); };
             }
+
+            public void Glass(Bitmap frosted, Rectangle screen)
+            {
+                var old = glass;
+                glass = frosted;
+                glassScreen = screen;
+                if (old != null) old.Dispose();
+                Draw();
+            }
+
+            void Pace(bool on)
+            {
+                if (fish == null || Mark.Still) on = false;
+                if (on == pacing) return;
+                pacing = on;
+                if (!on) return;
+                int turn = ++paceTurn;
+                fishAt = clock.Elapsed.TotalSeconds;
+                var thread = new System.Threading.Thread(() =>
+                {
+                    var wait = Stopwatch.StartNew();
+                    int beat = 0;
+                    while (pacing && turn == paceTurn)
+                    {
+                        wait.Restart();
+                        if (DwmFlush() != 0 || wait.ElapsedMilliseconds < 4) System.Threading.Thread.Sleep(Math.Max(1, 16 - (int)wait.ElapsedMilliseconds));
+                        if (++beat % 2 == 1 || framePending) continue;
+                        framePending = true;
+                        try { BeginInvoke((Action)Frame); } catch { framePending = false; return; }
+                    }
+                }) { IsBackground = true, Name = "mark" };
+                thread.Start();
+            }
+
+            void Frame()
+            {
+                framePending = false;
+                if (IsDisposed || !Visible || fish == null) return;
+                double now = clock.Elapsed.TotalSeconds;
+                fish.Step(now - fishAt);
+                fishAt = now;
+                Draw();
+            }
+
+            protected override void OnMouseEnter(EventArgs e) { base.OnMouseEnter(e); if (fish != null) fish.Poke(); }
 
             // The disc is pressed in under the finger, springs back past its size when let go, and swells a little while it is carried.
             void Step()
@@ -675,9 +787,15 @@ namespace Lampfish
                 bool waiting = busy && (DateTime.Now - busyAt).TotalMilliseconds > 250;
                 bool bright = hover || halo > .5 || waiting, day = Appearance.Light;
                 var mark = day && logoBlack != null ? logoBlack : logo;
-                using (var bmp = new Bitmap(side, side, PixelFormat.Format32bppArgb))
+                double rt = (DateTime.Now - rippleAt).TotalMilliseconds / 520;
+                // Only the fish moves at the pace of the screen: the disc under it is drawn again only when it changes.
+                string key = string.Join("|", side, scale.ToString("0.000"), halo.ToString("0.00"), rt >= 0 && rt < 1 ? rt.ToString("0.00") : "-", day, bright, waiting ? spin.ToString("0") : "-", Left, Top, glass == null ? 0 : glass.GetHashCode());
+                if (key != underKey || under == null)
                 {
-                    using (var g = Graphics.FromImage(bmp))
+                    if (under != null) under.Dispose();
+                    under = new Bitmap(side, side, PixelFormat.Format32bppPArgb);
+                    underKey = key;
+                    using (var g = Graphics.FromImage(under))
                     {
                         g.SmoothingMode = SmoothingMode.AntiAlias;
                         g.InterpolationMode = InterpolationMode.HighQualityBicubic;
@@ -685,7 +803,6 @@ namespace Lampfish
                         // The halo of an open window: a soft ring around the disc.
                         for (int i = 3; i >= 1 && halo > .02; i--)
                             using (var pen = new Pen(Color.FromArgb((int)(halo * 34 / i), accent), (i * 1.6f + 1.5f) * k)) g.DrawEllipse(pen, centre - r - 1.5f * k * i, centre - r - 1.5f * k * i, (r + 1.5f * k * i) * 2, (r + 1.5f * k * i) * 2);
-                        double rt = (DateTime.Now - rippleAt).TotalMilliseconds / 520;
                         if (rt >= 0 && rt < 1)
                         {
                             float rr = r + pad * .9f * (float)(1 - Math.Pow(1 - rt, 2));
@@ -693,30 +810,74 @@ namespace Lampfish
                         }
                         using (var shadow = new SolidBrush(Color.FromArgb(70, 0, 0, 0))) g.FillEllipse(shadow, centre - r, centre - r + 1.5f * k, r * 2, r * 2 - 1.5f * k);
                         var disc = new RectangleF(centre - r + 1.5f * k, centre - r + 1.5f * k, r * 2 - 3 * k, r * 2 - 3 * k);
-                        using (var body = new LinearGradientBrush(disc, day ? Color.FromArgb(0xcf, 0xd6, 0xd7) : Color.FromArgb(0x19, 0x1e, 0x1f), day ? Color.FromArgb(0xb4, 0xbc, 0xbe) : Color.FromArgb(0x0b, 0x0f, 0x10), 90f)) g.FillEllipse(body, disc);
+                        if (glass != null && glassScreen.Width > 0)
+                        {
+                            // The still of the screen mapped where the button rests, then a veil, so the fish reads on any wallpaper.
+                            using (var frosted = new TextureBrush(glass, WrapMode.TileFlipXY))
+                            using (var veil = new SolidBrush(day ? Color.FromArgb(170, 0xd6, 0xdc, 0xdd) : Color.FromArgb(150, 0x09, 0x0c, 0x0d)))
+                            {
+                                frosted.ScaleTransform(glassScreen.Width / (float)glass.Width, glassScreen.Height / (float)glass.Height, MatrixOrder.Append);
+                                frosted.TranslateTransform(glassScreen.X - Left, glassScreen.Y - Top, MatrixOrder.Append);
+                                g.FillEllipse(frosted, disc);
+                                g.FillEllipse(veil, disc);
+                            }
+                        }
+                        else
+                            using (var body = new LinearGradientBrush(disc, day ? Color.FromArgb(0xcf, 0xd6, 0xd7) : Color.FromArgb(0x19, 0x1e, 0x1f), day ? Color.FromArgb(0xb4, 0xbc, 0xbe) : Color.FromArgb(0x0b, 0x0f, 0x10), 90f)) g.FillEllipse(body, disc);
                         var tone = day ? Color.FromArgb(0x0b, 0x85, 0x79) : accent;
                         using (var ring = new Pen(bright ? tone : Color.FromArgb(day ? 150 : 110, tone), Math.Max(1.5f, dia / 34f))) g.DrawEllipse(ring, disc);
                         if (waiting)
                             using (var arc = new Pen(accent, Math.Max(2f, 2.6f * k)) { StartCap = LineCap.Round, EndCap = LineCap.Round })
                             { float ra = r + 4.5f * k; g.DrawArc(arc, centre - ra, centre - ra, ra * 2, ra * 2, (float)spin, 100f); }
-                        if (mark != null) { float w = dia * .66f * (float)scale, h = w * mark.Height / mark.Width; g.DrawImage(mark, centre - w / 2, centre - h / 2, w, h); }
+                        if (fish == null && mark != null) { float w = dia * .66f * (float)scale, h = w * mark.Height / mark.Width; g.DrawImage(mark, centre - w / 2, centre - h / 2, w, h); }
                     }
-                    Layered(bmp);
                 }
+                if (frame == null || frame.Width != side) Surface(side);
+                using (var g = Graphics.FromImage(frame))
+                {
+                    g.CompositingMode = CompositingMode.SourceCopy;
+                    g.DrawImageUnscaled(under, 0, 0);
+                    g.CompositingMode = CompositingMode.SourceOver;
+                    g.SmoothingMode = SmoothingMode.AntiAlias;
+                    if (fish != null) { float w = dia * .85f * (float)scale; fish.Draw(g, new RectangleF(centre - w * .523f, centre - w * .508f, w, w), day ? Color.FromArgb(0x0b, 0x0f, 0x10) : Color.White); }
+                }
+                Layered();
+            }
+            Bitmap under, frame;
+            string underKey;
+            IntPtr dib, dibDC, dibOld;
+
+            // A bitmap of Windows that GDI+ draws into directly, premultiplied as UpdateLayeredWindow wants it.
+            void Surface(int side)
+            {
+                Release();
+                var info = new BITMAPINFOHEADER { biSize = 40, biWidth = side, biHeight = -side, biPlanes = 1, biBitCount = 32 };
+                IntPtr bits;
+                dib = CreateDIBSection(IntPtr.Zero, ref info, 0, out bits, IntPtr.Zero, 0);
+                dibDC = CreateCompatibleDC(IntPtr.Zero);
+                dibOld = SelectObject(dibDC, dib);
+                frame = new Bitmap(side, side, side * 4, PixelFormat.Format32bppPArgb, bits);
             }
 
-            void Layered(Bitmap bmp)
+            void Release()
             {
-                IntPtr screen = GetDC(IntPtr.Zero), memory = CreateCompatibleDC(screen), hbitmap = bmp.GetHbitmap(Color.FromArgb(0)), old = SelectObject(memory, hbitmap);
+                if (frame != null) { frame.Dispose(); frame = null; }
+                if (dibDC != IntPtr.Zero) { SelectObject(dibDC, dibOld); DeleteDC(dibDC); dibDC = IntPtr.Zero; }
+                if (dib != IntPtr.Zero) { DeleteObject(dib); dib = IntPtr.Zero; }
+            }
+
+            void Layered()
+            {
+                IntPtr screen = GetDC(IntPtr.Zero);
                 try
                 {
-                    var size = new SIZE { cx = bmp.Width, cy = bmp.Height };
+                    var size = new SIZE { cx = frame.Width, cy = frame.Height };
                     var source = new Native.POINT();
                     var top = new Native.POINT { X = Left, Y = Top };
                     var blend = new BLENDFUNCTION { BlendOp = 0, SourceConstantAlpha = 255, AlphaFormat = 1 };
-                    UpdateLayeredWindow(Handle, screen, ref top, ref size, memory, ref source, 0, ref blend, 2);
+                    UpdateLayeredWindow(Handle, screen, ref top, ref size, dibDC, ref source, 0, ref blend, 2);
                 }
-                finally { SelectObject(memory, old); DeleteObject(hbitmap); DeleteDC(memory); ReleaseDC(IntPtr.Zero, screen); }
+                finally { ReleaseDC(IntPtr.Zero, screen); }
             }
 
             protected override void OnMouseDown(MouseEventArgs e)
@@ -791,6 +952,9 @@ namespace Lampfish
             [DllImport("gdi32.dll")] static extern bool DeleteDC(IntPtr dc);
             [DllImport("gdi32.dll")] static extern IntPtr SelectObject(IntPtr dc, IntPtr obj);
             [DllImport("gdi32.dll")] static extern bool DeleteObject(IntPtr obj);
+            [DllImport("dwmapi.dll")] static extern int DwmFlush();
+            [StructLayout(LayoutKind.Sequential)] struct BITMAPINFOHEADER { public int biSize, biWidth, biHeight; public short biPlanes, biBitCount; public int biCompression, biSizeImage, biXPelsPerMeter, biYPelsPerMeter, biClrUsed, biClrImportant; }
+            [DllImport("gdi32.dll")] static extern IntPtr CreateDIBSection(IntPtr dc, ref BITMAPINFOHEADER info, int usage, out IntPtr bits, IntPtr section, int offset);
         }
     }
 }
