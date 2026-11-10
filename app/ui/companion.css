@@ -12,8 +12,8 @@ body.companion:not(.is-shown) { opacity: 0; transition-duration: .12s; }
 :root.still body.companion { position: relative; isolation: isolate; background: transparent; }
 :root.still body.companion::before { content: ""; position: fixed; inset: -60px; z-index: -1; pointer-events: none;
   background: linear-gradient(var(--still-veil), var(--still-veil)), var(--still-image) var(--still-x) var(--still-y) / var(--still-w) var(--still-h) no-repeat;
-  filter: blur(38px) saturate(1.15); }
-:root.still { --still-veil: rgba(16, 20, 21, .45); }
+  filter: blur(38px) saturate(.85); }
+:root.still { --still-veil: rgba(16, 20, 21, .6); }
 :root.still[data-theme="light"] { --still-veil: rgba(214, 220, 221, .55); }
 /* The thickness set by veil() of companion.js wins over these starting values. */
 .c-head { display: flex; align-items: center; gap: 10px; }

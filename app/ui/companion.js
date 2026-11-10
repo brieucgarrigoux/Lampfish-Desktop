@@ -58,7 +58,7 @@
       const tint = light ? [214, 220, 221] : [16, 20, 21];
       const lin = v => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; };
       const lum = c => .2126 * lin(c[0]) + .7152 * lin(c[1]) + .0722 * lin(c[2]);
-      let a = light ? .55 : .45;
+      let a = light ? .55 : .6;
       for (; a < .95; a += .05) {
         const mix = mean.map((v, i) => v * (1 - a) + tint[i] * a);
         if (light ? lum(mix) >= .55 : lum(mix) <= .02) break;
