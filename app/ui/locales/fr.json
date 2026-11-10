@@ -1750,6 +1750,8 @@
  "No capture yet": "Aucune capture pour l'instant",
  "Free up memory in Tasks": "Libérer de la mémoire dans Tasks",
  "Theme": "Thème",
+ "Modules": "Modules",
+ "Add or remove modules": "Ajouter ou retirer des modules",
  "Claude usage": "Usage de Claude",
  "Reads the Claude Code sign-in of this PC and asks api.anthropic.com every 3 minutes how much of the plan is used": "Lit la connexion de Claude Code sur ce PC et demande à api.anthropic.com toutes les 3 minutes quelle part du forfait est utilisée",
  "Now": "Maintenant",

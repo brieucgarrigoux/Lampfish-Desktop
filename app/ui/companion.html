@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="shell.css">
 <link rel="stylesheet" href="companion.css">
 <link rel="stylesheet" href="light.css">
+<link rel="stylesheet" href="material.css">
 </head>
 <body class="companion">
   <header class="c-head">
@@ -23,7 +24,7 @@
     <button type="button" role="tab" data-tab="dashboard" aria-selected="true" title="Dashboard"><svg class="ph" aria-hidden="true"><use href="icons.svg#squares-four"/></svg><span>Dashboard</span></button>
     <button type="button" role="tab" data-tab="quick" aria-selected="false" title="Settings"><svg class="ph" aria-hidden="true"><use href="icons.svg#sliders"/></svg><span>Settings</span></button>
     <button type="button" role="tab" data-tab="desktop" aria-selected="false" title="Desktop"><svg class="ph" aria-hidden="true"><use href="icons.svg#desktop"/></svg><span>Desktop</span></button>
-    <button type="button" role="tab" data-tab="claude" aria-selected="false" title="Claude"><svg class="ph" aria-hidden="true"><use href="icons.svg#chart-pie-slice"/></svg><span>Claude</span></button>
+    <button type="button" role="tab" data-tab="claude" aria-selected="false" title="Modules"><svg class="ph" aria-hidden="true"><use href="icons.svg#puzzle-piece"/></svg><span>Modules</span></button>
     <button type="button" role="tab" data-tab="note" aria-selected="false" title="Note"><svg class="ph" aria-hidden="true"><use href="icons.svg#note"/></svg><span>Note</span></button>
     <button type="button" role="tab" data-tab="capture" aria-selected="false" title="Capture"><svg class="ph" aria-hidden="true"><use href="icons.svg#scan"/></svg><span>Capture</span></button>
     <button type="button" role="tab" data-tab="shelf" aria-selected="false" title="Shelf"><svg class="ph" aria-hidden="true"><use href="icons.svg#tray"/></svg><span>Shelf</span></button>
@@ -50,10 +51,12 @@
   </section>
 
   <section class="c-pane" data-pane="claude" hidden>
+    <div class="c-subhead"><span>Claude usage</span></div>
     <div class="security security--high c-dials c-dials--claude"><div class="dials dials--small" id="c-claude-dials"></div></div>
     <p class="c-claude__note" id="c-claude-note" hidden></p>
     <div class="c-subhead" id="c-claude-head"><span>This week</span></div>
     <div class="group" id="c-claude-rows"></div>
+    <button type="button" class="link c-modules" id="c-modules"><svg class="ph" aria-hidden="true"><use href="icons.svg#puzzle-piece"/></svg>Add or remove modules</button>
   </section>
 
   <section class="c-pane" data-pane="customize" hidden>
@@ -108,6 +111,15 @@
   </section>
 
   <section class="c-pane" data-pane="desktop" hidden>
+    <div class="c-still">
+      <img id="c-still-img" alt="">
+      <div class="c-still__bar">
+        <b id="c-still-name" translate="no"></b>
+        <button type="button" id="c-wp-prev" title="Previous" aria-label="Previous"><svg class="ph" aria-hidden="true"><use href="icons.svg#caret-left"/></svg></button>
+        <button type="button" id="c-wp-pause" title="Pause" aria-label="Pause"><svg class="ph" aria-hidden="true"><use href="icons.svg#pause"/></svg></button>
+        <button type="button" id="c-wp-next" title="Next" aria-label="Next"><svg class="ph" aria-hidden="true"><use href="icons.svg#caret-right"/></svg></button>
+      </div>
+    </div>
     <div class="c-subhead"><span>Arrange the icons</span><button type="button" class="link" id="c-undo"><svg class="ph" aria-hidden="true"><use href="icons.svg#arrow-u-up-left"/></svg>Undo</button></div>
     <div class="chips c-chips" id="c-arrange" role="group" aria-label="Arrange the icons"></div>
     <div class="c-subhead"><span>Icon size</span></div>
@@ -123,15 +135,8 @@
     <div class="group">
       <label class="toggle"><input type="checkbox" id="c-autohide"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#caret-line-down"/></svg><span>Hide the taskbar<small>It comes back under the pointer</small></span></span></label>
     </div>
-    <div class="c-subhead"><span>Wallpaper</span></div>
-    <div class="c-wall">
-      <button type="button" class="button" id="c-wp-prev"><svg class="ph" aria-hidden="true"><use href="icons.svg#caret-left"/></svg>Previous</button>
-      <button type="button" class="button" id="c-wp-pause"><svg class="ph" aria-hidden="true"><use href="icons.svg#pause"/></svg><span>Pause</span></button>
-      <button type="button" class="button" id="c-wp-next">Next<svg class="ph" aria-hidden="true"><use href="icons.svg#caret-right"/></svg></button>
-    </div>
   </section>
 
-  <footer class="c-foot"><button type="button" class="link" id="c-go"><svg class="ph" aria-hidden="true"><use href="icons.svg#arrow-square-out"/></svg></button></footer>
 <script src="base.js"></script>
 <script src="dials.js"></script>
 <script src="instruments.js"></script>

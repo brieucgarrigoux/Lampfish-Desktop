@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
@@ -16,6 +16,11 @@ namespace Lampfish
         readonly WebView2 view;
         readonly string page;
         readonly Action<Dictionary<string, object>> receive;
+        bool backdrop;
+
+        // Acrylic behind the page, set before the window is shown. A window that fades by transparency loses it: Windows paints
+        // no material under a layered window, so such a window never touches Opacity.
+        public bool Acrylic { get; set; }
 
         public PageForm(string page, Action<Dictionary<string, object>> receive)
         {
@@ -29,13 +34,20 @@ namespace Lampfish
             Appearance.Changed += Restyle;
         }
 
+        void Colors()
+        {
+            BackColor = backdrop ? Color.Black : Appearance.Back;
+            view.DefaultBackgroundColor = backdrop ? Color.Transparent : BackColor;
+        }
+
         void Restyle()
         {
-            BackColor = Appearance.Back;
-            view.DefaultBackgroundColor = BackColor;
-            if (IsHandleCreated) Native.DarkFrame(Handle, Appearance.Light);
-            Send(Appearance.Message());
+            Colors();
+            if (IsHandleCreated) Native.DarkFrame(Handle, Appearance.Light, backdrop);
+            SendAppearance();
         }
+
+        void SendAppearance() { Send(new { type = "appearance", light = Appearance.Light, mica = backdrop }); }
 
         protected override void Dispose(bool disposing)
         {
@@ -63,6 +75,7 @@ namespace Lampfish
                 catch (Exception ex) { Program.Log(ex); }
             };
             await core.AddScriptToExecuteOnDocumentCreatedAsync(Language.Script());
+            core.NavigationCompleted += (s, e) => SendAppearance();
             core.Navigate("https://" + WallpaperForm.AppHost + "/app/ui/" + page);
         }
 
@@ -71,10 +84,20 @@ namespace Lampfish
             if (view.CoreWebView2 != null) view.CoreWebView2.PostWebMessageAsJson(json.Serialize(message));
         }
 
+        // The material is asked for once the window is on screen: asked at its creation, Windows never painted it on this borderless window.
+        protected override void OnShown(EventArgs e)
+        {
+            base.OnShown(e);
+            if (!Acrylic || backdrop) return;
+            backdrop = Native.Mica(Handle, 3);
+            if (backdrop) Restyle();
+        }
+
         protected override void OnHandleCreated(EventArgs e)
         {
             base.OnHandleCreated(e);
-            Native.DarkFrame(Handle, Appearance.Light);
+            Native.DarkFrame(Handle, Appearance.Light, backdrop);
+            Colors();
         }
     }
 }

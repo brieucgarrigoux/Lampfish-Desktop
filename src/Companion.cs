@@ -251,10 +251,11 @@ namespace Lampfish
                 {
                     popup = new PageForm("companion.html", FromPage)
                     {
-                        FormBorderStyle = FormBorderStyle.None, ShowInTaskbar = false, TopMost = true, StartPosition = FormStartPosition.Manual, Text = "lampfish", Opacity = 0,
+                        FormBorderStyle = FormBorderStyle.None, ShowInTaskbar = false, TopMost = true, StartPosition = FormStartPosition.Manual, Text = "lampfish",
                     };
                     popup.Deactivate += (s, e) => { if (popup != null && !opening) { Conceal(); hiddenAt = DateTime.Now; idle.Start(); refresh.Stop(); } };
                     popup.Shown += (s, e) => Native.Rounded(popup.Handle);
+                    popup.HandleCreated += (s, e) => Cloak(true);
                     // The page forgets what it showed, so the next opening never flashes the last one.
                     popup.VisibleChanged += (s, e) =>
                     {
@@ -271,13 +272,14 @@ namespace Lampfish
                 else
                 {
                     Position();
-                    popup.Opacity = 0;
+                    Cloak(true);
                     popup.Show();
                     SendData(true);
                 }
             }
             catch (Exception ex) { Program.Log(ex); opening = false; if (dot != null) dot.Opening(false); return; }
             refresh.Start();
+            SendStill(0);
             AudioDevices.Watch("companion", tab == "audio");
             // If the page never answers, the window shows anyway.
             var guard = new Timer { Interval = 2500 };
@@ -285,7 +287,38 @@ namespace Lampfish
             guard.Start();
         }
 
-        // The window slides out of the button while it fades in.
+        // A picture of the wallpaper of the screen the assistant is on, for the top of Desktop.
+        static int stillTurn;
+        static async void SendStill(int delay)
+        {
+            int mine = ++stillTurn;
+            if (delay > 0) await System.Threading.Tasks.Task.Delay(delay);
+            if (mine != stillTurn || popup == null || popup.IsDisposed) return;
+            WallpaperForm form = null;
+            var center = new Point(popup.Left + popup.Width / 2, popup.Top + popup.Height / 2);
+            Program.ForEachWallpaper(f => { if (form == null || f.Screen.Contains(center)) form = f; });
+            if (form == null) return;
+            string path = Path.Combine(Program.DataFolder("Wallpaper"), "assistant-still.jpg");
+            if (!await form.Snapshot(path)) return;
+            try
+            {
+                string url = "data:image/jpeg;base64," + Convert.ToBase64String(File.ReadAllBytes(path));
+                string name = string.IsNullOrEmpty(form.ShownWallpaper) ? "" : Path.GetFileNameWithoutExtension(form.ShownWallpaper.TrimEnd('\\', '/'));
+                if (mine == stillTurn && popup != null && !popup.IsDisposed) popup.Send(new { type = "companion.still", url, name });
+            }
+            catch (Exception ex) { Program.Log(ex); }
+        }
+
+        // Windows keeps the window drawn but off the screen until its page is ready: the material shows no empty pane meanwhile,
+        // and the page keeps painting (a window hidden or faded out would not).
+        static void Cloak(bool on)
+        {
+            if (popup == null || popup.IsDisposed || !popup.IsHandleCreated) return;
+            int v = on ? 1 : 0;
+            Native.DwmSetWindowAttribute(popup.Handle, 13, ref v, 4);
+        }
+
+        // The window slides out of the button while its page fades in.
         static void Reveal()
         {
             if (!opening || popup == null || popup.IsDisposed) return;
@@ -298,14 +331,15 @@ namespace Lampfish
             if (dot == null || !dot.Held) popup.Activate();
             // The window slides out from behind the button: over it, it would cover the button with a pale rectangle for the length of the slide.
             if (dot != null) { dot.Raise(); dot.Opening(false); dot.Lit(true); }
+            Cloak(false);
+            popup.Send(new { type = "companion.shown" });
             var timer = new Timer { Interval = 12 };
             timer.Tick += (s, e) =>
             {
                 if (popup == null || popup.IsDisposed || !popup.Visible) { timer.Stop(); timer.Dispose(); return; }
                 double t = Math.Min(1, (DateTime.Now - started).TotalMilliseconds / 180), k = 1 - Math.Pow(1 - t, 3);
-                popup.Opacity = k;
                 popup.Left = end + (int)Math.Round(slide * (1 - k));
-                if (t >= 1) { timer.Stop(); timer.Dispose(); popup.Opacity = 1; popup.Left = end; }
+                if (t >= 1) { timer.Stop(); timer.Dispose(); popup.Left = end; }
             };
             timer.Start();
         }
@@ -316,6 +350,7 @@ namespace Lampfish
             if (popup == null || popup.IsDisposed || !popup.Visible || closing) return;
             closing = true;
             if (dot != null) dot.Raise();
+            popup.Send(new { type = "companion.leaving" });
             int start = popup.Left, back = slide;
             var started = DateTime.Now;
             var timer = new Timer { Interval = 12 };
@@ -324,7 +359,6 @@ namespace Lampfish
                 double t = popup == null || popup.IsDisposed ? 1 : Math.Min(1, (DateTime.Now - started).TotalMilliseconds / 140), k = t * t;
                 if (popup != null && !popup.IsDisposed)
                 {
-                    popup.Opacity = 1 - k;
                     popup.Left = start + (int)Math.Round(back * k);
                 }
                 if (t < 1) return;
@@ -332,6 +366,7 @@ namespace Lampfish
                 timer.Dispose();
                 closing = false;
                 if (popup == null || popup.IsDisposed) return;
+                Cloak(true);
                 popup.Hide();
                 popup.Left = start;
             };
@@ -432,7 +467,7 @@ namespace Lampfish
             string action = Text(m, "action");
             switch (action)
             {
-                case "companion.ready": SendData(opening); return;
+                case "companion.ready": SendData(opening); if (opening) SendStill(0); return;
                 case "companion.painted": Reveal(); return;
                 case "companion.tab": tab = Text(m, "tab"); AudioDevices.Watch("companion", tab == "audio"); SendData(); return;
                 case "companion.convert":
@@ -451,6 +486,8 @@ namespace Lampfish
                     else if (op == "previous") Program.PreviousWallpaper();
                     else if (op == "pause") Program.TogglePause();
                     SendData();
+                    // The new wallpaper needs a moment to load and fade in before its picture is taken.
+                    if (op != "pause") SendStill(1600);
                     return;
                 }
                 case "companion.theme": Moods.Step(Convert.ToInt32(m["step"]) < 0 ? -1 : 1); SendData(); return;

@@ -18,8 +18,7 @@
     $('c-custom').setAttribute('aria-pressed', String(name === 'customize'));
     for (const b of document.querySelectorAll('[data-tab]')) b.setAttribute('aria-selected', String(b.dataset.tab === name));
     for (const p of document.querySelectorAll('[data-pane]')) p.hidden = p.dataset.pane !== name;
-    $('c-go').innerHTML = icon('arrow-square-out');
-    $('c-go').append(tr(GO[name][0]));
+    $('c-open').title = tr(GO[name][0]);
     if (tell) send('companion.tab', { tab: name });
     if (name === 'note') setTimeout(() => $('c-text').focus(), 30);
     if (name === 'notes') setTimeout(() => $('c-find').focus(), 30);
@@ -218,7 +217,7 @@
   }
 
   // The tabs are arranged from here too, the same choice as the Assistant page of the app.
-  const TAB_NAMES = { dashboard: 'Dashboard', quick: 'Settings', claude: 'Claude', note: 'Note', capture: 'Capture', shelf: 'Shelf', audio: 'Audio', notes: 'Notes', convert: 'Convert', desktop: 'Desktop' };
+  const TAB_NAMES = { dashboard: 'Dashboard', quick: 'Settings', claude: 'Modules', note: 'Note', capture: 'Capture', shelf: 'Shelf', audio: 'Audio', notes: 'Notes', convert: 'Convert', desktop: 'Desktop' };
   function saveTabs(order, hidden) { send('companion.tabs', { order, hidden }); }
   function customize() {
     const nav = document.querySelector('.c-tabs'), order = [...nav.children].map(b => b.dataset.tab), hidden = data.hiddenTabs || [];
@@ -377,7 +376,7 @@
     for (const b of $('c-arrange').children) b.setAttribute('aria-pressed', String(b.dataset.value === d.arrangement));
     const near = SIZES.map(z => z[0]).reduce((a, b) => Math.abs(b - d.iconSize) < Math.abs(a - d.iconSize) ? b : a);
     for (const b of $('c-size').children) b.setAttribute('aria-checked', String(Number(b.dataset.value) === near));
-    $('c-wp-pause').querySelector('span').textContent = tr(d.paused ? 'Resume' : 'Pause');
+    $('c-wp-pause').title = $('c-wp-pause').ariaLabel = tr(d.paused ? 'Resume' : 'Pause');
     $('c-wp-pause').querySelector('use').setAttribute('href', 'icons.svg#' + (d.paused ? 'play' : 'pause'));
   }
 
@@ -405,17 +404,19 @@
   let hintTimer = 0;
   webview.addEventListener('message', e => {
     const m = e.data;
+    if (m.type === 'companion.shown') { document.body.classList.add('is-shown'); return; }
+    if (m.type === 'companion.still') { $('c-still-img').src = m.url || ''; $('c-still-name').textContent = m.name || ''; return; }
+    if (m.type === 'companion.leaving') { document.body.classList.remove('is-shown'); return; }
     if (m.type === 'companion.data') {
       data = m;
       const off = (m.hiddenTabs || []).slice();
-      if (!(m.claude && m.claude.on)) off.push('claude');
       const nav = document.querySelector('.c-tabs');
       for (const id of m.tabOrder || []) { const b = nav.querySelector(`[data-tab="${id}"]`); if (b) nav.append(b); }
       for (const b of document.querySelectorAll('[data-tab]')) b.hidden = off.includes(b.dataset.tab);
       if (off.includes(tab)) { const first = [...document.querySelectorAll('[data-tab]')].find(b => !b.hidden); if (first) show(first.dataset.tab, false); }
       if (m.tab && m.tab !== tab && tab !== 'customize' && GO[m.tab]) show(m.tab, false);
       if (m.open) {
-        // The window itself slides and fades in: the page only has to say when its data is drawn.
+        // The window slides in and the page fades once it is shown: the page only has to say when its data is drawn.
         document.body.classList.add('is-ready');
         if (tab === 'note') $('c-text').focus();
         if (tab === 'notes') $('c-find').focus();
@@ -478,12 +479,12 @@
     b.addEventListener('click', () => act('arrange.iconSize', { value }));
     $('c-size').append(b);
   }
-  $('c-go').addEventListener('click', () => { const [, view] = GO[tab]; send(view === 'notes' ? 'companion.openNote' : 'companion.open', view === 'notes' ? { name: '' } : { view }); });
-  $('c-open').addEventListener('click', () => send('companion.open', { view: 'home' }));
+  // One way to the window: Open lampfish goes to the page of the open tab.
+  $('c-open').addEventListener('click', () => { const [, view] = GO[tab]; send(view === 'notes' ? 'companion.openNote' : 'companion.open', view === 'notes' ? { name: '' } : { view }); });
+  $('c-modules').addEventListener('click', () => send('companion.open', { view: 'plugins' }));
   $('c-close').addEventListener('click', () => send('companion.close'));
   addEventListener('keydown', e => { if (e.key === 'Escape') send('companion.close'); });
-  $('c-go').innerHTML = icon('arrow-square-out');
-  $('c-go').append(tr(GO[tab][0]));
+  $('c-open').title = tr(GO[tab][0]);
   clock();
   setInterval(clock, 15000);
   send('companion.ready');

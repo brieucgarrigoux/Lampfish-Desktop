@@ -3,6 +3,13 @@
 body.companion { display: flex; flex-direction: column; gap: 12px; height: 100vh; padding: 14px 16px; overflow: hidden; background: var(--wallpaper); }
 /* Nothing shows until the window has its data: the last contents never flash. It grows out of the button. */
 body.companion:not(.is-ready) { visibility: hidden; }
+/* The window slides out of the button; only its page fades, a material cannot show under a window that fades by transparency. */
+body.companion { transition: opacity .16s ease-out; }
+body.companion:not(.is-shown) { opacity: 0; transition-duration: .12s; }
+/* Acrylic blurs what is behind the window: a light veil is enough, the main window keeps its own. */
+:root.mica:has(> body.companion) { background: rgba(9, 12, 13, .3); }
+:root.mica[data-theme="light"]:has(> body.companion) { background: rgba(195, 202, 203, .3); }
+:root.mica body.companion { background: transparent; }
 .c-head { display: flex; align-items: center; gap: 10px; }
 .c-logo { width: 40px; height: 32px; object-fit: contain; }
 .c-open { flex: none; display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; font-size: var(--text-caption); }
@@ -89,8 +96,6 @@ body.companion:not(.is-ready) { visibility: hidden; }
 .c-step, .c-tool { display: grid; place-items: center; width: 26px; height: 26px; padding: 0; border: 0; border-radius: var(--radius-small); background: none; color: var(--text-soft); transition: background var(--fast), color var(--fast); }
 .c-step:hover, .c-tool:hover { background: var(--hover); color: var(--text); }
 .c-tool[aria-pressed="true"] { color: var(--accent); }
-.c-foot { flex: none; margin-top: auto; padding-top: 2px; }
-.c-foot .link { font-size: var(--text-caption); }
 .c-list { flex: 1 1 0; overflow-y: auto; min-height: 0; scrollbar-width: none; }
 .c-list:has(.empty) { flex: none; }
 .c-row .button { display: inline-flex; align-items: center; gap: 8px; }
@@ -119,9 +124,16 @@ body.companion:not(.is-ready) { visibility: hidden; }
 .c-vol input.is-muted { opacity: .45; }
 .c-vol output { flex: none; min-width: 30px; text-align: right; font: var(--text-value) var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-soft); }
 .c-search { flex: none; max-width: none; }
-.c-wall { display: flex; gap: 8px; }
-.c-wall .button { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
-.c-wall svg { flex: none; }
+/* The wallpaper being changed, seen at the top of Desktop with its controls on it. */
+.c-still { flex: none; position: relative; overflow: hidden; border-radius: var(--radius-group); background: #000; }
+.c-still img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.c-still img:not([src]), .c-still img[src=""] { visibility: hidden; }
+.c-still__bar { position: absolute; inset: auto 0 0; display: flex; align-items: center; gap: 6px; padding: 8px 10px; background: linear-gradient(transparent, rgba(0, 0, 0, .72)); }
+.c-still__bar b { flex: 1; min-width: 0; color: #fff; font-weight: 600; font-size: var(--text-body); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.c-still__bar button { flex: none; display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 0; border-radius: var(--radius-control); background: rgba(255, 255, 255, .14); color: #fff; transition: background var(--fast); }
+.c-still__bar button:hover { background: rgba(255, 255, 255, .26); }
+.c-still__bar button:active { transform: scale(.94); }
+.c-modules { align-self: flex-start; margin-top: 2px; }
 .c-convert { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 18px; padding: 26px 18px 20px; border-radius: var(--radius-card); background: var(--group); text-align: center; color: var(--text-soft); }
 .c-convert svg { width: var(--icon-big); height: var(--icon-big); color: var(--text-soft); }
 .c-convert b { font: 600 var(--text-title) var(--display); color: var(--text); }
