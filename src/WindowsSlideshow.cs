@@ -11,7 +11,7 @@ namespace Lampfish
     static class WindowsSlideshow
     {
         [ComImport, Guid("B92B56A9-8B55-4E14-9A89-0199BBB6F93B"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-        interface IDesktopWallpaper
+        internal interface IDesktopWallpaper
         {
             void SetWallpaper([MarshalAs(UnmanagedType.LPWStr)] string monitorId, [MarshalAs(UnmanagedType.LPWStr)] string wallpaper);
             [return: MarshalAs(UnmanagedType.LPWStr)] string GetWallpaper([MarshalAs(UnmanagedType.LPWStr)] string monitorId);
@@ -38,7 +38,7 @@ namespace Lampfish
 
         static string File_ { get { return Path.Combine(Program.DataFolder("Wallpaper"), "windows-slideshow.json"); } }
 
-        static IDesktopWallpaper Open()
+        internal static IDesktopWallpaper Open()
         {
             return (IDesktopWallpaper)Activator.CreateInstance(Type.GetTypeFromCLSID(new Guid("C2CF3110-460E-4FC1-B9D0-8A1C0C9CC4BD")));
         }

@@ -226,6 +226,22 @@ namespace Lampfish
             Navigate(view.CoreWebView2, r, wallpaper);
         }
 
+        public string ShownWallpaper { get { return shown; } }
+
+        // A still of what this screen shows, for the picture Windows keeps behind the live wallpaper.
+        public async Task<bool> Snapshot(string path)
+        {
+            var core = view.CoreWebView2;
+            if (core == null || !loaded) return false;
+            try
+            {
+                using (var file = File.Create(path))
+                    await core.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Jpeg, file);
+                return new FileInfo(path).Length > 0;
+            }
+            catch (Exception ex) { Program.Log(ex); return false; }
+        }
+
         void Navigate(CoreWebView2 core, Settings r, string wallpaper)
         {
             string path = string.IsNullOrEmpty(wallpaper) ? null : Path.Combine(Program.WallpapersFolder, wallpaper);

@@ -160,6 +160,8 @@ function render(state) {
   const before = Lampfish.state;
   Lampfish.state = state;
   $('startup').checked = state.startup;
+  $('mica-follows-row').hidden = !state.mica;
+  $('mica-follows').checked = state.micaFollows !== false;
   $('weather').checked = state.weather;
   $('allow-test').checked = state.speedTest !== false;
   showViews(state.hiddenViews || []);
@@ -307,6 +309,7 @@ addEventListener('drop', e => {
 });
 
 $('startup').addEventListener('change', () => send('startup'));
+$('mica-follows').addEventListener('change', e => send('display.micaFollows', { value: e.target.checked }));
 $('weather').addEventListener('change', () => { send('weather'); send('home.weather'); });
 $('allow-test').addEventListener('change', () => send('speedTest', { value: $('allow-test').checked }));
 

@@ -47,6 +47,7 @@ namespace Lampfish
         public string Fit = "fill";
         public int Slideshow = 0;
         public bool Reactive = false;
+        public bool MicaFollows = true;
         public int Zoom = 100;
         public string Skin = "dark";
         public List<MoodSetting> Moods = new List<MoodSetting>();
@@ -201,6 +202,7 @@ namespace Lampfish
                 fullscreen.Tick += (s, e) => UpdateVisibility();
                 fullscreen.Start();
 
+                WindowsBackdrop.Start();
                 Start(!background || requestedFolder != null);
                 Application.Run();
                 GC.KeepAlive(watcher);
@@ -361,6 +363,7 @@ namespace Lampfish
                 Desktop.ArrangeWallpaperWindows();
                 UpdateVisibility();
                 SendState();
+                WindowsBackdrop.Soon();
             }
             catch (Exception ex) { Log(ex); }
             finally
@@ -467,6 +470,7 @@ namespace Lampfish
         static void Apply(bool fade = true)
         {
             ForEachWallpaper(f => f.Show(R, WallpaperOf(f.Screen), fade));
+            WindowsBackdrop.Soon();
         }
 
         // Previous and Next walk the library in the order of the Wallpaper page, so the next one is always the one that comes after in the grid.
@@ -537,9 +541,9 @@ namespace Lampfish
 
         public static int WallpaperCount { get { return ListWallpapers().Count(); } }
 
-        static void Adjust(bool reloadOtherwise) { ForEachWallpaper(f => f.Adjust(R, reloadOtherwise)); }
+        static void Adjust(bool reloadOtherwise) { ForEachWallpaper(f => f.Adjust(R, reloadOtherwise)); WindowsBackdrop.Soon(); }
 
-        static void Effects() { ForEachWallpaper(f => f.Effects(R)); }
+        static void Effects() { ForEachWallpaper(f => f.Effects(R)); WindowsBackdrop.Soon(); }
 
         // Every setting of the Wallpaper panel goes back to default; the wallpaper itself stays.
         static void ResetWallpaper()
@@ -819,6 +823,7 @@ namespace Lampfish
                 return;
             }
             if (action.StartsWith("companion.")) { if (Companion.Receive(action.Substring(action.IndexOf('.') + 1), m)) SendState(); return; }
+            if (action == "display.micaFollows") { R.MicaFollows = Convert.ToBoolean(m["value"]); Save(); WindowsBackdrop.Changed(); SendState(); return; }
             if (action.StartsWith("winbg.")) { if (WindowsSlideshow.Receive(action.Substring(action.IndexOf('.') + 1), m)) SendState(); return; }
             if (action.StartsWith("grid.")) { if (DesktopGrid.Receive(action.Substring(action.IndexOf('.') + 1), m)) SendState(); return; }
             if (action.StartsWith("claude.")) { if (ClaudeUsage.Receive(action.Substring(action.IndexOf('.') + 1), m)) SendState(); return; }
@@ -997,6 +1002,7 @@ namespace Lampfish
                 companion = Companion.State(),
                 grid = DesktopGrid.State(),
                 windowsSlideshow = WindowsSlideshow.State(),
+                micaFollows = R.MicaFollows,
                 notes = Notes.Summary(),
                 shelf = Shelf.Summary(),
                 weatherPlace = R.WeatherPlace == null ? null : R.WeatherPlace.Label,
@@ -1174,6 +1180,7 @@ namespace Lampfish
             Load();
             try { Mouse.Uninstall(); } catch (Exception ex) { Log(ex); }
             try { WindowsSlideshow.Restore(); } catch (Exception ex) { Log(ex); }
+            try { WindowsBackdrop.Restore(); } catch (Exception ex) { Log(ex); }
             try { Icons.Uninstall(); } catch (Exception ex) { Log(ex); }
             try
             {
@@ -1210,6 +1217,7 @@ namespace Lampfish
             Companion.Stop();
             DesktopGrid.Stop();
             Hotkeys.Stop();
+            try { WindowsBackdrop.Restore(); } catch (Exception ex) { Log(ex); }
             Discard();
             if (settingsWindow != null) settingsWindow.Shutdown();
             Destroy();

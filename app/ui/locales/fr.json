@@ -11,6 +11,8 @@
  "Quit lampfish": "Quitter lampfish",
  "Stops the wallpaper and every service": "Arrête le fond et tous les services",
  "Open with Windows": "Ouvrir avec Windows",
+ "Window tinted by the wallpaper": "Fenêtre teintée par le fond",
+ "A still of it stands in for the Windows picture until lampfish closes": "Une photo du fond remplace l'image de Windows jusqu'à la fermeture de lampfish",
  "Language": "Langue",
  "Automatic": "Automatique",
  "Automatic follows the Windows language": "Automatique suit la langue de Windows",
