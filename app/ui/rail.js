@@ -103,7 +103,7 @@
   const palette = document.createElement('div');
   palette.className = 'goto';
   palette.hidden = true;
-  palette.innerHTML = '<div class="goto__box" role="dialog" aria-modal="true" aria-label="Go to"><div class="goto__field"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.2-4.2"/></svg><input type="text" class="goto__input" autocomplete="off" spellcheck="false" aria-label="Go to"></div><div class="goto__list" role="listbox"></div></div>';
+  palette.innerHTML = '<div class="goto__box" role="dialog" aria-modal="true" aria-label="Go to"><div class="goto__field">' + icon('magnifying-glass') + '<input type="text" class="goto__input" autocomplete="off" spellcheck="false" aria-label="Go to"></div><div class="goto__list" role="listbox"></div></div>';
   document.body.append(palette);
   const input = palette.querySelector('.goto__input'), list = palette.querySelector('.goto__list');
   let results = [], chosen = 0, from = null;

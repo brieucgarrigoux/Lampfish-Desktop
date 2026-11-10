@@ -10,15 +10,14 @@
     return o.toLocaleString(LOCALE, { maximumFractionDigits: o >= 100 || i === 0 ? 0 : 1 }) + ' ' + UNITS[i];
   }
   const day = iso => iso ? new Date(iso).toLocaleDateString(LOCALE, { day: 'numeric', month: 'short', year: 'numeric' }) : '';
-  const svg = path => `<svg viewBox="0 0 24 24" aria-hidden="true">${path}</svg>`;
   const ICONS = {
-    show: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
-    clean: '<path d="M5 7h14M10 7V5h4v2M7 7l1 12.5h8L17 7"/>',
-    restore: '<path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4v4h4"/>',
-    file: '<path d="M6.5 20.5v-17h7l4 4v13z"/><path d="M13.5 3.5v4h4"/>',
-    drive: '<rect x="3.5" y="6.5" width="17" height="11" rx="2"/><path d="M6.5 12h6"/><circle cx="16.5" cy="12" r="1.2"/>',
-    home: '<path d="M4 11 12 4.5l8 6.5"/><path d="M6 9.5V19.5h12V9.5"/>',
-    folder: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+    show: 'folder-open',
+    clean: 'trash',
+    restore: 'arrow-counter-clockwise',
+    file: 'file',
+    drive: 'hard-drive',
+    home: 'house',
+    folder: 'folder-open',
   };
   const WHY = { oldest: 'Kept in {0}: the first one saved', downloads: 'Kept in {0}: the one outside Downloads', name: 'Kept in {0}: the name without a copy number' };
   const running = () => report && (report.phase === 'listing' || report.phase === 'comparing');
@@ -61,7 +60,7 @@
       const keep = document.createElement('button');
       keep.className = 'button dup-keep';
       keep.disabled = !list.length;
-      keep.innerHTML = svg(ICONS.clean) + '<span></span>';
+      keep.innerHTML = icon(ICONS.clean) + '<span></span>';
       keep.lastChild.textContent = list.length === 1 ? tr('Clean up 1 copy') : tr('Clean up {0} copies', list.length);
       keep.addEventListener('click', openRecap);
       keys.append(keep);
@@ -69,7 +68,7 @@
     const go = document.createElement('button');
     go.className = 'keycap-pill keycap-test';
     go.dataset.state = busy ? 'progress' : 'ready';
-    go.innerHTML = '<span class="dome"><svg class="i-ready" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 4.5a6 6 0 1 1 0 12 6 6 0 0 1 0-12zM15 15l5 5"/></svg><svg class="i-progress" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 1 1-8.5 8.5"/></svg></span><span></span>';
+    go.innerHTML = '<span class="dome">' + icon('magnifying-glass', 'i-ready') + icon('lf-spinner', 'i-progress') + '</span><span></span>';
     go.lastChild.textContent = tr(busy ? 'Stop' : done ? 'Search again' : 'Search');
     // The card is redrawn at each step of the search: the turning ring keeps its phase instead of starting over.
     go.querySelector('.i-progress').style.animationDelay = -(performance.now() % 900) + 'ms';
@@ -90,7 +89,7 @@
     }
     const files = new Set(groupsShown().filter(g => g.files.some((f, i) => goes(g, i))).map(g => g.files[0].path)).size;
     const fact = () => `<div class="dup-fact"><strong></strong><span></span><small></small></div>`;
-    dialog.innerHTML = `<header class="dup-dialog__head"><span class="dup-dialog__icon">${svg(ICONS.clean)}</span><div><h2></h2><p></p></div></header>`
+    dialog.innerHTML = `<header class="dup-dialog__head"><span class="dup-dialog__icon">${icon(ICONS.clean)}</span><div><h2></h2><p></p></div></header>`
       + `<div class="dup-facts">${fact()}${fact()}${fact()}</div><p class="dup-dialog__list-title"></p><ul class="dup-dialog__list"></ul>`
       + '<div class="dup-dialog__keys"><button class="button" value="cancel"></button><button class="button button--accent dup-keep"></button></div>';
     dialog.querySelector('h2').textContent = list.length === 1 ? tr('Clean up 1 copy') : tr('Clean up {0} copies', list.length);
@@ -118,9 +117,10 @@
     if (list.length > 5) shownFiles.push(Object.assign(document.createElement('li'), { className: 'dup-dialog__more', textContent: tr('and {0} more', list.length - 5) }));
     dialog.querySelector('ul').replaceChildren(...shownFiles);
     const [cancel, go] = dialog.querySelectorAll('.dup-dialog__keys button');
-    cancel.textContent = tr('Cancel');
+    cancel.innerHTML = icon('x');
+    cancel.append(tr('Cancel'));
     cancel.addEventListener('click', () => dialog.close());
-    go.innerHTML = svg(ICONS.clean) + '<span></span>';
+    go.innerHTML = icon(ICONS.clean) + '<span></span>';
     go.lastChild.textContent = tr('Clean up');
     go.addEventListener('click', () => { dialog.close(); send('duplicates.recycle', { paths: ticked().map(f => f.path) }); });
     dialog.showModal();
@@ -132,7 +132,7 @@
     const r = document.createElement('label');
     r.className = 'row dup-file' + (go ? '' : ' dup-file--kept');
     r.innerHTML = '<input type="checkbox"><span class="dup-file__what"><span class="dup-file__name" translate="no"></span><small><span translate="no"></span></small></span><span class="size"></span>'
-      + `<button class="dup-tool" type="button">${svg(ICONS.show)}</button><button class="dup-tool dup-bin" type="button">${svg(ICONS.clean)}</button>`;
+      + `<button class="dup-tool" type="button">${icon(ICONS.show)}</button><button class="dup-tool dup-bin" type="button">${icon(ICONS.clean)}</button>`;
     r.querySelector('.dup-file__name').textContent = file.name;
     r.querySelector('small span').textContent = file.folder;
     if (file.modified) r.querySelector('small').append(' · ' + day(file.modified));
@@ -172,7 +172,7 @@
     head.innerHTML = '<span class="dup-thumb"></span><span class="dup-group__what"><span class="dup-group__title"></span><small></small></span><span class="dup-same"></span>';
     const thumb = head.querySelector('.dup-thumb');
     if (g.thumb) thumb.append(Object.assign(document.createElement('img'), { src: g.thumb, alt: '' }));
-    else thumb.innerHTML = `<svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${ICONS.file}</svg>`;
+    else thumb.innerHTML = icon(ICONS.file, 'glyph');
     head.querySelector('.dup-group__title').textContent = tr('{0} copies of {1}', g.files.length, size(g.size));
     head.querySelector('small').textContent = tr(WHY[g.why] || WHY.oldest, tr(g.files[0].place));
     head.querySelector('.dup-same').textContent = tr('Identical, byte for byte');
@@ -208,7 +208,7 @@
     if (!list.length) { zone.replaceChildren(); return; }
     const head = document.createElement('div');
     head.className = 'title-section';
-    head.innerHTML = `<h2></h2><button class="link">${svg(ICONS.clean)}<span></span></button>`;
+    head.innerHTML = `<h2></h2><button class="link">${icon(ICONS.clean)}<span></span></button>`;
     head.firstChild.textContent = tr('Cleaned by lampfish');
     head.querySelector('button span').textContent = tr('Open the Recycle Bin');
     head.querySelector('button').addEventListener('click', () => send('duplicates.bin'));
@@ -224,7 +224,7 @@
       r.querySelector('.size').textContent = size(c.size);
       r.title = c.path;
       const back = r.querySelector('button');
-      back.innerHTML = svg(ICONS.restore) + '<span></span>';
+      back.innerHTML = icon(ICONS.restore) + '<span></span>';
       back.lastChild.textContent = tr('Restore');
       back.addEventListener('click', () => { back.disabled = true; send('duplicates.restore', { path: c.path }); });
       return r;
@@ -243,7 +243,7 @@
       const b = document.createElement('button');
       b.className = 'row action f-source' + (r.path && same(r.path, places.source) ? ' active' : '');
       b.disabled = busy;
-      b.innerHTML = `<svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${r.icon}</svg><span class="name-source"><span></span><small></small></span>`;
+      b.innerHTML = `${icon(r.icon, 'glyph')}<span class="name-source"><span></span><small></small></span>`;
       b.querySelector('.name-source span').textContent = r.name;
       b.querySelector('small').textContent = r.note;
       b.addEventListener('click', () => r.choose ? send('duplicates.browse') : send('duplicates.source', { value: r.path }));

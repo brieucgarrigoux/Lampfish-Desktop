@@ -7,29 +7,29 @@
 
   // The bar writes Markdown around the selection, as one would type it. A null entry leaves a gap between groups.
   const TOOLS = [
-    ['Title', '<path d="M6 5v14M18 5v14M6 12h12"/>', () => prefix('# ')],
-    ['Bold', '<path d="M7 5h6a3.5 3.5 0 0 1 0 7H7zM7 12h7a3.5 3.5 0 0 1 0 7H7z"/>', () => wrap('**')],
-    ['Italic', '<path d="M10 5h8M6 19h8M15 5 9 19"/>', () => wrap('*')],
-    ['Strikethrough', '<path d="M4.5 12h15M16 7.5c-.6-1.6-2.1-2.5-4-2.5-2.4 0-4 1.3-4 3 0 1.4.9 2.3 2.6 2.9M8 16.5c.6 1.6 2.1 2.5 4 2.5 2.4 0 4-1.3 4-3 0-.7-.2-1.3-.6-1.8"/>', () => wrap('~~')],
+    ['Title', 'text-h', () => prefix('# ')],
+    ['Bold', 'text-b', () => wrap('**')],
+    ['Italic', 'text-italic', () => wrap('*')],
+    ['Strikethrough', 'text-strikethrough', () => wrap('~~')],
     null,
-    ['List', '<path d="M9 7h11M9 12h11M9 17h11"/><circle cx="4.5" cy="7" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="17" r="1"/>', () => prefix('- ')],
-    ['Numbered list', '<path d="M10 7h10M10 12h10M10 17h10M4 5.5 5.5 5v4M4 9h3M4 14.5c.4-.6 2.6-.8 2.6.5 0 1-2.6 1.6-2.6 3h2.8"/>', () => prefix('1. ')],
-    ['Task', '<rect x="3.5" y="5" width="7" height="7" rx="1.5"/><path d="m5 8.5 1.5 1.5 2.5-3M13.5 8.5h7M3.5 16.5h17"/>', () => prefix('- [ ] ')],
-    ['Quote', '<path d="M5 6v12M9 8h10M9 12h10M9 16h6"/>', () => prefix('> ')],
+    ['List', 'list-bullets', () => prefix('- ')],
+    ['Numbered list', 'list-numbers', () => prefix('1. ')],
+    ['Task', 'check-square', () => prefix('- [ ] ')],
+    ['Quote', 'quotes', () => prefix('> ')],
     null,
-    ['Link', '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>', () => wrap('[', '](https://)')],
-    ['Code', '<path d="m8.5 8-4 4 4 4M15.5 8l4 4-4 4"/>', () => wrap('`')],
-    ['Divider', '<path d="M4 12h16M8 7h8M8 17h8"/>', () => insertLine('---')],
+    ['Link', 'link', () => wrap('[', '](https://)')],
+    ['Code', 'code', () => wrap('`')],
+    ['Divider', 'minus', () => insertLine('---')],
   ];
   for (const tool of TOOLS) {
     if (!tool) { $('n-bar').append(Object.assign(document.createElement('span'), { className: 'n-gap' })); continue; }
-    const [name, icon, run] = tool;
+    const [name, symbol, run] = tool;
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'n-tool';
     b.title = tr(name);
     b.setAttribute('aria-label', tr(name));
-    b.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${icon}</svg>`;
+    b.innerHTML = icon(symbol);
     b.addEventListener('mousedown', e => e.preventDefault());
     b.addEventListener('click', () => { run(); edited(); text.focus(); });
     $('n-bar').append(b);
@@ -94,7 +94,7 @@
       row.setAttribute('aria-current', String(n.name === current));
       row.dataset.name = n.name;
       row.innerHTML = '<button type="button" class="n-item__open"><span class="n-item__top"><span class="n-item__name" translate="no"></span><span class="n-item__when"></span></span><span class="n-item__preview" translate="no"></span><span class="n-item__ask"></span></button>'
-        + '<button type="button" class="n-item__remove"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/></svg></button>';
+        + '<button type="button" class="n-item__remove">' + icon('trash-simple') + '</button>';
       row.querySelector('.n-item__name').textContent = n.name;
       row.querySelector('.n-item__when').textContent = when(n.when);
       row.querySelector('.n-item__preview').textContent = n.preview || tr('Empty');
@@ -112,7 +112,7 @@
     const rest = list.length - limit;
     $('n-more').hidden = rest <= 0;
     paintArmed();
-    if (rest > 0) $('n-more').textContent = tr('Show {0} more', Math.min(rest, PAGE));
+    if (rest > 0) { $('n-more').innerHTML = icon('caret-down'); $('n-more').append(tr('Show {0} more', Math.min(rest, PAGE))); }
     $('n-empty').hidden = !!current;
     $('n-editor').hidden = !current;
     renderThis();
@@ -120,15 +120,15 @@
 
   // The folder is chosen in a list that stays folded: the place in use is enough most of the time.
   const ICONS = {
-    lampfish: '<path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/>',
-    vault: '<path d="M12 3.5 6.5 8 8 17.5l4 3 4-3L17.5 8z"/><path d="M12 3.5 10 12l2 8.5M10 12l-3.5-4M10 12l6 5.5"/>',
-    folder: '<path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/><path d="M12 11v5M9.5 13.5h5"/>',
+    lampfish: 'folder',
+    vault: 'lf-crystal',
+    folder: 'folder-plus',
   };
   const short = path => { const parts = (path || '').split('\\').filter(Boolean); return parts.length > 3 ? '…\\' + parts.slice(-2).join('\\') : path; };
 
   function renderPlaces() {
     const vault = info.vault;
-    $('n-here-icon').innerHTML = info.isDefault ? ICONS.lampfish : vault ? ICONS.vault : ICONS.folder;
+    $('n-here-icon').firstChild.setAttribute('href', 'icons.svg#' + (info.isDefault ? ICONS.lampfish : vault ? ICONS.vault : ICONS.folder));
     $('n-here-name').textContent = info.isDefault ? tr('lampfish notes folder') : vault ? tr('Obsidian: {0}', vault.name) : short(info.folder);
     $('n-where').textContent = short(info.folder);
     $('n-where').title = info.folder || '';
@@ -145,7 +145,7 @@
       b.className = 'row action';
       b.setAttribute('role', 'radio');
       b.setAttribute('aria-checked', String(p.on || (custom && p.path === 'pick')));
-      b.innerHTML = `<span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${ICONS[p.icon]}</svg><span><span class="n-place"></span><small translate="no"></small></span></span>`;
+      b.innerHTML = `<span class="caption">${icon(ICONS[p.icon], 'glyph')}<span><span class="n-place"></span><small translate="no"></small></span></span>`;
       b.querySelector('.n-place').textContent = p.label;
       b.querySelector('small').textContent = p.path === 'pick' && custom ? short(info.folder) : p.detail;
       b.addEventListener('click', () => { if (!p.on || p.path === 'pick') { send('notes.folder', { path: p.path, vault: p.vault, move: $('n-move').checked }); choices(false); } });
@@ -246,8 +246,10 @@
       dirty = true;
       saved('conflict');
       $('n-status').replaceChildren(tr('Changed in another app since it was opened') + ' ');
-      const keep = Object.assign(document.createElement('button'), { type: 'button', className: 'link', textContent: tr('Keep mine') });
-      const reload = Object.assign(document.createElement('button'), { type: 'button', className: 'link', textContent: tr('Load theirs') });
+      const keep = Object.assign(document.createElement('button'), { type: 'button', className: 'link', innerHTML: icon('check') });
+      const reload = Object.assign(document.createElement('button'), { type: 'button', className: 'link', innerHTML: icon('download-simple') });
+      keep.append(tr('Keep mine'));
+      reload.append(tr('Load theirs'));
       keep.addEventListener('click', () => { dirty = true; save(true); });
       reload.addEventListener('click', () => { dirty = false; const n = current; current = null; open(n); });
       $('n-status').append(keep, ' · ', reload);

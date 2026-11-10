@@ -7,21 +7,21 @@
     secureBoot: 'Secure Boot', uac: 'Account control', space: 'Disk space', startup: 'Startup',
   };
   const ICONS = {
-    antivirus: '<path d="M12 3.5 19 6v5.5c0 4.3-3 7.6-7 9-4-1.4-7-4.7-7-9V6z"/><path d="m9 12 2 2 4-4"/>',
-    firewall: '<rect x="4" y="5.5" width="16" height="13" rx="1.5"/><path d="M4 9.8h16M4 14.2h16M9.5 5.5v4.3M14.5 9.8v4.4M9.5 14.2v4.3"/>',
-    updates: '<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4v4h-4"/>',
-    restart: '<path d="M12 3.5v8"/><path d="M7 6.3a7 7 0 1 0 10 0"/>',
-    encryption: '<rect x="5.5" y="10.5" width="13" height="10" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5M12 14.5v2.5"/>',
-    secureBoot: '<rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/><path d="m9.5 12 1.8 1.8 3.2-3.6M9.5 3.5v3M14.5 3.5v3M9.5 17.5v3M14.5 17.5v3M3.5 9.5h3M3.5 14.5h3M17.5 9.5h3M17.5 14.5h3"/>',
-    uac: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/>',
-    space: '<rect x="3.5" y="6.5" width="17" height="11" rx="2"/><path d="M6.5 12h6"/><circle cx="16.5" cy="12" r="1.2"/>',
-    startup: '<path d="M12 3.5c3 2 4.5 5 4.5 9l-2 3h-5l-2-3c0-4 1.5-7 4.5-9z"/><path d="M9.5 15.5 8 20.5l4-2 4 2-1.5-5"/><circle cx="12" cy="9.5" r="1.5"/>',
-    processor: '<rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/><rect x="9.5" y="9.5" width="5" height="5" rx=".8"/><path d="M9.5 3.5v3M14.5 3.5v3M9.5 17.5v3M14.5 17.5v3M3.5 9.5h3M3.5 14.5h3M17.5 9.5h3M17.5 14.5h3"/>',
-    memory: '<rect x="3.5" y="7" width="17" height="9.5" rx="1.5"/><path d="M7.5 10.5v2.5M11 10.5v2.5M14.5 10.5v2.5M6 16.5v2.5M18 16.5v2.5"/>',
-    disk: '<rect x="3.5" y="6.5" width="17" height="11" rx="2"/><path d="M6.5 12h6"/><circle cx="16.5" cy="12" r="1.2"/>',
-    uptime: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
-    free: '<path d="M4 15.5a8 8 0 1 1 16 0"/><path d="M12 15.5 15.5 10"/><path d="M4 19.5h16"/>',
-    heat: '<path d="M10 14.5V5a2 2 0 0 1 4 0v9.5a4 4 0 1 1-4 0z"/><path d="M12 11v5"/>',
+    antivirus: 'shield-check',
+    firewall: 'lf-firewall',
+    updates: 'arrows-clockwise',
+    restart: 'arrow-clockwise',
+    encryption: 'lock-simple',
+    secureBoot: 'lf-secure-boot',
+    uac: 'user-gear',
+    space: 'hard-drive',
+    startup: 'rocket-launch',
+    processor: 'cpu',
+    memory: 'lf-memory',
+    disk: 'hard-drive',
+    uptime: 'clock',
+    free: 'chart-pie',
+    heat: 'thermometer-simple',
   };
   const MEASURES = { processor: 'Processor', memory: 'Memory', disk: 'Disk activity', uptime: 'Since restart', startup: 'At startup', free: 'Free space', heat: 'Heat' };
   const ACTIONS = { 'view:files': 'Open Storage', 'view:tasks': 'Open Tasks', 'view:hardware': 'Open Hardware', free: 'Free up memory', startup: 'Open the startup apps', power: 'Choose the power mode' };
@@ -29,7 +29,6 @@
   const LAMPS = { ok: 'high', warn: 'medium', bad: 'low' };
   const worst = list => list.some(x => x.level === 'bad') ? 'bad' : list.some(x => x.level === 'warn') ? 'warn' : 'ok';
   const state = level => level === 'unknown' ? 'neutral' : level;
-  const svg = path => `<svg viewBox="0 0 24 24" aria-hidden="true">${path}</svg>`;
 
   function act(action) {
     if (action.startsWith('view:')) showView(action.slice(5));
@@ -38,15 +37,16 @@
   }
 
   function link(action) {
-    const b = Object.assign(document.createElement('button'), { className: 'link', textContent: tr(ACTIONS[action] || 'Open') });
+    const b = Object.assign(document.createElement('button'), { className: 'link', innerHTML: icon(action === 'free' ? 'broom' : 'arrow-square-out') });
+    b.append(tr(ACTIONS[action] || 'Open'));
     b.addEventListener('click', () => act(action));
     return b;
   }
 
-  function readout(level, icon, title, detail, value, action) {
+  function readout(level, symbol, title, detail, value, action) {
     const el = document.createElement('div');
     el.className = 'readout check--' + state(level);
-    el.innerHTML = `<svg class="glyph" role="img" viewBox="0 0 24 24">${icon || ICONS.antivirus}</svg><span class="readout__what"><span class="readout__title"></span><span class="readout__detail"></span></span><span class="readout__end"></span>`;
+    el.innerHTML = `<svg class="ph glyph" role="img"><use href="icons.svg#${symbol || ICONS.antivirus}"/></svg><span class="readout__what"><span class="readout__title"></span><span class="readout__detail"></span></span><span class="readout__end"></span>`;
     el.firstChild.setAttribute('aria-label', tr(STATES[state(level)]));
     el.querySelector('.readout__title').textContent = title;
     el.querySelector('.readout__detail').textContent = el.querySelector('.readout__detail').title = detail || '';
@@ -162,7 +162,7 @@
     const on = items.filter(i => i.enabled).length;
     const card = document.createElement('div');
     card.className = 'health-startup check--' + state(c.level);
-    card.innerHTML = `<div class="health-startup__head"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${ICONS.startup}</svg><span class="health-startup__title"></span><span class="health-startup__state"></span></div>`
+    card.innerHTML = `<div class="health-startup__head">${icon(ICONS.startup, 'glyph')}<span class="health-startup__title"></span><span class="health-startup__state"></span></div>`
       + '<p class="health-startup__help"></p><div class="readouts health-startup__apps"></div><div class="health-startup__foot"><span></span></div>';
     card.querySelector('.health-startup__title').textContent = on === 1 ? tr('1 program starts with Windows') : tr('{0} programs start with Windows', on);
     // Fewer than eleven needs no word; more than that gets a lamp and the reason.
@@ -171,7 +171,8 @@
     card.querySelector('.health-startup__help').textContent = tr('They open by themselves at every start, before anything is clicked. Each one makes the start longer and keeps some memory afterwards.');
     card.querySelector('.health-startup__apps').append(...items.map(startupRow));
     card.querySelector('.health-startup__foot span').textContent = tr('Turned off, a program stays installed and still opens when launched.');
-    const open = Object.assign(document.createElement('button'), { className: 'button', textContent: tr('Startup apps of Windows') });
+    const open = Object.assign(document.createElement('button'), { className: 'button', innerHTML: icon('rocket-launch') });
+    open.append(tr('Startup apps of Windows'));
     open.addEventListener('click', () => act('startup'));
     card.querySelector('.health-startup__foot').append(open);
     zone.replaceChildren(card);
@@ -183,7 +184,7 @@
     row.innerHTML = '<span class="health-app__logo"></span><span class="readout__what"><span class="readout__title" translate="no"></span><span class="readout__detail" translate="no"></span></span><span class="readout__end"></span>';
     const logo = row.querySelector('.health-app__logo');
     if (item.icon) logo.append(Object.assign(document.createElement('img'), { src: item.icon, alt: '' }));
-    else logo.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS.startup}</svg>`;
+    else logo.innerHTML = icon(ICONS.startup);
     row.querySelector('.readout__title').textContent = item.name;
     row.querySelector('.readout__detail').textContent = item.publisher || '';
     const end = row.querySelector('.readout__end');
@@ -200,17 +201,17 @@
     return row;
   }
 
-  const EYE = '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>';
+  const EYE = 'eye';
   const PRIVACY = {
-    ads: ['Advertising ID', 'Lets apps show ads based on activity', '<path d="M4 9.5h4l7-4v13l-7-4H4z"/><path d="M8 14.5 9.5 20"/><path d="M18.5 9.5a3.5 3.5 0 0 1 0 5"/>'],
-    tailored: ['Tailored experiences', 'Tips and ads drawn from diagnostic data', '<path d="m12 3.5 2.4 5 5.1.6-3.8 3.5 1 5.2-4.7-2.6-4.7 2.6 1-5.2-3.8-3.5 5.1-.6z"/>'],
-    suggestions: ['Suggestions in Windows', 'Tips and app ads in Start, Settings and the lock screen', '<path d="M9 18h6M10 21h4M12 3.5a6 6 0 0 0-3.5 10.9V16h7v-1.6A6 6 0 0 0 12 3.5z"/>'],
-    typing: ['Inking and typing data', 'Sends typing and handwriting to improve recognition', '<rect x="3" y="6.5" width="18" height="11" rx="2"/><path d="M7 10h.01M10 10h.01M13 10h.01M16 10h.01M8 14h8"/>'],
-    languages: ['Language list for websites', 'Websites can read the languages of Windows', '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 3.5 5.4 3.5 8.5s-1 5.9-3.5 8.5c-2.5-2.6-3.5-5.4-3.5-8.5s1-5.9 3.5-8.5z"/>'],
-    launches: ['App launch tracking', 'Windows notes the apps opened to sort Start and search', '<rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><path d="M17 14v6M14 17h6"/>'],
-    speech: ['Online speech recognition', 'The voice goes to Microsoft to be recognized', '<rect x="9" y="3.5" width="6" height="10.5" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5v3"/>'],
-    feedback: ['Feedback requests', 'Windows asks for an opinion from time to time', '<path d="M4.5 5.5h15v10h-9l-4 3.5v-3.5h-2z"/>'],
-    cloudSearch: ['Cloud search', 'Windows Search also looks in Microsoft accounts', '<path d="M7 18.5a4.5 4.5 0 0 1-.6-9 6 6 0 0 1 11.4 1.6 3.8 3.8 0 0 1-.3 7.4z"/>'],
+    ads: ['Advertising ID', 'Lets apps show ads based on activity', 'megaphone-simple'],
+    tailored: ['Tailored experiences', 'Tips and ads drawn from diagnostic data', 'sparkle'],
+    suggestions: ['Suggestions in Windows', 'Tips and app ads in Start, Settings and the lock screen', 'lightbulb'],
+    typing: ['Inking and typing data', 'Sends typing and handwriting to improve recognition', 'lf-keyboard-keys'],
+    languages: ['Language list for websites', 'Websites can read the languages of Windows', 'translate'],
+    launches: ['App launch tracking', 'Windows notes the apps opened to sort Start and search', 'squares-four'],
+    speech: ['Online speech recognition', 'The voice goes to Microsoft to be recognized', 'microphone'],
+    feedback: ['Feedback requests', 'Windows asks for an opinion from time to time', 'chat'],
+    cloudSearch: ['Cloud search', 'Windows Search also looks in Microsoft accounts', 'cloud'],
   };
   let privacy = null;
   function renderPrivacy() {
@@ -220,14 +221,15 @@
     const on = privacy.filter(p => p.on).length;
     const card = document.createElement('div');
     card.className = 'health-startup check--' + (on ? 'warn' : 'ok');
-    card.innerHTML = `<div class="health-startup__head"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${EYE}</svg><span class="health-startup__title"></span><span class="health-startup__state"></span></div>`
+    card.innerHTML = `<div class="health-startup__head">${icon(EYE, 'glyph')}<span class="health-startup__title"></span><span class="health-startup__state"></span></div>`
       + '<p class="health-startup__help"></p><div class="readouts health-startup__apps"></div><div class="health-startup__foot"><span></span></div>';
     card.querySelector('.health-startup__title').textContent = on === 0 ? tr('Windows shares nothing extra') : on === 1 ? tr('1 kind of sharing is on') : tr('{0} kinds of sharing are on', on);
     card.querySelector('.health-startup__state').textContent = tr('{0} of {1}', on, privacy.length);
     card.querySelector('.health-startup__help').textContent = tr('What Windows sends or shows about how this PC is used. Each switch is the one of the Windows settings, for this user only.');
     card.querySelector('.health-startup__apps').append(...privacy.filter(p => PRIVACY[p.id]).map(privacyRow));
     card.querySelector('.health-startup__foot span').textContent = tr('Turned off, Windows works the same, with fewer ads and suggestions.');
-    const open = Object.assign(document.createElement('button'), { className: 'button', textContent: tr('Privacy settings of Windows') });
+    const open = Object.assign(document.createElement('button'), { className: 'button', innerHTML: icon('lock-key') });
+    open.append(tr('Privacy settings of Windows'));
     open.addEventListener('click', () => act('privacy'));
     card.querySelector('.health-startup__foot').append(open);
     zone.replaceChildren(card);
@@ -235,10 +237,10 @@
   }
 
   function privacyRow(p) {
-    const [title, detail, icon] = PRIVACY[p.id];
+    const [title, detail, symbol] = PRIVACY[p.id];
     const row = document.createElement('div');
     row.className = 'readout health-app' + (p.on ? '' : ' health-app--off');
-    row.innerHTML = `<span class="health-app__logo"><svg viewBox="0 0 24 24" aria-hidden="true">${icon}</svg></span><span class="readout__what"><span class="readout__title"></span><span class="readout__detail"></span></span><span class="readout__end"></span>`;
+    row.innerHTML = `<span class="health-app__logo">${icon(symbol)}</span><span class="readout__what"><span class="readout__title"></span><span class="readout__detail"></span></span><span class="readout__end"></span>`;
     row.querySelector('.readout__title').textContent = tr(title);
     row.querySelector('.readout__detail').textContent = tr(detail);
     const end = row.querySelector('.readout__end');
@@ -265,7 +267,7 @@
       b.className = 'keycap-pill keycap-test';
       b.dataset.state = checking ? 'progress' : 'ready';
       b.disabled = checking;
-      b.innerHTML = '<span class="dome"><svg class="i-ready" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4v4h-4"/></svg><svg class="i-progress" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 1 1-8.5 8.5"/></svg></span><span></span>';
+      b.innerHTML = '<span class="dome">' + icon('arrows-clockwise', 'i-ready') + icon('lf-spinner', 'i-progress') + '</span><span></span>';
       b.lastChild.textContent = tr(checking ? 'Checking…' : 'Check again');
       b.addEventListener('click', () => send('health.scan', { again: true }));
       n.append(b);

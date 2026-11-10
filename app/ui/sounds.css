@@ -14,8 +14,8 @@
 
 .level { display: block; width: 100%; height: 76px; margin-top: 8px; }
 
-.keycap-listen svg { width: 14px; height: 14px; fill: #fff; }
-.keycap-listen.playing svg { fill: var(--accent); }
+.keycap-listen svg { color: #fff; }
+.keycap-listen.playing svg { color: var(--accent); }
 .keycap-listen .icon-stop, .keycap-listen.playing .icon-playback { display: none; }
 .keycap-listen.playing .icon-stop { display: block; }
 
@@ -55,7 +55,7 @@
 .pack-open:hover { background: var(--group-up); }
 .pack-open h3 { margin: 0; font-size: var(--text-body); font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pack-open .count { font: var(--text-caption) var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); }
-.chevron-pack { flex: none; width: 14px; height: 14px; fill: none; stroke: var(--text-pale); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform var(--fast); }
+.chevron-pack { flex: none; color: var(--text-pale); transition: transform var(--fast); }
 .pack.open .chevron-pack { transform: rotate(90deg); }
 .pack.current .pack-open h3::after { content: ""; display: inline-block; width: 6px; height: 6px; margin-left: 8px; border-radius: 50%; background: var(--accent); vertical-align: middle; }
 .pack > .group { display: none; margin: 0; background: none; border-top: 1px solid var(--hairline); border-radius: 0 0 var(--radius-group) var(--radius-group); }
@@ -64,7 +64,6 @@
 .sound .title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sound .duration { font: var(--text-caption) var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-pale); }
 .listen { flex: none; width: 28px; height: 28px; border: 0; border-radius: 50%; display: grid; place-items: center; background: var(--group-up); color: var(--text-soft); transition: color var(--fast), background var(--fast); }
-.listen svg { width: 11px; height: 11px; fill: currentColor; }
 .listen .icon-stop { display: none; }
 .listen:hover { color: var(--text); }
 .sound.listening .listen { background: var(--accent-dim); color: var(--accent); }

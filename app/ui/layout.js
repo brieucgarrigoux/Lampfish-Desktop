@@ -38,7 +38,7 @@
   for (const f of families) {
     for (const s of f.services) {
       dragOrder(s, { peers: () => servicesOf(f), active: () => editing, done: save });
-      s.insertAdjacentHTML('beforeend', '<span class="rail-eye" aria-hidden="true"><svg viewBox="0 0 24 24"><path class="open" d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle class="open" cx="12" cy="12" r="3"/><path class="shut" d="M3.5 12s3.2 4.5 8.5 4.5 8.5-4.5 8.5-4.5M6.5 15l-1.5 2M12 16.5V19M17.5 15l1.5 2"/></svg></span>');
+      s.insertAdjacentHTML('beforeend', '<span class="rail-eye" aria-hidden="true">' + icon('eye', 'open') + icon('eye-closed', 'shut') + '</span>');
     }
     // A family moves as one block: its button and its services are in the same section.
     const moveFamily = (a, b, after) => {

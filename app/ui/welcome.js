@@ -53,7 +53,8 @@
     steps.forEach((s, i) => { s.hidden = i !== step; });
     dots.forEach((d, i) => d.classList.toggle('on', i <= step));
     $('welcome-back').hidden = step === 0;
-    $('welcome-next').textContent = tr(step === steps.length - 1 ? 'Start' : 'Next');
+    $('welcome-next').innerHTML = icon('arrow-right');
+    $('welcome-next').append(tr(step === steps.length - 1 ? 'Start' : 'Next'));
     $('welcome-next').focus();
   }
 
@@ -132,13 +133,14 @@
     zone.querySelector('h2').textContent = tr('First steps');
     zone.querySelector('.h-steps__count').textContent = tr('{0} of {1}', count, STEPS.length);
     const hide = zone.querySelector('.h-steps__hide');
-    hide.textContent = tr('Hide');
+    hide.innerHTML = icon('caret-up');
+    hide.append(tr('Hide'));
     hide.addEventListener('click', () => send('welcome.hide'));
     zone.querySelector('.h-steps__list').append(...STEPS.map(([view, text], i) => {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'h-step' + (done[i] ? ' is-done' : '');
-      b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle class="h-step__ring" cx="12" cy="12" r="8.5"/><path class="h-step__tick" d="m8 12.5 2.8 2.8L16.5 9.5"/></svg><span></span>';
+      b.innerHTML = icon(done[i] ? 'check-circle' : 'circle') + '<span></span>';
       b.querySelector('span').textContent = tr(text);
       b.setAttribute('aria-pressed', String(done[i]));
       b.addEventListener('click', () => { if (view === 'customize') $('h-customize').click(); else showView(view); });

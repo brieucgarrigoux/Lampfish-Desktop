@@ -33,7 +33,7 @@
   display: flex; align-items: center; gap: 7px; width: fit-content; max-width: 100%; box-sizing: border-box; margin: 12px 0 0; padding: 6px 12px 6px 9px;
   border-radius: var(--radius-control); background: var(--group); font: var(--text-caption) var(--numbers); color: var(--text-soft);
 }
-.footer-files svg { flex: none; width: 14px; height: 14px; fill: none; stroke: var(--text-pale); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.footer-files svg { flex: none; color: var(--text-pale); }
 .footer-files span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .footer-files:has(span:empty) { display: none; }
 
@@ -57,14 +57,12 @@ button.element:hover:not(:disabled) i, .element.hover i { background: var(--fill
 
 .crumbs-actions { flex: none; display: flex; align-items: center; gap: 16px; }
 .crumbs-actions .link { display: flex; align-items: center; gap: 6px; }
-.crumbs-actions svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 
 .f-source { gap: 10px; }
 .f-source .name-source { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .f-source .name-source > span, .f-source .name-source small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .f-source .name-source small { font-size: var(--text-caption); color: var(--text-pale); }
 .copy-row { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border-radius: var(--radius-small); color: var(--text-pale); opacity: 0; transition: opacity var(--fast), color var(--fast), background var(--fast); }
-.copy-row svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .element:hover .copy-row, .element:focus-visible .copy-row { opacity: 1; }
 .copy-row:hover { color: var(--text); background: rgba(255, 255, 255, .06); }
 .title-panel { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-top: 8px; }

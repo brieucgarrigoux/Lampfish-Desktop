@@ -25,7 +25,7 @@
     return `<svg viewBox="0 0 78 52" aria-hidden="true"><rect class="screen-v" x=".5" y=".5" width="77" height="51" rx="5"/>${points}</svg>`;
   }
   let naming = false;
-  const REMOVE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg>';
+  const REMOVE = icon('x');
 
   function arrangementTile(key, name) {
     const b = document.createElement('button');
@@ -116,7 +116,7 @@
     const grid = nodes => { const g = document.createElement('div'); g.className = 'arrangements'; g.append(...nodes); return g; };
     const actions = document.createElement('div');
     actions.className = 'dock-actions';
-    actions.innerHTML = '<button class="button-sort" id="dock-undo"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4.5 9.5 9 5M5 9.5h9a5.5 5.5 0 0 1 0 11h-3"/></svg><span></span></button><button class="button-sort" id="dock-original"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4v4h4"/></svg><span></span></button>';
+    actions.innerHTML = '<button class="button-sort" id="dock-undo">' + icon('arrow-u-up-left', 'glyph') + '<span></span></button><button class="button-sort" id="dock-original">' + icon('arrow-counter-clockwise', 'glyph') + '<span></span></button>';
     const [undo, original] = actions.children;
     undo.lastChild.textContent = tr('Undo');
     original.lastChild.textContent = tr('Back to original');
@@ -326,9 +326,9 @@
       const l = document.createElement('div');
       l.className = 'row category';
       l.dataset.cat = c;
-      l.innerHTML = `<span class="handle-cat" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.4"/><circle cx="15" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="18" r="1.4"/></svg></span><span class="name-cat"></span><span class="arrows">
-        <button aria-label="Move up"><svg viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></svg></button>
-        <button aria-label="Move down"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button></span>`;
+      l.innerHTML = `<span class="handle-cat" aria-hidden="true">${icon('dots-six-vertical')}</span><span class="name-cat"></span><span class="arrows">
+        <button aria-label="Move up">${icon('caret-up')}</button>
+        <button aria-label="Move down">${icon('caret-down')}</button></span>`;
       l.querySelector('.name-cat').textContent = CATEGORIES[c] || c;
       dragOrder(l, { peers: () => [...$('categories').children], active: () => true, done: saveCategories, skip: 'button' });
       const [up, down] = l.querySelectorAll('button');

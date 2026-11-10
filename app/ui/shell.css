@@ -27,7 +27,7 @@
 .m-card.chosen, .cr-theme[aria-pressed="true"] { box-shadow: var(--shell-edge), var(--chosen); }
 .event.chosen, .folder-row.chosen, .f-source.active, .task.chosen { background: var(--accent-tint); }
 .event.chosen:hover, .folder-row.chosen:hover, .f-source.active:hover, .task.chosen:hover { background: color-mix(in srgb, var(--accent) 14%, transparent); }
-.event.chosen .glyph, .f-source.active .glyph { stroke: var(--accent); background: var(--accent-dim); }
+.event.chosen .glyph, .f-source.active .glyph { color: var(--accent); background: var(--accent-dim); }
 
 @media (max-width: 900px) {
   html, body { height: auto; min-height: 100%; }

@@ -14,13 +14,13 @@
   const packOf = id => { const sound = s && s.sounds.find(x => x.id === id); return sound ? sound.pack : ''; };
 
   const GLYPHS = [
-    '<path d="M12 3.5v8"/><path d="M7 6.3a7 7 0 1 0 10 0"/>',
-    '<path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5z"/>',
-    '<rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/>',
-    '<rect x="3.5" y="9" width="17" height="7" rx="1.5"/><path d="M7.5 12.5h3M13.5 12.5h3"/>',
-    '<path d="M9 3.5v4M15 3.5v4M7 7.5h10v3a5 5 0 0 1-10 0zM12 15.5v5"/>',
-    '<path d="M12 3.5v13M8.5 7 12 3.5 15.5 7M7 12v3h10v-3M9.5 20.5h5"/>',
-    '<path d="M4.5 16.5a7.5 7.5 0 1 1 15 0"/><path d="m12 16.5 3.5-4.5"/><circle cx="12" cy="16.5" r="1.1"/>',
+    'power',
+    'moon',
+    'lock-simple',
+    'lf-dock',
+    'plug',
+    'usb',
+    'gauge',
   ];
 
   const canvas = $('level'), pen = canvas.getContext('2d');
@@ -179,7 +179,7 @@
         l.tabIndex = 0;
         l.dataset.id = e.id;
         l.title = e.help;
-        l.innerHTML = `<svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${GLYPHS[i] || ''}</svg>
+        l.innerHTML = `${icon(GLYPHS[i] || '', 'glyph')}
           <span class="what"><span class="name-event"></span><span class="sound-event"></span></span>
           <label class="toggler"><input type="checkbox" aria-label="Enable"></label>`;
         l.querySelector('.name-event').textContent = e.label;
@@ -214,7 +214,7 @@
     renderBanner();
   }
 
-  const ICONS = '<svg class="icon-playback" viewBox="0 0 24 24"><path d="M7 4.5 20 12 7 19.5z"/></svg><svg class="icon-stop" viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>';
+  const ICONS = icon('play', 'icon-playback') + icon('stop', 'icon-stop');
   const duration = d => d.toLocaleString(LOCALE, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' s';
 
   function buildList() {
@@ -226,7 +226,7 @@
     for (const [pack, sounds] of packs) {
       const header = document.createElement('div');
       header.className = 'pack-header';
-      header.innerHTML = '<button class="pack-open" aria-expanded="false"><svg class="chevron-pack" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg><h3></h3><span class="count"></span></button>';
+      header.innerHTML = '<button class="pack-open" aria-expanded="false">' + icon('caret-right', 'chevron-pack') + '<h3></h3><span class="count"></span></button>';
       header.querySelector('h3').textContent = pack;
       header.querySelector('.count').textContent = sounds.length;
       header.querySelector('.pack-open').addEventListener('click', () => togglePack(pack));
@@ -234,7 +234,8 @@
         const load = document.createElement('button');
         load.className = 'link load-pair';
         load.dataset.pack = pack;
-        load.textContent = 'Load the pair';
+        load.innerHTML = icon('download-simple');
+        load.append('Load the pair');
         load.addEventListener('click', () => send('station.pair', { pack, event: chosen }));
         header.append(load);
       }
@@ -246,7 +247,7 @@
         row.dataset.id = sound.id;
         row.innerHTML = `<button class="listen" aria-label="Listen">${ICONS}</button><span class="title"></span>
           <span class="duration">${duration(sound.duration)}</span>
-          <span class="players"><button class="chip">Choose</button></span>`;
+          <span class="players"><button class="chip">${icon('check')}Choose</button></span>`;
         row.querySelector('.title').textContent = sound.title;
         row.querySelector('.listen').addEventListener('click', () => {
           if (playback && playback.id === sound.id && !playback.deck) send('station.stop');
@@ -398,7 +399,7 @@
 
     $('station-name').textContent = s.station || 'No dock chosen';
     $('station-state').textContent = !s.station ? '' : s.present ? 'Connected' : 'Not connected';
-    if (!detection) $('station-choose').textContent = s.station ? 'Change dock' : 'Choose my dock';
+    if (!detection) { $('station-choose').innerHTML = icon('plugs'); $('station-choose').append(s.station ? 'Change dock' : 'Choose my dock'); }
     $('station-forget').hidden = !s.station || detection;
     $('sounds-mains').textContent = s.mains ? 'Mains' : 'Battery';
     const history = $('history');
@@ -423,7 +424,7 @@
     if (m.running) {
       detection = true;
       let rest = 30;
-      const show = () => { $('station-choose').textContent = tr('Plug in the dock now… {0} s', rest); };
+      const show = () => { $('station-choose').innerHTML = icon('plugs'); $('station-choose').append(tr('Plug in the dock now… {0} s', rest)); };
       show();
       $('station-forget').hidden = true;
       detectionCount = setInterval(() => { rest = Math.max(0, rest - 1); show(); }, 1000);
@@ -467,7 +468,7 @@
     const heading = text => Object.assign(document.createElement('h2'), { textContent: tr(text) });
     const volume = document.createElement('div');
     volume.className = 'group';
-    volume.innerHTML = '<div class="setting"><label for="dock-volume"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3.5l4.5 3.5v-11L7.5 10z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6M18 6.8a7.4 7.4 0 0 1 0 10.4"/></svg><span>Volume<small>Level of the system sounds</small></span></span><output></output></label><input type="range" id="dock-volume" min="0" max="100" step="1"></div>';
+    volume.innerHTML = '<div class="setting"><label for="dock-volume"><span class="caption">' + icon('speaker-high', 'glyph') + '<span>Volume<small>Level of the system sounds</small></span></span><output></output></label><input type="range" id="dock-volume" min="0" max="100" step="1"></div>';
     const range = volume.querySelector('input');
     range.value = s.volume;
     volume.querySelector('output').textContent = range.value + ' %';
@@ -479,7 +480,7 @@
     for (const e of s.events) {
       const row = document.createElement('label');
       row.className = 'toggle';
-      row.innerHTML = `<input type="checkbox"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${GLYPHS[e.pair] || ''}</svg><span><span class="dock-event"></span><small></small></span></span>`;
+      row.innerHTML = `<input type="checkbox"><span class="caption">${icon(GLYPHS[e.pair] || '', 'glyph')}<span><span class="dock-event"></span><small></small></span></span>`;
       row.querySelector('.dock-event').textContent = e.label;
       const sound = row.querySelector('small');
       sound.textContent = titleOf(e.sound);

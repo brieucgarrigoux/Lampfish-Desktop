@@ -253,23 +253,23 @@
   }
 
   const GLYPHS = {
-    disk: '<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 14h16M8 16.5h.01"/>',
-    lampfish: '<path d="M4.5 11 12 4.5l7.5 6.5V19a1 1 0 0 1-1 1h-4v-5h-5v5h-4a1 1 0 0 1-1-1z"/>',
-    folder: '<path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/>',
-    file: '<path d="M7 3.5h7l4 4v13H7z"/><path d="M14 3.5v4h4"/>',
-    group: '<circle cx="7" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="17" cy="12" r="1.3"/>',
-    videos: '<rect x="3.5" y="6" width="12" height="12" rx="2"/><path d="m15.5 10 5-3v10l-5-3"/>',
-    images: '<rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="m3.5 16 5-5 4 4 2.5-2.5 5.5 5.5"/><circle cx="15.5" cy="9.5" r="1.3"/>',
-    audio: '<path d="M9 17.5V6l10-2v11.5"/><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="15.5" r="2.5"/>',
-    documents: '<path d="M7 3.5h7l4 4v13H7z"/><path d="M14 3.5v4h4M10 12h5M10 15.5h5"/>',
-    code: '<path d="m9 8-4 4 4 4M15 8l4 4-4 4"/>',
-    archives: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M12 4v3M12 9v2M12 13v2"/><rect x="10.5" y="15" width="3" height="3" rx=".6"/>',
-    apps: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
-    system: '<circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.5M12 18v2.5M20.5 12H18M6 12H3.5M18 6l-1.8 1.8M7.8 16.2 6 18M18 18l-1.8-1.8M7.8 7.8 6 6"/>',
-    others: '<circle cx="7" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="17" cy="12" r="1.3"/>',
+    disk: 'hard-drive',
+    lampfish: 'lf-lampfish',
+    folder: 'folder',
+    file: 'file',
+    group: 'dots-three-outline',
+    videos: 'video-camera',
+    images: 'image',
+    audio: 'music-notes-simple',
+    documents: 'file-text',
+    code: 'code',
+    archives: 'file-zip',
+    apps: 'squares-four',
+    system: 'gear',
+    others: 'dots-three-outline',
   };
-  const glyph = name => '<svg class="glyph glyph--small" viewBox="0 0 24 24" aria-hidden="true">' + (GLYPHS[name] || GLYPHS.file) + '</svg>';
-  const ICON_COPY = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6.5a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"/></svg>';
+  const glyph = name => icon(GLYPHS[name] || GLYPHS.file, 'glyph glyph--small');
+  const ICON_COPY = icon('copy');
   function copy(text, message) {
     if (!text) return;
     navigator.clipboard.writeText(text).then(() => toast(message || tr('Copied: {0}', text), false, 2200));
@@ -356,7 +356,7 @@
     const restart = $('f-restart').querySelector('.caption > span');
     restart.firstChild.textContent = f.running ? 'Stop the analysis' : 'Run the analysis again';
     restart.querySelector('small').textContent = f.running ? 'Stops reading the folders' : 'Reads the contents again';
-    $('f-restart').querySelector('.glyph').innerHTML = f.running ? '<rect x="7" y="7" width="10" height="10" rx="1.5"/>' : '<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4v4h-4"/>';
+    $('f-restart').querySelector('.glyph use').setAttribute('href', 'icons.svg#' + (f.running ? 'stop' : 'arrows-clockwise'));
   }
 
   const LANGUAGE_COLORS = {

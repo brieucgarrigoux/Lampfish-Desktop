@@ -4,7 +4,7 @@
 (function () {
   const UNITS = ['bytes', 'KB', 'MB', 'GB'];
   const size = n => { let i = 0; while (n >= 1024 && i < UNITS.length - 1) { n /= 1024; i++; } return n.toLocaleString(LOCALE, { maximumFractionDigits: n >= 100 || i === 0 ? 0 : 1 }) + ' ' + tr(UNITS[i]); };
-  const FILE = '<path d="M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10A.5.5 0 0 1 7 20z"/><path d="M14 3.5V8h4"/>';
+  const FILE = 'file';
 
   // What each kind of file can become. `opts` names the choices that matter for it.
   const TARGETS = {
@@ -31,14 +31,14 @@
   };
   // What a person comes to do: each tile opens the file dialog for that job and leaves the matching choice picked.
   const TOOLS = [
-    { id: 'image', name: 'Change an image', help: 'PNG, JPG, BMP, GIF, TIFF or an icon', wanted: 'png', icon: '<rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="m4.5 17 4.5-4.5 3.5 3.5 2.5-2.5 4.5 4.5"/>' },
-    { id: 'images-pdf', name: 'Images to PDF', help: 'A page for each picture', wanted: 'pdf', icon: '<path d="M7 3.5h7l4 4V20.5H7z"/><path d="M14 3.5V8h4"/><path d="m9.5 17 2-2.5 1.5 1.5 1.5-2 1.5 3z"/>' },
-    { id: 'pdf-images', name: 'PDF to images', help: 'One picture for each page', wanted: 'png', icon: '<path d="M8 3.5h6.5l3.5 3.5v10H8z"/><path d="M5.5 7v13.5h10"/>' },
-    { id: 'merge', name: 'Merge PDFs', help: 'Several files into one', wanted: 'merge', icon: '<path d="M5 5v3a4 4 0 0 0 4 4h6M19 5v3a4 4 0 0 1-4 4"/><path d="M12 12v8M9.5 17.5 12 20l2.5-2.5"/>' },
-    { id: 'pages', name: 'Keep some pages', help: 'Cut a PDF down to the pages you name', wanted: 'pages', icon: '<path d="M7 3.5h7l4 4V20.5H7z"/><path d="M14 3.5V8h4M9.5 12h5M9.5 15.5h3"/>' },
-    { id: 'rotate', name: 'Turn the pages', help: 'Every page of a PDF, the same way', wanted: 'rotate', icon: '<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.5 4.5v4h-4"/>' },
-    { id: 'text', name: 'Text to PDF', help: 'TXT, Markdown or CSV on A4 pages', wanted: 'pdf', icon: '<path d="M5 6.5h14M12 6.5V19M9 19h6"/>' },
-    { id: 'office', name: 'Office to PDF', help: 'Word, Excel and PowerPoint', wanted: 'pdf', icon: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 10v10"/>', office: true },
+    { id: 'image', name: 'Change an image', help: 'PNG, JPG, BMP, GIF, TIFF or an icon', wanted: 'png', icon: 'image' },
+    { id: 'images-pdf', name: 'Images to PDF', help: 'A page for each picture', wanted: 'pdf', icon: 'file-pdf' },
+    { id: 'pdf-images', name: 'PDF to images', help: 'One picture for each page', wanted: 'png', icon: 'images' },
+    { id: 'merge', name: 'Merge PDFs', help: 'Several files into one', wanted: 'merge', icon: 'arrows-merge' },
+    { id: 'pages', name: 'Keep some pages', help: 'Cut a PDF down to the pages you name', wanted: 'pages', icon: 'lf-pages-keep' },
+    { id: 'rotate', name: 'Turn the pages', help: 'Every page of a PDF, the same way', wanted: 'rotate', icon: 'arrow-clockwise' },
+    { id: 'text', name: 'Text to PDF', help: 'TXT, Markdown or CSV on A4 pages', wanted: 'pdf', icon: 'text-t' },
+    { id: 'office', name: 'Office to PDF', help: 'Word, Excel and PowerPoint', wanted: 'pdf', icon: 'file-doc', office: true },
   ];
   let files = [], kind = null, office = {}, target = null, running = false, wanted = null, recent = [];
   const opt = { maxSide: 0, quality: 85, scale: 2, angle: 90, pages: '' };
@@ -51,7 +51,7 @@
       b.type = 'button';
       const missing = t.office && !any;
       b.disabled = missing;
-      b.innerHTML = `<span class="cv-tile__icon"><svg viewBox="0 0 24 24" aria-hidden="true">${t.icon}</svg></span><span class="cv-tile__what"><b></b><small></small></span>`;
+      b.innerHTML = `<span class="cv-tile__icon">${icon(t.icon)}</span><span class="cv-tile__what"><b></b><small></small></span>`;
       b.querySelector('b').textContent = tr(t.name);
       b.querySelector('small').textContent = missing ? tr('Needs Microsoft Office on this PC') : tr(t.help);
       b.addEventListener('click', () => send('convert.pick', { tool: t.id }));
@@ -104,23 +104,23 @@
 
   function row(f, i, active, count) {
     const r = el('div', 'row cv-file' + (active ? '' : ' is-left'));
-    r.innerHTML = `<span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${FILE}</svg><span><span class="cv-name" translate="no"></span><small></small></span></span><span class="cv-tools"></span>`;
+    r.innerHTML = `<span class="caption">${icon(FILE, 'glyph')}<span><span class="cv-name" translate="no"></span><small></small></span></span><span class="cv-tools"></span>`;
     r.querySelector('.cv-name').textContent = f.name;
     r.querySelector('small').textContent = size(f.size);
     const tools = r.querySelector('.cv-tools');
-    const tool = (label, path, run, off) => {
+    const tool = (label, symbol, run, off) => {
       const b = el('button', 'cv-tool');
       b.type = 'button'; b.title = tr(label); b.disabled = !!off;
       b.setAttribute('aria-label', tr(label) + ', ' + f.name);
-      b.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${path}</svg>`;
+      b.innerHTML = icon(symbol);
       b.addEventListener('click', run);
       tools.append(b);
     };
     if (active && count > 1) {
-      tool('Move up', '<path d="m7 14 5-5 5 5"/>', () => move(i, -1), i === 0);
-      tool('Move down', '<path d="m7 10 5 5 5-5"/>', () => move(i, 1), i === files.length - 1);
+      tool('Move up', 'caret-up', () => move(i, -1), i === 0);
+      tool('Move down', 'caret-down', () => move(i, 1), i === files.length - 1);
     }
-    tool('Take off the list', '<path d="m7 7 10 10M17 7 7 17"/>', () => { files.splice(i, 1); if (!files.length) kind = null; paint(); });
+    tool('Take off the list', 'x', () => { files.splice(i, 1); if (!files.length) kind = null; paint(); });
     return r;
   }
 
@@ -144,7 +144,7 @@
     zone.replaceChildren(...names.map(n => {
       const r = el('div', 'row row--setting');
       if (n === 'quality') {
-        r.innerHTML = '<span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.5v9"/><circle cx="12" cy="16.5" r="3"/></svg><span></span></span><div class="cv-range"><input type="range" min="40" max="100" step="5" aria-label=""><output></output></div>';
+        r.innerHTML = '<span class="caption">' + icon('lf-quality', 'glyph') + '<span></span></span><div class="cv-range"><input type="range" min="40" max="100" step="5" aria-label=""><output></output></div>';
         r.querySelector('.caption > span').innerHTML = '<span></span><small></small>';
         r.querySelectorAll('.caption > span > span')[0].textContent = tr('Quality');
         r.querySelector('small').textContent = tr('Higher is sharper and heavier');
@@ -153,7 +153,7 @@
         input.setAttribute('aria-label', tr('Quality'));
         input.addEventListener('input', () => { opt.quality = Number(input.value); out.textContent = input.value; fill(input); });
       } else if (n === 'pages') {
-        r.innerHTML = '<span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10A.5.5 0 0 1 7 20z"/></svg><span><span></span><small></small></span></span><input type="text" class="cv-pages" autocomplete="off" spellcheck="false">';
+        r.innerHTML = '<span class="caption">' + icon('files', 'glyph') + '<span><span></span><small></small></span></span><input type="text" class="cv-pages" autocomplete="off" spellcheck="false">';
         r.querySelectorAll('.caption > span > span')[0].textContent = tr('Pages');
         r.querySelector('small').textContent = tr('Such as 1-3, 5. Empty means every page.');
         const input = r.querySelector('input');
@@ -163,7 +163,7 @@
         input.addEventListener('input', () => { opt.pages = input.value; $('cv-run').disabled = running || (target.pagesRequired && !opt.pages.trim()); });
       } else {
         const c = CHOICES[n];
-        r.innerHTML = '<span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h6"/></svg><span><span></span><small></small></span></span><div class="segments" role="radiogroup"></div>';
+        r.innerHTML = '<span class="caption">' + icon('list', 'glyph') + '<span><span></span><small></small></span></span><div class="segments" role="radiogroup"></div>';
         r.querySelectorAll('.caption > span > span')[0].textContent = tr(c.label);
         r.querySelector('small').textContent = tr(c.help);
         const group = r.querySelector('.segments');
@@ -205,12 +205,14 @@
 
   function result(o, old) {
     const r = el('div', 'row cv-file');
-    r.innerHTML = `<span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${FILE}</svg><span><span class="cv-name" translate="no"></span><small></small></span></span><span class="cv-tools"></span>`;
+    r.innerHTML = `<span class="caption">${icon(FILE, 'glyph')}<span><span class="cv-name" translate="no"></span><small></small></span></span><span class="cv-tools"></span>`;
     r.querySelector('.cv-name').textContent = o.name;
     r.querySelector('small').textContent = old ? size(o.size) + (o.from ? ' · ' + o.from : '') : size(o.size);
     const tools = r.querySelector('.cv-tools');
-    for (const [label, action, cls] of [['Open', 'shelf.open', 'link'], ['Show in File Explorer', 'shelf.reveal', 'link'], ['Save as…', 'convert.save', 'link']]) {
-      const b = el('button', cls, tr(label));
+    for (const [label, action, symbol] of [['Open', 'shelf.open', 'arrow-square-out'], ['Show in File Explorer', 'shelf.reveal', 'folder-open'], ['Save as…', 'convert.save', 'floppy-disk']]) {
+      const b = el('button', 'link');
+      b.innerHTML = icon(symbol);
+      b.append(tr(label));
       b.type = 'button';
       b.addEventListener('click', () => send(action, { name: o.name }));
       tools.append(b);

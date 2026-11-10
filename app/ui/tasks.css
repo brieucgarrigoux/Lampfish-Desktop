@@ -2,12 +2,10 @@
 .t-memory__screen { align-self: flex-start; max-width: 100%; margin-top: 4px; padding: 5px 11px; border-radius: var(--radius-small); background: var(--glass); box-shadow: inset 0 1px 3px rgba(0, 0, 0, .9), 0 1px 0 rgba(255, 255, 255, .06);
   font: 600 var(--text-body) var(--numbers); font-variant-numeric: tabular-nums; color: var(--lamp-hi); text-shadow: 0 0 8px color-mix(in srgb, var(--lamp) 55%, transparent); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .keycap-free { min-width: 168px; }
-.keycap-free svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .keycap-free:disabled:not([data-state="progress"]) { opacity: .45; filter: saturate(.4); }
 .view--tasks { max-width: 920px; margin-inline: auto; }
-.t-free__icon svg { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .t-free__icon { color: var(--accent); background: var(--accent-dim); box-shadow: none; }
-.t-free__icon svg { width: 20px; height: 20px; }
+.t-free__icon svg { width: var(--icon-nav); height: var(--icon-nav); }
 .t-free__all { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 2px 2px -4px; font-size: var(--text-caption); color: var(--text-pale); }
 .t-free__meter { display: block; height: 6px; margin: 2px 2px 0; border-radius: 3px; background: var(--meter); overflow: hidden; }
 .t-free__meter i { display: block; height: 100%; border-radius: 3px; background: var(--fill); }
@@ -18,7 +16,7 @@
 .t-free__row:hover { background: var(--group-up); }
 .t-free__row:has(input:checked) { background: var(--accent-tint); }
 .t-free__warning { display: flex; gap: 8px; align-items: flex-start; margin: 2px 2px 0; font-size: var(--text-caption); line-height: 1.4; color: var(--text-soft); }
-.t-free__warning svg { flex: none; width: 15px; height: 15px; margin-top: 1px; fill: none; stroke: var(--text-pale); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.t-free__warning svg { flex: none; margin-top: 1px; color: var(--text-pale); }
 .t-free__row.closing { opacity: .55; cursor: default; }
 .t-free__row.closing .task__detail { color: var(--accent); }
 .t-free__go { width: 100%; }
@@ -36,7 +34,6 @@
 .t-sheet__head > div { flex: 1; }
 .t-close { flex: none; width: 30px; height: 30px; display: grid; place-items: center; border: 0; border-radius: var(--radius-control); background: none; color: var(--text-soft); transition: background var(--fast), color var(--fast); }
 .t-close:hover { background: var(--group-up); color: var(--text); }
-.t-close svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
 .tasks { overflow: hidden; }
 .task { display: grid; grid-template-columns: 32px minmax(0, 1fr) 64px 84px 74px; gap: 12px; align-items: center; }
 .task--head { padding-block: 8px; font-size: var(--text-caption); color: var(--text-pale); }

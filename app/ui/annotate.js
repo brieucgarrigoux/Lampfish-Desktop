@@ -9,25 +9,25 @@
   let base = null, tool = 'arrow', color = '#0F9D8F', size = 1, current = null;
 
   const TOOLS = [
-    ['pen', 'Pen', 'P', '<path d="M4 19c3-1 4-5 7-6s3 3 6 2 2-6 3-8"/>', 'Draw freely'],
-    ['line', 'Line', 'L', '<path d="M5 19 19 5"/>', 'Drag to draw a line, Shift keeps it straight'],
-    ['arrow', 'Arrow', 'A', '<path d="M5 19 19 5M10 5h9v9"/>', 'Drag from the tail to the tip, Shift keeps it straight'],
-    ['box', 'Frame', 'F', '<rect x="4" y="6" width="16" height="12" rx="2"/>', 'Drag to frame a part'],
-    ['ellipse', 'Ellipse', 'E', '<ellipse cx="12" cy="12" rx="8.5" ry="6.5"/>', 'Drag to circle a part'],
-    ['marker', 'Highlighter', 'H', '<path d="m14.5 4.5 5 5L10 19H5v-5z"/><path d="M4 21h16"/>', 'Drag over text to highlight it'],
-    ['number', 'Number', 'N', '<circle cx="12" cy="12" r="8"/><path d="M10.5 9.5 12.5 8v8"/>', 'Click to place 1, 2, 3… in order'],
-    ['text', 'Text', 'T', '<path d="M5 6V4.5h14V6M12 4.5v15M9 19.5h6"/>', 'Click where the text goes, Enter to place it'],
-    ['pixelate', 'Pixelate', 'X', '<path d="M4 4h5v5H4zM15 4h5v5h-5zM9.5 9.5h5v5h-5zM4 15h5v5H4zM15 15h5v5h-5z"/>', 'Drag over what must not be read'],
-    ['crop', 'Crop', 'C', '<path d="M7 3v14h14M3 7h14v14"/>', 'Drag the part to keep'],
+    ['pen', 'Pen', 'P', 'pen', 'Draw freely'],
+    ['line', 'Line', 'L', 'line-segment', 'Drag to draw a line, Shift keeps it straight'],
+    ['arrow', 'Arrow', 'A', 'arrow-up-right', 'Drag from the tail to the tip, Shift keeps it straight'],
+    ['box', 'Frame', 'F', 'rectangle', 'Drag to frame a part'],
+    ['ellipse', 'Ellipse', 'E', 'lf-ellipse', 'Drag to circle a part'],
+    ['marker', 'Highlighter', 'H', 'highlighter', 'Drag over text to highlight it'],
+    ['number', 'Number', 'N', 'number-circle-one', 'Click to place 1, 2, 3… in order'],
+    ['text', 'Text', 'T', 'text-t', 'Click where the text goes, Enter to place it'],
+    ['pixelate', 'Pixelate', 'X', 'checkerboard', 'Drag over what must not be read'],
+    ['crop', 'Crop', 'C', 'crop', 'Drag the part to keep'],
   ];
-  for (const [id, label, key, icon] of TOOLS) {
+  for (const [id, label, key, symbol] of TOOLS) {
     const b = document.createElement('button');
     b.type = 'button';
     b.setAttribute('role', 'radio');
     b.dataset.tool = id;
     b.title = tr(label) + ' (' + key + ')';
     b.setAttribute('aria-label', tr(label));
-    b.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${icon}</svg>`;
+    b.innerHTML = icon(symbol);
     b.addEventListener('click', () => pickTool(id));
     $('an-tools').append(b);
   }

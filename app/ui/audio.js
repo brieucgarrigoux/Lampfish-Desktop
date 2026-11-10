@@ -4,18 +4,18 @@
   let devices = null, info = {}, shown = false;
   const meters = new Map(), tiles = new Map(), opened = {};
   const GLYPHS = {
-    speakers: '<rect x="6" y="3.5" width="12" height="17" rx="2.5"/><circle cx="12" cy="14" r="3"/><circle cx="12" cy="7.5" r=".8"/>',
-    headphones: '<path d="M4.5 15.5V12a7.5 7.5 0 0 1 15 0v3.5"/><rect x="3.5" y="14" width="4" height="6" rx="1.5"/><rect x="16.5" y="14" width="4" height="6" rx="1.5"/>',
-    headset: '<path d="M4.5 15.5V12a7.5 7.5 0 0 1 15 0v3.5"/><rect x="3.5" y="14" width="4" height="6" rx="1.5"/><rect x="16.5" y="14" width="4" height="6" rx="1.5"/><path d="M5.5 20c1.6 1 4 1.2 6.5 1.2"/>',
-    microphone: '<rect x="9" y="3.5" width="6" height="10.5" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5v3"/>',
-    screen: '<rect x="3.5" y="4.5" width="17" height="11.5" rx="1.8"/><path d="M9 20h6M12 16v4"/>',
-    digital: '<path d="M9 3.5v4M15 3.5v4M7 7.5h10v3a5 5 0 0 1-10 0zM12 15.5v5"/>',
-    line: '<path d="M9 3.5v4M15 3.5v4M7 7.5h10v3a5 5 0 0 1-10 0zM12 15.5v5"/>',
+    speakers: 'speaker-hifi',
+    headphones: 'headphones',
+    headset: 'headset',
+    microphone: 'microphone',
+    screen: 'monitor',
+    digital: 'lf-digital-output',
+    line: 'lf-audio-jack',
   };
-  const SOUND = '<path d="M4 10v4h3.5l4.5 3.5v-11L7.5 10z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6"/>';
-  const SILENT = '<path d="M4 10v4h3.5l4.5 3.5v-11L7.5 10z"/><path d="m16 9.5 5 5M21 9.5l-5 5"/>';
-  const MIC = '<rect x="9" y="3.5" width="6" height="10.5" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5v3"/>';
-  const MIC_OFF = MIC + '<path d="m4 4 16 16"/>';
+  const SOUND = 'speaker-high';
+  const SILENT = 'speaker-x';
+  const MIC = 'microphone';
+  const MIC_OFF = 'microphone-slash';
 
   const format = d => d.rate ? tr('{0} kHz, {1} bits', (d.rate / 1000).toLocaleString(LOCALE, { maximumFractionDigits: 1 }), d.bits) : '';
 
@@ -23,7 +23,7 @@
     const el = document.createElement('div');
     el.className = 'a-tile';
     el.dataset.id = d.id;
-    el.innerHTML = `<button type="button" class="a-pick"><span class="a-top"><svg class="a-icon" viewBox="0 0 24 24" aria-hidden="true">${GLYPHS[d.kind] || GLYPHS.speakers}</svg><span class="a-state state" hidden></span></span>`
+    el.innerHTML = `<button type="button" class="a-pick"><span class="a-top">${icon(GLYPHS[d.kind] || GLYPHS.speakers, 'a-icon')}<span class="a-state state" hidden></span></span>`
       + '<span class="a-what"><span class="a-name" translate="no"></span><span class="a-adapter" translate="no"></span><span class="a-format"></span></span><span class="a-meter"><i></i></span></button>';
     el.querySelector('.a-name').textContent = el.querySelector('.a-name').title = d.name;
     el.querySelector('.a-adapter').textContent = el.querySelector('.a-adapter').title = d.adapter;
@@ -41,7 +41,7 @@
     if (d.volume != null) {
       const row = document.createElement('div');
       row.className = 'a-volume';
-      row.innerHTML = '<button type="button" class="a-mute"><svg viewBox="0 0 24 24" aria-hidden="true"></svg></button><input type="range" min="0" max="100" step="1"><output></output>';
+      row.innerHTML = '<button type="button" class="a-mute"></button><input type="range" min="0" max="100" step="1"><output></output>';
       const range = row.querySelector('input'), output = row.querySelector('output'), mute = row.querySelector('.a-mute');
       range.setAttribute('aria-label', tr('Volume of {0}', d.name));
       const live = throttle(() => send('audio.deviceVolume', { id: d.id, value: Number(range.value), live: true }), 80);
@@ -74,7 +74,7 @@
     const label = tr(d.muted ? (d.output ? 'Sound on' : 'Microphone on') : (d.output ? 'Mute' : 'Mute the microphone'));
     mute.title = label;
     mute.setAttribute('aria-label', label);
-    mute.firstChild.innerHTML = d.output ? (d.muted ? SILENT : SOUND) : (d.muted ? MIC_OFF : MIC);
+    mute.innerHTML = icon(d.output ? (d.muted ? SILENT : SOUND) : (d.muted ? MIC_OFF : MIC));
   }
 
   function render() {
@@ -93,7 +93,7 @@
           const more = document.createElement('details');
           more.className = 'a-more';
           more.open = !!opened[output];
-          more.innerHTML = '<summary><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg><span></span></summary>';
+          more.innerHTML = '<summary>' + icon('caret-right') + '<span></span></summary>';
           more.querySelector('span').textContent = tr('Not connected ({0})', off.length);
           more.addEventListener('toggle', () => { opened[output] = more.open; });
           more.append(grid(off));

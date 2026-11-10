@@ -17,7 +17,7 @@
 .welcome__family small { margin-top: -4px; font-size: var(--text-caption); line-height: 1.3; color: var(--text-pale); }
 .welcome__icons { display: flex; flex-wrap: wrap; gap: 8px; }
 .welcome__icons span { display: grid; place-items: center; width: 30px; height: 30px; border-radius: var(--radius-control); background: var(--raised); }
-.welcome__icons svg { width: 18px; height: 18px; fill: none; stroke: var(--text-soft); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.welcome__icons svg { color: var(--text-soft); }
 .welcome__walls { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
 .welcome__wall { display: flex; flex-direction: column; gap: 6px; padding: 0 0 8px; border: 0; border-radius: var(--radius-group); background: var(--group-up); color: inherit; text-align: left; overflow: hidden; cursor: pointer; transition: box-shadow var(--fast), background var(--fast); }
 .welcome__wall:hover { background: var(--hover); }
@@ -42,19 +42,15 @@
 .h-step { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 8px 10px; border: 0; border-radius: var(--radius-control); background: none; color: var(--text); font-size: var(--text-body); text-align: left; cursor: pointer; transition: background var(--fast); }
 .h-step:hover { background: var(--hover); }
 .h-step span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.h-step svg { flex: none; width: 20px; height: 20px; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.h-step__ring { stroke: var(--hairline-strong); }
-.h-step__tick { stroke: transparent; }
+.h-step svg { flex: none; width: var(--icon-nav); height: var(--icon-nav); color: var(--hairline-strong); }
 .h-step.is-done { color: var(--text-pale); }
-.h-step.is-done .h-step__ring { stroke: var(--accent); fill: var(--accent-dim); }
-.h-step.is-done .h-step__tick { stroke: var(--accent); }
+.h-step.is-done svg { color: var(--accent); }
 
 /* Once, for those who used lampfish before the companion. */
 .h-new { display: flex; align-items: center; gap: 12px; margin-top: 12px; padding: 12px 14px; border-radius: var(--radius-card); background: var(--accent-tint); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent); }
 .h-new[hidden] { display: none; }
-.h-new > svg { flex: none; width: 30px; height: 30px; padding: 6px; box-sizing: border-box; border-radius: 50%; background: var(--accent-dim); fill: none; stroke: var(--accent); stroke-width: 1.8; }
+.h-new > svg { flex: none; width: 30px; height: 30px; padding: 7px; box-sizing: border-box; border-radius: 50%; background: var(--accent-dim); color: var(--accent); }
 .h-new > span { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: var(--text-body); }
 .h-new small { font-size: var(--text-caption); color: var(--text-soft); }
 .h-new__close { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: var(--radius-small); background: none; color: var(--text-soft); cursor: pointer; }
 .h-new__close:hover { background: var(--hover); color: var(--text); }
-.h-new__close svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }

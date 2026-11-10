@@ -14,7 +14,7 @@ const read = file => {
   return (text.charCodeAt(0) === 0xFEFF ? text.slice(1) : text).replace(/\r\n/g, '\n');
 };
 const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 1 << 28 }).replace(/\r\n/g, '\n');
-const tracked = git('ls-files').split('\n').filter(Boolean);
+const tracked = git('ls-files').split('\n').filter(f => f && existsSync(join(root, f)));
 const ui = file => /^app\/ui\/[^/]+$/.test(file);
 
 function step(name, run) {
@@ -121,7 +121,7 @@ const unescape = text => text.replace(/\\(['"`\\])/g, '$1').replace(/\\n/g, '\n'
 function visibleTexts() {
   const found = new Map();
   const add = (text, where) => { if (/\p{L}/u.test(text) && !text.includes('${') && !found.has(text)) found.set(text, where); };
-  for (const file of tracked.filter(f => f.endsWith('.js') && ui(f) && !f.includes('phosphor-data'))) {
+  for (const file of tracked.filter(f => f.endsWith('.js') && ui(f))) {
     for (const m of read(file).matchAll(/\btr\(\s*(?:'((?:\\.|[^'\\\n])*)'|"((?:\\.|[^"\\\n])*)"|`((?:\\.|[^`\\])*)`)/g)) add(unescape(m[1] ?? m[2] ?? m[3]), file);
   }
   for (const file of tracked.filter(f => f.startsWith('src/') && f.endsWith('.cs'))) {
@@ -138,6 +138,23 @@ function visibleTexts() {
 step('visible texts have a French translation', () => {
   const skip = new Set(read('src/check-names.txt').split('\n').map(l => l.trim()).filter(Boolean));
   return [...visibleTexts()].filter(([text]) => !(text in french) && !skip.has(text)).map(([text, file]) => `${file}: "${text}"`);
+});
+
+// Every icon comes from app/ui/icons.svg: a name used in a page must be one of its symbols, and no icon is drawn inline.
+step('icons come from icons.svg', () => {
+  const sheet = existsSync(join(root, 'app/ui/icons.svg')) ? read('app/ui/icons.svg') : '';
+  const symbols = new Set([...sheet.matchAll(/<symbol id="([^"]+)"/g)].map(m => m[1]));
+  const problems = new Set();
+  for (const file of tracked.filter(f => ui(f) && /\.(html|js)$/.test(f))) {
+    const text = read(file);
+    for (const m of text.matchAll(/icons\.svg#([a-z0-9-]+)|\bicon\('([a-z0-9-]+)'/g)) {
+      if (!symbols.has(m[1] || m[2])) problems.add(`${file}: "${m[1] || m[2]}" is not in icons.svg, run src/icons.py`);
+    }
+    for (const m of text.matchAll(/<svg class="ph\b[^>]*>([\s\S]*?)<\/svg>/g)) {
+      if (/<(path|circle|rect|ellipse|line|polyline|polygon|g)\b/.test(m[1])) problems.add(`${file}: drawing inside an icon, ${m[0].slice(0, 70)}`);
+    }
+  }
+  return [...problems];
 });
 
 step('published versions of the changelog', () => {

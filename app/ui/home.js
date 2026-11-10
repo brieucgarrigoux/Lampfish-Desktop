@@ -6,13 +6,13 @@
 
   // Every service can have a card on Home; these five are there until the cards are chosen. The others take the icon of the bar.
   const SHORTCUTS = {
-    icons: ['Icons', '<rect x="4" y="4" width="16" height="16" rx="4"/><path d="m12 7.8 1.2 2.6 2.8.3-2.1 1.9.6 2.8-2.5-1.4-2.5 1.4.6-2.8-2.1-1.9 2.8-.3z"/>'],
-    arrange: ['Arrange', '<rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><rect x="14" y="14" width="6" height="6" rx="1.2"/>'],
-    mouse: ['Mouse', '<path d="M6 3.5 18 12.3l-5.6.8-3.2 4.9z"/><path d="m12.4 13.1 3.6 6.4"/>'],
-    station: ['Sounds', '<path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/>'],
-    tasks: ['Tasks', '<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M6.5 13h2.5l1.5-4 3 7 1.5-3h2.5"/>'],
+    icons: ['Icons', 'folder-star'],
+    arrange: ['Arrange', 'grid-nine'],
+    mouse: ['Mouse', 'cursor'],
+    station: ['Sounds', 'waveform'],
+    tasks: ['Tasks', 'lf-pulse-window'],
     modes: ['Themes'], wallpaper: ['Wallpaper'], create: ['Create'], display: ['Display'], audio: ['Audio'], taskbar: ['Taskbar'], convert: ['Convert'],
-    notes: ['Notes'], shelf: ['Shelf'], claude: ['Claude usage', '<path d="M4 17a8 8 0 1 1 16 0"/><path d="m12 17 4.5-5"/><path d="M8 20h8"/>'], health: ['Health'], files: ['Storage'], duplicates: ['Duplicates'], hardware: ['Hardware'], network: ['Network'],
+    notes: ['Notes'], shelf: ['Shelf'], claude: ['Claude usage', 'chart-pie-slice'], health: ['Health'], files: ['Storage'], duplicates: ['Duplicates', 'files'], hardware: ['Hardware', 'cpu'], network: ['Network'],
   };
   const TILES = ['convert', 'notes', 'health', 'arrange', 'station', 'tasks'];
   const BLOCKS = { stage: 'Wallpaper and themes', pc: 'This PC', quick: 'Quick settings' };
@@ -25,15 +25,19 @@
   }
 
   const tiles = {};
-  const glyph = icon => `<svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${icon}</svg>`;
-  const iconOf = view => SHORTCUTS[view][1] || (document.querySelector(`.rail .service[data-view="${view}"] svg`) || {}).innerHTML || '';
+  const glyph = name => icon(name, 'glyph');
+  function iconOf(view) {
+    if (SHORTCUTS[view][1]) return SHORTCUTS[view][1];
+    const use = document.querySelector(`.rail .service[data-view="${view}"] use`);
+    return use ? use.getAttribute('href').split('#')[1] : '';
+  }
   // A service with a side panel opens there, so Home stays in view; the others open their page.
   const open = view => view === 'claude' ? showView('plugins') : DOCKS[view] ? dockTo(view) : showView(view);
   function tile(view) {
     if (tiles[view]) return tiles[view];
     const b = document.createElement('button');
     b.className = 'h-tile';
-    b.innerHTML = `<header>${glyph(iconOf(view))}<span class="h-name"></span><span class="h-unpin" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m7 7 10 10M17 7 7 17"/></svg></span></header><span class="h-value"></span><span class="h-visual"></span><span class="h-size" role="button" tabindex="-1" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 20h6v-6M10 4H4v6"/></svg></span>`;
+    b.innerHTML = `<header>${glyph(iconOf(view))}<span class="h-name"></span><span class="h-unpin" aria-hidden="true">${icon('x')}</span></header><span class="h-value"></span><span class="h-visual"></span><span class="h-size" role="button" tabindex="-1" aria-hidden="true">${icon('arrows-out-simple')}</span>`;
     b.querySelector('.h-name').textContent = tr(SHORTCUTS[view][0]);
     if (view === 'claude') b.classList.add('h-tile--plugin');
     b.dataset.view = view;
@@ -290,7 +294,7 @@
   $('h-wallpaper').addEventListener('click', () => dockTo('wallpaper'));
   $('h-display').addEventListener('click', () => dockTo('display'));
   $('h-sound').addEventListener('click', () => dockTo('station'));
-  const CHEVRON = '<svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>';
+  const CHEVRON = icon('caret-right', 'chevron');
   // The actions row: each chip does one thing, the one that has a page opens it, the others act from Home.
   const ACTIONS = {
     capture: () => send('capture.start', { delay: 0 }),
@@ -353,7 +357,8 @@
     $('h-wallpaper').classList.toggle('fit', e.fit === 'fit');
     $('h-now-name').textContent = wallpaper ? wallpaper.name.replace(/\.[^.]+$/, '') : tr('No wallpaper selected');
     $('h-now-type').textContent = wallpaper ? TYPES[wallpaper.type] : '';
-    $('h-pause').textContent = tr(e.paused ? 'Resume' : 'Pause');
+    $('h-pause').innerHTML = icon(e.paused ? 'play' : 'pause');
+    $('h-pause').append(tr(e.paused ? 'Resume' : 'Pause'));
     $('h-pause').setAttribute('aria-pressed', String(!!e.paused));
     $('h-next').disabled = $('h-previous').disabled = !e.wallpapers || e.wallpapers.length < 2;
     renderQuick(e);
@@ -478,14 +483,15 @@
     title.dataset.dockTo = 'modes';
     title.setAttribute('aria-pressed', String(document.body.dataset.dock === 'modes'));
     title.title = tr('See and edit the themes');
-    title.innerHTML = '<svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 14.6A7.6 7.6 0 0 1 9.4 4.5a7.6 7.6 0 1 0 10.1 10.1z"/><path d="M17 3.5v4M15 5.5h4"/></svg><span class="h-modes__what"><span class="h-name"></span><span class="h-value"></span></span>' + CHEVRON;
+    title.innerHTML = icon('swatches', 'glyph') + '<span class="h-modes__what"><span class="h-name"></span><span class="h-value"></span></span>' + CHEVRON;
     const active = moods.find(m => m.current);
     title.querySelector('.h-name').textContent = tr('Themes');
     title.querySelector('.h-value').textContent = active ? active.name : moods.length === 1 ? tr('1 theme') : moods.length ? tr('{0} themes', moods.length) : tr('None yet');
     title.addEventListener('click', () => dockTo('modes'));
     const more = document.createElement('button');
     more.className = 'link h-modes__more';
-    more.textContent = tr('Save the current setup as a theme');
+    more.innerHTML = icon('floppy-disk');
+    more.append(tr('Save the current setup as a theme'));
     more.hidden = moods.length > 0;
     more.addEventListener('click', () => { if (Lampfish.moods) Lampfish.moods.startNew(); });
     zone.replaceChildren(title, ...moods.slice(0, 4).map(m => {
@@ -513,26 +519,15 @@
     if (code >= 95) return ['Thunderstorm', 'storm'];
     return ['Cloudy', 'cloud'];
   }
-  const CLOUD = '<path class="m-cloud" d="M15 36h19a8 8 0 0 0 .8-16A11 11 0 0 0 14 22.5 7 7 0 0 0 15 36z"/>';
-  function drawing(kind, day) {
-    const orb = day
-      ? '<g class="m-sun"><circle cx="18" cy="17" r="6"/><path d="M18 5v3M18 26v3M6 17h3M27 17h3M9.5 8.5l2 2M24.5 23.5l2 2M26.5 8.5l-2 2M11.5 23.5l-2 2"/></g>'
-      : '<path class="m-moon" d="M24 8a10 10 0 1 0 8 15A9 9 0 0 1 24 8z"/>';
-    switch (kind) {
-      case 'sun': return day ? '<g class="m-sun"><circle cx="24" cy="24" r="8"/><path d="M24 8v4M24 36v4M8 24h4M36 24h4M12.7 12.7l2.8 2.8M32.5 32.5l2.8 2.8M35.3 12.7l-2.8 2.8M15.5 32.5l-2.8 2.8"/></g>' : '<path class="m-moon" d="M28 10a13 13 0 1 0 10 20A12 12 0 0 1 28 10z"/>';
-      case 'partly': return orb + CLOUD;
-      case 'fog': return CLOUD + '<path class="m-stroke" d="M10 41h28M14 45h20"/>';
-      case 'rain': return CLOUD + '<path class="m-drop" d="M18 40l-2 4M25 40l-2 4M32 40l-2 4"/>';
-      case 'snow': return CLOUD + '<g class="m-flake"><circle cx="17" cy="42" r="1.4"/><circle cx="24" cy="44" r="1.4"/><circle cx="31" cy="42" r="1.4"/></g>';
-      case 'storm': return CLOUD + '<path class="m-lightning" d="M25 36l-4 6h5l-3 5"/>';
-      default: return CLOUD;
-    }
-  }
+  const WEATHER = { sun: ['sun', 'moon'], partly: ['cloud-sun', 'cloud-moon'], fog: ['cloud-fog'], rain: ['cloud-rain'], snow: ['cloud-snow'], storm: ['cloud-lightning'] };
+  const drawing = (kind, day) => { const names = WEATHER[kind] || ['cloud']; return day ? names[0] : names[1] || names[0]; };
   function renderWeather() {
     if (!weather || !weather.ok) { $('h-weather').hidden = true; return; }
     const [what, kind] = time(weather.code);
     $('h-weather').hidden = false;
-    $('h-weather-icon').innerHTML = drawing(kind, weather.day);
+    const name = drawing(kind, weather.day);
+    $('h-weather-icon').dataset.weather = name;
+    $('h-weather-icon').firstChild.setAttribute('href', 'icons.svg#' + name);
     $('h-weather-temp').textContent = weather.temperature + ' °C';
     $('h-weather-what').textContent = tr(what);
     $('h-weather-city').textContent = weather.city || '';
@@ -723,7 +718,7 @@
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'tool-chip';
-      b.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${iconOf(v)}</svg><span></span><svg class="h-pin__plus" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6v12M6 12h12"/></svg>`;
+      b.innerHTML = `${icon(iconOf(v))}<span></span>${icon('push-pin', 'h-pin__plus')}`;
       b.querySelector('span').textContent = tr(SHORTCUTS[v][0]);
       b.title = tr('Pin to Home');
       b.addEventListener('click', () => { zone.append(tile(v).el); arrangeTiles(); saveHome(); placeTiles(); if (shown) render(); });
@@ -751,7 +746,7 @@
     const cover = document.createElement('button');
     cover.type = 'button';
     cover.className = 'h-cover';
-    cover.innerHTML = '<span class="h-cover__label"><svg class="h-cover__eye" viewBox="0 0 24 24" aria-hidden="true"><path class="open" d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle class="open" cx="12" cy="12" r="3"/><path class="shut" d="M3.5 12s3.2 4.5 8.5 4.5 8.5-4.5 8.5-4.5M6.5 15l-1.5 2M12 16.5V19M17.5 15l1.5 2"/></svg><span class="h-cover__name"></span><span class="h-cover__state"></span></span>';
+    cover.innerHTML = '<span class="h-cover__label">' + icon('eye', 'h-cover__eye open') + icon('eye-closed', 'h-cover__eye shut') + '<span class="h-cover__name"></span><span class="h-cover__state"></span></span>';
     cover.querySelector('.h-cover__name').textContent = tr(BLOCKS[el.dataset.block]);
     cover.title = tr('Click to show or hide it, drag or use the arrows to move it');
     cover.addEventListener('click', () => {

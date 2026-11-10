@@ -72,38 +72,38 @@
     return e;
   }
 
-  const DROP = '<path d="M12 3.5s6 6.4 6 10.5a6 6 0 0 1-12 0c0-4.1 6-10.5 6-10.5z"/>', GROW = '<path d="M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7"/>';
+  const DROP = 'paint-bucket', GROW = 'arrows-out-simple';
   const ICONS = {
-    'Logo': '<circle cx="9" cy="11" r="2.7"/><circle cx="15" cy="11" r="2.7"/><circle cx="12" cy="16" r="2.7"/><path d="M12 8.3V4.5"/>',
+    'Logo': 'sticker',
     'Size': GROW,
-    'Left to right': '<path d="M4 12h16M7.5 8.5 4 12l3.5 3.5M16.5 8.5 20 12l-3.5 3.5"/>',
-    'Top to bottom': '<path d="M12 4v16M8.5 7.5 12 4l3.5 3.5M8.5 16.5 12 20l3.5-3.5"/>',
-    'Soft shadow': '<rect x="4.5" y="4.5" width="11" height="11" rx="2"/><path d="M19.5 9v8.5a2 2 0 0 1-2 2H9" stroke-dasharray="2 2"/>',
-    'Gentle float': '<circle cx="12" cy="8" r="3"/><path d="M3.5 16.5c1.4-1.6 2.8-1.6 4.2 0s2.8 1.6 4.3 0 2.9-1.6 4.3 0 2.8 1.6 4.2 0"/>',
-    'Text': '<path d="M5 6h14M12 6v13M9 19h6"/>',
-    'Style': '<path d="M3.5 18 8 6l4.5 12M5.2 14h5.6"/><circle cx="17" cy="15" r="3"/><path d="M20 11.5V18"/>',
-    'Weight': '<path d="M7 5h6a3.5 3.5 0 0 1 0 7H7zM7 12h7a3.5 3.5 0 0 1 0 7H7z"/>',
+    'Left to right': 'arrows-horizontal',
+    'Top to bottom': 'arrows-vertical',
+    'Soft shadow': 'lf-soft-shadow',
+    'Gentle float': 'waves',
+    'Text': 'text-t',
+    'Style': 'text-aa',
+    'Weight': 'text-b',
     'Color': DROP, 'Glow color': DROP, 'Effects color': DROP,
-    'Type': '<path d="m12 4 8 4-8 4-8-4zM4 12l8 4 8-4M4 16l8 4 8-4"/>',
-    'Second color': '<circle cx="9" cy="12" r="5"/><circle cx="15" cy="12" r="5"/>',
-    'Angle': '<path d="M4 19h16M4 19 15 6"/><path d="M10.5 19a6.5 6.5 0 0 0-1.8-4.5"/>',
-    'Direction': '<circle cx="12" cy="12" r="8.5"/><path d="m15.5 8.5-2 5-5 2 2-5z"/>',
-    'Drift speed': '<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4v4h-4"/>',
-    'Picture': '<rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="m3.5 16 5-5 4 4 2.5-2.5 5.5 5.5"/><circle cx="15.5" cy="9.5" r="1.3"/>',
-    'Framing': '<path d="M7 3.5V17h13.5M3.5 7H17v13.5"/>',
-    'Darken': '<path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5z"/>',
-    'Edge shade': '<rect x="3.5" y="5" width="17" height="14" rx="2"/><ellipse cx="12" cy="12" rx="5.5" ry="3.8"/>',
-    'Amount': '<circle cx="7" cy="8" r="1.4"/><circle cx="16.5" cy="6.5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="6.5" cy="16.5" r="1.4"/><circle cx="17" cy="16.5" r="1.4"/>',
-    'Speed': '<path d="M4.5 16.5a7.5 7.5 0 1 1 15 0"/><path d="m12 16.5 3.5-4.5"/>',
-    'Glow': '<circle cx="12" cy="12" r="3.5"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/>',
-    'Strength': '<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7.5" stroke-dasharray="2 2.6"/>',
-    'React to sound': '<path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/>',
-    'Pulse': '<path d="M3 12h4l2-5 4 10 2-5h6"/>',
-    'Particles': '<path d="M12 3.5 13.6 10 20 12l-6.4 2L12 20.5 10.4 14 4 12l6.4-2z"/>',
-    'Wave ring': '<circle cx="12" cy="12" r="7.5"/><path d="M8 12c1.3-2 2.7-2 4 0s2.7 2 4 0"/>',
-    'Ripples': '<circle cx="12" cy="12" r="2"/><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="9" stroke-dasharray="2 3"/>',
-    'Vibration': '<path d="M3.5 12h2l1.5-4 3 8 3-8 3 8 1.5-4h3"/>',
-    'Vibration strength': '<path d="M5 9v6M9 6v12M15 6v12M19 9v6"/>',
+    'Type': 'stack',
+    'Second color': 'lf-second-color',
+    'Angle': 'lf-angle',
+    'Direction': 'compass',
+    'Drift speed': 'gauge',
+    'Picture': 'image',
+    'Framing': 'crop',
+    'Darken': 'sun-dim',
+    'Edge shade': 'lf-edge-shade',
+    'Amount': 'lf-amount',
+    'Speed': 'gauge',
+    'Glow': 'sun',
+    'Strength': 'chart-bar',
+    'React to sound': 'waveform',
+    'Pulse': 'pulse',
+    'Particles': 'sparkle',
+    'Wave ring': 'lf-wave-ring',
+    'Ripples': 'lf-ripples',
+    'Vibration': 'wave-triangle',
+    'Vibration strength': 'chart-bar',
   };
   function row(label, control, help) {
     const r = el('div', 'cr-row');
@@ -111,7 +111,7 @@
     const text = el('span', 'cr-label__text');
     text.append(el('span', '', tr(label)));
     if (help) text.append(el('small', '', tr(help)));
-    if (ICONS[label]) what.insertAdjacentHTML('afterbegin', `<svg class="glyph glyph--small" viewBox="0 0 24 24" aria-hidden="true">${ICONS[label]}</svg>`);
+    if (ICONS[label]) what.insertAdjacentHTML('afterbegin', icon(ICONS[label], 'glyph glyph--small'));
     what.append(text);
     r.append(what, control);
     if (control.classList.contains('cr-slider')) r.classList.add('cr-row--slider');
@@ -126,7 +126,7 @@
     return block;
   }
 
-  const RESET = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4v4h4"/></svg>';
+  const RESET = icon('arrow-counter-clockwise');
   function slider(name, min, max, get, set, suffix, fallback) {
     const wrap = el('div', 'cr-slider');
     const input = Object.assign(document.createElement('input'), { type: 'range', min, max, step: 1, value: get() });
@@ -233,10 +233,14 @@
   function picker(kind, label) {
     const wrap = el('div', 'cr-pick');
     const name = el('span', 'cr-file', tr('No picture'));
-    const choose = el('button', 'button', tr(label));
+    const choose = el('button', 'button');
+    choose.innerHTML = icon('image');
+    choose.append(tr(label));
     choose.type = 'button';
     choose.addEventListener('click', () => { pickKind = kind; input.click(); });
-    const clear = el('button', 'link', tr('Remove'));
+    const clear = el('button', 'link');
+    clear.innerHTML = icon('trash');
+    clear.append(tr('Remove'));
     clear.type = 'button';
     clear.hidden = true;
     clear.addEventListener('click', () => { st.files[kind] = null; if (kind === 'logo') st.aspect = 1; showFile(kind); push(); });
@@ -346,7 +350,7 @@
       const b = el('button', 'cr-dir');
       b.type = 'button';
       b.title = a + '°';
-      b.innerHTML = `<svg viewBox="0 0 24 24" style="transform:rotate(${a}deg)" aria-hidden="true"><path d="M12 19V5M6.5 10.5 12 5l5.5 5.5"/></svg>`;
+      b.innerHTML = `<svg class="ph" style="transform:rotate(${a}deg)" aria-hidden="true"><use href="icons.svg#arrow-up"/></svg>`;
       b.addEventListener('click', () => { st.bg.angle = a; ctl.bgAngle.sync(); paint(); push(); });
       grid.append(b);
       return [a, b];
@@ -413,7 +417,9 @@
     const wrap = el('div', 'cr-pick cr-pick--inline');
     const input = Object.assign(document.createElement('input'), { type: 'color', value: st.glow.color });
     input.className = 'cr-color';
-    const auto = el('button', 'link', tr('Auto'));
+    const auto = el('button', 'link');
+    auto.innerHTML = icon('magic-wand');
+    auto.append(tr('Auto'));
     auto.type = 'button';
     const paint = () => { input.value = st.sound.color || st.glow.color; auto.hidden = !st.sound.color; };
     input.addEventListener('input', () => { st.sound.color = input.value; paint(); push(); });
@@ -455,22 +461,22 @@
   stage.append(frame, layer);
 
   const tools = el('div', 'cr-tools');
-  const tool = (icon, label, run) => {
+  const tool = (symbol, label, run) => {
     const b = el('button', 'cr-tool');
     b.type = 'button';
     b.title = tr(label);
-    b.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${icon}</svg><span></span>`;
+    b.innerHTML = icon(symbol) + '<span></span>';
     b.querySelector('span').textContent = tr(label);
     b.addEventListener('click', () => run(b));
     tools.append(b);
     return b;
   };
   function sync() { for (const k of ['logoSize', 'logoX', 'logoY', 'titleSize']) ctl[k] && ctl[k].sync(); push(); }
-  tool('<path d="M12 3.5v17M8.5 7.5h7M8.5 16.5h7"/>', 'Center horizontally', () => { st.logo.x = 50; if (st.title.text) st.title.x = 50; sync(); });
-  tool('<path d="M3.5 12h17M7.5 8.5v7M16.5 8.5v7"/>', 'Center vertically', () => { st.logo.y = st.title.text ? 40 : 50; if (st.title.text) st.title.y = 68; sync(); });
-  const gridButton = tool('<path d="M9 4v16M15 4v16M4 9h16M4 15h16"/>', 'Grid', b => { guides = !guides; b.setAttribute('aria-pressed', String(guides)); layout(); });
+  tool('align-center-horizontal', 'Center horizontally', () => { st.logo.x = 50; if (st.title.text) st.title.x = 50; sync(); });
+  tool('align-center-vertical', 'Center vertically', () => { st.logo.y = st.title.text ? 40 : 50; if (st.title.text) st.title.y = 68; sync(); });
+  const gridButton = tool('grid-nine', 'Grid', b => { guides = !guides; b.setAttribute('aria-pressed', String(guides)); layout(); });
   gridButton.setAttribute('aria-pressed', 'true');
-  tool('<path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4v4h4"/>', 'Reset position', () => { st.logo.x = 50; st.logo.y = 44; st.logo.size = 28; st.title.x = 50; st.title.y = 68; sync(); });
+  tool('arrow-counter-clockwise', 'Reset position', () => { st.logo.x = 50; st.logo.y = 44; st.logo.size = 28; st.title.x = 50; st.title.y = 68; sync(); });
 
   function box(key) {
     const r = stage.getBoundingClientRect();
@@ -631,12 +637,18 @@
 
   const nameInput = Object.assign(document.createElement('input'), { type: 'text', maxLength: 40, placeholder: tr('Name this wallpaper') });
   nameInput.className = 'cr-text';
-  const create = el('button', 'button button--accent', tr('Create the wallpaper'));
+  const create = el('button', 'button button--accent');
+  create.innerHTML = icon('magic-wand');
+  create.append(tr('Create the wallpaper'));
   create.type = 'button';
-  const copy = el('button', 'link', tr('Save as a new wallpaper'));
+  const copy = el('button', 'link');
+  copy.innerHTML = icon('floppy-disk');
+  copy.append(tr('Save as a new wallpaper'));
   copy.type = 'button';
   copy.hidden = true;
-  const startNew = el('button', 'link', tr('Start a new one'));
+  const startNew = el('button', 'link');
+  startNew.innerHTML = icon('plus');
+  startNew.append(tr('Start a new one'));
   startNew.type = 'button';
   const banner = el('div', 'cr-editing');
   banner.hidden = true;
@@ -644,7 +656,8 @@
   function leaveEdit() {
     editing = null;
     banner.hidden = true; copy.hidden = true;
-    create.textContent = tr('Create the wallpaper');
+    create.innerHTML = icon('magic-wand');
+    create.append(tr('Create the wallpaper'));
     nameInput.value = '';
     nameInput.disabled = false;
   }
@@ -679,7 +692,7 @@
   const resetGroup = el('section', 'cr-card group');
   const resetButton = el('button', 'row action stop');
   resetButton.type = 'button';
-  resetButton.innerHTML = '<span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4v4h4"/></svg><span><small></small></span></span>';
+  resetButton.innerHTML = '<span class="caption">' + icon('arrow-counter-clockwise', 'glyph') + '<span><small></small></span></span>';
   resetButton.querySelector('small').before(tr('Reset everything'));
   resetButton.querySelector('small').textContent = tr('Settings only, the content stays');
   resetGroup.append(resetButton);
@@ -711,7 +724,8 @@
     nameInput.disabled = true;
     banner.hidden = false;
     banner.replaceChildren(el('span', '', tr('Editing {0}', name)), startNew);
-    create.textContent = tr('Save changes');
+    create.innerHTML = icon('floppy-disk');
+    create.append(tr('Save changes'));
     copy.hidden = false;
   }
   try {

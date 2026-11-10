@@ -4,16 +4,16 @@
 .recipe__visual { display: flex; align-items: center; gap: 8px; height: var(--stage); pointer-events: none; }
 .recipe__visual .mood__cover { flex: none; width: var(--cover); }
 .recipe__piece { flex: none; display: grid; place-items: center; width: var(--piece); height: var(--piece); border-radius: var(--radius-control); background: var(--raised); }
-.recipe__piece svg { width: var(--glyph); height: var(--glyph); fill: none; stroke: var(--text-soft); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.recipe__piece svg { width: var(--glyph); height: var(--glyph); color: var(--text-soft); }
 .recipe__piece--lit { background: var(--accent-dim); }
-.recipe__piece--lit svg { stroke: var(--accent); }
+.recipe__piece--lit svg { color: var(--accent); }
 .recipe__plus { font-size: var(--text-lead); color: var(--text-pale); }
 .recipe__card { display: flex; flex-direction: column; gap: 6px; width: calc(var(--cover) + 12px); padding: 6px 6px 7px; border-radius: var(--radius-control); background: var(--group-up); box-shadow: 0 0 0 1px var(--hairline); }
 .recipe__card .mood__cover { width: 100%; }
 .recipe__name { display: flex; align-items: center; gap: 6px; padding: 0 2px; font-size: var(--text-caption); font-weight: 600; }
-.recipe__name .mode-icon { width: 14px; height: 14px; fill: none; stroke: var(--text-soft); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.recipe__name .mode-icon { color: var(--text-soft); }
 .recipe__arrow { align-self: start; display: grid; place-items: center; height: var(--stage); }
-.recipe__arrow svg { width: 36px; height: 28px; fill: none; stroke: var(--text-pale); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.recipe__arrow svg { width: var(--icon-nav); height: var(--icon-nav); color: var(--text-pale); }
 .mode-step__what { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; }
 .mode-step__title { display: flex; align-items: baseline; gap: 7px; font-size: var(--text-base); font-weight: 600; }
 .mode-step__title b { font: 600 var(--text-caption) var(--numbers); color: var(--text-pale); }
@@ -21,7 +21,6 @@
 @container modes (max-width: 860px) {
   .mode-steps { --stage: 92px; --cover: 112px; --piece: 36px; --glyph: 19px; gap: 0 8px; }
   .recipe__visual { gap: 6px; }
-  .recipe__arrow svg { width: 30px; height: 24px; }
 }
 @container modes (max-width: 560px) {
   .mode-steps { grid-template-columns: 1fr; gap: 14px; }
@@ -31,7 +30,6 @@
   .recipe__visual { width: 230px; flex: none; }
 }
 .mood-import { display: flex; align-items: center; gap: 7px; }
-.mood-import svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .view--modes .title-section--first { margin-top: 22px; }
 
 .moods { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 16px; }
@@ -47,19 +45,16 @@
 .mood__veil { position: absolute; inset: 0; pointer-events: none; }
 .mood__warmth { position: absolute; inset: 0; background: #ffb066; mix-blend-mode: multiply; pointer-events: none; }
 .mood__badge-icon { position: absolute; left: 8px; bottom: 8px; z-index: 1; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; color: #fff; background: rgba(9, 12, 13, .62); backdrop-filter: blur(8px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14); pointer-events: none; }
-.mode-icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .starter .mood__badge-icon { width: 30px; height: 30px; }
-.starter .mood__badge-icon .mode-icon { width: 15px; height: 15px; }
 .mood__cover--none { display: grid; place-items: center; background: var(--sunken); }
-.mood__cover--none > svg { width: 28px; height: 28px; fill: none; stroke: var(--text-pale); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.mood__cover--none > svg { width: var(--icon-big); height: var(--icon-big); color: var(--text-pale); }
 .mood__cover--sheet { border-radius: var(--radius-group); }
 
 .mood__play { position: absolute; right: 8px; bottom: 8px; z-index: 1; width: 34px; height: 34px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; color: #fff; background: rgba(9, 12, 13, .62); backdrop-filter: blur(8px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14), 0 4px 12px rgba(0, 0, 0, .4); transition: background var(--fast), transform var(--fast); }
-.mood__play svg { width: 16px; height: 16px; margin-left: 2px; fill: currentColor; }
+.mood__play svg { margin-left: 2px; }
 .mood__play:hover { background: var(--accent-strong); }
 .mood__play:active { transform: scale(.94); }
 .mood__remove { position: absolute; top: 8px; right: 8px; z-index: 1; width: 26px; height: 26px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; color: var(--text-soft); background: rgba(9, 12, 13, .72); backdrop-filter: blur(8px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12); opacity: 0; transition: opacity var(--fast), color var(--fast), background var(--fast), transform var(--fast); }
-.mood__remove svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 .mood:hover .mood__remove, .mood:focus-within .mood__remove { opacity: 1; }
 .mood__remove:hover { color: var(--danger); background: rgba(58, 21, 25, .92); box-shadow: inset 0 0 0 1px var(--danger); }
 .mood__remove:active { transform: scale(.92); }
@@ -72,7 +67,7 @@
 .mood__starts { gap: 6px; }
 .trait { display: inline-flex; align-items: center; gap: 5px; min-width: 0; max-width: 100%; }
 .trait > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.trait svg, .start svg { flex: none; width: 14px; height: 14px; fill: none; stroke: var(--text-pale); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.trait svg, .start svg { flex: none; color: var(--text-pale); }
 .trait__cursor { flex: none; width: 16px; height: 16px; object-fit: contain; }
 .trait__cursor.retro { image-rendering: pixelated; }
 .start { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; height: 22px; font-size: var(--text-badge); color: var(--text-soft); }
@@ -83,7 +78,7 @@
 .mood--add .mood__cover :is(iframe, video, img) { filter: brightness(.6) saturate(.8); }
 .mood--add .mood__veil { backdrop-filter: blur(6px); }
 .mood__plus { position: absolute; left: 50%; top: 50%; z-index: 1; width: 44px; height: 44px; margin: -22px 0 0 -22px; display: grid; place-items: center; border-radius: 50%; color: #fff; background: rgba(9, 12, 13, .62); backdrop-filter: blur(8px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14), 0 4px 12px rgba(0, 0, 0, .4); transition: background var(--fast), transform var(--fast); }
-.mood__plus svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.mood__plus svg { width: var(--icon-nav); height: var(--icon-nav); }
 .mood--add:hover .mood__plus { background: var(--accent-strong); }
 .mood--add.naming .mood__plus { display: none; }
 .mood--add.naming .mood__veil { backdrop-filter: none; }
@@ -116,7 +111,7 @@
 .m-sheet__head { display: flex; align-items: center; gap: 4px; padding: 2px 2px 0; }
 .m-sheet__icon { flex: none; display: grid; place-items: center; width: 38px; height: 38px; margin-right: 6px; padding: 0; border: 0; border-radius: 50%; color: var(--text); background: var(--raised); box-shadow: inset 0 0 0 1px var(--hairline-strong); transition: box-shadow var(--fast); }
 .m-sheet__icon:hover, .m-sheet__icon[aria-expanded="true"] { box-shadow: inset 0 0 0 1.5px var(--accent); }
-.m-sheet__icon .mode-icon { width: 20px; height: 20px; }
+.m-sheet__icon .mode-icon { width: var(--icon-nav); height: var(--icon-nav); }
 .m-icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(36px, 1fr)); gap: 6px; padding: 8px; border-radius: var(--radius-group); background: var(--group); }
 .m-icons[hidden] { display: none; }
 .m-icons__one { display: grid; place-items: center; height: 36px; padding: 0; border: 0; border-radius: var(--radius-control); background: none; color: var(--text-soft); transition: background var(--fast), color var(--fast); }
@@ -128,9 +123,7 @@
 .m-sheet__rename { min-width: 0; margin: -3px -7px; border: 0; border-radius: var(--radius-small); padding: 3px 7px; background: var(--sunken); color: var(--text); font: 600 var(--text-title)/1.2 var(--display); outline: none; box-shadow: inset 0 0 0 1px var(--accent); }
 .m-sheet__tool { flex: none; width: 28px; height: 28px; display: grid; place-items: center; padding: 0; border: 0; border-radius: var(--radius-small); background: none; color: var(--text-soft); transition: color var(--fast), background var(--fast); }
 .m-sheet__tool:hover { color: var(--text); background: var(--hover); }
-.m-sheet__tool svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .m-sheet__tool--small { width: 24px; height: 24px; }
-.m-sheet__tool--small svg { width: 13px; height: 13px; }
 .m-sheet__actions { display: flex; gap: 8px; }
 .m-sheet__actions .button { flex: 1; }
 .m-field { flex: none; align-self: flex-start; display: inline-flex; align-items: center; gap: 4px; }
@@ -140,7 +133,7 @@
 .mood__chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
 .mood__chip { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; height: 26px; padding: 0 8px; border-radius: 99px; color: var(--text); font-size: var(--text-value); font-weight: 500; }
 .mood__chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.mood__chip svg { flex: none; width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.mood__chip svg { flex: none; }
 .mood__chip .start__app { width: 16px; height: 16px; }
 .mood__chip:hover { color: var(--danger); }
 .mood__chips .link { height: 26px; }

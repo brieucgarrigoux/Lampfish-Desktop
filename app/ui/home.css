@@ -2,7 +2,6 @@
 .home-header { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 0 0 10px; }
 /* The everyday actions: one row of chips, each a single click, under the header. */
 .h-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
-.h-actions .tool-chip svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 
 /* One grid for the blocks and the cards. The blocks stay in their own element, which takes no box: moving one in the page would reload the live preview. */
 .h-board { display: grid; grid-template-columns: repeat(var(--cols, 6), minmax(0, 1fr)); grid-auto-rows: 118px; gap: 12px; }
@@ -28,11 +27,10 @@
 .h-modes__open:hover { background: var(--hover); }
 .h-modes__open:active { transform: scale(.98); }
 .h-modes__open[aria-pressed="true"] { background: var(--accent-tint); box-shadow: var(--chosen); }
-.h-modes__open .glyph { stroke: var(--accent); }
+.h-modes__open .glyph { color: var(--accent); }
 .h-modes__what { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .h-modes__what .h-value { max-width: 160px; font: 600 var(--text-body)/1.3 var(--numbers); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .h-modes .tool-chip { color: var(--text-soft); }
-.h-modes .tool-chip .mode-icon { width: 14px; height: 14px; stroke: currentColor; }
 .h-modes__more { margin-left: auto; font-size: var(--text-value); }
 
 .h-pc { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
@@ -78,7 +76,7 @@
 .h-q { display: grid; grid-template-columns: 30px minmax(0, 1fr) minmax(0, max-content) auto; align-items: center; gap: 0 10px; min-height: 44px; padding: 5px 14px; border: 0; background: none; color: inherit; text-align: left; }
 .h-q + .h-q { box-shadow: inset 0 1px 0 var(--hairline); }
 .h-q[hidden] { display: none; }
-.h-q:has(.toggler input:checked) .glyph { stroke: var(--accent); background: var(--accent-dim); }
+.h-q:has(.toggler input:checked) .glyph { color: var(--accent); background: var(--accent-dim); }
 .h-q__what { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .h-q__name { font-size: var(--text-body); color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .h-q__what small { font-size: var(--text-caption); color: var(--text-pale); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -86,9 +84,9 @@
 .h-q input[type=range]:disabled { opacity: .35; }
 .h-q--link { cursor: pointer; transition: background var(--fast); }
 .h-q--link:hover { background: var(--hover); }
-.h-q--link .chevron { transition: transform var(--fast), stroke var(--fast); }
+.h-q--link .chevron { transition: transform var(--fast), color var(--fast); }
 .h-q--link[aria-expanded="true"] .chevron { transform: rotate(90deg); }
-.h-q--link:hover .chevron { stroke: var(--accent); }
+.h-q--link:hover .chevron { color: var(--accent); }
 .h-quick > :last-child, .h-q__more > :last-child { border-radius: 0 0 var(--radius-group) var(--radius-group); }
 .h-q__more { box-shadow: inset 0 1px 0 var(--hairline); background: rgba(0, 0, 0, .14); }
 .h-q__more[hidden] { display: none; }
@@ -124,15 +122,9 @@
 
 .h-health:not([hidden]) + .h-weather { margin-left: 0; }
 .h-weather { margin-left: auto; display: grid; grid-template-columns: auto auto; grid-template-rows: auto auto; column-gap: 12px; align-items: center; padding: 7px 14px 7px 10px; border-radius: var(--radius-card); background: var(--group); }
-.h-weather__icon { grid-row: 1 / 3; width: 38px; height: 38px; fill: none; stroke: var(--text); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.h-weather__icon .m-sun { stroke: #e8b65a; }
-.h-weather__icon .m-sun circle { fill: rgba(232, 182, 90, .18); }
-.h-weather__icon .m-moon { stroke: #a9cac4; fill: rgba(169, 202, 196, .12); }
-.h-weather__icon .m-cloud { fill: #191e1f; stroke: var(--text); }
-.h-weather__icon .m-drop { stroke: #7fa8e6; }
-.h-weather__icon .m-flake { fill: #e7eaea; stroke: none; }
-.h-weather__icon .m-lightning { stroke: #e8b65a; }
-.h-weather__icon .m-stroke { stroke: var(--text-soft); }
+.h-weather__icon { grid-row: 1 / 3; width: var(--icon-big); height: var(--icon-big); color: var(--text); }
+.h-weather__icon[data-weather="sun"] { color: #e8b65a; }
+.h-weather__icon[data-weather="moon"] { color: #a9cac4; }
 .h-weather__text { display: flex; align-items: baseline; gap: 8px; }
 .h-weather__temp { font: 600 var(--text-lead)/1.15 var(--figures); font-variant-numeric: tabular-nums; }
 .h-weather__what { font-size: var(--text-body); color: var(--text-soft); }

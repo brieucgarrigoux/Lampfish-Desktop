@@ -25,11 +25,11 @@
       <button type="button" role="radio" data-size="1" aria-checked="true" aria-label="Medium" title="Medium"><i></i></button>
       <button type="button" role="radio" data-size="1.7" aria-checked="false" aria-label="Thick" title="Thick"><i></i></button>
     </div>
-    <button type="button" class="an-undo" id="an-undo" title="Undo (Ctrl + Z)" aria-label="Undo" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7 5 11l4 4"/><path d="M5 11h9.5a4.5 4.5 0 0 1 0 9H12"/></svg></button>
+    <button type="button" class="an-undo" id="an-undo" title="Undo (Ctrl + Z)" aria-label="Undo" disabled><svg class="ph" aria-hidden="true"><use href="icons.svg#arrow-u-up-left"/></svg></button>
     <span class="an-space"></span>
-    <button type="button" class="link an-delete" id="an-delete"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/></svg>Delete the capture</button>
-    <button type="button" class="button" id="an-close" title="Escape">Close</button>
-    <button type="button" class="button button--accent" id="an-done" title="Ctrl + S">Copy and close</button>
+    <button type="button" class="link an-delete" id="an-delete"><svg class="ph" aria-hidden="true"><use href="icons.svg#trash-simple"/></svg>Delete the capture</button>
+    <button type="button" class="button" id="an-close" title="Escape"><svg class="ph" aria-hidden="true"><use href="icons.svg#x"/></svg>Close</button>
+    <button type="button" class="button button--accent" id="an-done" title="Ctrl + S"><svg class="ph" aria-hidden="true"><use href="icons.svg#copy"/></svg>Copy and close</button>
   </header>
   <div class="an-hint" id="an-hint" aria-live="polite"></div>
   <main class="an-stage" id="an-stage">
@@ -37,8 +37,6 @@
     <input type="text" class="an-text" id="an-text" hidden aria-label="Text to add" spellcheck="false">
   </main>
 <script src="base.js"></script>
-<script src="phosphor-data.js"></script>
-<script src="phosphor.js"></script>
 <script src="annotate.js"></script>
 </body>
 </html>

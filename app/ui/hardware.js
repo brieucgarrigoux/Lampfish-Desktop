@@ -32,19 +32,19 @@
   const level = v => v < 50 ? '' : v < 85 ? 'medium' : 'up';
 
   const GLYPHS = {
-    processor: '<rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/><rect x="9.5" y="9.5" width="5" height="5" rx=".8"/><path d="M9.5 3.5v3M14.5 3.5v3M9.5 17.5v3M14.5 17.5v3M3.5 9.5h3M3.5 14.5h3M17.5 9.5h3M17.5 14.5h3"/>',
-    memory: '<rect x="3.5" y="7" width="17" height="9" rx="1.2"/><path d="M7 10v3M10.5 10v3M14 10v3M17.5 10v3M6 16v2.5M18 16v2.5"/>',
-    graphics: '<rect x="3.5" y="6" width="17" height="11" rx="1.5"/><circle cx="12" cy="11.5" r="3"/><path d="M7 17v2.5M17 17v2.5"/>',
-    disk: '<rect x="4" y="4.5" width="16" height="15" rx="2"/><circle cx="12" cy="11" r="3.5"/><path d="M8 17h.01M16 17h-3"/>',
-    network: '<path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.2" r="1.1"/>',
-    cable: '<rect x="8" y="3.5" width="8" height="7" rx="1.2"/><path d="M10 3.5V6M14 3.5V6M12 10.5v10"/>',
-    battery: '<rect x="3.5" y="8" width="15" height="8" rx="1.5"/><path d="M21 11v2"/>',
-    screens: '<rect x="3.5" y="4.5" width="17" height="12" rx="1.5"/><path d="M9 20h6M12 16.5V20"/>',
-    devices: '<path d="M12 3.5v13M8.5 7 12 3.5 15.5 7M7 12v3h10v-3M9.5 20.5h5"/>',
-    temperature: '<path d="M10 14.5V5a2 2 0 0 1 4 0v9.5a4 4 0 1 1-4 0z"/><path d="M12 11v5"/>',
-    system: '<rect x="4" y="4.5" width="16" height="11" rx="1.5"/><path d="M2.5 19.5h19"/>',
+    processor: 'cpu',
+    memory: 'lf-memory',
+    graphics: 'graphics-card',
+    disk: 'hard-drive',
+    network: 'wifi-high',
+    cable: 'lf-ethernet',
+    battery: 'battery-medium',
+    screens: 'monitor',
+    devices: 'usb',
+    temperature: 'thermometer-simple',
+    system: 'laptop',
   };
-  const glyph = name => `<svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${GLYPHS[name]}</svg>`;
+  const glyph = name => icon(GLYPHS[name], 'glyph');
 
   function record(key, v) {
     const h = histories[key] || (histories[key] = []);
@@ -383,7 +383,8 @@
     const pick = $('dock-pick');
     if (document.body.dataset.dock !== 'hardware') return;
     if (!choice.startsWith('disk-')) { pick.replaceChildren(); return; }
-    const b = Object.assign(document.createElement('button'), { className: 'button', textContent: tr('See what takes space') });
+    const b = Object.assign(document.createElement('button'), { className: 'button', innerHTML: icon('chart-pie') });
+    b.append(tr('See what takes space'));
     b.addEventListener('click', () => showView('files'));
     pick.replaceChildren(b);
   }
@@ -393,51 +394,51 @@
   }
 
   const ICONS_ROWS = {
-    'Model': '<rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2.5 19.5h19"/>',
-    'Windows': '<path d="M4 5.5 11 4.5v7H4zM13 4.2l7-1v8.3h-7zM4 13h7v7l-7-1zM13 13h7v8l-7-1z"/>',
-    'Version': '<path d="M4 12V4.5h7.5l8.5 8.5-7.5 7.5z"/><circle cx="8.5" cy="8.5" r="1.3"/>',
-    'Up since': '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
-    'Temperature': '<path d="M10 14.5V5a2 2 0 0 1 4 0v9.5a4 4 0 1 1-4 0z"/>',
-    'Cores': '<rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/><rect x="9.5" y="9.5" width="5" height="5" rx=".8"/>',
-    "Threads": '<path d="M5 6h14M5 10h14M5 14h14M5 18h14"/>',
-    'Base clock': '<path d="M3 12h3l2-5 4 10 2-5h7"/>',
-    'Current clock': '<path d="M3 12h3l2-5 4 10 2-5h7"/>',
-    'Refresh rate': '<path d="M3 12h3l2-5 4 10 2-5h7"/>',
-    'Usage': '<path d="M4.5 16.5a7.5 7.5 0 1 1 15 0"/><path d="m12 16.5 3.5-4.5"/>',
-    'Activity': '<path d="M4.5 16.5a7.5 7.5 0 1 1 15 0"/><path d="m12 16.5 3.5-4.5"/>',
-    'L2 cache': '<path d="m12 4 8 4-8 4-8-4zM4 12l8 4 8-4M4 16l8 4 8-4"/>',
-    'L3 cache': '<path d="m12 4 8 4-8 4-8-4zM4 12l8 4 8-4M4 16l8 4 8-4"/>',
-    'Installed': '<rect x="3.5" y="7" width="17" height="9" rx="1.2"/><path d="M7 10v3M10.5 10v3M14 10v3M17.5 10v3"/>',
-    'Memory in use': '<rect x="3.5" y="7" width="17" height="9" rx="1.2"/><path d="M7 10v3M10.5 10v3"/>',
-    'Dedicated memory': '<rect x="3.5" y="7" width="17" height="9" rx="1.2"/><path d="M7 10v3M10.5 10v3M14 10v3M17.5 10v3"/>',
-    'Slots': '<rect x="4" y="5" width="4" height="14" rx="1"/><rect x="10" y="5" width="4" height="14" rx="1"/><rect x="16" y="5" width="4" height="14" rx="1" stroke-dasharray="2 2"/>',
-    'Maximum': '<path d="M12 4v16M5 11l7-7 7 7"/>',
-    'Capacity': '<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 14h16"/>',
-    'Size': '<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 14h16"/>',
-    'Type': '<path d="M4 12V4.5h7.5l8.5 8.5-7.5 7.5z"/><circle cx="8.5" cy="8.5" r="1.3"/>',
-    'Speed': '<path d="M4.5 16.5a7.5 7.5 0 1 1 15 0"/><path d="m12 16.5 3.5-4.5"/>',
-    'Manufacturer': '<path d="M3.5 20V10l5 3V10l5 3V6l7 4v10z"/>',
-    'Part number': '<path d="M5 5v14M8 5v14M11 5v14M15 5v14M19 5v14"/>',
-    'Driver': '<circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.5M12 18v2.5M20.5 12H18M6 12H3.5M18 6l-1.8 1.8M7.8 16.2 6 18M18 18l-1.8-1.8M7.8 7.8 6 6"/>',
-    'Read': '<path d="M12 4v12M7 11l5 5 5-5M5 20h14"/>',
-    'Write': '<path d="M12 20V8M7 13l5-5 5 5M5 4h14"/>',
-    'Received': '<path d="M12 4v12M7 11l5 5 5-5M5 20h14"/>',
-    'Sent': '<path d="M12 20V8M7 13l5-5 5 5M5 4h14"/>',
-    'Name': '<path d="M4 12V4.5h7.5l8.5 8.5-7.5 7.5z"/><circle cx="8.5" cy="8.5" r="1.3"/>',
-    'Used': '<path d="M12 3.5a8.5 8.5 0 1 0 8.5 8.5H12z"/>',
-    'Free': '<circle cx="12" cy="12" r="8.5" stroke-dasharray="3 3"/>',
-    'Adapter': '<rect x="3.5" y="7" width="17" height="10" rx="1.5"/><path d="M7 17v2.5M11 17v2.5M15 17v2.5"/>',
-    'Link': '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
-    'Charge': '<rect x="3.5" y="8" width="15" height="8" rx="1.5"/><path d="M21 11v2M6.5 11v2M9.5 11v2"/>',
-    'Power': '<path d="M9 3.5v4M15 3.5v4M7 7.5h10v3a5 5 0 0 1-10 0zM12 15.5v5"/>',
-    'Time left': '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
-    'Diagonal': '<rect x="3.5" y="5" width="17" height="12" rx="1.5"/><path d="M6.5 14 17.5 8"/>',
-    'Resolution': '<rect x="3.5" y="5" width="17" height="12" rx="1.5"/><path d="M8 9v4M12 9v4M16 9v4"/>',
-    'Scaling': '<path d="M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7"/>',
-    'Port': '<path d="M9 3.5v4M15 3.5v4M7 7.5h10v3a5 5 0 0 1-10 0zM12 15.5v5"/>',
-    'Year': '<rect x="4" y="5.5" width="16" height="14" rx="2"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/>',
+    'Model': 'laptop',
+    'Windows': 'grid-four',
+    'Version': 'tag',
+    'Up since': 'clock',
+    'Temperature': 'thermometer-simple',
+    'Cores': 'cpu',
+    'Threads': 'lf-threads',
+    'Base clock': 'wave-square',
+    'Current clock': 'wave-square',
+    'Refresh rate': 'wave-square',
+    'Usage': 'gauge',
+    'Activity': 'gauge',
+    'L2 cache': 'stack',
+    'L3 cache': 'stack',
+    'Installed': 'lf-memory',
+    'Memory in use': 'lf-memory',
+    'Dedicated memory': 'lf-memory',
+    'Slots': 'lf-memory',
+    'Maximum': 'arrow-up',
+    'Capacity': 'hard-drive',
+    'Size': 'hard-drive',
+    'Type': 'tag',
+    'Speed': 'gauge',
+    'Manufacturer': 'lf-factory',
+    'Part number': 'barcode',
+    'Driver': 'gear',
+    'Read': 'download-simple',
+    'Write': 'upload-simple',
+    'Received': 'download-simple',
+    'Sent': 'upload-simple',
+    'Name': 'tag',
+    'Used': 'chart-pie-slice',
+    'Free': 'chart-pie',
+    'Adapter': 'graphics-card',
+    'Link': 'link',
+    'Charge': 'battery-high',
+    'Power': 'plug',
+    'Time left': 'clock',
+    'Diagonal': 'lf-screen-diagonal',
+    'Resolution': 'lf-resolution',
+    'Scaling': 'arrows-out-simple',
+    'Port': 'plug',
+    'Year': 'calendar-blank',
   };
-  const POINT = '<circle cx="12" cy="12" r="2"/>';
+  const POINT = 'dot';
 
   function group(title, rows) {
     const h = document.createElement('h2');
@@ -447,7 +448,7 @@
     for (const [label, value] of rows.filter(l => l && l[1] != null && l[1] !== '')) {
       const l = document.createElement('div');
       l.className = 'row';
-      l.innerHTML = '<span class="caption"><svg class="glyph glyph--small" viewBox="0 0 24 24" aria-hidden="true">' + (ICONS_ROWS[label] || POINT) + '</svg><span></span></span><span class="value"></span>';
+      l.innerHTML = '<span class="caption">' + icon(ICONS_ROWS[label] || POINT, 'glyph glyph--small') + '<span></span></span><span class="value"></span>';
       l.querySelector('.caption > span').textContent = label;
       l.querySelector('.value').textContent = value;
       l.querySelector('.value').title = value;
@@ -489,7 +490,7 @@
     ]));
     const copy = document.createElement('div');
     copy.className = 'group';
-    copy.innerHTML = '<button class="row action"><span class="caption"><svg class="glyph glyph--small" viewBox="0 0 24 24" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6.5a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"/></svg><span>Copy summary<small>Main specs, ready to paste</small></span></span></button>';
+    copy.innerHTML = '<button class="row action"><span class="caption">' + icon('copy', 'glyph glyph--small') + '<span>Copy summary<small>Main specs, ready to paste</small></span></span></button>';
     copy.firstChild.addEventListener('click', () => navigator.clipboard.writeText(summary()).then(() => toast(tr('Summary copied'), false, 2200)));
     if (!docked) sections.push(copy);
 

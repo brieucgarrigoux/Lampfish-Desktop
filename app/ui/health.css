@@ -16,7 +16,7 @@
 .health-startup__apps { margin: 0; }
 .health-app__logo { display: grid; place-items: center; width: 30px; height: 30px; border-radius: var(--radius-control); background: var(--raised); }
 .health-app__logo img { width: 20px; height: 20px; }
-.health-app__logo svg { width: 18px; height: 18px; fill: none; stroke: var(--text-soft); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.health-app__logo svg { color: var(--text-soft); }
 .health-app--off .health-app__logo { opacity: .5; }
 .health-app--off .readout__title { color: var(--text-pale); }
 .health-app__lock { font-size: var(--text-caption); color: var(--text-pale); white-space: nowrap; }

@@ -119,12 +119,12 @@
 /* Steps, jewels and keys of Network */
 :root[data-theme="light"] .step__wire { background: var(--track); }
 :where(:root[data-theme="light"]) .step i { background: var(--raised); box-shadow: inset 0 0 0 1px var(--hairline), 0 0 0 4px var(--group); }
-:where(:root[data-theme="light"]) .step i .glyph { stroke: var(--text-soft); }
-:root[data-theme="light"] .step.active i .glyph { stroke: var(--accent); }
+:where(:root[data-theme="light"]) .step i .glyph { color: var(--text-soft); }
+:root[data-theme="light"] .step.active i .glyph { color: var(--accent); }
 :root[data-theme="light"] .step.done i { background: linear-gradient(180deg, #0b8277, var(--accent-strong)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 0 0 4px var(--group); }
-:root[data-theme="light"] .step.done i .glyph { stroke: var(--on-accent); }
+:root[data-theme="light"] .step.done i .glyph { color: var(--on-accent); }
 :root[data-theme="light"] .step.failed i { background: #f3d6da; box-shadow: inset 0 0 0 1.5px var(--danger), 0 0 0 4px var(--group); }
-:root[data-theme="light"] .step.failed i .glyph { stroke: var(--danger); }
+:root[data-theme="light"] .step.failed i .glyph { color: var(--danger); }
 :root[data-theme="light"] .step.active:not(.measuring) .step__fill { background: var(--accent-strong); }
 :root[data-theme="light"] .step::after { background: var(--group-up); color: var(--text); }
 :root[data-theme="light"] .security__title, :root[data-theme="light"] .check__title { text-shadow: none; }
@@ -156,12 +156,8 @@
 :root[data-theme="light"] .h-instrument + .h-instrument { border-left-color: var(--hairline); }
 :root[data-theme="light"] .h-instrument:hover { background: rgba(255, 255, 255, .3); }
 :root[data-theme="light"] .h-q__more { background: rgba(10, 30, 34, .05); }
-:root[data-theme="light"] .h-weather__icon .m-cloud { fill: var(--group-up); }
-:root[data-theme="light"] .h-weather__icon .m-sun, :root[data-theme="light"] .h-weather__icon .m-lightning { stroke: #a56a0a; }
-:root[data-theme="light"] .h-weather__icon .m-sun circle { fill: rgba(232, 182, 90, .34); }
-:root[data-theme="light"] .h-weather__icon .m-moon { stroke: #4c7f78; fill: rgba(76, 127, 120, .14); }
-:root[data-theme="light"] .h-weather__icon .m-drop { stroke: #2f62ad; }
-:root[data-theme="light"] .h-weather__icon .m-flake { fill: #5d7f96; }
+:root[data-theme="light"] .h-weather__icon[data-weather="sun"] { color: #a56a0a; }
+:root[data-theme="light"] .h-weather__icon[data-weather="moon"] { color: #4c7f78; }
 :where(:root[data-theme="light"]) .h-leds i { background: #aab3b5; }
 :root[data-theme="light"] .h-leds i.on, :root[data-theme="light"] .h-leds i.lamp--high { background: var(--fill); }
 :root[data-theme="light"] .h-leds i.on, :root[data-theme="light"] .h-leds i.lamp--high, :root[data-theme="light"] .h-leds i.lamp--medium, :root[data-theme="light"] .h-leds i.lamp--low { box-shadow: none; }

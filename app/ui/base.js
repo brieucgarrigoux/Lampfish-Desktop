@@ -4,6 +4,7 @@
 const webview = window.chrome.webview;
 const send = (action, data = {}) => webview.postMessage({ action, ...data });
 const $ = id => document.getElementById(id);
+const icon = (name, cls) => `<svg class="ph${cls ? ' ' + cls : ''}" aria-hidden="true"><use href="icons.svg#${name}"/></svg>`;
 
 // Small parts repeated in a row (battery segments, lamps) are sized in whole screen pixels: at 125 %, 6 px is 7.5 pixels
 // and the screen would round one part down and the next one up.

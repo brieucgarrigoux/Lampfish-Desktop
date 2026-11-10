@@ -90,6 +90,6 @@ lampfish follows [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`
 
 [MIT](LICENSE)
 
-lampfish ships the [WebView2 SDK](https://www.nuget.org/packages/Microsoft.Web.WebView2) of Microsoft (BSD 3-Clause), whose license and notices are installed next to its DLLs in `app\lib\`. The icons added in 0.5 come from [Phosphor](https://phosphoricons.com) (MIT), whose license is in `app\ui\`. Everything else is part of this project: the sound packs and cursor themes come from the generators in `src\`. The titles use the [Geist](https://github.com/vercel/geist-font) font (SIL Open Font License 1.1, in `app\ui\fonts\`).
+lampfish ships the [WebView2 SDK](https://www.nuget.org/packages/Microsoft.Web.WebView2) of Microsoft (BSD 3-Clause), whose license and notices are installed next to its DLLs in `app\lib\`. The icons come from [Phosphor](https://phosphoricons.com) (MIT), whose license is in `app\ui\`, with a few drawn for lampfish in the same style. Everything else is part of this project: the sound packs and cursor themes come from the generators in `src\`. The titles use the [Geist](https://github.com/vercel/geist-font) font (SIL Open Font License 1.1, in `app\ui\fonts\`).
 
 <p align="center"><img src="brand/badge/powered-by-lampfish-pill.png" alt="Powered by lampfish" width="200"></p>

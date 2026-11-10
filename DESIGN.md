@@ -59,7 +59,7 @@ Fonts: `--display` (Geist, the font of the logo) for titles, the clock and lit t
 
 - Radius, as Windows 11 draws them: `--radius-control` and `--radius-small` 4 (buttons, fields, cards of a settings list, anything inside the page), `--radius-group`, `--radius-card` and `--radius-shell` 8 (cards, shells, toasts, flyouts). The assistant keeps its compact text sizes (`companion.css`).
 - Spacing: 28 above and 12 below a section title on a page, 18 and 10 in the side panel.
-- Icon tiles: 26, 30 or 44 px.
+- Icon tiles: 26, 30 or 44 px. Icons: `--icon` 16, `--icon-nav` 20, `--icon-big` 32 (see Icons).
 - Time: `--fast` (.12 s) for hover and color changes, .2 to .45 s for fades and reveals. Motion stops when the system asks for reduced motion.
 - Movement: nothing jumps. An element that changes place slides from where it was (`slide`, `glide` and `glideRebuilt` of `main.js`); a dragged element follows the pointer, lifted by `--float`, while its neighbors make room, and settles in its slot when released (`dragOrder`).
 
@@ -81,12 +81,12 @@ Fonts: `--display` (Geist, the font of the logo) for titles, the clock and lit t
 ## Components
 
 - **Row** (`.row`, `.toggle`, `.setting`): icon in a `.glyph`, title and one gray line, control on the right. Title and line each fit on one line.
-- **Glyph** (`.glyph`): every list icon, stroke in `--text-soft` on `--raised`, 30 px. It turns turquoise only when its row is on or chosen.
+- **Glyph** (`.glyph`): every list icon, in `--text-soft` on `--raised`, a 30 px tile around a 16 px icon. It turns turquoise only when its row is on or chosen.
 - **Switch**: the switch of Windows, one size for all (`.toggle input`, `.toggler input`, `.cr-switch`): 40 by 20, empty with a ring and a 12 px dot when off, filled with the accent and a dark dot (white in day mode) when on, the dot grows to 14 px under the pointer.
 - **Settings group**: a `.group` made of settings (`.toggle`, `.row--setting`, `.setting`, `.row.action`, `.h-q`, `.tr-row`) is one block with thin rules between its settings, like an open group of the Settings app of Windows (separate cards showed the dark veil of Mica between them). Lists of data (programs, files) are not touched.
 - **Appearance words**: Light, Dark, Use system setting, with a link to the Colors page of Windows (`display.colors`).
 - **Slider**: `fill()` of `main.js` paints the filled part from `min` and `max`. A muted slider is dimmed (`.is-muted`), a disabled one too.
-- **Segments**, **time select** (`.time-select`), **chips** (`.tool-chip`), **links** (`.link` with a 14 px icon).
+- **Segments**, **time select** (`.time-select`), **chips** (`.tool-chip`), **links** (`.link` with a 16 px icon).
 - **Buttons**: main `.button--accent`, or `.keycap-pill` for the main action of a shell; secondary `.button`; card header action = chip; title line action = link. Armed red (`--danger-dim`, text and ring `--danger`) is the only red button.
 - **Ring dial** (`.dials`, `.dial`, filled by `dials(zone, list)` of `dials.js`, shared by every page): a flat ring, no metal, no glow, the number alone in the middle. Only on Home, Network and in the assistant. a value and its share. `.dials--small` on Home and in the companion, `.dials--led` with lit figures in Health. Each dial shows details in a bubble on hover or keyboard focus.
 - **Instruments** (`thermometer`, `batteryRelief`, `wifiRelief` in `instruments.js`): used instead of a ring wherever they exist. A ring is only for what has no instrument.
@@ -146,4 +146,12 @@ Blocks and cards share `.h-board`. `.h-main` and `.h-shortcuts` take no box (`di
 
 ## Icons
 
-Most icons are drawn by hand in stroke on a 24 grid. Where a control had none, `app/ui/phosphor.js` gives it one from Phosphor, regular weight: add a label there, then run `src/phosphor.py`. Never add a button without an icon, a data row or a segment excepted.
+One registry, one family. Every icon is a symbol of `app/ui/icons.svg`: Phosphor regular (MIT, 256 grid), and where Phosphor has nothing for a meaning, a drawing of lampfish in the same grammar (names starting with `lf-`, in `src/icons-own.json`): 256 grid, stroke 16, round caps and joins, one color, no opacity.
+
+- In html an icon is `<svg class="ph" aria-hidden="true"><use href="icons.svg#name"/></svg>`; in a script it is `icon(name, cls)` of `base.js`. A table of icons holds names, never markup.
+- `python src/icons.py <unpacked @phosphor-icons/core>` writes `icons.svg` from the names the pages use, copies the Phosphor license and draws the tray images (lampfish must be closed for those). A name found nowhere stops it. `src/check.ps1` fails on a name missing from `icons.svg` and on a drawing left inside an icon.
+- Three sizes: `--icon` 16 (buttons, rows, chips, links, inside a 26 or 30 px tile), `--icon-nav` 20 (bar on the left, tabs, navigation lists), `--icon-big` 32 (drop zones, empty states).
+- An icon takes the color of its text (`fill: currentColor`): a state changes `color`, never a stroke.
+- One meaning, one icon, everywhere (Undo, Reset, Refresh, Open in File Explorer, Delete, Copy).
+- Instruments and data drawings (gauges, thermometer, Wi-Fi in relief, curves, arrangement thumbnails, the picture of the taskbar) are drawn by their script: they show values and are not icons.
+- Never add a button without an icon, a data row or a segment excepted.

@@ -2,7 +2,6 @@
 .rail-edit { flex: none; display: flex; flex-direction: column; align-items: center; gap: 2px; width: 100%; margin-top: 4px; }
 .rail-edit button { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 68px; padding: 5px 0; border: 0; border-radius: var(--radius-control); background: none; color: var(--text-pale); font-size: var(--text-badge); cursor: pointer; transition: color var(--fast), background var(--fast); }
 .rail-edit button:hover { color: var(--accent); background: var(--hover); }
-.rail-edit svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .rail-edit .rail-edit__reset, .rail-edit .rail-edit__done { display: none; }
 .bar-editing .rail-edit .rail-edit__start { display: none; }
 .bar-editing .rail-edit .rail-edit__reset, .bar-editing .rail-edit .rail-edit__done { display: flex; }
@@ -15,7 +14,6 @@
 }
 
 .rail-eye { display: none; }
-.rail-eye svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .rail-eye .shut, .service[hidden] .rail-eye .open { display: none; }
 .service[hidden] .rail-eye .shut { display: inline; }
 body.bar-editing .rail .service[hidden] { display: flex !important; opacity: .4; }
@@ -44,7 +42,6 @@ body.bar-editing .rail-title { box-shadow: inset 0 0 0 1px var(--hairline-strong
   .h-customize span { display: none; }
 }
 .h-customize:hover { background: var(--hover); }
-.h-customize svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .h-editing { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 0 0 12px; padding: 10px 12px 10px 16px; border-radius: var(--radius-card); background: color-mix(in srgb, var(--accent) 14%, var(--wallpaper)); box-shadow: var(--chosen); }
 .h-editing p { flex: 1 1 260px; margin: 0; font-size: var(--text-body); color: var(--text-soft); }
 
@@ -59,10 +56,10 @@ body.bar-editing .rail-title { box-shadow: inset 0 0 0 1px var(--hairline-strong
 .h-cover__label { display: inline-flex; align-items: center; gap: 8px; max-width: calc(100% - 20px); padding: 8px 14px; border-radius: 99px; background: var(--raised); box-shadow: 0 4px 14px rgba(0, 0, 0, .45); font-size: var(--text-body); font-weight: 600; white-space: nowrap; }
 .h-cover__name { overflow: hidden; text-overflow: ellipsis; }
 .h-cover__state { font-weight: 400; color: var(--text-pale); }
-.h-cover__eye { flex: none; width: 18px; height: 18px; fill: none; stroke: var(--accent); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.h-cover__eye .shut, .is-off .h-cover__eye .open { display: none; }
-.is-off .h-cover__eye .shut { display: inline; }
-.is-off .h-cover__eye { stroke: var(--text-pale); }
+.h-cover__eye { flex: none; color: var(--accent); }
+.h-cover__eye.shut, .is-off .h-cover__eye.open { display: none; }
+.is-off .h-cover__eye.shut { display: inline; }
+.is-off .h-cover__eye { color: var(--text-pale); }
 
 /* Fewer blocks share the width instead of leaving a hole. */
 @container home (min-width: 900px) {
@@ -75,7 +72,6 @@ body.bar-editing .rail-title { box-shadow: inset 0 0 0 1px var(--hairline-strong
 }
 
 .h-unpin { display: none; }
-.h-unpin svg { width: 11px; height: 11px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
 .home-editing .h-tile { cursor: grab; touch-action: none; user-select: none; box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--accent) 40%, transparent); }
 .home-editing .h-tile .h-unpin { flex: none; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--raised); color: var(--text-soft); transition: color var(--fast); }
 .home-editing .h-tile:hover .h-unpin { color: var(--text); }
@@ -84,15 +80,14 @@ body.bar-editing .rail-title { box-shadow: inset 0 0 0 1px var(--hairline-strong
 .h-cell { border-radius: var(--radius-card); background: color-mix(in srgb, var(--hover) 55%, transparent); box-shadow: inset 0 0 0 1px var(--hairline); pointer-events: none; }
 .h-size { display: none; position: absolute; right: 6px; bottom: 6px; place-items: center; width: 24px; height: 24px; border-radius: var(--radius-small); background: var(--raised); color: var(--text-soft); cursor: pointer; }
 .h-size:hover { color: var(--text); background: var(--hover); }
-.h-size svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .home-editing .h-size { display: grid; }
 .home-editing .h-tile.grabbed { position: relative; z-index: 2; cursor: grabbing; background: var(--group-up); box-shadow: inset 0 0 0 1.5px var(--accent), var(--float); }
 .home-editing .h-shortcuts.is-empty { min-height: 64px; border: 1.5px dashed var(--hairline-strong); border-radius: var(--radius-card); }
 .h-pin { margin-top: 12px; padding: 12px 14px 14px; border-radius: var(--radius-card); background: var(--group); }
 .h-pin__title { display: block; margin-bottom: 10px; font-size: var(--text-caption); font-weight: 600; color: var(--text-soft); }
 .h-pin__list { display: flex; flex-wrap: wrap; gap: 8px; }
-.h-pin__list .h-pin__plus { width: 13px; height: 13px; stroke: var(--text-pale); }
-.h-pin__list .tool-chip:hover .h-pin__plus { stroke: var(--accent); }
+.h-pin__list .h-pin__plus { color: var(--text-pale); }
+.h-pin__list .tool-chip:hover .h-pin__plus { color: var(--accent); }
 
 /* What the new cards of Home show. */
 .h-bar { position: relative; display: block; width: 100%; height: 6px; overflow: hidden; border-radius: 3px; background: var(--meter); }
@@ -102,7 +97,6 @@ body.bar-editing .rail-title { box-shadow: inset 0 0 0 1px var(--hairline-strong
 .h-screens i { height: 20px; box-sizing: border-box; border: 1.5px solid var(--hairline-strong); border-radius: 3px; background: var(--screen); }
 .h-screens i.main { border-color: var(--accent); }
 .h-glyphs { display: flex; gap: 8px; align-items: center; color: var(--text-soft); }
-.h-glyphs .mode-icon { width: 18px; height: 18px; }
 .h-leds i.lamp--high { background: var(--accent); box-shadow: 0 0 5px color-mix(in srgb, var(--accent) 80%, transparent); }
 .h-leds i.lamp--medium { background: var(--warn); box-shadow: 0 0 5px color-mix(in srgb, var(--warn) 70%, transparent); }
 .h-leds i.lamp--low { background: var(--bad); box-shadow: 0 0 5px color-mix(in srgb, var(--bad) 70%, transparent); }

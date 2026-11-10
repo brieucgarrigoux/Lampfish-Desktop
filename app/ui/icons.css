@@ -20,10 +20,10 @@ img.retro { image-rendering: pixelated; }
 .tile:hover .tile__case { background: var(--group); }
 
 .star { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; padding: 3px; border: 0; border-radius: var(--radius-small); background: none; opacity: 0; transition: opacity var(--fast); }
-.star svg { width: 16px; height: 16px; fill: none; stroke: var(--text-soft); stroke-width: 1.6; stroke-linejoin: round; }
-.star:hover svg { stroke: var(--text); }
+.star svg { color: var(--text-soft); }
+.star:hover svg { color: var(--text); }
 .tile:hover .star, .tile:focus-within .star, .tile.favorite .star { opacity: 1; }
-.tile.favorite .star svg { fill: var(--accent); stroke: var(--accent); }
+.tile.favorite .star svg { color: var(--accent); }
 
 .tile--name { padding-bottom: 4px; }
 .tile__footer { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0 2px; }

@@ -10,45 +10,44 @@
     cinema: ['Cinema', 'Dark wallpaper, sounds off', 'film'],
   };
   const MODE_ICONS = {
-    spark: '<path d="M12 3.5 13.6 10 20 12l-6.4 2L12 20.5 10.4 14 4 12l6.4-2z"/>',
-    moon: '<path d="M19.5 14.6A7.6 7.6 0 0 1 9.4 4.5a7.6 7.6 0 1 0 10.1 10.1z"/>',
-    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/>',
-    target: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/>',
-    film: '<rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="m10.2 9.3 4.6 2.7-4.6 2.7z"/>',
-    game: '<path d="M7.5 8h9a4 4 0 0 1 3.9 4.9l-.8 3.5a2.3 2.3 0 0 1-4 1L14 15.5h-4l-1.6 1.9a2.3 2.3 0 0 1-4-1l-.8-3.5A4 4 0 0 1 7.5 8z"/><path d="M8 11v3M6.5 12.5h3M15.5 12h.01M17.5 13.5h.01"/>',
-    music: '<path d="M9 17.5V6l10-2v11.5"/><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="15.5" r="2.5"/>',
-    book: '<path d="M4 5.5c2.5-1 5.5-1 8 .8 2.5-1.8 5.5-1.8 8-.8v13c-2.5-1-5.5-1-8 .8-2.5-1.8-5.5-1.8-8-.8z"/><path d="M12 6.3v13"/>',
-    coffee: '<path d="M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16M8.5 3.5v2M12 3.5v2"/>',
-    leaf: '<path d="M5 19c0-7 5-12 14-13-1 9-6 14-13 14"/><path d="M5 19c3-4 6-6.5 9-8"/>',
-    bolt: '<path d="M13 3.5 5.5 13H12l-1 7.5L18.5 11H12z"/>',
-    heart: '<path d="M12 19.5s-7.5-4.6-7.5-10a4.2 4.2 0 0 1 7.5-2.6 4.2 4.2 0 0 1 7.5 2.6c0 5.4-7.5 10-7.5 10z"/>',
-    code: '<path d="m8.5 7.5-4.5 4.5 4.5 4.5M15.5 7.5l4.5 4.5-4.5 4.5M13.5 5l-3 14"/>',
+    spark: 'sparkle',
+    moon: 'moon',
+    sun: 'sun',
+    target: 'radio-button',
+    film: 'film-slate',
+    game: 'game-controller',
+    music: 'music-notes',
+    book: 'book-open',
+    coffee: 'coffee',
+    leaf: 'leaf',
+    bolt: 'lightning',
+    heart: 'heart',
+    code: 'code',
   };
-  const icon = key => `<svg class="mode-icon" viewBox="0 0 24 24" aria-hidden="true">${MODE_ICONS[key] || MODE_ICONS.spark}</svg>`;
+  const modeIcon = key => icon(MODE_ICONS[key] || MODE_ICONS.spark, 'mode-icon');
   const ICONS = {
-    wallpaper: '<rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="m3.5 16 5-5 4 4 2.5-2.5 5.5 5.5"/><circle cx="15.5" cy="9.5" r="1.3"/>',
-    cursor: '<path d="M6 3.5 18 12.3l-5.6.8-3.2 4.9z"/><path d="m12.4 13.1 3.6 6.4"/>',
-    on: '<path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>',
-    off: '<path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z"/><path d="m16 10 4 4M20 10l-4 4"/>',
-    warm: '<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/>',
-    dim: '<path d="M19.5 14.6A7.6 7.6 0 0 1 9.4 4.5a7.6 7.6 0 1 0 10.1 10.1z"/>',
-    react: '<path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/>',
-    output: '<rect x="6" y="3.5" width="12" height="17" rx="2.5"/><circle cx="12" cy="14" r="3"/><circle cx="12" cy="7.5" r=".8"/>',
-    time: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
-    screens: '<rect x="3.5" y="4.5" width="17" height="12" rx="1.5"/><path d="M9 20h6M12 16.5V20"/>',
-    mains: '<path d="M9 3.5v4M15 3.5v4M7 7.5h10v3a5 5 0 0 1-10 0zM12 15.5v5"/>',
-    battery: '<rect x="3" y="8" width="16" height="8" rx="2"/><path d="M21 10.5v3M6 11v2"/>',
-    app: '<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M3.5 8.5h17"/>',
-    headset: '<path d="M4.5 15v-3a7.5 7.5 0 0 1 15 0v3"/><rect x="3.5" y="14" width="4" height="6" rx="1.5"/><rect x="16.5" y="14" width="4" height="6" rx="1.5"/>',
-    hand: '<path d="m9 9 10 3.6-4.2 1.2-1.2 4.2z"/><path d="m5 5 1.6 1.6M9 3v2.2M3 9h2.2"/>',
-    opens: '<path d="M14 4.5h5.5V10M19.5 4.5 11 13"/><path d="M17.5 13.5v4a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2h4"/>',
-    export: '<path d="M12 15V4M7.5 8.5 12 4l4.5 4.5"/><path d="M5 13.5v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/>',
-    remove: '<path d="M5 7h14M9.5 7V5h5v2M7 7l1 12h8l1-12"/>',
-    rename: '<path d="M4.5 19.5h4l10-10-4-4-10 10z"/><path d="m13 7 4 4"/>',
-    close: '<path d="m7 7 10 10M17 7 7 17"/>',
-    play: '<path d="M8.5 5.8v12.4a.8.8 0 0 0 1.2.7l9.6-6.2a.8.8 0 0 0 0-1.4L9.7 5.1a.8.8 0 0 0-1.2.7z"/>',
+    wallpaper: 'image',
+    cursor: 'cursor',
+    on: 'speaker-high',
+    off: 'speaker-x',
+    warm: 'sun-horizon',
+    dim: 'sun-dim',
+    react: 'waveform',
+    output: 'speaker-high',
+    time: 'clock',
+    screens: 'monitor',
+    mains: 'plug',
+    battery: 'battery-high',
+    app: 'app-window',
+    headset: 'headphones',
+    hand: 'hand-pointing',
+    opens: 'arrow-square-out',
+    export: 'export',
+    remove: 'trash-simple',
+    rename: 'pencil-simple',
+    close: 'x',
+    play: 'play',
   };
-  const svg = (path, cls) => `<svg${cls ? ` class="${cls}"` : ''} viewBox="0 0 24 24" aria-hidden="true">${path}</svg>`;
 
   function el(tag, cls, text) {
     const e = document.createElement(tag);
@@ -68,7 +67,7 @@
       if (look.length) box.style.setProperty('--look', look.join(' '));
     } else {
       box.classList.add('mood__cover--none');
-      box.insertAdjacentHTML('beforeend', svg(ICONS.wallpaper));
+      box.insertAdjacentHTML('beforeend', icon(ICONS.wallpaper));
     }
     if (m.warm > 0) {
       const warmth = el('i', 'mood__warmth');
@@ -81,11 +80,11 @@
     return box;
   }
 
-  function trait(icon, text, title) {
+  function trait(symbol, text, title) {
     const t = el('span', 'trait');
     t.title = title;
-    if (typeof icon === 'string') t.insertAdjacentHTML('beforeend', svg(icon));
-    else t.append(icon);
+    if (typeof symbol === 'string') t.insertAdjacentHTML('beforeend', icon(symbol));
+    else t.append(symbol);
     if (text) t.append(el('span', '', text));
     return t;
   }
@@ -120,7 +119,7 @@
 
   function starts(m) {
     const row = el('div', 'mood__starts');
-    const pill = (icon, text, title) => { const p = trait(icon, text, title); p.className = 'start'; row.append(p); };
+    const pill = (symbol, text, title) => { const p = trait(symbol, text, title); p.className = 'start'; row.append(p); };
     if (m.time) pill(ICONS.time, m.time, tr('Every day at {0}', m.time));
     if (m.screens) pill(ICONS.screens, String(m.screens), m.screens === 1 ? tr('With 1 screen') : tr('With {0} screens', m.screens));
     if (m.power) pill(ICONS[m.power] || ICONS.mains, tr(m.power === 'mains' ? 'Plugged in' : 'Battery'), tr(m.power === 'mains' ? 'When plugged in' : 'On battery'));
@@ -130,7 +129,7 @@
     if (m.opens && m.opens.length) {
       const opens = el('span', 'start start--opens');
       opens.title = tr('Opens {0}', m.opens.map(o => o.name).join(', '));
-      opens.insertAdjacentHTML('beforeend', svg(ICONS.opens));
+      opens.insertAdjacentHTML('beforeend', icon(ICONS.opens));
       for (const o of m.opens.slice(0, 3)) if (o.icon) opens.append(appImage(o.icon));
       if (!m.opens.some(o => o.icon) || m.opens.length > 3) opens.append(el('span', '', String(m.opens.length)));
       row.append(opens);
@@ -145,13 +144,13 @@
     c.setAttribute('aria-label', m.name);
     c.dataset.id = m.id;
     const art = cover(m, c);
-    art.insertAdjacentHTML('beforeend', `<span class="mood__badge-icon">${icon(m.icon)}</span>`);
+    art.insertAdjacentHTML('beforeend', `<span class="mood__badge-icon">${modeIcon(m.icon)}</span>`);
     if (!m.current) {
       const play = el('button', 'mood__play');
       play.type = 'button';
       play.title = tr('Apply');
       play.setAttribute('aria-label', tr('Apply {0}', m.name));
-      play.innerHTML = svg(ICONS.play);
+      play.innerHTML = icon(ICONS.play);
       play.addEventListener('click', e => { e.stopPropagation(); send('moods.apply', { id: m.id }); });
       art.append(play);
     }
@@ -159,7 +158,7 @@
     remove.type = 'button';
     remove.title = tr('Remove, with Undo');
     remove.setAttribute('aria-label', tr('Remove {0}', m.name));
-    remove.innerHTML = svg('<path d="m7 7 10 10M17 7 7 17"/>');
+    remove.innerHTML = icon('x');
     remove.addEventListener('click', e => { e.stopPropagation(); send('moods.remove', { id: m.id }); });
     art.append(remove);
     const head = el('div', 'mood__head');
@@ -176,7 +175,7 @@
     const tile = el('div', 'mood mood--add');
     const state = Lampfish.state || {};
     const art = cover({ wallpaper: state.current, light: state.light, speed: state.speed, blur: state.blur, saturation: state.saturation, dim: state.dim }, tile);
-    art.insertAdjacentHTML('beforeend', `<span class="mood__plus" aria-hidden="true">${svg('<path d="M12 5.5v13M5.5 12h13"/>')}</span>`);
+    art.insertAdjacentHTML('beforeend', `<span class="mood__plus" aria-hidden="true">${icon('plus')}</span>`);
     const head = el('div', 'mood__head');
     head.append(el('h3', 'mood__name', tr('New theme')));
     const help = el('p', 'mood__help', tr('Saves the wallpaper, cursors and sounds'));
@@ -221,7 +220,7 @@
       b.type = 'button';
       b.title = tr('Adds a theme built from the current setup');
       const art = cover(m, b);
-      art.insertAdjacentHTML('beforeend', `<span class="mood__badge-icon">${icon(symbol)}</span>`);
+      art.insertAdjacentHTML('beforeend', `<span class="mood__badge-icon">${modeIcon(symbol)}</span>`);
       b.append(art, el('span', 'starter__name', tr(name)), el('span', 'starter__help', tr(help)));
       b.addEventListener('click', () => send('moods.starter', { kind: m.kind }));
       return b;
@@ -235,10 +234,10 @@
 
   function close() { choose(null); }
 
-  function row(icon, title, help, control) {
+  function row(symbol, title, help, control) {
     const r = el('div', 'row');
     const caption = el('span', 'caption');
-    caption.innerHTML = svg(icon, 'glyph glyph--small');
+    caption.innerHTML = icon(symbol, 'glyph glyph--small');
     const text = el('span', '', title);
     if (help) text.append(Object.assign(el('small', '', help), { title: help }));
     caption.append(text);
@@ -247,8 +246,8 @@
     return r;
   }
 
-  function stacked(icon, title, help, control) {
-    const r = row(icon, title, help);
+  function stacked(symbol, title, help, control) {
+    const r = row(symbol, title, help);
     r.className = 'choice';
     r.append(control);
     return r;
@@ -269,13 +268,13 @@
     return s;
   }
 
-  function chip(label, icon, title, remove) {
+  function chip(label, image, title, remove) {
     const c = el('button', 'chip mood__chip');
     c.type = 'button';
     c.title = title;
-    if (icon) c.append(appImage(icon));
+    if (image) c.append(appImage(image));
     c.append(el('span', '', label));
-    c.insertAdjacentHTML('beforeend', svg(ICONS.close));
+    c.insertAdjacentHTML('beforeend', icon(ICONS.close));
     c.addEventListener('click', remove);
     return c;
   }
@@ -309,7 +308,7 @@
     sheet.dataset.key = key;
 
     const head = el('div', 'm-sheet__head');
-    head.innerHTML = `<button class="m-sheet__icon" type="button" aria-expanded="false">${icon(m.icon)}</button><div><span class="title"></span><span class="path"></span></div>`;
+    head.innerHTML = `<button class="m-sheet__icon" type="button" aria-expanded="false">${modeIcon(m.icon)}</button><div><span class="title"></span><span class="path"></span></div>`;
     const picker = el('div', 'm-icons');
     picker.hidden = true;
     picker.setAttribute('role', 'radiogroup');
@@ -319,7 +318,7 @@
       b.type = 'button';
       b.setAttribute('role', 'radio');
       b.setAttribute('aria-checked', String(key === (m.icon || 'spark')));
-      b.innerHTML = icon(key);
+      b.innerHTML = modeIcon(key);
       b.addEventListener('click', () => { if (key !== (m.icon || 'spark')) send('moods.icon', { id: m.id, value: key }); });
       picker.append(b);
     }
@@ -337,7 +336,7 @@
       b.type = 'button';
       b.title = tr(label);
       b.setAttribute('aria-label', tr(label));
-      b.innerHTML = svg(ICONS[what]);
+      b.innerHTML = icon(ICONS[what]);
       b.addEventListener('click', () => what === 'close' ? close() : rename(head, m));
       head.append(b);
     }
@@ -348,7 +347,9 @@
     const apply = el('button', 'button button--accent', tr(m.current ? 'Applied' : 'Apply'));
     apply.disabled = m.current;
     apply.addEventListener('click', () => send('moods.apply', { id: m.id }));
-    const update = el('button', 'button', tr('Update'));
+    const update = el('button', 'button');
+    update.innerHTML = icon('arrows-clockwise');
+    update.append(tr('Update'));
     update.title = tr('Replaces what it brings back with the current setup');
     update.addEventListener('click', () => send('moods.update', { id: m.id }));
     actions.append(apply, update);
@@ -377,7 +378,7 @@
       clear.type = 'button';
       clear.title = tr('Never');
       clear.setAttribute('aria-label', tr('Clear the time'));
-      clear.innerHTML = svg(ICONS.close);
+      clear.innerHTML = icon(ICONS.close);
       clear.addEventListener('click', () => send('moods.time', { id: m.id, value: '' }));
       clock.append(clear);
     }
@@ -390,12 +391,14 @@
     let app;
     if (m.app) app = chip(m.app, m.appIcon, tr('Remove'), () => send('moods.appClear', { id: m.id }));
     else {
-      app = el('button', 'button', tr('Choose'));
+      app = el('button', 'button');
+      app.innerHTML = icon('check');
+      app.append(tr('Choose'));
       app.addEventListener('click', () => send('moods.app', { id: m.id }));
     }
     auto.append(stacked(ICONS.app, tr('When an app opens'), tr('Undone when the app closes'), app));
     const headset = el('label', 'toggle');
-    headset.innerHTML = `<input type="checkbox"><span class="caption">${svg(ICONS.headset, 'glyph glyph--small')}<span></span></span>`;
+    headset.innerHTML = `<input type="checkbox"><span class="caption">${icon(ICONS.headset, 'glyph glyph--small')}<span></span></span>`;
     const label = headset.querySelector('.caption > span');
     label.append(tr('With headphones'), el('small', '', tr('Undone when unplugged')));
     const box = headset.querySelector('input');
@@ -409,7 +412,7 @@
     if (!m.opens || m.opens.length < 8) {
       const add = el('button', 'link');
       add.type = 'button';
-      add.innerHTML = svg('<path d="M12 5v14M5 12h14"/>');
+      add.innerHTML = icon('plus');
       add.append(tr('Add'));
       add.addEventListener('click', () => send('moods.openAdd', { id: m.id }));
       list.append(add);
@@ -417,9 +420,9 @@
     opens.append(stacked(ICONS.opens, tr('Apps or files'), tr('Opened each time the theme is applied'), list));
 
     const more = el('div', 'group');
-    const action = (icon, title, help, run, cls) => {
+    const action = (symbol, title, help, run, cls) => {
       const b = el('button', 'row action' + (cls ? ' ' + cls : ''));
-      b.innerHTML = `<span class="caption">${svg(icon, 'glyph glyph--small')}<span></span></span>`;
+      b.innerHTML = `<span class="caption">${icon(symbol, 'glyph glyph--small')}<span></span></span>`;
       b.querySelector('.caption > span').append(title, el('small', '', help));
       b.addEventListener('click', run);
       return b;
@@ -444,8 +447,12 @@
     const notes = el('ul', 'mood-preview__warnings');
     for (const w of warnings) notes.append(el('li', '', w));
     const actions = el('div', 'm-sheet__actions');
-    const add = el('button', 'button button--accent', tr('Add this theme'));
-    const cancel = el('button', 'button', tr('Cancel'));
+    const add = el('button', 'button button--accent');
+    const cancel = el('button', 'button');
+    add.innerHTML = icon('plus');
+    add.append(tr('Add this theme'));
+    cancel.innerHTML = icon('x');
+    cancel.append(tr('Cancel'));
     add.addEventListener('click', () => { box.hidden = true; send('moods.add'); });
     cancel.addEventListener('click', () => { box.hidden = true; send('moods.cancel'); });
     actions.append(add, cancel);
@@ -455,12 +462,12 @@
   }
 
   const RECIPE = {
-    mouse: '<path d="M6 3.5 18 12.3l-5.6.8-3.2 4.9z"/><path d="m12.4 13.1 3.6 6.4"/>',
-    wave: '<path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/>',
-    play: '<path d="M8.5 5.8v12.4a.8.8 0 0 0 1.2.7l9.6-6.2a.8.8 0 0 0 0-1.4L9.7 5.1a.8.8 0 0 0-1.2.7z"/>',
-    clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
-    headset: '<path d="M4.5 15v-3a7.5 7.5 0 0 1 15 0v3"/><rect x="3.5" y="14" width="4" height="6" rx="1.5"/><rect x="16.5" y="14" width="4" height="6" rx="1.5"/>',
-    arrow: '<path d="M2 12h26M22 6l6 6-6 6"/>',
+    mouse: 'cursor',
+    wave: 'waveform',
+    play: 'play',
+    clock: 'clock',
+    headset: 'headphones',
+    arrow: 'arrow-right',
   };
   const STEPS = [
     ['Set up', 'A wallpaper, cursors, sounds and effects'],
@@ -474,12 +481,12 @@
     if (zone.dataset.key === key && zone.children.length) return;
     zone.dataset.key = key;
     const now = { wallpaper: s.current, light: s.light, speed: s.speed, blur: s.blur, saturation: s.saturation, dim: s.dim };
-    const piece = (path, cls) => { const p = el('span', 'recipe__piece' + (cls ? ' ' + cls : '')); p.insertAdjacentHTML('beforeend', svg(path)); return p; };
+    const piece = (symbol, cls) => { const p = el('span', 'recipe__piece' + (cls ? ' ' + cls : '')); p.insertAdjacentHTML('beforeend', icon(symbol)); return p; };
     const setup = el('div', 'recipe__visual');
     setup.append(cover(now, el('div')), el('span', 'recipe__plus', '+'), piece(RECIPE.mouse), el('span', 'recipe__plus', '+'), piece(RECIPE.wave));
     const card = el('div', 'recipe__card');
     const name = el('span', 'recipe__name');
-    name.insertAdjacentHTML('beforeend', icon('moon'));
+    name.insertAdjacentHTML('beforeend', modeIcon('moon'));
     name.append(el('span', '', tr('Night')));
     card.append(cover(now, el('div')), name);
     const saved = el('div', 'recipe__visual');
@@ -489,7 +496,7 @@
     const visuals = [setup, saved, back];
     const parts = [];
     STEPS.forEach(([title, text], i) => {
-      if (i) { const a = el('span', 'recipe__arrow'); a.insertAdjacentHTML('beforeend', `<svg viewBox="0 0 30 24" aria-hidden="true">${RECIPE.arrow}</svg>`); parts.push(a); }
+      if (i) { const a = el('span', 'recipe__arrow'); a.insertAdjacentHTML('beforeend', icon(RECIPE.arrow)); parts.push(a); }
       const step = el('div', 'mode-step');
       step.innerHTML = `<span class="mode-step__what"><span class="mode-step__title"><b>${i + 1}</b><span></span></span><span class="mode-step__text"></span></span>`;
       step.querySelector('.mode-step__title span').textContent = tr(title);
@@ -527,17 +534,19 @@
       const b = el('button', 'row action');
       b.type = 'button';
       b.setAttribute('aria-pressed', String(!!m.current));
-      b.innerHTML = '<span class="caption">' + icon(m.icon) + '<span translate="no"></span></span>';
+      b.innerHTML = '<span class="caption">' + modeIcon(m.icon) + '<span translate="no"></span></span>';
       b.querySelector('[translate]').textContent = m.name;
       if (m.current) b.append(el('span', 'value', tr('Active')));
-      else b.insertAdjacentHTML('beforeend', svg(ICONS.play, 'dock-modes__play'));
+      else b.insertAdjacentHTML('beforeend', icon(ICONS.play, 'dock-modes__play'));
       b.title = m.current ? tr('Turn off') : tr('Apply');
       b.addEventListener('click', () => send(m.current ? 'moods.release' : 'moods.apply', { id: m.id }));
       return b;
     }));
     if (!moods.length) group.append(el('div', 'row empty', tr('No theme yet')));
     const actions = el('div', 'dock-actions');
-    const add = el('button', 'button', tr('New theme'));
+    const add = el('button', 'button');
+    add.innerHTML = icon('plus');
+    add.append(tr('New theme'));
     add.addEventListener('click', () => startNew());
     actions.append(add);
     pick.replaceChildren(el('h2', null, tr('My themes')), group, actions);
@@ -564,5 +573,5 @@
   $('mood-import').addEventListener('click', () => send('moods.import'));
   addEventListener('keydown', e => { if (e.key === 'Escape' && chosen && document.body.dataset.view === 'modes' && !(e.target.matches && e.target.matches('input:not([type="checkbox"]), select'))) close(); });
 
-  Lampfish.moods = { state, event, startNew, icon, renderDock, visible() { } };
+  Lampfish.moods = { state, event, startNew, icon: modeIcon, renderDock, visible() { } };
 })();

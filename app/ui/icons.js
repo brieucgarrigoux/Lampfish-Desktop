@@ -97,7 +97,7 @@
     t.dataset.id = id;
     t.title = title;
     t.innerHTML = `<div class="tile__case"><img alt="" loading="lazy" width="64" height="64"></div>
-      <button class="star" tabindex="-1" aria-label="Favorite"><svg viewBox="0 0 24 24"><path d="m12 3.6 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></svg></button>`;
+      <button class="star" tabindex="-1" aria-label="Favorite">${icon('star')}</button>`;
     const img = t.querySelector('img');
     img.src = urlPreview(preview);
     if (preview.retro) img.classList.add('retro');

@@ -2,7 +2,6 @@
 .dup-card { margin-bottom: 4px; }
 .dup-keys { flex: none; display: flex; align-items: center; gap: 10px; }
 .dup-keep { display: flex; align-items: center; gap: 7px; }
-.dup-keep svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .dup-keep:disabled { opacity: .45; cursor: default; }
 .dup-card .warning-note { margin: 0 24px 12px; }
 .dup-group { margin-bottom: 10px; }
@@ -15,7 +14,6 @@
 .dup-group__what small { font-size: var(--text-caption); color: var(--text-pale); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dup-same { flex: none; color: var(--text-pale); font-size: var(--text-caption); }
 .dup-restore { display: flex; align-items: center; gap: 7px; }
-.dup-restore svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .dup-expected { margin-top: 4px; }
 .dup-file { gap: 10px; cursor: pointer; }
 .dup-file input { flex: none; width: 16px; height: 16px; margin: 0; accent-color: var(--accent-strong); cursor: pointer; }
@@ -26,7 +24,6 @@
 .dup-file small { font-size: var(--text-caption); color: var(--text-pale); }
 .dup-file .size { flex: none; font: var(--text-value) var(--numbers); font-variant-numeric: tabular-nums; color: var(--text-soft); }
 .dup-tool { flex: none; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: var(--radius-small); background: none; color: var(--text-pale); transition: color var(--fast), background var(--fast), box-shadow var(--fast); }
-.dup-tool svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .dup-tool:hover:not(:disabled) { color: var(--text); background: var(--hover); }
 @container duplicates (max-width: 640px) { .dup-card .security__checks { grid-template-columns: 1fr; } }
 .dup-bin:hover:not(:disabled) { color: var(--danger); }
@@ -38,7 +35,7 @@
 @media (prefers-reduced-motion: reduce) { .dup-dialog[open] { animation: none; } }
 .dup-dialog__head { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
 .dup-dialog__icon { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--accent-dim); color: var(--accent); }
-.dup-dialog__icon svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.dup-dialog__icon svg { width: var(--icon-nav); height: var(--icon-nav); }
 .dup-dialog__head h2 { margin: 0; font: 600 var(--text-title) var(--display); color: var(--text); }
 .dup-dialog__head p { margin: 2px 0 0; font-size: var(--text-caption); color: var(--text-soft); }
 .dup-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }

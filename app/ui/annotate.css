@@ -1,8 +1,7 @@
 body.annotate { display: flex; flex-direction: column; height: 100vh; overflow: hidden; background: var(--wallpaper); }
 .an-bar { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 10px 14px; background: var(--group); box-shadow: inset 0 -1px 0 var(--hairline); }
 .an-tools button { display: grid; place-items: center; width: 36px; height: 32px; padding: 0; flex: none; }
-.an-tools button[aria-checked="true"] svg { stroke: var(--accent); }
-.an-tools svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.an-tools button[aria-checked="true"] svg { color: var(--accent); }
 .an-colors { display: flex; gap: 6px; }
 .an-colors button { width: 22px; height: 22px; padding: 0; border: 2px solid transparent; border-radius: 50%; background: var(--swatch); box-shadow: 0 0 0 1px var(--hairline-strong); }
 .an-colors button[aria-checked="true"] { border-color: var(--group); box-shadow: 0 0 0 2px var(--text); }
@@ -14,7 +13,6 @@ body.annotate { display: flex; flex-direction: column; height: 100vh; overflow: 
 .an-undo { display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 0; border-radius: var(--radius-control); background: none; color: var(--text-soft); transition: background var(--fast), color var(--fast); }
 .an-undo:hover:not(:disabled) { background: var(--hover); color: var(--text); }
 .an-undo:disabled { opacity: .35; cursor: default; }
-.an-undo svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .an-space { flex: 1; }
 .an-delete:hover { color: var(--danger); }
 .an-hint { flex: none; min-height: 28px; padding: 6px 16px; font-size: var(--text-caption); color: var(--text-pale); }

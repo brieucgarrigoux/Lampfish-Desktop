@@ -221,7 +221,8 @@ function renderUpdates(u) {
   $('update-state').textContent = ready ? tr('Version {0} is available', u.version)
     : u.status === 'downloading' ? tr('Downloading version {0}, {1} %', u.version, u.progress)
     : tr(UPDATE_STATES[u.status] || UPDATE_STATES.never);
-  $('update-check').textContent = tr(ready ? (u.installable ? 'Install it' : 'Download it') : 'Check now');
+  $('update-check').innerHTML = icon(ready ? 'download-simple' : 'arrows-clockwise');
+  $('update-check').append(tr(ready ? (u.installable ? 'Install it' : 'Download it') : 'Check now'));
   $('update-check').classList.toggle('update-ready', ready);
   $('update-check').disabled = ['checking', 'downloading', 'installing'].includes(u.status);
   document.querySelector('.service--settings').classList.toggle('has-update', ready);
@@ -248,7 +249,7 @@ $('undo').addEventListener('click', () => {
   else send('undo');
 });
 // Reset everything, in every service: a first click arms the row and says what will happen, a second one within 6 s confirms.
-const WARNING = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 21 19.5H3z"/><path d="M12 10v4.5M12 17h.01"/></svg>';
+const WARNING = icon('warning');
 function confirmReset(button, warning, run) {
   let timer = 0, note = null;
   const disarm = () => {
@@ -341,14 +342,15 @@ for (const row of document.querySelectorAll('[data-companion-key]')) {
   row.querySelector('input').addEventListener('change', e => send('companion.keyOn', { which, on: e.target.checked }));
   companionKeys[which] = shortcutKeys(row.querySelector('button'), row.querySelector('small'), k => send('companion.key', Object.assign({ which }, k)));
 }
-const COMPANION_TABS = [['dashboard', 'Dashboard'], ['quick', 'Settings'], ['claude', 'Claude'], ['note', 'Note'], ['capture', 'Capture'], ['shelf', 'Shelf'], ['audio', 'Audio'], ['notes', 'Notes'], ['convert', 'Convert'], ['desktop', 'Desktop']];
+const COMPANION_TABS = [['dashboard', 'Dashboard', 'squares-four'], ['quick', 'Settings', 'sliders'], ['claude', 'Claude', 'chart-pie-slice'], ['note', 'Note', 'note'], ['capture', 'Capture', 'scan'], ['shelf', 'Shelf', 'tray'], ['audio', 'Audio', 'speaker-high'], ['notes', 'Notes', 'notebook'], ['convert', 'Convert', 'arrows-left-right'], ['desktop', 'Desktop', 'desktop']];
 let companionHidden = [];
-for (const [id, label] of COMPANION_TABS) {
+for (const [id, label, symbol] of COMPANION_TABS) {
   const b = document.createElement('button');
   b.type = 'button';
   b.className = 'tool-chip';
   b.dataset.tab = id;
-  b.textContent = tr(label);
+  b.innerHTML = icon(symbol);
+  b.append(tr(label));
   b.setAttribute('aria-pressed', 'true');
   b.addEventListener('click', () => {
     const hidden = companionHidden.includes(id) ? companionHidden.filter(x => x !== id) : [...companionHidden, id];
@@ -380,7 +382,7 @@ function claudeText(c) {
   return [u.session && tr('Session {0} %, resets in {1}', u.session.percent, resetIn(u.session.resets)), u.week && tr('Week {0} %', u.week.percent)].filter(Boolean).join(' · ');
 }
 
-const PIN = '<svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-6.5-5.6-6.5-10.5a6.5 6.5 0 0 1 13 0c0 4.9-6.5 10.5-6.5 10.5z"/><circle cx="12" cy="10" r="2.3"/></svg>';
+const PIN = icon('map-pin', 'glyph');
 let placeTimer = 0;
 $('place-search').addEventListener('input', e => {
   clearTimeout(placeTimer);
@@ -588,7 +590,8 @@ function shortcutKeys(button, help, save) {
   help.classList.add('shortcut-help');
   const paint = () => {
     button.classList.toggle('is-recording', recording);
-    button.textContent = recording ? tr('Press the keys…') : label;
+    button.innerHTML = icon('keyboard');
+    button.append(recording ? tr('Press the keys…') : label);
     help.classList.toggle('is-error', error === 'taken' && !recording);
     help.textContent = recording ? tr('Press the keys, or Escape') : tr(error === 'taken' ? 'Already used by another app, choose other keys' : 'Click, then press the new keys');
   };
@@ -916,7 +919,7 @@ const TASKBAR_APPS = [
   '<svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="15" rx="3" fill="#191e1f" stroke="#4d5355" stroke-width="1"/><path d="m7.5 9.5 3 2.5-3 2.5M12.5 15h4" fill="none" stroke="#a9cac4" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   '<svg viewBox="0 0 24 24"><image href="/brand/logo/logo-lampfish-192.png" x="2" y="2" width="20" height="20"/></svg>',
 ].map((svg, i) => `<i${i === 4 ? ' class="on"' : ''}>${svg}</i>`).join('');
-const TASKBAR_TRAY = '<svg viewBox="0 0 24 24"><path d="m6 14 6-6 6 6" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><svg viewBox="0 0 24 24"><path d="M3 9a13 13 0 0 1 18 0M6 12.5a8.5 8.5 0 0 1 12 0M9 16a4 4 0 0 1 6 0" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg><svg viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z" fill="#fff"/><path d="M15 9a4 4 0 0 1 0 6" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg><svg viewBox="0 0 24 24"><rect x="3" y="8" width="16" height="8" rx="2" fill="none" stroke="#fff" stroke-width="1.8"/><rect x="5" y="10" width="9" height="4" rx=".8" fill="#fff"/><path d="M21 10.5v3" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>';
+const TASKBAR_TRAY = icon('caret-up') + icon('wifi-high') + icon('speaker-low') + icon('battery-medium');
 
 function taskbars(e) {
   const margins = [[e.ty - e.y, e.h, 'top'], [e.y + e.h - e.ty - e.th, e.h, 'bottom'], [e.tx - e.x, e.w, 'left'], [e.x + e.w - e.tx - e.tw, e.w, 'right']];
@@ -996,7 +999,8 @@ $('windows-colors').addEventListener('click', () => send('display.colors'));
     const title = Object.assign(document.createElement('b'), { textContent: r.querySelector('summary .caption > span').firstChild.textContent.trim() });
     const line = Object.assign(document.createElement('p'), { textContent: r.querySelector('summary small').textContent });
     const dl = r.querySelector('.tr-body').cloneNode(true);
-    const more = Object.assign(document.createElement('button'), { type: 'button', className: 'link', textContent: tr('Details in Settings') });
+    const more = Object.assign(document.createElement('button'), { type: 'button', className: 'link', innerHTML: icon('info') });
+    more.append(tr('Details in Settings'));
     more.addEventListener('click', () => { close(); showView('settings'); r.open = true; r.closest('.tr-fold').open = true; r.scrollIntoView({ block: 'center' }); });
     tip.replaceChildren(title, line, dl, more);
     tip.hidden = false;

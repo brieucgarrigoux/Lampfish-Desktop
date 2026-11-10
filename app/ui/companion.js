@@ -18,7 +18,8 @@
     $('c-custom').setAttribute('aria-pressed', String(name === 'customize'));
     for (const b of document.querySelectorAll('[data-tab]')) b.setAttribute('aria-selected', String(b.dataset.tab === name));
     for (const p of document.querySelectorAll('[data-pane]')) p.hidden = p.dataset.pane !== name;
-    $('c-go').textContent = tr(GO[name][0]);
+    $('c-go').innerHTML = icon('arrow-square-out');
+    $('c-go').append(tr(GO[name][0]));
     if (tell) send('companion.tab', { tab: name });
     if (name === 'note') setTimeout(() => $('c-text').focus(), 30);
     if (name === 'notes') setTimeout(() => $('c-find').focus(), 30);
@@ -32,28 +33,28 @@
   }
 
   const GLYPHS = {
-    theme: '<path d="M19.5 14.6A7.6 7.6 0 0 1 9.4 4.5a7.6 7.6 0 1 0 10.1 10.1z"/>',
-    output: '<path d="M4 10v4h3.5l4.5 3.5v-11L7.5 10z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6"/>',
-    busiest: '<rect x="4" y="5" width="16" height="14" rx="2.5"/><path d="M7 13h2.5l1.5-4 3 7 1.5-3H17"/>',
-    disk: '<path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/>',
-    note: '<path d="M16.5 8V5a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 5v14A1.5 1.5 0 0 0 6 20.5h4.5"/><path d="M8 8h5M8 11.5h3.5"/><path d="m13.5 20.5.5-2.5 5.5-5.5a1.5 1.5 0 0 1 2 2L16 20z"/>',
-    file: '<path d="M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10A.5.5 0 0 1 7 20z"/><path d="M14 3.5V8h4"/>',
-    speakers: '<rect x="6" y="3.5" width="12" height="17" rx="2.5"/><circle cx="12" cy="14.5" r="2.7"/><circle cx="12" cy="8" r="1"/>',
-    screen: '<rect x="3.5" y="4.5" width="17" height="12" rx="1.5"/><path d="M9 20h6M12 16.5V20"/>',
-    headset: '<path d="M4.5 14v-2a7.5 7.5 0 0 1 15 0v2"/><rect x="3.5" y="13.5" width="4" height="6" rx="1.5"/><rect x="16.5" y="13.5" width="4" height="6" rx="1.5"/>',
-    copy: '<rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5"/>',
-    reveal: '<path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/>',
-    chevron: '<path d="m9 6 6 6-6 6"/>',
-    battery: '<rect x="3.5" y="8" width="15" height="8" rx="1.5"/><path d="M21 11v2M7 12h4"/>',
-    full: '<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>',
-    pulse: '<path d="M3.5 12h3l2.5-6 4 12 2.5-6h5"/>',
-    shuffle: '<path d="M4 7h3.5l9 10H20M4 17h3.5l2.5-2.8M13.5 9.8 16.5 7H20M17.5 4.5 20 7l-2.5 2.5M17.5 14.5 20 17l-2.5 2.5"/>',
-    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6 6l1.4 1.4M16.6 16.6 18 18M18 6l-1.4 1.4M7.4 16.6 6 18"/>',
-    leaf: '<path d="M5 19c0-8 5-13 14-14 0 9-5 14-13 14M5 19l7-7"/>',
-    power: '<path d="M12 4v8M7 7a7 7 0 1 0 10 0"/>',
-    mic: '<rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5"/>',
+    theme: 'swatches',
+    output: 'speaker-high',
+    busiest: 'lf-pulse-window',
+    disk: 'hard-drive',
+    note: 'note',
+    file: 'file',
+    speakers: 'speaker-hifi',
+    screen: 'monitor',
+    headset: 'headphones',
+    copy: 'copy',
+    reveal: 'folder-open',
+    chevron: 'caret-right',
+    battery: 'battery-medium',
+    full: 'corners-out',
+    pulse: 'waveform',
+    shuffle: 'shuffle',
+    sun: 'sun-horizon',
+    leaf: 'leaf',
+    power: 'rocket-launch',
+    mic: 'microphone',
   };
-  const glyph = name => `<svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${GLYPHS[name]}</svg>`;
+  const glyph = name => icon(GLYPHS[name], 'glyph');
   const el = (tag, className, text) => Object.assign(document.createElement(tag), { className: className || '', textContent: text || '' });
 
   function line(icon, label, value) {
@@ -130,8 +131,8 @@
     const row = line('theme', 'Theme', name || tr('None'));
     const value = row.querySelector('.value');
     value.className = 'c-theme';
-    const prev = Object.assign(el('button', 'c-step'), { type: 'button', title: tr('Previous theme'), innerHTML: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>' });
-    const next = Object.assign(el('button', 'c-step'), { type: 'button', title: tr('Next theme'), innerHTML: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>' });
+    const prev = Object.assign(el('button', 'c-step'), { type: 'button', title: tr('Previous theme'), innerHTML: icon('caret-left') });
+    const next = Object.assign(el('button', 'c-step'), { type: 'button', title: tr('Next theme'), innerHTML: icon('caret-right') });
     prev.addEventListener('click', () => send('companion.theme', { step: -1 }));
     next.addEventListener('click', () => send('companion.theme', { step: 1 }));
     const label = el('span', 'c-theme__name', name || tr('None'));
@@ -223,7 +224,7 @@
     const nav = document.querySelector('.c-tabs'), order = [...nav.children].map(b => b.dataset.tab), hidden = data.hiddenTabs || [];
     $('c-custom-tabs').replaceChildren(...order.map((id, i) => {
       const row = el('div', 'row c-custom-row');
-      row.innerHTML = `<span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${nav.querySelector(`[data-tab="${id}"] svg`).innerHTML}</svg><span></span></span><span class="c-order"><button type="button" class="c-up"><svg viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></svg></button><button type="button" class="c-down"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button></span><span class="toggler"><input type="checkbox"></span>`;
+      row.innerHTML = `<span class="caption"><svg class="ph glyph" aria-hidden="true">${nav.querySelector(`[data-tab="${id}"] svg`).innerHTML}</svg><span></span></span><span class="c-order"><button type="button" class="c-up">${icon('caret-up')}</button><button type="button" class="c-down">${icon('caret-down')}</button></span><span class="toggler"><input type="checkbox"></span>`;
       row.querySelector('.caption > span').textContent = tr(TAB_NAMES[id]);
       const up = row.querySelector('.c-up'), down = row.querySelector('.c-down'), box = row.querySelector('input');
       up.title = tr('Move up'); down.title = tr('Move down'); box.setAttribute('aria-label', tr(TAB_NAMES[id]));
@@ -251,8 +252,8 @@
     row.querySelector('.c-file__name').textContent = item.name;
     row.querySelector('small').textContent = size(item.size) + ' · ' + new Date(item.when).toLocaleDateString(LOCALE, { day: 'numeric', month: 'short' });
     const copy = row.querySelector('.c-copy'), reveal = row.querySelector('.c-reveal');
-    copy.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${GLYPHS.copy}</svg>`;
-    reveal.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${GLYPHS.reveal}</svg>`;
+    copy.innerHTML = icon(GLYPHS.copy);
+    reveal.innerHTML = icon(GLYPHS.reveal);
     copy.title = tr('Copy'); reveal.title = tr('Show in File Explorer');
     copy.addEventListener('click', () => send('companion.shelf', { op: 'copy', name: item.name }));
     reveal.addEventListener('click', () => send('companion.shelf', { op: 'reveal', name: item.name }));
@@ -296,7 +297,7 @@
     $('c-recent').replaceChildren(...(list.length ? list.map(n => {
       const b = el('button', 'row action');
       b.type = 'button';
-      b.innerHTML = `<span class="caption">${glyph('note')}<span><span class="c-name" translate="no"></span><small translate="no"></small></span></span><svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>`;
+      b.innerHTML = `<span class="caption">${glyph('note')}<span><span class="c-name" translate="no"></span><small translate="no"></small></span></span>${icon('caret-right', 'chevron')}`;
       b.querySelector('.c-name').textContent = n.name;
       b.querySelector('small').textContent = n.preview || tr('Empty');
       b.addEventListener('click', () => send('companion.openNote', { name: n.name }));
@@ -317,7 +318,7 @@
       pick.append(state);
       const vol = el('div', 'c-vol');
       const mute = Object.assign(el('button', 'c-tool'), { type: 'button', title: tr(d.muted ? 'Unmute' : 'Mute') });
-      mute.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${GLYPHS.output}${d.muted ? '<path d="m17 9 4 6M21 9l-4 6"/>' : ''}</svg>`;
+      mute.innerHTML = icon(d.muted ? 'speaker-x' : GLYPHS.output);
       mute.setAttribute('aria-pressed', String(!!d.muted));
       mute.addEventListener('click', () => send('companion.audio', { op: 'deviceMute', id: d.id, on: !d.muted }));
       const range = Object.assign(document.createElement('input'), { type: 'range', min: 0, max: 100, step: 1, value: d.volume == null ? 0 : d.volume });
@@ -346,20 +347,20 @@
 
   // The same jobs as the Convert page: each one asks for its files and finishes in the app.
   const TOOLS = [
-    ['image', 'Change an image', 'PNG, JPG, BMP, GIF, TIFF or an icon', '<rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="m4.5 17 4.5-4.5 3.5 3.5 2.5-2.5 4.5 4.5"/>'],
-    ['images-pdf', 'Images to PDF', 'A page for each picture', '<path d="M7 3.5h7l4 4V20.5H7z"/><path d="M14 3.5V8h4"/><path d="m9.5 17 2-2.5 1.5 1.5 1.5-2 1.5 3z"/>'],
-    ['pdf-images', 'PDF to images', 'One picture for each page', '<path d="M8 3.5h6.5l3.5 3.5v10H8z"/><path d="M5.5 7v13.5h10"/>'],
-    ['merge', 'Merge PDFs', 'Several files into one', '<path d="M5 5v3a4 4 0 0 0 4 4h6M19 5v3a4 4 0 0 1-4 4"/><path d="M12 12v8M9.5 17.5 12 20l2.5-2.5"/>'],
-    ['pages', 'Keep some pages', 'Cut a PDF down to the pages you name', '<path d="M7 3.5h7l4 4V20.5H7z"/><path d="M14 3.5V8h4M9.5 12h5M9.5 15.5h3"/>'],
-    ['text', 'Text to PDF', 'TXT, Markdown or CSV on A4 pages', '<path d="M5 6.5h14M12 6.5V19M9 19h6"/>'],
-    ['office', 'Office to PDF', 'Word, Excel and PowerPoint', '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 10v10"/>'],
+    ['image', 'Change an image', 'PNG, JPG, BMP, GIF, TIFF or an icon', 'image'],
+    ['images-pdf', 'Images to PDF', 'A page for each picture', 'file-pdf'],
+    ['pdf-images', 'PDF to images', 'One picture for each page', 'images'],
+    ['merge', 'Merge PDFs', 'Several files into one', 'arrows-merge'],
+    ['pages', 'Keep some pages', 'Cut a PDF down to the pages you name', 'lf-pages-keep'],
+    ['text', 'Text to PDF', 'TXT, Markdown or CSV on A4 pages', 'text-t'],
+    ['office', 'Office to PDF', 'Word, Excel and PowerPoint', 'file-doc'],
   ];
   function tools() {
     if ($('c-tools').children.length) return;
-    $('c-tools').replaceChildren(...TOOLS.map(([id, name, help, path]) => {
+    $('c-tools').replaceChildren(...TOOLS.map(([id, name, help, symbol]) => {
       const b = el('button', 'row action');
       b.type = 'button';
-      b.innerHTML = `<span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${path}</svg><span><span class="c-name"></span><small></small></span></span><svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>`;
+      b.innerHTML = `<span class="caption">${icon(symbol, 'glyph')}<span><span class="c-name"></span><small></small></span></span>${icon('caret-right', 'chevron')}`;
       b.querySelector('.c-name').textContent = tr(name);
       b.querySelector('small').textContent = tr(help);
       b.addEventListener('click', () => send('companion.convert', { tool: id }));
@@ -377,7 +378,7 @@
     const near = SIZES.map(z => z[0]).reduce((a, b) => Math.abs(b - d.iconSize) < Math.abs(a - d.iconSize) ? b : a);
     for (const b of $('c-size').children) b.setAttribute('aria-checked', String(Number(b.dataset.value) === near));
     $('c-wp-pause').querySelector('span').textContent = tr(d.paused ? 'Resume' : 'Pause');
-    $('c-wp-pause').querySelector('svg').innerHTML = d.paused ? '<path d="M8 5.5v13l10.5-6.5z"/>' : '<path d="M9 6v12M15 6v12"/>';
+    $('c-wp-pause').querySelector('use').setAttribute('href', 'icons.svg#' + (d.paused ? 'play' : 'pause'));
   }
 
   function render() {
@@ -431,7 +432,8 @@
     } else if (m.type === 'companion.saved') {
       $('c-title').value = '';
       $('c-text').value = '';
-      const open = Object.assign(document.createElement('button'), { type: 'button', className: 'link', textContent: tr('Open') });
+      const open = Object.assign(document.createElement('button'), { type: 'button', className: 'link', innerHTML: icon('arrow-square-out') });
+      open.append(tr('Open'));
       open.addEventListener('click', () => send('companion.openNote', { name: m.name }));
       const name = Object.assign(document.createElement('span'), { textContent: m.name, translate: false });
       $('c-saved').replaceChildren(tr('Added to Notes:') + ' ', name, ' · ', open);
@@ -480,7 +482,8 @@
   $('c-open').addEventListener('click', () => send('companion.open', { view: 'home' }));
   $('c-close').addEventListener('click', () => send('companion.close'));
   addEventListener('keydown', e => { if (e.key === 'Escape') send('companion.close'); });
-  $('c-go').textContent = tr(GO[tab][0]);
+  $('c-go').innerHTML = icon('arrow-square-out');
+  $('c-go').append(tr(GO[tab][0]));
   clock();
   setInterval(clock, 15000);
   send('companion.ready');

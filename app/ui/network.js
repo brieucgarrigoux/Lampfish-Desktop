@@ -3,31 +3,31 @@
 (function () {
   const POINTS = 60;
   const GLYPHS = {
-    wifi: '<path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.2" r="1.1"/>',
-    cable: '<rect x="8" y="3.5" width="8" height="7" rx="1.2"/><path d="M10 3.5V6M14 3.5V6M12 10.5v10"/>',
-    none: '<path d="M2.5 9a14 14 0 0 1 19 0M8.5 16a5 5 0 0 1 7 0M4 4l16 16"/>',
-    ip: '<rect x="3.5" y="5" width="17" height="11" rx="1.5"/><path d="M8 20h8M12 16v4"/>',
-    world: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 3.5 5.4 3.5 8.5s-1 5.9-3.5 8.5c-2.5-2.6-3.5-5.4-3.5-8.5s1-5.9 3.5-8.5z"/>',
-    box: '<rect x="3.5" y="12" width="17" height="7" rx="1.5"/><path d="M7.5 15.5h.01M11 15.5h.01M8 12 6 5M16 12l2-7"/>',
-    dns: '<rect x="3.5" y="4.5" width="17" height="6" rx="1.6"/><rect x="3.5" y="13.5" width="17" height="6" rx="1.6"/><path d="M7 7.5h.01M7 16.5h.01M11 7.5h6M11 16.5h6"/>',
-    mask: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 12h16"/>',
-    mac: '<rect x="5" y="5" width="14" height="14" rx="2"/><path d="M9 9h6v6H9z"/>',
-    card: '<rect x="3.5" y="7" width="17" height="10" rx="1.5"/><path d="M7 17v2.5M11 17v2.5M15 17v2.5M7.5 10.5h4"/>',
-    speed: '<path d="M4.5 16.5a7.5 7.5 0 1 1 15 0"/><path d="m12 16.5 3.5-4.5"/>',
-    signal: '<path d="M5 19v-3M10 19v-7M15 19V9M20 19V5"/>',
-    standard: '<path d="M12 20.5a8.5 8.5 0 1 1 0-17 8.5 8.5 0 0 1 0 17z"/><path d="M9 9.5h6M9 12h6M9 14.5h4"/>',
-    strip: '<path d="M3 12c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/>',
-    shield: '<path d="M12 3.5 19 6v5.5c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6z"/><path d="m9 12 2 2 4-4"/>',
-    profile: '<circle cx="12" cy="9" r="3.5"/><path d="M5.5 19.5a6.5 6.5 0 0 1 13 0"/>',
-    vpn: '<circle cx="8" cy="15" r="3.5"/><path d="m10.5 12.5 8-8M16 7l2 2M14 9l1.5 1.5"/>',
-    lock: '<rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/>',
-    call: '<rect x="3.5" y="6.5" width="12" height="11" rx="2"/><path d="m15.5 10.5 5-3v9l-5-3"/>',
-    game: '<path d="M7 9h10a4 4 0 0 1 4 4v1.5a3 3 0 0 1-5.4 1.8L14.5 15h-5l-1.1 1.3A3 3 0 0 1 3 14.5V13a4 4 0 0 1 4-4z"/><path d="M8 11.5v2.5M6.8 12.8h2.5M15.5 12.2h.01M17.5 13.6h.01"/>',
-    film: '<rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="M3.5 9h17M3.5 15h17M8 5v4M12 5v4M16 5v4M8 15v4M12 15v4M16 15v4"/>',
-    download: '<path d="M12 4v12M7 11l5 5 5-5M5 20h14"/>',
-    upload: '<path d="M12 20V8M7 13l5-5 5 5M5 4h14"/>',
-    chrono: '<circle cx="12" cy="13" r="7.5"/><path d="M12 9v4l2.5 1.5M10 3.5h4"/>',
-    cloud: '<path d="M7 18.5a4.5 4.5 0 0 1-.5-9 6 6 0 0 1 11.5 1.5 3.8 3.8 0 0 1-.5 7.5z"/><path d="M12 16v-5M9.8 13.2 12 11l2.2 2.2"/>',
+    wifi: 'wifi-high',
+    cable: 'lf-ethernet',
+    none: 'wifi-slash',
+    ip: 'network',
+    world: 'globe',
+    box: 'lf-router',
+    dns: 'signpost',
+    mask: 'square-split-vertical',
+    mac: 'identification-card',
+    card: 'lf-network-card',
+    speed: 'gauge',
+    signal: 'cell-signal-full',
+    standard: 'lf-wifi-standard',
+    strip: 'wave-sine',
+    shield: 'shield-check',
+    profile: 'user',
+    vpn: 'key',
+    lock: 'lock-simple',
+    call: 'video-camera',
+    game: 'game-controller',
+    film: 'monitor-play',
+    download: 'download-simple',
+    upload: 'upload-simple',
+    chrono: 'timer',
+    cloud: 'cloud-arrow-up',
   };
 
   const STEPS = [['gateway', 'Router', 'box'], ['internet', 'Internet', 'world'], ['dns', 'DNS', 'dns'], ['download', 'Download', 'download'], ['upload', 'Upload', 'upload']];
@@ -54,7 +54,7 @@
   const link = bits => bits >= 1e9 ? (bits / 1e9).toLocaleString(LOCALE, { maximumFractionDigits: 1 }) + ' Gbit/s' : Math.round(bits / 1e6) + ' Mbit/s';
   const mbits = v => v.toLocaleString(LOCALE, { maximumFractionDigits: v >= 100 ? 0 : 1 });
   const ms = v => Math.round(v).toLocaleString(LOCALE) + ' ms';
-  const glyph = name => '<svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">' + GLYPHS[name] + '</svg>';
+  const glyph = name => icon(GLYPHS[name], 'glyph');
 
   function copy(text) {
     navigator.clipboard.writeText(text).then(() => toast(tr('Copied: {0}', text), false, 2000));
@@ -81,7 +81,7 @@
     const zone = $('r-face'), wifi = type === 'wifi' && cx.signal >= 0;
     if (zone.dataset.type !== (wifi ? 'wifi' : type)) {
       zone.dataset.type = wifi ? 'wifi' : type;
-      zone.innerHTML = wifi ? wifiRelief() : '<svg class="network-seal__glyph" viewBox="0 0 24 24">' + GLYPHS[type] + '</svg>';
+      zone.innerHTML = wifi ? wifiRelief() : icon(GLYPHS[type], 'network-seal__glyph');
     }
     if (wifi) setWifi(zone.firstChild, cx.signal, cx.connected);
   }
@@ -180,9 +180,9 @@
   const ok = key => !!(res(key) && res(key).ok);
   const grade = (v, good, excellent) => v <= excellent ? 'excellent' : v <= good ? 'good' : 'slow';
   const NOTES = { excellent: 'Excellent', good: 'Good', slow: 'Slow', failure: 'Failed' };
-  GLYPHS.charge = '<path d="M4 17h4l2-8 4 12 2-6h4"/>';
-  GLYPHS.jitter = '<path d="M3 12h3l2-4 3 8 3-10 3 12 2-6h2"/>';
-  GLYPHS.loss = '<path d="M4 7h16M4 12h10M4 17h6"/><path d="m16 15 4 4m0-4-4 4"/>';
+  GLYPHS.charge = 'pulse';
+  GLYPHS.jitter = 'wave-sawtooth';
+  GLYPHS.loss = 'chart-line-down';
 
   function renderTest() {
     const running = !!(test && test.running);
@@ -461,7 +461,7 @@
     for (const c of checks) {
       const item = document.createElement('div');
       item.className = 'readout check--' + c.state;
-      item.innerHTML = `<svg class="glyph" role="img" viewBox="0 0 24 24">${GLYPHS[c.icon]}</svg><span class="readout__what"><span class="readout__title"></span><span class="readout__detail"></span></span>`
+      item.innerHTML = `<svg class="ph glyph" role="img"><use href="icons.svg#${GLYPHS[c.icon]}"/></svg><span class="readout__what"><span class="readout__title"></span><span class="readout__detail"></span></span>`
         + '<span class="readout__end"><span class="readout__value"><i></i><span></span></span></span>';
       item.firstChild.setAttribute('aria-label', tr({ ok: 'Fine', warn: 'Be careful', bad: 'Risky', neutral: 'Not reported' }[c.state]));
       item.querySelector('.readout__title').textContent = tr(c.title);
@@ -499,7 +499,8 @@
     else if (publicIp === null) {
       publicIpNode = document.createElement('button');
       publicIpNode.className = 'link';
-      publicIpNode.textContent = 'Show';
+      publicIpNode.innerHTML = icon('caret-down');
+      publicIpNode.append('Show');
       publicIpNode.addEventListener('click', () => { publicIp = 'waiting'; renderPanel(); send('network.publicip'); });
     } else if (publicIp === 'waiting') publicIpNode = document.createTextNode('…');
     else if (publicIp === 'missing') publicIpNode = document.createTextNode('Not found');

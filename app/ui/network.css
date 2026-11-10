@@ -5,8 +5,8 @@
 .network-header.offline .network-seal { --lamp: var(--text-pale); }
 .network-seal__face { position: relative; z-index: 1; display: grid; place-items: center; width: 36px; }
 .network-seal__face .wifi-relief { display: block; width: 100%; height: auto; }
-.network-seal__glyph { width: 26px; height: 26px; fill: none; stroke: var(--accent); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 70%, transparent)); }
-.network-header.offline .network-seal__glyph { stroke: var(--text-pale); filter: none; }
+.network-seal__glyph { width: var(--icon-big); height: var(--icon-big); color: var(--accent); filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 70%, transparent)); }
+.network-header.offline .network-seal__glyph { color: var(--text-pale); filter: none; }
 .network-ip { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; padding-left: 18px; border-left: 1px solid var(--hairline); }
 .network-ip .small { font-size: var(--text-caption); color: var(--text-pale); }
 @container network (max-width: 480px) {
@@ -54,8 +54,6 @@
 .keycap-pill.keycap-test { min-width: 156px; }
 .server { margin: 3px 0 0; height: 2.8em; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: var(--text-caption); line-height: 1.4; color: var(--text-pale); }
 
-.keycap-test svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.keycap-test circle { fill: currentColor; stroke: none; }
 .keycap-test .i-progress, .keycap-test .i-done, .keycap-test[data-state="progress"] .i-ready, .keycap-test[data-state="done"] .i-ready { display: none; }
 .keycap-test[data-state="progress"] .i-progress { display: block; animation: turning-keycap .9s linear infinite; }
 .keycap-test[data-state="done"] .i-done { display: block; }
@@ -75,18 +73,18 @@
 .step.measuring .step__spark { opacity: 1; left: calc(var(--progress, 0%) - 22px); transition: left .3s; }
 @keyframes step-spark { from { left: -30px; } to { left: 100%; } }
 .step i { position: relative; z-index: 1; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: #191e1f; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .07), 0 0 0 4px var(--group); transition: background .25s, box-shadow .25s; }
-.step i .glyph { width: 22px; height: 22px; padding: 0; background: none; stroke: #5b6264; transition: stroke .25s; }
+.step i .glyph { width: var(--icon-nav); height: var(--icon-nav); padding: 0; background: none; color: #5b6264; transition: color .25s; }
 .step__ring { position: absolute; inset: -4px; border-radius: 50%; border: 2px solid transparent; opacity: 0; transition: opacity .2s; }
 .step.active .step__ring { opacity: 1; border-top-color: var(--accent); border-right-color: color-mix(in srgb, var(--accent) 35%, transparent); animation: step-turn .85s linear infinite; }
 @keyframes step-turn { to { transform: rotate(1turn); } }
 .step.active { color: var(--text); }
 .step.active i { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent), 0 0 0 4px var(--group), 0 0 18px color-mix(in srgb, var(--accent) 35%, transparent); }
-.step.active i .glyph { stroke: var(--accent); }
+.step.active i .glyph { color: var(--accent); }
 .step.done { color: var(--text-soft); }
 .step.done i { background: linear-gradient(180deg, var(--lit), var(--accent-strong)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 0 0 4px var(--group), 0 4px 12px color-mix(in srgb, var(--accent-strong) 50%, transparent); animation: step-pop .5s cubic-bezier(.3, 1.6, .5, 1); }
-.step.done i .glyph { stroke: var(--on-accent); }
+.step.done i .glyph { color: var(--on-accent); }
 .step.failed i { background: #2a1519; box-shadow: inset 0 0 0 1.5px var(--danger), 0 0 0 4px var(--group); animation: step-pop .5s cubic-bezier(.3, 1.6, .5, 1); }
-.step.failed i .glyph { stroke: var(--danger); }
+.step.failed i .glyph { color: var(--danger); }
 @keyframes step-pop { 0% { transform: scale(.82); } 55% { transform: scale(1.12); } 100% { transform: scale(1); } }
 .step__name { line-height: 1.2; }
 .step__result { min-height: 15px; margin-top: -3px; font: 600 var(--text-caption) var(--numbers); font-variant-numeric: tabular-nums; color: var(--text); white-space: nowrap; }

@@ -8,7 +8,7 @@
 .a-more > summary { display: inline-flex; align-items: center; gap: 6px; padding: 4px 2px; list-style: none; cursor: pointer; color: var(--text-soft); font-size: var(--text-body); transition: color var(--fast); }
 .a-more > summary::-webkit-details-marker { display: none; }
 .a-more > summary:hover { color: var(--text); }
-.a-more > summary svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform var(--fast); }
+.a-more > summary svg { transition: transform var(--fast); }
 .a-more[open] > summary svg { transform: rotate(90deg); }
 .a-more > .a-grid { margin-top: 10px; }
 .a-tile { display: flex; flex-direction: column; min-width: 0; border-radius: var(--radius-card); background: var(--group); transition: box-shadow var(--fast), opacity var(--fast), background var(--fast); }
@@ -21,8 +21,8 @@
 .a-pick:active { transform: scale(.98); }
 .a-pick:disabled { cursor: default; background: none; transform: none; }
 .a-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; }
-.a-icon { flex: none; width: 44px; height: 44px; padding: 10px; box-sizing: border-box; border-radius: var(--radius-control); background: var(--raised); fill: none; stroke: var(--text-soft); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; transition: stroke var(--fast), background var(--fast); }
-.a-tile.is-default .a-icon { stroke: var(--accent); background: var(--accent-dim); }
+.a-icon { flex: none; width: 44px; height: 44px; padding: 12px; box-sizing: border-box; border-radius: var(--radius-control); background: var(--raised); color: var(--text-soft); transition: color var(--fast), background var(--fast); }
+.a-tile.is-default .a-icon { color: var(--accent); background: var(--accent-dim); }
 .a-what { display: flex; flex-direction: column; gap: 1px; width: 100%; min-width: 0; }
 .a-name, .a-adapter, .a-format { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .a-name { font-size: var(--text-body); font-weight: 600; color: var(--text); }
@@ -37,4 +37,3 @@
 .a-mute { flex: none; display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 0; border-radius: var(--radius-control); background: none; color: var(--text-soft); cursor: pointer; transition: background var(--fast), color var(--fast); }
 .a-mute:hover { background: var(--hover); color: var(--text); }
 .a-mute[aria-pressed="true"] { color: var(--accent); background: var(--accent-dim); }
-.a-mute svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }

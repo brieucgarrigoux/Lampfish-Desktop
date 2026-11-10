@@ -109,7 +109,8 @@
       r.cpu.textContent = pct(t.cpu);
       r.memory.textContent = size(t.memory);
       r.end.hidden = t.locked;
-      r.end.textContent = confirming === t.id ? tr('Confirm') : tr('End');
+      const ending = confirming === t.id ? tr('Confirm') : tr('End');
+      if (r.end.textContent !== ending) { r.end.innerHTML = confirming === t.id ? '' : icon('x-circle'); r.end.append(ending); }
       r.end.classList.toggle('confirm', confirming === t.id);
       r.end.title = warning(t);
       r.el.classList.toggle('chosen', t.id === chosen);
@@ -143,18 +144,18 @@
     return d ? tr('{0} d {1} h', d, h % 24) : h ? tr('{0} h {1}', h, String(m).padStart(2, '0')) : tr('{0} min', Math.max(1, m));
   };
   const ICONS = {
-    publisher: '<path d="M3.5 20V10l5 3V10l5 3V6l7 4v10z"/>',
-    version: '<path d="M4 12V4.5h7.5l8.5 8.5-7.5 7.5z"/><circle cx="8.5" cy="8.5" r="1.3"/>',
-    size: '<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 14h16"/>',
-    startup: '<path d="M12 3.5v8"/><path d="M7 6.3a7 7 0 1 0 10 0"/>',
-    processes: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
-    started: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
-    memory: '<rect x="3.5" y="7" width="17" height="9" rx="1.2"/><path d="M7 10v3M10.5 10v3M14 10v3M17.5 10v3"/>',
-    cpu: '<rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/><rect x="9.5" y="9.5" width="5" height="5" rx=".8"/>',
-    network: '<path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.2" r="1.1"/>',
-    listen: '<circle cx="12" cy="12" r="2"/><path d="M7.5 7.5a6.4 6.4 0 0 0 0 9M16.5 7.5a6.4 6.4 0 0 1 0 9"/>',
-    remote: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/>',
-    folder: '<path d="M3.5 7.5V17a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-6.2l-2-2.5H5.5a2 2 0 0 0-2 2z"/>',
+    publisher: 'lf-factory',
+    version: 'tag',
+    size: 'hard-drive',
+    startup: 'rocket-launch',
+    processes: 'tree-structure',
+    started: 'clock',
+    memory: 'lf-memory',
+    cpu: 'cpu',
+    network: 'wifi-high',
+    listen: 'broadcast',
+    remote: 'globe-simple',
+    folder: 'folder-open',
   };
   const STARTUP = { registry: 'Yes, from the registry', folder: 'Yes, from the Startup folder', off: 'Turned off in Windows', no: 'No' };
 
@@ -163,10 +164,10 @@
     h.textContent = title;
     const g = document.createElement('div');
     g.className = 'group';
-    for (const [icon, label, value] of rows.filter(r => r[2] != null && r[2] !== '')) {
+    for (const [symbol, label, value] of rows.filter(r => r[2] != null && r[2] !== '')) {
       const l = document.createElement('div');
       l.className = 'row';
-      l.innerHTML = `<span class="caption"><svg class="glyph glyph--small" viewBox="0 0 24 24" aria-hidden="true">${ICONS[icon]}</svg><span></span></span><span class="value"></span>`;
+      l.innerHTML = `<span class="caption">${icon(ICONS[symbol], 'glyph glyph--small')}<span></span></span><span class="value"></span>`;
       l.querySelector('.caption > span').textContent = label;
       l.querySelector('.value').textContent = value;
       l.querySelector('.value').title = value;
@@ -220,7 +221,7 @@
     if (zone.dataset.key === key) return;
     const head = document.createElement('div');
     head.className = 't-sheet__head';
-    head.innerHTML = '<span class="task__icon t-free__icon"></span><div><span class="title"></span><span class="path"></span></div><button class="t-close" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg></button>';
+    head.innerHTML = '<span class="task__icon t-free__icon"></span><div><span class="title"></span><span class="path"></span></div><button class="t-close" title="Close" aria-label="Close">' + icon('x') + '</button>';
     head.querySelector('.task__icon').innerHTML = $('t-free').querySelector('svg').outerHTML;
     head.querySelector('.title').textContent = tr('Free up memory');
     head.querySelector('.t-close').addEventListener('click', close);
@@ -274,7 +275,7 @@
       const total = chosenItems.reduce((a, i) => a + i.memory, 0);
       const warn = document.createElement('p');
       warn.className = 't-free__warning';
-      warn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 21 19.5H3z"/><path d="M12 10v4.5M12 17h.01"/></svg><span></span>';
+      warn.innerHTML = icon('warning') + '<span></span>';
       warn.querySelector('span').textContent = tr('Unsaved work in a program without a window is lost. Apps with a window close like with their X.');
       fresh.push(warn);
       const go = document.createElement('button');
@@ -311,7 +312,7 @@
     const fresh = [];
     const head = document.createElement('div');
     head.className = 't-sheet__head';
-    head.innerHTML = '<span class="task__icon"><img alt="" hidden></span><div><span class="title"></span><span class="path"></span></div><button class="t-close" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg></button>';
+    head.innerHTML = '<span class="task__icon"><img alt="" hidden></span><div><span class="title"></span><span class="path"></span></div><button class="t-close" title="Close" aria-label="Close">' + icon('x') + '</button>';
     head.querySelector('.t-close').addEventListener('click', close);
     if (d.icon) { head.querySelector('img').src = d.icon; head.querySelector('img').hidden = false; }
     head.querySelector('.title').textContent = t.name;
@@ -325,7 +326,7 @@
       if (s.path) {
         const show = document.createElement('button');
         show.className = 'row action';
-        show.innerHTML = `<span class="caption"><svg class="glyph glyph--small" viewBox="0 0 24 24" aria-hidden="true">${ICONS.folder}</svg><span></span></span><svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>`;
+        show.innerHTML = `<span class="caption">${icon(ICONS.folder, 'glyph glyph--small')}<span></span></span>${icon('caret-right', 'chevron')}`;
         show.querySelector('.caption > span').innerHTML = '';
         show.querySelector('.caption > span').append(tr('Show in File Explorer'), Object.assign(document.createElement('small'), { textContent: s.path }));
         show.title = s.path;

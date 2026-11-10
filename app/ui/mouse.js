@@ -28,7 +28,8 @@
     reveal($('s-draft'), s.unsaved);
     $('s-draft-text').textContent = s.based ? tr('Changes not saved in a theme') : tr('These cursors are not saved in a theme');
     $('s-update').hidden = !s.editable;
-    $('s-update').textContent = tr('Update “{0}”', s.themeTitle);
+    $('s-update').innerHTML = icon('arrows-clockwise');
+    $('s-update').append(tr('Update “{0}”', s.themeTitle));
     $('s-discard').hidden = !s.based;
   }
 
@@ -122,9 +123,9 @@
 
   const SECTIONS = [['lampfish', 'lampfish'], ['system', 'Windows'], ['mine', 'My themes']];
   const ACTIONS = {
-    rename: ['Rename', '<path d="M4.5 19.5h4l10-10-4-4-10 10z"/><path d="m13 7 4 4"/>'],
-    duplicate: ['Duplicate', '<rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M5.5 15.5v-8a2 2 0 0 1 2-2h8"/>'],
-    remove: ['Remove', '<path d="M5 7h14M9.5 7V5h5v2M7 7l1 12h8l1-12"/>'],
+    rename: ['Rename', 'pencil-simple'],
+    duplicate: ['Duplicate', 'copy'],
+    remove: ['Remove', 'trash-simple'],
   };
 
   function rename(card, th) {
@@ -166,7 +167,7 @@
       b.className = 'theme__action theme__action--' + what;
       b.title = tr(ACTIONS[what][0]);
       b.setAttribute('aria-label', tr(ACTIONS[what][0]));
-      b.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${ACTIONS[what][1]}</svg>`;
+      b.innerHTML = icon(ACTIONS[what][1]);
       b.addEventListener('click', e => {
         e.stopPropagation();
         if (what === 'rename') rename(c, th);

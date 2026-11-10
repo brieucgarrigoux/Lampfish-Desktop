@@ -149,12 +149,12 @@ const Quick = (() => {
     if (key !== keyDisplays) { keyDisplays = key; if (shown) { send('display.screens'); send('display.brightness'); } else screens = null; }
   }
 
-  const SUN = '<circle cx="12" cy="12" r="3.5"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/>';
-  const MONITOR = '<rect x="3.5" y="4.5" width="17" height="11.5" rx="1.8"/><path d="M9 20h6M12 16v4"/>';
+  const SUN = 'sun';
+  const MONITOR = 'monitor';
   function brightnessRow(p, id) {
     const row = document.createElement('div');
     row.className = 'setting';
-    row.innerHTML = `<label for="${id}"><span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${SUN}</svg><span><span class="d-bright__name" translate="no"></span><small></small></span></span><output></output></label><input type="range" id="${id}" min="5" max="100" step="1">`;
+    row.innerHTML = `<label for="${id}"><span class="caption">${icon(SUN, 'glyph')}<span><span class="d-bright__name" translate="no"></span><small></small></span></span><output></output></label><input type="range" id="${id}" min="5" max="100" step="1">`;
     row.querySelector('.d-bright__name').textContent = p.builtin ? tr('Built-in screen') : p.name || tr('External screen');
     row.querySelector('small').textContent = tr('How bright this screen is');
     const input = row.querySelector('input'), output = row.querySelector('output');
@@ -197,12 +197,13 @@ const Quick = (() => {
       if (all.length) nodes.push(heading('Screens'), group(all.map(s => {
         const row = document.createElement('div');
         row.className = 'row';
-        row.innerHTML = `<span class="caption"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true">${MONITOR}</svg><span><span translate="no"></span><small></small></span></span>`;
+        row.innerHTML = `<span class="caption">${icon(MONITOR, 'glyph')}<span><span translate="no"></span><small></small></span></span>`;
         row.querySelector('[translate]').textContent = name(s);
         row.querySelector('small').textContent = `${s.w} × ${s.h} · ${s.scale} %`;
         if (s.primary) row.append(Object.assign(document.createElement('span'), { className: 'd-badge state', textContent: tr('Main screen') }));
         else if (all.length > 1) {
-          const b = Object.assign(document.createElement('button'), { className: 'button', textContent: tr('Make main screen'), title: tr('The Start menu and new windows will open on this screen') });
+          const b = Object.assign(document.createElement('button'), { className: 'button', innerHTML: icon('monitor'), title: tr('The Start menu and new windows will open on this screen') });
+          b.append(tr('Make main screen'));
           b.addEventListener('click', () => { send('display.primary', { key: s.key }); clearTimeout(later); later = setTimeout(() => send('display.screens'), 1500); });
           row.append(b);
         }

@@ -9,9 +9,9 @@
   display: flex; flex-direction: column; align-items: center; gap: 5px;
   color: var(--text-pale); font: inherit; font-size: var(--text-badge); text-align: left; transition: color .18s, background .18s;
 }
-.rail-title svg, .rail-search svg { flex: none; width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.rail-title svg, .rail-search svg { flex: none; width: var(--icon-nav); height: var(--icon-nav); }
 .rail-title:hover, .rail-search:hover, .rail-family.is-open > .rail-title { color: var(--accent); background: var(--hover); }
-.rail-title .rail-chev { display: none; width: 14px; height: 14px; margin-left: auto; opacity: .6; stroke-width: 2; transition: transform var(--fast); }
+.rail-title .rail-chev { display: none; margin-left: auto; opacity: .6; transition: transform var(--fast); }
 .rail-family.is-open > .rail-title .rail-chev { opacity: 1; }
 .rail-search kbd { display: none; margin-left: auto; padding: 1px 6px; border-radius: var(--radius-small); background: var(--raised); font: var(--text-badge) var(--numbers); color: var(--text-pale); }
 .rail-family.has-current > .rail-title { color: var(--text); }
@@ -48,7 +48,7 @@ body { grid-template-rows: minmax(0, 1fr) auto; }
 #zoom-out, #zoom-in { width: calc(26px / var(--zoom, 1)); }
 .zoom-pill button:hover:not(:disabled) { background: var(--hover); color: var(--text); }
 .zoom-pill button:disabled { opacity: .35; cursor: default; }
-.zoom-pill svg { width: calc(12px / var(--zoom, 1)); height: calc(12px / var(--zoom, 1)); fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.zoom-pill svg { width: calc(var(--icon) / var(--zoom, 1)); height: calc(var(--icon) / var(--zoom, 1)); }
 .zoom-pill .zoom-pill__value { min-width: calc(52px / var(--zoom, 1)); font: 600 calc(var(--text-value) / var(--zoom, 1)) var(--numbers); font-variant-numeric: tabular-nums; color: var(--text); white-space: nowrap; }
 
 
@@ -68,11 +68,11 @@ body:not(.bar-editing) .rail-group.is-shown { display: flex; animation: rail-fly
 .goto[hidden] { display: none; }
 .goto__box { width: min(520px, calc(100vw - 32px)); max-height: 66vh; display: flex; flex-direction: column; border-radius: var(--radius-card); background: var(--group-up); box-shadow: var(--float), inset 0 0 0 1px var(--hairline-strong); overflow: hidden; }
 .goto__field { display: flex; align-items: center; gap: 10px; padding: 12px 16px; box-shadow: inset 0 -1px 0 var(--hairline); color: var(--text-soft); }
-.goto__field svg { flex: none; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; }
+.goto__field svg { flex: none; }
 .goto__input { flex: 1; min-width: 0; border: 0; background: none; color: var(--text); font: var(--text-lead) var(--display); outline: none; user-select: text; }
 .goto__list { overflow-y: auto; padding: 6px; scrollbar-width: thin; }
 .goto__item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 9px 12px; border: 0; border-radius: var(--radius-control); background: none; color: var(--text-soft); font-size: var(--text-body); text-align: left; }
-.goto__item svg { flex: none; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.goto__item svg { flex: none; }
 .goto__item[aria-selected="true"] { background: var(--accent-dim); color: var(--text); box-shadow: inset 0 0 0 1px var(--accent-ring); }
 .goto__name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .goto__family { flex: none; font-size: var(--text-caption); color: var(--text-pale); }
@@ -80,13 +80,10 @@ body:not(.bar-editing) .rail-group.is-shown { display: flex; animation: rail-fly
 
 /* Home, like a family, shows where you are with the lit bar and not with a tinted box. */
 .rail-home[aria-current="page"] { background: none; box-shadow: none; color: var(--text); }
-.rail-home[aria-current="page"] svg { stroke: currentColor; }
 .rail-home[aria-current="page"]::before { content: ""; position: absolute; left: -9px; top: 50%; width: 3px; height: 18px; margin-top: -9px; border-radius: 0 3px 3px 0; background: var(--lit); box-shadow: 0 0 8px var(--lit); }
 @container rail (min-width: 140px) { .rail-home[aria-current="page"]::before { left: -10px; } }
 /* Settings, like Home, marks the open page with the lit stroke on the left, not a framed box. */
 .service--settings[aria-current="page"] { background: none; box-shadow: none; color: var(--text); overflow: visible; }
 .service--settings[aria-current="page"]::before { content: ""; position: absolute; left: -9px; top: 50%; width: 3px; height: 18px; margin-top: -9px; border-radius: 0 3px 3px 0; background: var(--lit); box-shadow: 0 0 8px var(--lit); }
 @container rail (min-width: 140px) { .service--settings[aria-current="page"]::before { left: -10px; } }
-/* A Phosphor drawing is filled, not stroked, wherever the icon of a service is copied (bar, flyout, Go to). */
-svg.ph { fill: currentColor !important; stroke: none !important; }
 .rail-home { overflow: visible; }
