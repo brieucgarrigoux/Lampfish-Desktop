@@ -1,13 +1,14 @@
+/* The cards that stood in relief are flat like the groups of settings since the Windows style: no light edge, ring or shadow. */
 .banner-sound, .tester, .security, .m-card, .m-header, .zone-sounds, .cr-theme, .t-memory {
-  border-radius: var(--radius-shell);
-  background: var(--shell);
-  box-shadow: var(--shell-edge), var(--shell-lift);
+  border-radius: var(--radius-group);
+  background: var(--group);
+  box-shadow: none;
 }
 .cr-theme { border-radius: var(--radius-card); }
 .m-card, .cr-theme { transition: background var(--fast), box-shadow var(--fast), transform .08s; }
-.m-card:hover, .cr-theme:hover { background: var(--shell-up); }
+.m-card:hover, .cr-theme:hover { background: var(--group-up); }
 .m-card:active, .cr-theme:active { transform: scale(.98); }
-.zone-sounds--library { background: linear-gradient(180deg, #181d1e, #101415); }
+.zone-sounds--library { background: var(--group); }
 
 .m-display { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px 10px; border-radius: var(--radius-group); min-width: 0;
   background: radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 60%), var(--screen-face);
@@ -24,7 +25,7 @@
 .tile.current .tile__case, .role.chosen .role__case, .theme.current { box-shadow: 0 0 0 1.5px var(--accent), 0 0 18px color-mix(in srgb, var(--accent) 28%, transparent); }
 .card.current .preview { box-shadow: var(--chosen); }
 .arrangement[aria-checked="true"], .mood.current { box-shadow: var(--chosen); }
-.m-card.chosen, .cr-theme[aria-pressed="true"] { box-shadow: var(--shell-edge), var(--chosen); }
+.m-card.chosen, .cr-theme[aria-pressed="true"] { box-shadow: var(--chosen); }
 .event.chosen, .folder-row.chosen, .f-source.active, .task.chosen { background: var(--accent-tint); }
 .event.chosen:hover, .folder-row.chosen:hover, .f-source.active:hover, .task.chosen:hover { background: color-mix(in srgb, var(--accent) 14%, transparent); }
 .event.chosen .glyph, .f-source.active .glyph { color: var(--accent); background: var(--accent-dim); }

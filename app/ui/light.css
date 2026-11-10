@@ -149,7 +149,7 @@
 :root[data-theme="light"] .knob__button { background: conic-gradient(from 0deg, #b8bebf, #f0f2f2 10%, #bfc5c6 22%, #e6e9e9 36%, #b4babb 50%, #f0f2f2 64%, #bfc5c6 78%, #e6e9e9 90%, #b8bebf); box-shadow: 0 0 0 1px rgba(30, 45, 50, .42), 0 3px 7px rgba(20, 40, 45, .28), inset 0 1px 1px rgba(255, 255, 255, .7); }
 :root[data-theme="light"] .knob__button::after { background: radial-gradient(circle at 50% 30%, #fbfcfc, #d6dcdd 75%); box-shadow: inset 0 1px 0 #fff, 0 0 0 1px rgba(30, 45, 50, .22); }
 :where(:root[data-theme="light"]) .knob__marker { background: var(--accent); box-shadow: none; }
-:root[data-theme="light"] .zone-sounds--library { background: var(--shell); }
+:root[data-theme="light"] .zone-sounds--library { background: var(--group); }
 
 /* Home */
 :root[data-theme="light"] .h-instruments { border-top-color: var(--hairline); box-shadow: none; }
