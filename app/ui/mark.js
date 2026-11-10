@@ -13,7 +13,13 @@
   const deg = Math.PI / 180;
   const rot = (x, y, cx, cy, a) => { const c = Math.cos(a), s = Math.sin(a); return [cx + (x - cx) * c - (y - cy) * s, cy + (x - cx) * s + (y - cy) * c]; };
   const ease = k => .5 - Math.cos(Math.max(0, Math.min(1, k)) * Math.PI) / 2;
-  const keys = (list, step) => u => { const i = Math.floor(u / step), k = u / step - i; return i < 0 || i >= list.length - 1 ? 0 : list[i] + (list[i + 1] - list[i]) * ease(k); };
+  // Through the keys on one curve (Catmull-Rom): easing each step alone stopped the motion at every key, which looked jerky.
+  const keys = (list, step) => u => {
+    const i = Math.floor(u / step), k = u / step - i;
+    if (i < 0 || i >= list.length - 1) return 0;
+    const p0 = list[Math.max(0, i - 1)], p1 = list[i], p2 = list[i + 1], p3 = list[Math.min(list.length - 1, i + 2)];
+    return .5 * (2 * p1 + (p2 - p0) * k + (2 * p0 - 5 * p1 + 4 * p2 - p3) * k * k + (3 * p1 - p0 - 3 * p2 + p3) * k * k * k);
+  };
   const inner = s => `${D.inner}${s}</g>`;
 
   function path(tail, rod, lid, fin) {
@@ -35,10 +41,10 @@
 
   // The gestures of the tail, as a fish never makes the same one twice.
   const MOVES = [
-    { w: 3, len: 1.1, f: keys([0, 9, -7, 6, -3, 0], .2) },
+    { w: 3, len: 1.3, f: keys([0, 9, -7, 6, -3, 0], .25) },
     { w: 2, len: 1.5, f: u => 11 * Math.sin(Math.PI * Math.min(1, u / 1.5)) },
     { w: 2, len: .8, f: u => 3.2 * Math.sin(2 * Math.PI * u / .13) * (1 - u / .8) },
-    { w: 2, len: 1, f: keys([0, 14, -5, 2, 0], .24) },
+    { w: 2, len: 1.2, f: keys([0, 14, -5, 2, 0], .29) },
     { w: 1, len: 1.6, f: u => 8 * (u < .4 ? ease(u / .4) : u < 1.1 ? 1 : 1 - ease((u - 1.1) / .5)) },
   ];
   const pick = () => { let r = Math.random() * MOVES.reduce((s, m) => s + m.w, 0); for (const m of MOVES) if ((r -= m.w) < 0) return m; return MOVES[0]; };
@@ -68,13 +74,9 @@
   // Only a wait that shows counts: hidden pages keep their placeholders marked .loading.
   setInterval(() => { S.busy = [...document.querySelectorAll('.loading')].some(e => e.checkVisibility()); }, 400);
 
-  let last = 0;
   function frame(now) {
     if (reduce.matches) { for (const m of marks) m.body.setAttribute('d', path(() => 0, 0, 1, 0)); return; }
     requestAnimationFrame(frame);
-    // 30 images a second are enough for a small mark, and half the work.
-    if (now - last < 32) return;
-    last = now;
     if (S.start === null) S.start = now / 1000;
     const t = now / 1000 - S.start;
     if (!S.move && t >= S.nextMove) S.move = { m: pick(), at: t, s: Math.random() < .5 ? -1 : 1 };
@@ -84,7 +86,7 @@
     const fin = (Math.sin(t * 2 * Math.PI / 3.3) * 3.6 + Math.sin(t * 2 * Math.PI / 1.9 + 1.3) * 1.4) * deg;
     const float = Math.sin(t * 2 * Math.PI / 9) * 1.5;
     const ru = (t % 7) - 5.6, rodAuto = ru < 0 || ru > 1.4 ? 0 : keys([0, -5, 3, -1, 0], .28)(ru);
-    const gesture = (g, w) => g ? 1.3 * g.s * g.m.f(t - g.at - .12 * w) : 0;
+    const gesture = (g, w) => g ? 1.15 * g.s * g.m.f(t - g.at - .12 * w) : 0;
     // Between gestures the tail always sways, but unevenly: its strength drifts between faint and clear, so it never ticks
     // like a metronome (a steady sway looked unnatural, a tail at rest looked dead).
     const env = .35 + .65 * Math.pow(Math.sin(t * 2 * Math.PI / 11) * .6 + Math.sin(t * 2 * Math.PI / 6.7 + 1) * .4, 2);
