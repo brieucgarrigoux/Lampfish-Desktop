@@ -814,12 +814,16 @@ namespace Lampfish
                         {
                             // The still of the screen mapped where the button rests, then a veil, so the fish reads on any wallpaper.
                             using (var frosted = new TextureBrush(glass, WrapMode.TileFlipXY))
-                            using (var veil = new SolidBrush(day ? Color.FromArgb(170, 0xd6, 0xdc, 0xdd) : Color.FromArgb(150, 0x09, 0x0c, 0x0d)))
+                            // A light veil and a thin bright edge inside the ring (chosen on a board): the glass shows as soon as the wallpaper is not black.
+                            using (var veil = new SolidBrush(day ? Color.FromArgb(110, 0xd6, 0xdc, 0xdd) : Color.FromArgb(90, 0x09, 0x0c, 0x0d)))
+                            using (var edge = new Pen(Color.FromArgb(day ? 80 : 46, 255, 255, 255), Math.Max(1f, .8f * k)))
                             {
                                 frosted.ScaleTransform(glassScreen.Width / (float)glass.Width, glassScreen.Height / (float)glass.Height, MatrixOrder.Append);
                                 frosted.TranslateTransform(glassScreen.X - Left, glassScreen.Y - Top, MatrixOrder.Append);
                                 g.FillEllipse(frosted, disc);
                                 g.FillEllipse(veil, disc);
+                                float inset = 1.6f * k;
+                                g.DrawEllipse(edge, disc.X + inset, disc.Y + inset, disc.Width - 2 * inset, disc.Height - 2 * inset);
                             }
                         }
                         else
