@@ -5,6 +5,9 @@
 
   const SOUND = () => ({ on: true, pulse: true, ripples: false, ring: true, vibe: false, vibeAmount: 50, particles: true, color: '' });
   const THEMES = [
+    { id: 'lampfish', name: 'Lampfish', bg: { type: 'gradient', color: '#08171A', color2: '#0B3F42', angle: 183 }, particles: { type: 'embers', color: '#2ED9C6', amount: 60, size: 130, speed: 100, depth: 60 }, glow: { on: true, color: '#1EBBAA', strength: 70 } },
+    { id: 'abyss', name: 'Abyss', bg: { type: 'gradient', color: '#030a0b', color2: '#0a2a2a', angle: 180 }, particles: { type: 'marine', color: '#BFEFE8', amount: 60, size: 110, speed: 80, depth: 70 }, glow: { on: true, color: '#1EBBAA', strength: 45 } },
+    { id: 'lagoon', name: 'Lagoon', bg: { type: 'gradient', color: '#04161a', color2: '#0F6F6A', angle: 200 }, particles: { type: 'bubbles', color: '#9FF3E6', amount: 50, size: 110, speed: 90, depth: 50 }, glow: { on: true, color: '#2ED9C6', strength: 55 } },
     { id: 'midnight', name: 'Midnight', bg: { type: 'gradient', color: '#070815', color2: '#271c6b', angle: 165 }, particles: { type: 'fireflies', color: '#b9a2ff', amount: 45, size: 100, speed: 100 }, glow: { on: true, color: '#6c4ccf', strength: 55 } },
     { id: 'ember', name: 'Ember', bg: { type: 'gradient', color: '#0c0403', color2: '#46110a', angle: 180 }, particles: { type: 'embers', color: '#ff7a2e', amount: 55, size: 100, speed: 100 }, glow: { on: true, color: '#ff5a1f', strength: 50 } },
     { id: 'aurora', name: 'Aurora', bg: { type: 'gradient', color: '#02070d', color2: '#0a3d48', angle: 170 }, particles: { type: 'stars', color: '#c6f6ff', amount: 60, size: 100, speed: 100 }, glow: { on: true, color: '#2fd6b0', strength: 45 } },
@@ -12,26 +15,27 @@
     { id: 'neon', name: 'Neon', bg: { type: 'gradient', color: '#04010a', color2: '#1d0046', angle: 160 }, particles: { type: 'fireflies', color: '#ff3fd2', amount: 40, size: 90, speed: 120 }, glow: { on: true, color: '#d11fff', strength: 65 } },
     { id: 'graphite', name: 'Graphite', bg: { type: 'gradient', color: '#0d0e11', color2: '#2a2d35', angle: 170 }, particles: { type: 'snow', color: '#d3dae8', amount: 40, size: 100, speed: 90 }, glow: { on: true, color: '#8b93a7', strength: 30 } },
   ];
-  const PARTICLES = [['none', 'None'], ['fireflies', 'Fireflies'], ['stars', 'Stars'], ['embers', 'Embers'], ['snow', 'Snow'], ['orbs', 'Soft lights']];
+  const PARTICLES = [['none', 'None'], ['embers', 'Embers'], ['fireflies', 'Fireflies'], ['bubbles', 'Bubbles'], ['marine', 'Marine snow'], ['stars', 'Stars'], ['snow', 'Snow'], ['orbs', 'Soft lights']];
   const GRADIENTS = [
+    ['Lampfish', '#08171A', '#0B3F42', 183], ['Abyss', '#030a0b', '#0a2a2a', 180], ['Lagoon', '#04161a', '#0F6F6A', 200], ['Shallows', '#062024', '#1EBBAA', 170],
     ['Dusk', '#0f0c29', '#4b3fa8', 160], ['Sunrise', '#2a0845', '#ff8a4c', 200], ['Ocean', '#021b2b', '#0b6e8a', 135], ['Forest', '#04130c', '#1f6b45', 170], ['Rose', '#2b0a1e', '#c2417a', 145],
     ['Steel', '#0c0d10', '#3a3f4b', 125], ['Lava', '#120302', '#a3280f', 180], ['Mint', '#04141a', '#1fbf9a', 60], ['Violet', '#0b0420', '#6a2cff', 100], ['Slate', '#0a0a0c', '#2f3036', 20],
   ];
   const D = () => fresh();
 
   const fresh = () => ({
-    bg: { type: 'gradient', color: '#070815', color2: '#271c6b', angle: 165, fit: 'cover', dim: 0, vignette: 35, drift: 0 },
+    bg: { type: 'gradient', color: '#08171A', color2: '#0B3F42', angle: 183, fit: 'cover', dim: 0, vignette: 35, drift: 0 },
     logo: { size: 28, x: 50, y: 44, shadow: 60, float: true },
-    title: { text: '', size: 6, weight: 600, color: '#ece7f4', x: 50, y: 68, font: 'sans' },
-    particles: { type: 'fireflies', color: '#b9a2ff', amount: 45, size: 100, speed: 100 },
-    glow: { on: true, color: '#6c4ccf', strength: 55 },
+    title: { text: '', size: 6, weight: 600, color: '#E8F6F4', x: 50, y: 68, font: 'sans' },
+    particles: { type: 'embers', color: '#2ED9C6', amount: 60, size: 130, speed: 100, depth: 60 },
+    glow: { on: true, color: '#1EBBAA', strength: 70 },
     sound: SOUND(),
     files: { logo: null, background: null },
     aspect: 1,
   });
   const st = fresh();
   const ctl = {};
-  let theme = 'midnight', hovered = null, guides = true;
+  let theme = 'lampfish', hovered = null, guides = true;
   let editing = null, frame = null, ready = false, queued = 0, resetReady = false;
 
   function config(forPreview) {
@@ -190,10 +194,13 @@
       const url = URL.createObjectURL(file);
       const img = new Image();
       img.onload = () => {
-        const k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+        const vector = file.type === 'image/svg+xml';
+        // An SVG without a size of its own is drawn square.
+        const nw = img.naturalWidth || 1024, nh = img.naturalHeight || nw;
+        const k = vector ? max / Math.max(nw, nh) : Math.min(1, max / Math.max(nw, nh));
         const c = document.createElement('canvas');
-        c.width = Math.max(1, Math.round(img.naturalWidth * k));
-        c.height = Math.max(1, Math.round(img.naturalHeight * k));
+        c.width = Math.max(1, Math.round(nw * k));
+        c.height = Math.max(1, Math.round(nh * k));
         const g = c.getContext('2d');
         if (mime === 'image/jpeg') { g.fillStyle = '#000'; g.fillRect(0, 0, c.width, c.height); }
         g.drawImage(img, 0, 0, c.width, c.height);
@@ -205,7 +212,7 @@
     });
   }
 
-  const input = Object.assign(document.createElement('input'), { type: 'file', accept: 'image/png,image/jpeg,image/webp,image/gif' });
+  const input = Object.assign(document.createElement('input'), { type: 'file', accept: 'image/png,image/jpeg,image/webp,image/gif,image/svg+xml' });
   input.hidden = true;
   let pickKind = null;
   const notes = {};
@@ -215,7 +222,7 @@
     if (!file || !pickKind) return;
     const kind = pickKind, big = kind === 'logo';
     try {
-      const r = await readImage(file, big ? 1024 : 2560, big ? 'image/png' : 'image/jpeg', big ? 1 : .88);
+      const r = await readImage(file, big ? (file.type === 'image/svg+xml' ? 2048 : 1024) : 2560, big ? 'image/png' : 'image/jpeg', big ? 1 : .88);
       st.files[kind] = r.data;
       if (big) st.aspect = r.aspect; else st.bg.type = 'image';
       showFile(kind, file.name);
@@ -226,13 +233,15 @@
   });
 
   function showFile(kind, label) {
-    notes[kind].name.textContent = label || tr('No picture');
+    notes[kind].name.textContent = label || '';
+    notes[kind].name.hidden = !st.files[kind];
     notes[kind].clear.hidden = !st.files[kind];
   }
 
   function picker(kind, label) {
     const wrap = el('div', 'cr-pick');
-    const name = el('span', 'cr-file', tr('No picture'));
+    const name = el('span', 'cr-file');
+    name.hidden = true;
     const choose = el('button', 'button');
     choose.innerHTML = icon('image');
     choose.append(tr(label));
@@ -293,6 +302,8 @@
       else if (type === 'snow') dot(x, y, 2.4 + rnd() * 3, .5 + rnd() * .3);
       else if (type === 'stars') dot(x, y, 2 + rnd() * 3, .9);
       else if (type === 'embers') dot(x, H - rnd() * rnd() * H * 1.1, 3 + rnd() * 4, .85);
+      else if (type === 'marine') dot(x, y, 1.4 + rnd() * 2.2, .55 + rnd() * .3);
+      else if (type === 'bubbles') { g.strokeStyle = hexA(t.particles.color, .8); g.lineWidth = 1.2; g.beginPath(); g.arc(x, H - rnd() * H * .9, 2 + rnd() * 4, 0, 6.283); g.stroke(); }
       else dot(x, y, 4 + rnd() * 6, .85);
     }
     g.globalCompositeOperation = 'source-over';
@@ -406,7 +417,8 @@
     tagged('particles', row('Color', color('pColor', () => st.particles.color, v => { st.particles.color = v; }))),
     tagged('particles', row('Amount', slider('pAmount', 5, 100, () => st.particles.amount, v => { st.particles.amount = v; }, ' %', 45))),
     tagged('particles', row('Size', slider('pSize', 40, 220, () => st.particles.size, v => { st.particles.size = v; }, ' %', 100))),
-    tagged('particles', row('Speed', slider('pSpeed', 20, 250, () => st.particles.speed, v => { st.particles.speed = v; }, ' %', 100))));
+    tagged('particles', row('Speed', slider('pSpeed', 20, 250, () => st.particles.speed, v => { st.particles.speed = v; }, ' %', 100))),
+    tagged('particles', row('Depth', slider('pDepth', 0, 100, () => st.particles.depth || 0, v => { st.particles.depth = v; }, ' %', 60), 'Near, sharp and far planes')));
 
   const glowCard = card('Glow',
     row('Glow', toggle('glowOn', () => st.glow.on, v => { st.glow.on = v; syncRows(); }), 'A halo around the logo'),

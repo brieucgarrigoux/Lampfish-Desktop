@@ -2334,5 +2334,13 @@
  "Change the language": "Changer de langue",
  "Settings, General: Automatic follows Windows, or English and French.": "Réglages, Général : Automatique suit Windows, sinon anglais ou français.",
  "Something else": "Autre chose",
- "Each page has a question mark by its title that shows what its parts do. All the pages:": "Chaque page a un point d'interrogation près de son titre, qui montre à quoi servent ses parties. Toutes les pages :"
+ "Each page has a question mark by its title that shows what its parts do. All the pages:": "Chaque page a un point d'interrogation près de son titre, qui montre à quoi servent ses parties. Toutes les pages :",
+ "Lampfish": "Lampfish",
+ "Abyss": "Abysse",
+ "Lagoon": "Lagon",
+ "Shallows": "Hauts-fonds",
+ "Bubbles": "Bulles",
+ "Marine snow": "Neige marine",
+ "Depth": "Profondeur",
+ "Near, sharp and far planes": "Plans proches, nets et lointains"
 }
