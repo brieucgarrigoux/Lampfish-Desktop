@@ -13,6 +13,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Mouse: the Bramble themes have their own section, under the lampfish ones.
 - Mouse: a special edition, Lure, Gold and Black Gold, opened by a VIP code typed in Mouse. The code is checked on the PC and nothing is sent. Its cursors come in a pack that is not part of this repository and has its own license.
 - Mouse: the special edition adds 26 trails behind the pointer, bubbles, plankton, sparkles, ribbons, neon, pearls, a school of fish and more, each with its own answer to a click. By default the trail matches the cursor. Density, duration and the click effect can be set. The trail pauses in full screen and when Windows asks for less motion, and draws half as often with the energy saver on, and it never shows in a screenshot or a shared screen.
+- Mouse: a theme can be tried for 15 seconds before it is chosen. The registry is not touched, and the pointer comes back by itself, or at once with Keep or Back now.
+- Mouse: Ctrl + Alt + Shift + C puts the cursors back as Windows has them, from anywhere. If lampfish stops while a cursor is only borrowed, the next start puts them back too.
+- Mouse: swapped buttons come back after 15 seconds unless kept, like a new resolution in Windows.
+- Mouse: lampfish themes are drawn at the size the pointer really has on each screen, and the size control says it for every screen.
+- Mouse: left-handed cursors, where arrows and hands point the other way.
+- Mouse: one theme for light and one for dark, following Windows.
+- Mouse: your own themes can be exported as a .zip with an install.inf, to install on another PC with or without lampfish.
+- Mouse: more of Windows in one place: the sideways wheel, ClickLock and its delay, the length of the pointer echoes, the width of the text cursor, the double-click area and the touch indicator, with a zone to try the double click. Each value says the Windows default, and the rest opens the right page of Windows Settings.
+- Mouse: Presentation, for a demo or a call: a halo around the pointer, a ring at each click in two colours, a pointer that grows when shaken, and a pointer hidden when idle. One switch turns on the halo and the clicks and turns off the trail, then gives everything back. Ctrl + Alt + Shift + H for the halo, Ctrl + Alt + Shift + T for the trail.
+- Mouse: the trail of the special edition answers the wheel, a long press and a drag, and goes quiet in the apps you list.
 - Assistant: the dashboard shows the battery and the Wi-Fi next to the processor and the memory.
 - Assistant: the Settings tab chooses the appearance of lampfish, and the window follows at once. The switch for Windows is now named Windows dark mode.
 - Day mode: screens, seals, dials, the speed gauge, the knob, the battery and the Wi-Fi arcs now have a light version, in the main window and in the assistant.
@@ -23,6 +33,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Mouse: filters by look (dark, light, colorful, animated, high visibility), a star for favorites, and the themes used lately on top.
 - Mouse: when one cursor is changed, every family of lampfish offers its own for that role, and the cursors of Windows come by role, named after their theme, instead of 189 file names.
 - Mouse: choosing a cursor theme brings back the trail that goes with it.
+- Mouse: the settings come in groups: Visibility, Movement, Clicks, Wheel, Light and dark, Trail, Windows effects, Presentation, and the pages of Windows Settings.
 - Mouse: a new page. On top, the theme in use with its colours, the size, the trail, Edit cursors and Restore. Below, every look in sections: lampfish, the special edition, the trails as live display cases, Bramble, Windows and your own themes. Changing one cursor at a time is a mode of its own, with the roles always in view and the save bar at hand.
 - Mouse: Back to original and Reset to default are one Restore menu, whose lines say what you get.
 - Mouse: without a code, one trail of the special edition can be tried in its display case.
@@ -43,6 +54,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Fixed
 
 - Mouse: a trail no longer shows twice in its display case, and choosing a trail no longer redraws the gallery under the pointer.
+- Mouse: removing a theme made from a downloaded pack left its files behind.
 - Mouse: a damaged animated cursor could freeze lampfish. Files Windows cannot read are refused when added, with a message.
 - Mouse: Reset to default also gives back the default size.
 - Mouse: the trail answers the primary click when the buttons are swapped, and pauses when an app hides the pointer.

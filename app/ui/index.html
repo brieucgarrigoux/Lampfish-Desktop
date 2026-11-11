@@ -313,11 +313,17 @@
 
   <section class="view view--mouse only-mouse" aria-label="Mouse">
     <h1>Mouse</h1>
+    <div class="m-trial" id="s-trial" role="status" hidden>
+      <span class="m-trial__text" id="s-trial-text"></span>
+      <button type="button" class="button button--accent" id="s-trial-keep"><svg class="ph" aria-hidden="true"><use href="icons.svg#check"/></svg>Keep</button>
+      <button type="button" class="link" id="s-trial-back"><svg class="ph" aria-hidden="true"><use href="icons.svg#arrow-counter-clockwise"/></svg><span>Back now</span></button>
+    </div>
     <div class="m-now" id="s-now">
       <span class="m-now__stage" id="s-now-stage"></span>
       <div class="m-now__text">
         <span class="m-now__title" id="s-theme"></span>
         <span class="m-now__sub" id="s-theme-sub"></span>
+        <span class="m-now__screens" id="s-screens" hidden></span>
         <div class="theme__swatches" id="s-now-swatches"></div>
       </div>
       <div class="m-now__actions">
@@ -333,9 +339,22 @@
           <div class="s-menu" id="s-restore-menu" role="menu" hidden>
             <button type="button" role="menuitem" id="s-original"><svg class="ph" aria-hidden="true"><use href="icons.svg#clock-counter-clockwise"/></svg><span>Cursors from before lampfish<small>As they were at the first change</small></span></button>
             <button type="button" role="menuitem" id="s-initial"><svg class="ph" aria-hidden="true"><use href="icons.svg#arrow-counter-clockwise"/></svg><span>Windows cursors<small>The default of Windows, at 32 px</small></span></button>
+            <p class="m-restore__key">Ctrl + Alt + Shift + C puts them back from anywhere</p>
           </div>
         </div>
       </div>
+    </div>
+    <div class="m-feel" aria-label="Feel the cursors">
+      <span class="m-feel__label">Point here</span>
+      <span class="tool-chip m-feel__spot" style="cursor: pointer"><svg class="ph" aria-hidden="true"><use href="icons.svg#hand-pointing"/></svg><span>Link</span></span>
+      <span class="tool-chip m-feel__spot" style="cursor: text"><svg class="ph" aria-hidden="true"><use href="icons.svg#text-t"/></svg><span>Text</span></span>
+      <span class="tool-chip m-feel__spot" style="cursor: ew-resize"><svg class="ph" aria-hidden="true"><use href="icons.svg#arrows-horizontal"/></svg><span>Resize</span></span>
+      <span class="tool-chip m-feel__spot" style="cursor: move"><svg class="ph" aria-hidden="true"><use href="icons.svg#arrows-out-simple"/></svg><span>Move</span></span>
+      <span class="tool-chip m-feel__spot" style="cursor: crosshair"><svg class="ph" aria-hidden="true"><use href="icons.svg#crosshair"/></svg><span>Precision</span></span>
+      <span class="tool-chip m-feel__spot" style="cursor: wait"><svg class="ph" aria-hidden="true"><use href="icons.svg#timer"/></svg><span>Busy</span></span>
+      <span class="tool-chip m-feel__spot" style="cursor: progress"><svg class="ph" aria-hidden="true"><use href="icons.svg#lf-spinner"/></svg><span>Background</span></span>
+      <span class="tool-chip m-feel__spot" style="cursor: not-allowed"><svg class="ph" aria-hidden="true"><use href="icons.svg#x-circle"/></svg><span>Unavailable</span></span>
+      <span class="tool-chip m-feel__spot" style="cursor: help"><svg class="ph" aria-hidden="true"><use href="icons.svg#question"/></svg><span>Help</span></span>
     </div>
     <div id="s-gallery"><div class="waiting loading">Reading cursors</div></div>
     <div class="m-edit" id="s-edit" hidden>
@@ -1272,11 +1291,29 @@
   </div>
 
   <div class="only-mouse">
-    <h2>Pointer</h2>
+    <h2>Visibility</h2>
     <div class="group">
       <label class="toggle">
         <input type="checkbox" id="s-shadow" data-setting="shadow">
         <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#lf-pointer-shadow"/></svg><span>Pointer shadow<small>Soft shadow under the cursor</small></span></span>
+      </label>
+      <label class="toggle">
+        <input type="checkbox" id="s-sonar" data-setting="sonar">
+        <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#lf-ripples"/></svg><span>Locate with Ctrl<small>Ctrl shows where the pointer is</small></span></span>
+      </label>
+      <label class="toggle">
+        <input type="checkbox" id="s-hide" data-setting="hide">
+        <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#eye-slash"/></svg><span>Hide while typing<small>For the text under the cursor</small></span></span>
+      </label>
+      <div class="setting">
+        <label for="s-caret"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#text-t"/></svg><span>Text cursor<small>Width of the blinking bar</small></span></span><output id="s-caret-value"></output></label>
+        <input type="range" id="s-caret" data-setting="caret" min="1" max="20" step="1">
+        <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
+        <i class="setting__default" data-default="1" title="Windows default"></i>
+      </div>
+      <label class="toggle" id="s-touch-row" hidden>
+        <input type="checkbox" id="s-touch" data-setting="touch">
+        <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#hand-pointing"/></svg><span>Touch indicator<small>A circle where a finger touches</small></span></span>
       </label>
     </div>
     <h2>Movement</h2>
@@ -1285,28 +1322,77 @@
         <label for="s-speed"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#gauge"/></svg><span>Pointer speed<small>Distance for the same gesture</small></span></span><output id="s-speed-value"></output></label>
         <input type="range" id="s-speed" data-setting="speed" min="1" max="20" step="1">
         <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
+        <i class="setting__default" data-default="10" title="Windows default"></i>
       </div>
       <label class="toggle">
         <input type="checkbox" id="s-precision" data-setting="precision">
         <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#crosshair"/></svg><span>Enhanced precision<small>Speeds up with quick moves</small></span></span>
       </label>
     </div>
-    <h2>Clicks and wheel</h2>
+    <h2>Clicks</h2>
     <div class="group">
       <div class="setting">
         <label for="s-doubleClick"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#cursor-click"/></svg><span>Double-click<small>Time between the two clicks</small></span></span><output id="s-doubleClick-value"></output></label>
         <input type="range" id="s-doubleClick" data-setting="doubleClick" min="200" max="900" step="50">
         <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
+        <i class="setting__default" data-default="500" title="Windows default"></i>
       </div>
+      <div class="m-test" id="s-dbltest" role="button" tabindex="0"><svg class="ph" aria-hidden="true"><use href="icons.svg#cursor-click"/></svg><span>Double-click here to try</span></div>
       <div class="setting">
-        <label for="s-knob"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#mouse-scroll"/></svg><span>Wheel<small>Lines per notch</small></span></span><output id="s-knob-value"></output></label>
-        <input type="range" id="s-knob" data-setting="knob" min="1" max="20" step="1">
+        <label for="s-dblZone"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#arrows-out-simple"/></svg><span>Double-click area<small>How far the pointer may move between clicks</small></span></span><output id="s-dblZone-value"></output></label>
+        <input type="range" id="s-dblZone" data-setting="dblZone" min="1" max="16" step="1">
         <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
+        <i class="setting__default" data-default="4" title="Windows default"></i>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="s-clickLock" data-setting="clickLock">
+        <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#lock-simple"/></svg><span>ClickLock<small>Hold briefly, then drag without holding</small></span></span>
+      </label>
+      <div class="setting" id="s-clickLock-row">
+        <label for="s-clickLockTime"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#timer"/></svg><span>ClickLock delay<small>How long to hold before it locks</small></span></span><output id="s-clickLockTime-value"></output></label>
+        <input type="range" id="s-clickLockTime" data-setting="clickLockTime" min="200" max="2200" step="100">
+        <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
+        <i class="setting__default" data-default="1200" title="Windows default"></i>
       </div>
       <label class="toggle">
         <input type="checkbox" id="s-invert" data-setting="invert">
         <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#swap"/></svg><span>Swap buttons<small>Primary click on the right</small></span></span>
       </label>
+      <label class="toggle">
+        <input type="checkbox" id="s-mirror">
+        <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#hand-pointing"/></svg><span>Left-handed cursors<small>Arrows and hands point the other way</small></span></span>
+      </label>
+    </div>
+    <h2>Wheel</h2>
+    <div class="group">
+      <div class="setting">
+        <label for="s-knob"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#mouse-scroll"/></svg><span>Wheel<small>Lines per notch</small></span></span><output id="s-knob-value"></output></label>
+        <input type="range" id="s-knob" data-setting="knob" min="1" max="20" step="1">
+        <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
+        <i class="setting__default" data-default="3" title="Windows default"></i>
+      </div>
+      <div class="m-wheeltest" id="s-wheeltest" tabindex="0" aria-label="Turn the wheel here"><div id="s-wheeltest-lines"></div></div>
+      <label class="toggle">
+        <input type="checkbox" id="s-wheelPage" data-setting="wheelPage">
+        <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#arrows-vertical"/></svg><span>One screen at a time<small>Each notch turns a whole page</small></span></span>
+      </label>
+      <div class="setting">
+        <label for="s-hchars"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#arrows-horizontal"/></svg><span>Sideways wheel<small>Characters per tilt</small></span></span><output id="s-hchars-value"></output></label>
+        <input type="range" id="s-hchars" data-setting="hchars" min="1" max="20" step="1">
+        <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
+        <i class="setting__default" data-default="3" title="Windows default"></i>
+      </div>
+    </div>
+    <h2>Light and dark</h2>
+    <div class="group">
+      <label class="toggle">
+        <input type="checkbox" id="s-followLight">
+        <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#lf-dark-mode"/></svg><span>Follow Windows<small>A theme for light, one for dark</small></span></span>
+      </label>
+      <div class="m-daynight" id="s-daynight">
+        <label class="m-pick"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#sun"/></svg><span>Light<small>When Windows is light</small></span></span><select id="s-day" aria-label="Light"></select></label>
+        <label class="m-pick"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#moon"/></svg><span>Dark<small>When Windows is dark</small></span></span><select id="s-night" aria-label="Dark"></select></label>
+      </div>
     </div>
     <h2 id="s-trail-title" hidden>Trail</h2>
     <div class="group" id="s-trail" hidden>
@@ -1324,26 +1410,60 @@
         <input type="checkbox" id="s-trail-click">
         <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#cursor-click"/></svg><span>Click effect<small>Each trail answers a click its own way</small></span></span>
       </label>
+      <div class="m-quiet">
+        <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#pause"/></svg><span>Quiet in these apps<small>The trail stops while one is in front</small></span></span>
+        <div class="m-quiet__list" id="s-quiet"></div>
+      </div>
       <p class="trail__note">Paused in full screen or with animations off in Windows. Never captured.</p>
     </div>
-    <h2>Extras</h2>
+    <h2>Windows effects</h2>
     <div class="group">
       <label class="toggle">
         <input type="checkbox" id="s-trails" data-setting="trails">
         <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#lf-pointer-trails"/></svg><span>Pointer echoes<small>Copies of the cursor, from Windows</small></span></span>
       </label>
-      <label class="toggle">
-        <input type="checkbox" id="s-sonar" data-setting="sonar">
-        <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#lf-ripples"/></svg><span>Locate with Ctrl<small>Ctrl shows where the pointer is</small></span></span>
-      </label>
-      <label class="toggle">
-        <input type="checkbox" id="s-hide" data-setting="hide">
-        <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#eye-slash"/></svg><span>Hide while typing<small>For the text under the cursor</small></span></span>
-      </label>
+      <div class="setting" id="s-trails-row">
+        <label for="s-trailsLength"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#lf-pointer-trails"/></svg><span>Echoes<small>How many copies follow</small></span></span><output id="s-trailsLength-value"></output></label>
+        <input type="range" id="s-trailsLength" data-setting="trailsLength" min="2" max="16" step="1">
+        <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
       <label class="toggle">
         <input type="checkbox" id="s-buttonInitial" data-setting="buttonInitial">
         <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#lf-snap-ok"/></svg><span>Snap to OK<small>Jumps to the OK button</small></span></span>
       </label>
+    </div>
+    <h2>Presentation</h2>
+    <div class="group">
+      <label class="toggle">
+        <input type="checkbox" id="s-present" data-aid="presentation">
+        <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#monitor-play"/></svg><span>Presentation<small>Halo and clicks on, trail off, then all as before</small></span></span>
+      </label>
+      <label class="toggle m-colour-row">
+        <input type="checkbox" data-aid="halo">
+        <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#circle"/></svg><span>Halo<small>A ring around the pointer</small></span></span>
+        <input type="color" class="m-colour" data-aid-colour="haloColor" aria-label="Colour of the halo">
+      </label>
+      <label class="toggle m-colour-row">
+        <input type="checkbox" data-aid="rings">
+        <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#cursor-click"/></svg><span>Clicks<small>A ring at each click, left and right</small></span></span>
+        <input type="color" class="m-colour" data-aid-colour="left" aria-label="Colour of the left click">
+        <input type="color" class="m-colour" data-aid-colour="right" aria-label="Colour of the right click">
+      </label>
+      <label class="toggle">
+        <input type="checkbox" data-aid="shake">
+        <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#arrows-out-simple"/></svg><span>Shake to find<small>The pointer grows for a moment</small></span></span>
+      </label>
+      <label class="m-pick"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#eye-closed"/></svg><span>Hide when idle<small>The pointer goes until it moves</small></span></span>
+        <select id="s-hideIdle" aria-label="Hide when idle"><option value="0">Never</option><option value="3">After 3 s</option><option value="5">After 5 s</option><option value="10">After 10 s</option></select></label>
+      <p class="trail__note">Ctrl + Alt + Shift + H for the halo, + T for the trail, + N for the next favorite theme. Seen in captures, so a demo shows it.</p>
+    </div>
+    <h2>More in Windows Settings</h2>
+    <div class="group">
+      <button type="button" class="row action" data-windows="mouse"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#mouse-right-click"/></svg><span>Mouse and touchpad<small>Scroll direction, inactive windows</small></span></span><svg class="ph" aria-hidden="true"><use href="icons.svg#arrow-square-out"/></svg></button>
+      <button type="button" class="row action" data-windows="pointer"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#palette"/></svg><span>Pointer colour and style<small>The colours of Windows 11</small></span></span><svg class="ph" aria-hidden="true"><use href="icons.svg#arrow-square-out"/></svg></button>
+      <button type="button" class="row action" data-windows="caret"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#text-t"/></svg><span>Text cursor indicator<small>A coloured mark on the text cursor</small></span></span><svg class="ph" aria-hidden="true"><use href="icons.svg#arrow-square-out"/></svg></button>
+      <button type="button" class="row action" data-windows="keys"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#keyboard"/></svg><span>Mouse keys<small>Move the pointer with the number pad</small></span></span><svg class="ph" aria-hidden="true"><use href="icons.svg#arrow-square-out"/></svg></button>
+      <button type="button" class="row action" data-windows="magnifier"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#magnifying-glass-plus"/></svg><span>Magnifier<small>Zoom on what is under the pointer</small></span></span><svg class="ph" aria-hidden="true"><use href="icons.svg#arrow-square-out"/></svg></button>
     </div>
   </div>
 

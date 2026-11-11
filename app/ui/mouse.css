@@ -11,6 +11,8 @@
 .m-now__title { display: flex; align-items: center; min-width: 0; font: 600 var(--text-title)/1.2 var(--display); }
 .m-now__sub { font-size: var(--text-caption); color: var(--text-soft); }
 .m-now__sub:empty { display: none; }
+.m-now__screens { font-size: var(--text-caption); color: var(--text-pale); }
+.m-now__screens[hidden] { display: none; }
 .m-now .theme__swatches { flex-wrap: nowrap; gap: 8px; margin-top: 8px; }
 .m-now .theme__swatches:empty { display: none; }
 .m-now__actions { flex: 1 1 auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
@@ -162,3 +164,46 @@
 .m-drop:hover { color: var(--text); outline-color: var(--accent); }
 /* A double ring for the focus, readable on any well (M2.7). */
 .view--mouse .theme:focus-visible, .view--mouse .tile-cursor:focus-visible, .view--mouse .m-drop:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; box-shadow: 0 0 0 1px var(--wallpaper); }
+
+/* M4: a theme tried for 15 s, or buttons just swapped. Stays on top while the page scrolls. */
+.m-trial { position: sticky; top: 0; z-index: 4; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 10px; padding: 10px 14px; border-radius: var(--radius-group); background: var(--group-up); box-shadow: inset 0 0 0 1px var(--accent-ring), var(--float); }
+.m-trial[hidden] { display: none; }
+.m-trial__text { flex: 1 1 220px; font-size: var(--text-value); color: var(--text); font-variant-numeric: tabular-nums; }
+.family__try { position: absolute; top: 8px; right: 8px; z-index: 2; width: 28px; height: 28px; display: grid; place-items: center; padding: 0; border: 0; border-radius: var(--radius-small); background: rgba(0, 0, 0, .28); color: rgba(255, 255, 255, .85); opacity: 0; transition: opacity var(--fast); }
+.family__try .ph { width: var(--icon); height: var(--icon); }
+.theme--family:hover .family__try, .theme--family:focus-within .family__try { opacity: 1; }
+.theme--family.current .family__try { display: none; }
+.theme--family .theme__actions { right: 44px; }
+.m-restore__key { margin: 4px 10px 6px; font-size: var(--text-caption); color: var(--text-pale); }
+
+/* M5: the mark of the Windows default under a slider, and the double-click target. */
+.only-mouse .setting { position: relative; }
+.setting__default { position: absolute; bottom: 6px; left: calc(14px + 7px + (100% - 28px - 14px) * var(--at, 0)); width: 2px; height: 9px; margin-left: -1px; border-radius: 1px; background: var(--accent); opacity: .7; }
+.m-test { display: flex; align-items: center; gap: 10px; margin: 0 14px 12px; padding: 10px 12px; border-radius: var(--radius-control); background: var(--sunken); color: var(--text-soft); font-size: var(--text-caption); cursor: pointer; user-select: none; transition: color var(--fast), box-shadow var(--fast); }
+.m-test .ph { width: var(--icon); height: var(--icon); }
+.m-test.is-ok { color: var(--accent); box-shadow: var(--pressed); }
+
+/* M6.2: a theme for light and one for dark. */
+.m-pick { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; }
+.m-pick select { flex: 0 1 170px; min-width: 0; border: 0; border-radius: var(--radius-control); padding: 6px 10px; background: var(--sunken); color: var(--text); font: inherit; font-size: var(--text-value); box-shadow: inset 0 0 0 1px var(--hairline); }
+.m-daynight > * + * { box-shadow: inset 0 1px 0 var(--hairline); }
+
+/* M7: colours of the halo and the clicks beside their switch; M8.2: the quiet apps as chips. */
+.m-colour-row { gap: 10px; }
+.m-colour-row .caption { flex: 1; }
+.m-colour { flex: none; width: 26px; height: 26px; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; }
+.m-colour::-webkit-color-swatch-wrapper { padding: 0; }
+.m-colour::-webkit-color-swatch { border: 0; border-radius: 50%; box-shadow: inset 0 0 0 1px var(--hairline-strong); }
+.m-quiet { padding: 10px 14px 12px; }
+.m-quiet__list { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }
+.m-quiet__list .tool-chip { padding: 4px 8px; font-size: var(--text-caption); gap: 6px; }
+.m-quiet__list .tool-chip .ph { width: 12px; height: 12px; }
+
+/* M4.2: spots where each cursor of the theme shows; M5.5: a band to turn the wheel on. */
+.m-feel { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 10px 0 0; }
+.m-feel__label { font-size: var(--text-caption); color: var(--text-pale); margin-right: 4px; }
+.m-feel__spot { padding: 4px 9px; font-size: var(--text-caption); gap: 6px; }
+.m-feel__spot .ph { width: 13px; height: 13px; }
+.m-wheeltest { height: 76px; overflow-y: auto; margin: 0 14px 10px; border-radius: var(--radius-control); background: var(--sunken); box-shadow: inset 0 0 0 1px var(--hairline); scrollbar-width: thin; }
+.m-wheeltest > div { display: grid; padding: 4px 12px; }
+.m-wheeltest span { font-size: var(--text-caption); line-height: 19px; color: var(--text-soft); font-variant-numeric: tabular-nums; }

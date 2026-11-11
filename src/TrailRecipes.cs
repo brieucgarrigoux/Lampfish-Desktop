@@ -55,6 +55,19 @@ namespace Lampfish
         protected abstract void Paint(Graphics g, float dt, double now);
         public virtual void Click(PointF p, double now) { }
 
+        // The wheel (M8.1): a short gust of the trail itself, up or down with the notch.
+        public virtual void Wheel(PointF p, bool up, double now)
+        {
+            var prev = p;
+            for (int i = 1; i <= 6; i++)
+            {
+                var next = new PointF(p.X + Rn(-2, 2) * Scale, p.Y + (up ? -1 : 1) * i * 7 * Scale);
+                Move(next, prev, 1.4f, now);
+                prev = next;
+            }
+            LastMove = now;
+        }
+
         public void Draw(Graphics g, float dt, double now)
         {
             Paint(g, dt, now);

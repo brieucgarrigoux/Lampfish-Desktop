@@ -57,6 +57,14 @@
       b.addEventListener('click', () => applyVariant(fam, x, null));
       return b;
     }));
+    // The size Windows really shows on each screen (M3.3), said only when the screens differ.
+    const sizes = s.screenSizes || [];
+    $('s-screens').hidden = sizes.length < 2 || sizes.every(x => x.px === sizes[0].px);
+    $('s-screens').textContent = sizes.map(x => tr('Screen {0}: {1} px', x.n, x.px)).join(', ');
+    $('s-size-label').parentElement.title = sizes.length ? tr('{0} px on this screen', (sizes.find(x => x.here) || sizes[0]).px) : '';
+    $('s-mirror').checked = !!s.settings.mirror;
+    // Swapped buttons usually mean a left hand (M6.3): the switch says so when it is still off.
+    $('s-mirror').closest('.toggle').querySelector('small').textContent = tr(s.settings.invert && !s.settings.mirror ? 'The buttons are swapped: cursors can follow' : 'Arrows and hands point the other way');
     $('s-original').disabled = !s.original;
     $('s-initial').disabled = !!s.standard;
     reveal($('s-draft'), editing && s.unsaved);
@@ -104,7 +112,7 @@
   let timer = 0;
   function play(r) {
     clearTimeout(timer);
-    if (!r.path || !/\.ani$/i.test(r.path)) return;
+    if (calm.matches || !r.path || !/\.ani$/i.test(r.path)) return;
     const info = motion.get(r.path);
     if (!info) { send('mouse.frames', { path: r.path }); return; }
     const img = [...$('s-roles').children].find(b => b.dataset.path === r.path)?.querySelector('img');
@@ -173,6 +181,7 @@
   const ACTIONS = {
     rename: ['Rename', 'pencil-simple'],
     duplicate: ['Duplicate', 'copy'],
+    export: ['Export', 'export'],
     remove: ['Remove', 'trash-simple'],
   };
 
@@ -216,7 +225,7 @@
   function themeActions(c, th) {
     let bar = c.querySelector('.theme__actions');
     if (!bar) { bar = document.createElement('span'); bar.className = 'theme__actions'; c.append(bar); }
-    for (const what of th.kind === 'mine' ? ['rename', 'duplicate', 'remove'] : ['duplicate']) {
+    for (const what of th.kind === 'mine' ? ['rename', 'duplicate', 'export', 'remove'] : ['duplicate']) {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'theme__action theme__action--' + what;
@@ -227,6 +236,7 @@
         e.stopPropagation();
         if (what === 'rename') rename(c, th, c.querySelector('.theme__name') || c.querySelector('.family__title'));
         else if (what === 'duplicate') send('mouse.duplicate', { name: th.name });
+        else if (what === 'export') send('mouse.export', { name: th.name });
         else send('mouse.removeTheme', { name: th.name });
       });
       bar.append(b);
@@ -254,7 +264,7 @@
     if (!fam.engine) { send('mouse.theme', { name: v.name }); return; }
     const made = libraryTheme(v.name);
     if (made && !refresh) send('mouse.theme', { name: v.name });
-    if ((made && made.version === CursorEngine.VERSION) || making.has(v.name)) return;
+    if ((made && made.version === CursorEngine.version()) || making.has(v.name)) return;
     making.add(v.name);
     if (tile) { tile.classList.add('loading'); tile.setAttribute('aria-busy', 'true'); tile.style.setProperty('--progress', 0); }
     try {
@@ -270,10 +280,40 @@
     }
   }
 
+  async function tryVariant(fam, v, tile) {
+    if (fam.engine && !libraryTheme(v.name)) {
+      if (making.has(v.name)) return;
+      making.add(v.name);
+      if (tile) tile.classList.add('loading');
+      try { send('mouse.make', { ...await CursorEngine.build(v.name, null, true), apply: false }); }
+      catch (e) { console.error(e); return; }
+      finally { making.delete(v.name); if (tile) tile.classList.remove('loading'); }
+    }
+    send('mouse.try', { name: v.name });
+  }
+
+  // The bar of a trial: a theme tried, or buttons just swapped. The seconds count down here; Mouse.cs ends them.
+  let trialClock = 0;
+  function renderTrial() {
+    clearInterval(trialClock);
+    const t = s.trying, swap = s.swapLeft || 0;
+    $('s-trial').hidden = !t && !swap;
+    if (!t && !swap) return;
+    const end = Date.now() + (t ? t.left : swap) * 1000;
+    const paint = () => {
+      const left = Math.max(0, Math.ceil((end - Date.now()) / 1000));
+      $('s-trial-text').textContent = t ? tr('Trying {0}, back in {1} s', t.title, left) : tr('Buttons swapped: the primary click is the right one. Back in {0} s', left);
+      if (!left) clearInterval(trialClock);
+    };
+    paint();
+    trialClock = setInterval(paint, 250);
+    $('s-trial-back').lastChild.textContent = tr(t ? 'Back now' : 'Put back');
+  }
+
   // A theme made by an older engine is drawn again, so an update reaches the cursors in use without a click.
   function refreshCurrent() {
     const t = s && libraryTheme(s.theme);
-    if (!t || !t.made || t.version === CursorEngine.VERSION || !CursorEngine.has(t.name) || making.has(t.name)) return;
+    if (!t || !t.made || t.version === CursorEngine.version() || !CursorEngine.has(t.name) || making.has(t.name)) return;
     const fam = [...families(), ...CursorEngine.packFamilies.map(asFamily), ...customFamilies()].find(f => f.variants.some(v => v.name === t.name));
     if (fam) applyVariant(fam, fam.variants.find(v => v.name === t.name), null, true);
   }
@@ -331,6 +371,15 @@
     paint();
     fav.addEventListener('click', e => { e.stopPropagation(); const on = !faved(); s.favorites = on ? [fam.key, ...(s.favorites || [])] : (s.favorites || []).filter(k => k !== fam.key); paint(); send('mouse.favorite', { name: fam.key, on }); });
     c.querySelector('.family__stage').append(fav);
+    // Try for 15 s with the real cursor of Windows (M4.1); Keep makes it the theme, nothing else leaves a trace.
+    const trial = document.createElement('button');
+    trial.type = 'button';
+    trial.className = 'family__try';
+    trial.innerHTML = icon('eye');
+    trial.title = tr('Try it for 15 seconds');
+    trial.setAttribute('aria-label', trial.title);
+    trial.addEventListener('click', e => { e.stopPropagation(); tryVariant(fam, v, c); });
+    c.querySelector('.family__stage').append(trial);
     if (fam.mine) themeActions(c, v.theme);
     fill();
     // The animation starts after a short rest under the pointer or on focus (M2.7), never on a pass across the grid.
@@ -737,6 +786,11 @@
     speed: v => String(v),
     doubleClick: v => v + ' ms',
     knob: v => v == 1 ? tr('1 line') : tr('{0} lines', v),
+    caret: v => v + ' px',
+    dblZone: v => v + ' px',
+    clickLockTime: v => (v / 1000).toLocaleString(LOCALE, { maximumFractionDigits: 1 }) + ' s',
+    hchars: v => v == 1 ? tr('1 character') : tr('{0} characters', v),
+    trailsLength: v => String(v),
   };
 
   const PX = n => 32 + (Math.max(1, n) - 1) * 16;
@@ -757,7 +811,13 @@
 
   function renderSettings() {
     const r = s.settings;
+    r.wheelPage = r.knob <= 0;
     renderSize();
+    // Rows that only matter with their switch on open and close with it (interface rule: reveal, never a jump).
+    $('s-touch-row').hidden = !r.touchScreen;
+    reveal($('s-clickLock-row'), !!r.clickLock);
+    reveal($('s-trails-row'), !!r.trails);
+    $('s-knob').disabled = r.wheelPage;
     for (const field of document.querySelectorAll('.only-mouse [data-setting]')) {
       const q = field.dataset.setting;
       if (field.type === 'checkbox') { field.checked = !!r[q]; continue; }
@@ -773,6 +833,24 @@
     $(field.id + '-value').textContent = TEXTS[q](field.value);
     field.style.setProperty('--pct', (field.value - field.min) / (field.max - field.min) * 100 + '%');
   }
+  // The value Windows starts with, as a small mark under the slider (M5.6).
+  for (const mark of document.querySelectorAll('.only-mouse .setting__default')) {
+    const field = mark.parentElement.querySelector('input[type=range]');
+    mark.style.setProperty('--at', (mark.dataset.default - field.min) / (field.max - field.min));
+    mark.title = tr('Windows default: {0}', TEXTS[field.dataset.setting](mark.dataset.default));
+  }
+  // Double-click on the spot (M5.5): two clicks in the time set count as one double click, as in Windows.
+  let lastClick = 0;
+  $('s-dbltest').addEventListener('click', () => {
+    const now = performance.now(), test = $('s-dbltest'), text = test.querySelector('span');
+    const gap = now - lastClick;
+    lastClick = now;
+    if (gap > (s ? s.settings.doubleClick : 500)) { text.textContent = tr('One click. Click again, quickly'); test.classList.remove('is-ok'); return; }
+    lastClick = 0;
+    text.textContent = tr('Double click, in {0} ms', Math.round(gap));
+    test.classList.add('is-ok');
+  });
+  for (const b of document.querySelectorAll('.only-mouse [data-windows]')) b.addEventListener('click', () => send('mouse.settings', { page: b.dataset.windows }));
   for (const field of document.querySelectorAll('.only-mouse [data-setting]')) {
     const q = field.dataset.setting;
     if (field.type === 'checkbox') {
@@ -819,6 +897,11 @@
     $(field.id + '-value').textContent = Math.round(field.value * 100) + ' %';
     field.style.setProperty('--pct', (field.value - field.min) / (field.max - field.min) * 100 + '%');
   }
+  $('s-trial-keep').addEventListener('click', () => send(s && s.trying ? 'mouse.keep' : 'mouse.swapKeep'));
+  $('s-trial-back').addEventListener('click', () => { if (s && s.trying) send('mouse.untry'); else send('mouse.adjust', { what: 'invert', value: false }); });
+  // The wheel band (M5.5): numbered lines that scroll by the setting just chosen.
+  $('s-wheeltest-lines').replaceChildren(...Array.from({ length: 60 }, (_, i) => Object.assign(document.createElement('span'), { textContent: tr('Line {0}', i + 1) })));
+  $('s-mirror').addEventListener('change', e => send('mouse.mirror', { value: e.target.checked }));
   $('s-trail-chip').addEventListener('click', () => { const head = [...$('s-gallery').querySelectorAll('.themes__title')].find(h => h.firstChild.textContent === tr('Trails')); if (head) head.scrollIntoView({ block: 'start', behavior: 'smooth' }); });
   for (const field of document.querySelectorAll('[data-trail-adjust]')) {
     field.addEventListener('input', () => trailValue(field));
@@ -828,10 +911,19 @@
 
   function state(n) {
     s = n;
+    // The sizes of the screens and the left hand decide how the files are written: when they change, the theme in use
+    // is made again (refreshCurrent), with nothing to click.
+    const before = CursorEngine.version();
+    CursorEngine.setOptions({ sizes: s.cursorSizes || [], mirror: !!(s.settings && s.settings.mirror) });
+    if (library && CursorEngine.version() !== before) setTimeout(refreshCurrent);
     loadPack();
     if (!chosenRole()) role = s.roles[0].id;
     renderTrail();
     renderNow();
+    renderTrial();
+    renderDayNight();
+    renderAid();
+    renderQuiet();
     renderRoles();
     renderSettings();
     renderGallery();
@@ -933,10 +1025,71 @@
     mark();
   }
 
+  // A family of the Workshop is written once before it can be exported (M6.5).
+  async function exportTheme(name) {
+    const fam = customFamilies().find(f => f.variants.some(v => v.name === name));
+    if (fam && !libraryTheme(name)) { try { send('mouse.make', { ...await CursorEngine.build(name), apply: false }); } catch (e) { console.error(e); return; } }
+    send('mouse.export', { name });
+  }
+
+  // Light and dark (M6.2): the two lists offer every theme on this PC.
+  function renderDayNight() {
+    if (!s || !library) return;
+    $('s-followLight').checked = !!s.settings.followLight;
+    reveal($('s-daynight'), !!s.settings.followLight);
+    const names = library.themes.map(t => [t.name, t.title]);
+    for (const [id, value] of [['s-day', s.settings.day], ['s-night', s.settings.night]]) {
+      const sel = $(id);
+      const key = names.map(x => x[0]).join('|') + LANGUAGE;
+      if (sel.dataset.key !== key) {
+        sel.dataset.key = key;
+        sel.replaceChildren(Object.assign(document.createElement('option'), { value: '', textContent: tr('Unchanged') }), ...names.map(([n, t]) => Object.assign(document.createElement('option'), { value: n, textContent: t })));
+      }
+      if (!sel.matches(':focus')) sel.value = value || '';
+    }
+  }
+  // Presentation and visibility (M7, Spotlight.cs).
+  function renderAid() {
+    const a = (Lampfish.state && Lampfish.state.spotlight) || {};
+    for (const box of document.querySelectorAll('.only-mouse [data-aid]')) box.checked = !!a[box.dataset.aid];
+    for (const c of document.querySelectorAll('.only-mouse [data-aid-colour]')) if (!c.matches(':focus')) c.value = a[c.dataset.aidColour] || '#2ed9c6';
+    if (!$('s-hideIdle').matches(':focus')) $('s-hideIdle').value = String(a.hideIdle || 0);
+  }
+  for (const box of document.querySelectorAll('.only-mouse [data-aid]')) box.addEventListener('change', () => send('spotlight.set', { what: box.dataset.aid, value: box.checked }));
+  for (const c of document.querySelectorAll('.only-mouse [data-aid-colour]')) c.addEventListener('change', () => send('spotlight.set', { what: c.dataset.aidColour, value: c.value }));
+  $('s-hideIdle').addEventListener('change', e => send('spotlight.set', { what: 'hideIdle', value: Number(e.target.value) }));
+
+  // The apps where the trail goes quiet (M8.2).
+  function renderQuiet() {
+    const list = trailState().excluded || [];
+    const chips = list.map(name => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'tool-chip';
+      b.textContent = name;
+      b.translate = false;
+      b.append(Object.assign(document.createElement('span'), { innerHTML: icon('x') }));
+      b.title = tr('Take it out of the list');
+      b.addEventListener('click', () => send('trail.include', { name }));
+      return b;
+    });
+    const add = document.createElement('button');
+    add.type = 'button';
+    add.className = 'link';
+    add.innerHTML = icon('plus');
+    add.append(tr('Add an app'));
+    add.addEventListener('click', () => send('trail.exclude'));
+    $('s-quiet').replaceChildren(...chips, add);
+  }
+
+  $('s-followLight').addEventListener('change', e => send('mouse.light', { follow: e.target.checked }));
+  $('s-day').addEventListener('change', e => send('mouse.light', { day: e.target.value }));
+  $('s-night').addEventListener('change', e => send('mouse.light', { night: e.target.value }));
+
   function use(name) {
     const fam = [...families(), ...customFamilies(), ...(packReady ? CursorEngine.packFamilies.map(asFamily) : [])].find(f => f.variants.some(v => v.name === name));
     if (fam) applyVariant(fam, fam.variants.find(v => v.name === name), null);
   }
 
-  Lampfish.mouse = { state, event, visible, renderDock, use };
+  Lampfish.mouse = { state, event, visible, renderDock, use, exportTheme };
 })();

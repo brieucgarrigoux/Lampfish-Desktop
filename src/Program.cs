@@ -69,6 +69,16 @@ namespace Lampfish
         public List<string> MouseFavorites;
         public List<string> MouseRecent;
         public List<WorkshopFamily> Workshop;
+        public List<int> CursorStepsSeen;
+        public bool CursorsMirror;
+        public bool CursorTemp;
+        public bool CursorsFollowLight;
+        public string CursorsDay, CursorsNight;
+        public bool Halo, ClickRings, Shake, Presentation, SwapTrial;
+        public int HideIdle;
+        public string HaloColor, ClickLeft, ClickRight, TrailLast;
+        public List<string> PresentationBefore;
+        public List<string> TrailExcluded;
         public WindowPlace Window;
         public bool UpdatesAuto;
         public string UpdatesLast;
@@ -144,6 +154,8 @@ namespace Lampfish
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
                 Application.ThreadException += (s, e) => Log(e.Exception);
+                // A crash must not leave a borrowed or hidden pointer, nor swapped buttons on trial.
+                AppDomain.CurrentDomain.UnhandledException += (s, e) => { try { Mouse.Stop(); } catch { } };
                 context = new WindowsFormsSynchronizationContext();
                 SynchronizationContext.SetSynchronizationContext(context);
 
@@ -172,6 +184,7 @@ namespace Lampfish
                 ClaudeUsage.Start();
                 Companion.Start();
                 Trail.Start();
+                Spotlight.Start();
                 DesktopGrid.Start();
                 Moods.Start();
                 if (requestedFolder != null) { Icons.Ask(requestedFolder); requestedView = "icons"; }
@@ -886,6 +899,11 @@ namespace Lampfish
                 if (Vip.Receive(action.Substring(action.IndexOf('.') + 1), m)) { Save(); SendState(); }
                 return;
             }
+            if (action.StartsWith("spotlight."))
+            {
+                if (Spotlight.Receive(action.Substring(action.IndexOf('.') + 1), m)) { Save(); SendState(); }
+                return;
+            }
             if (action.StartsWith("workshop."))
             {
                 if (Workshop.Receive(action.Substring(action.IndexOf('.') + 1), m, files)) { Save(); SendState(); }
@@ -1079,6 +1097,7 @@ namespace Lampfish
                 vip = Vip.State(),
                 trail = Trail.State(),
                 workshop = Workshop.State(),
+                spotlight = Spotlight.State(),
                 arrange = Arrange.State(),
                 files = DiskUsage.State(),
                 duplicates = Duplicates.State(),
@@ -1265,6 +1284,7 @@ namespace Lampfish
             Companion.Stop();
             DesktopGrid.Stop();
             Hotkeys.Stop();
+            try { Spotlight.Stop(); Mouse.Stop(); } catch (Exception ex) { Log(ex); }
             try { WindowsBackdrop.Restore(); } catch (Exception ex) { Log(ex); }
             Discard();
             if (settingsWindow != null) settingsWindow.Shutdown();

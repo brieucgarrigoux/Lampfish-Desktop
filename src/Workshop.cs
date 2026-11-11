@@ -177,8 +177,17 @@ namespace Lampfish
         // The settings keep the C# names; the page reads lower case, like every other state.
         public static object State()
         {
-            return new { families = All.Select(f => new { key = f.Key, name = f.Name, variants = f.Variants.Select(v => new { variant = v.Variant, style = v.Style, a = v.A, b = v.B }) }) };
+            return new { accent = Accent(), families = All.Select(f => new { key = f.Key, name = f.Name, variants = f.Variants.Select(v => new { variant = v.Variant, style = v.Style, a = v.A, b = v.B }) }) };
         }
+
+        static string Accent()
+        {
+            uint colour; bool opaque;
+            try { if (DwmGetColorizationColor(out colour, out opaque) == 0) return "#" + (colour & 0xFFFFFF).ToString("x6"); } catch (Exception ex) { Program.Log(ex); }
+            return null;
+        }
+
+        [System.Runtime.InteropServices.DllImport("dwmapi.dll")] static extern int DwmGetColorizationColor(out uint colour, out bool opaque);
 
         static string Text(Dictionary<string, object> m, string key)
         {

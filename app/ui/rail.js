@@ -125,7 +125,7 @@
   // Every setting can be found by its name, wherever it lives; a service with a hidden button stays out.
   function settings() {
     const out = [], seen = new Set();
-    for (const row of document.querySelectorAll('.toggle, .row--setting, .choice, .row.action, .h-q')) {
+    for (const row of document.querySelectorAll('.toggle, .row--setting, .setting, .m-pick, .choice, .row.action, .h-q')) {
       const zone = row.closest('[class*="only-"]'), match = zone && zone.className.match(/only-(\w+)/);
       const title = row.querySelector('.caption > span, .h-q__name');
       if (!match || !title || row.closest('.tr-fold, .welcome')) continue;

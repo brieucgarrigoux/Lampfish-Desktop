@@ -409,6 +409,19 @@ function drawTheme(target, px, theme, role, w = 0, anim = false) {
 const VERSION = '2';
 const LOOP = 2.4, BUSY_FRAMES = 24, FRAMES = 12;
 const SIZES_ANI = [32, 48, 64, 96], SIZES_CUR = [32, 48, 64, 96, 128];
+// The sizes Windows will really show on the screens of this PC (M3): an .ani holds four at most, so they are chosen from
+// the screens seen so far; a still .cur holds them all, up to 256 px. Left-handed (M6.3): the pointing cursors are mirrored,
+// never the resize ones, whose meaning would change.
+const OPTIONS = { sizes: [], mirror: false };
+const MIRRORED = new Set(['arrow', 'help', 'appstarting', 'hand', 'nwpen', 'pin', 'person']);
+function aniSizes() {
+  // The sizes come first those of the screens plugged in now, then those seen before.
+  const need = [...new Set(OPTIONS.sizes.filter(n => n >= 16 && n <= 256))].slice(0, 4);
+  for (const n of SIZES_ANI) if (need.length < 4 && !need.includes(n)) need.push(n);
+  return need.sort((a, b) => a - b);
+}
+function curSizes() { return [...new Set([...SIZES_CUR, ...OPTIONS.sizes.filter(n => n >= 16 && n <= 256)])].sort((a, b) => a - b); }
+function version() { const need = OPTIONS.sizes.filter(n => !SIZES_ANI.includes(n) && n <= 256); return VERSION + (need.length ? '.' + aniSizes().join('-') : '') + (OPTIONS.mirror ? '.L' : ''); }
 const MOVING = theme => theme.style !== 'flat';
 const BUSY = role => role === 'wait' || role === 'appstarting';
 
@@ -441,7 +454,13 @@ async function png(canvas) {
 function sizes(theme, role, w, anim, list) {
   return Promise.all(list.map(size => {
     const c = canvas(size); c.getContext('2d', { willReadFrequently: true });
-    const [hx, hy] = drawTheme(c, size, theme, role, w, anim);
+    let [hx, hy] = drawTheme(c, size, theme, role, w, anim);
+    if (OPTIONS.mirror && MIRRORED.has(role)) {
+      const m = canvas(size), x = m.getContext('2d', { willReadFrequently: true });
+      x.translate(size, 0); x.scale(-1, 1); x.drawImage(c, 0, 0);
+      hx = size - 1 - hx;
+      return png(m).then(data => ({ size, hx: Math.max(0, Math.min(size - 1, Math.round(hx))), hy: Math.max(0, Math.min(size - 1, Math.round(hy))), data }));
+    }
     return png(c).then(data => ({ size, hx: Math.max(0, Math.min(size - 1, Math.round(hx))), hy: Math.max(0, Math.min(size - 1, Math.round(hy))), data }));
   }));
 }
@@ -487,15 +506,15 @@ async function build(name, progress, roles = ROLES, still = false) {
       const role = roles[i];
       if (!still && (BUSY(role) || MOVING(theme))) {
         const n = BUSY(role) ? BUSY_FRAMES : FRAMES;
-        const frames = (await Promise.all(Array.from({ length: n }, (_, k) => sizes(theme, role, k / n * TAU, true, SIZES_ANI)))).map(cur);
+        const frames = (await Promise.all(Array.from({ length: n }, (_, k) => sizes(theme, role, k / n * TAU, true, aniSizes())))).map(cur);
         files[ROLE_FILE[role] + '.ani'] = base64(ani(frames, Math.round(LOOP / n * 60)));
-      } else files[ROLE_FILE[role] + '.cur'] = base64(cur(await sizes(theme, role, .6, false, SIZES_CUR)));
+      } else files[ROLE_FILE[role] + '.cur'] = base64(cur(await sizes(theme, role, .6, false, curSizes())));
       if (progress) progress((i + 1) / roles.length);
     }
   } finally {
     CPU = false;
   }
-  return { name, version: still ? VERSION + '-still' : VERSION, files };
+  return { name, version: still ? version() + '-still' : version(), files };
 }
 
 // A pack (the special edition) adds its own families and styles with the same drawing tools.
@@ -544,7 +563,8 @@ function setCustom(list) {
   }
 }
 const api = {
-  VERSION, FAMILIES, THEME, ROLES, packs, packFamilies, customFamilies, CUSTOM_STYLES, setCustom, customVariant,
+  VERSION, FAMILIES, THEME, ROLES, packs, packFamilies, customFamilies, CUSTOM_STYLES, setCustom, customVariant, version,
+  setOptions: o => { OPTIONS.sizes = (o && o.sizes) || []; OPTIONS.mirror = !!(o && o.mirror); },
   kit: { STYLES, layer, stamp, band, inner, paint, glow, noGlow, lin, conic, star, finish, details, busyArc, lampAt, wave, frac, TAU },
   addFamilies: list => { for (const f of list) { for (const v of f.variants) { v.name = ('lampfish ' + f.name + ' ' + v.variant).trim(); v.family = f.key; THEME[v.name] = v; } packFamilies.push(f); } },
   has: name => !!THEME[name],
@@ -558,6 +578,7 @@ if (typeof document === 'undefined') {
     try {
       for (const url of e.data.packs || []) if (!packs.includes(url)) { importScripts(url); packs.push(url); }
       if (e.data.custom) setCustom(e.data.custom);
+      if (e.data.options) { OPTIONS.sizes = e.data.options.sizes || []; OPTIONS.mirror = !!e.data.options.mirror; }
       postMessage({ done: await build(e.data.build, p => postMessage({ progress: p }), e.data.roles, e.data.still) }); }
     catch (err) { postMessage({ error: String(err) }); }
   };
@@ -572,7 +593,7 @@ if (typeof document === 'undefined') {
       if (e.data.error) no(new Error(e.data.error)); else ok(e.data.done.files);
     };
     worker.onerror = err => { drop(); no(err); };
-    worker.postMessage({ build: name, roles, still, packs, custom: customFamilies.map(f => ({ key: f.key, name: f.name, variants: f.variants.map(v => ({ variant: v.variant, style: v.style, a: v.a, b: v.b })) })) });
+    worker.postMessage({ build: name, roles, still, packs, options: OPTIONS, custom: customFamilies.map(f => ({ key: f.key, name: f.name, variants: f.variants.map(v => ({ variant: v.variant, style: v.style, a: v.a, b: v.b })) })) });
   });
   const run = async (name, progress, still) => {
     try { workers = workers || Array.from({ length: COUNT }, () => new Worker('cursor-engine.js')); }
@@ -583,7 +604,7 @@ if (typeof document === 'undefined') {
     order.forEach((role, i) => shares[i % workers.length].push(role));
     const done = workers.map(() => 0);
     const parts = await Promise.all(workers.map((w, i) => part(w, name, shares[i], still, n => { done[i] = n; if (progress) progress(done.reduce((a, b) => a + b, 0) / ROLES.length); })));
-    return { name, version: still ? VERSION + '-still' : VERSION, files: Object.assign({}, ...parts) };
+    return { name, version: still ? version() + '-still' : version(), files: Object.assign({}, ...parts) };
   };
   api.warm = () => { try { workers = workers || Array.from({ length: COUNT }, () => new Worker('cursor-engine.js')); } catch (err) { } };
   api.build = (name, progress, still = false) => (queue = queue.then(() => run(name, progress, still), () => run(name, progress, still)));

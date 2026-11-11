@@ -64,7 +64,7 @@ namespace Lampfish
 
         public static object State()
         {
-            return new { kind = Program.R.Trail ?? "auto", effective = Effective(), density = Program.R.TrailDensity, duration = Program.R.TrailDuration, click = Program.R.TrailClick };
+            return new { excluded = Program.R.TrailExcluded ?? new List<string>(), kind = Program.R.Trail ?? "auto", effective = Effective(), density = Program.R.TrailDensity, duration = Program.R.TrailDuration, click = Program.R.TrailClick };
         }
 
         public static bool Receive(string action, Dictionary<string, object> m)
@@ -72,6 +72,20 @@ namespace Lampfish
             object v;
             // A preview of the gallery is under the pointer: the real trail would draw a second one on top of it.
             if (action == "preview") { PreviewUntil = m.ContainsKey("on") && Convert.ToBoolean(m["on"]) ? DateTime.UtcNow.AddSeconds(2) : DateTime.MinValue; return false; }
+            // Apps where the trail goes quiet (M8.2): picked as a program, kept by name.
+            if (action == "exclude")
+            {
+                using (var dialog = new System.Windows.Forms.OpenFileDialog { Filter = Language.T("Programs") + "|*.exe", Title = Language.T("An app where the trail goes quiet") })
+                {
+                    if (dialog.ShowDialog(Program.SettingsWindow) != System.Windows.Forms.DialogResult.OK) return false;
+                    string name = System.IO.Path.GetFileNameWithoutExtension(dialog.FileName).ToLowerInvariant();
+                    var list = Program.R.TrailExcluded ?? new List<string>();
+                    if (!list.Contains(name)) list.Add(name);
+                    Program.R.TrailExcluded = list.Take(40).ToList();
+                }
+                return true;
+            }
+            if (action == "include" && m.TryGetValue("name", out v)) { if (Program.R.TrailExcluded != null) Program.R.TrailExcluded.Remove(v as string); return true; }
             if (action == "set" && m.TryGetValue("kind", out v))
             {
                 string k = v as string ?? "";
@@ -107,12 +121,18 @@ namespace Lampfish
 
     class TrailWindow : Form
     {
-        const int Box = 640;
+        // The square grows with the largest scale of the screens: at 200 % a long trail needs twice the room (M3.5).
+        static readonly int Box = Math.Min(1280, (int)(640 * Math.Max(1, System.Windows.Forms.Screen.AllScreens.Max(x => Arrange.Scale(x)))) / 4 * 4);
         readonly System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
         readonly Stopwatch clock = Stopwatch.StartNew();
         TrailRecipe recipe;
         Point last;
-        bool down, shown, paused, saver;
+        const uint RawSize = 64;
+        IntPtr raw = Marshal.AllocHGlobal((int)RawSize);
+        bool down, shown, paused, saver, charged;
+        double pressAt;
+        Point pressPoint;
+        float density = 1;
         double lastMove = -10000, lastFrame, lastCheck = -10000;
         Point origin;
         Bitmap frame;
@@ -130,6 +150,9 @@ namespace Lampfish
             // Like the pointer itself, the trail is never in a screenshot, a recording or a shared screen (Windows 10 2004 and later).
             // Before 2004 the same call blanks the window in captures instead of leaving it out: a grey square would show.
             if (Native.Build >= 19041) try { SetWindowDisplayAffinity(Handle, 0x11); } catch (Exception ex) { Program.Log(ex); }
+            // The wheel cannot be polled: Raw Input reads it, read only and without a hook, as Microsoft advises.
+            try { var device = new RAWINPUTDEVICE { usUsagePage = 1, usUsage = 2, dwFlags = 0x100, hwndTarget = Handle }; RegisterRawInputDevices(new[] { device }, 1, (uint)Marshal.SizeOf(typeof(RAWINPUTDEVICE))); }
+            catch (Exception ex) { Program.Log(ex); }
             last = Cursor.Position;
         }
 
@@ -143,11 +166,35 @@ namespace Lampfish
         public void Use(string kind, float density, float duration, bool click)
         {
             if (recipe == null || recipe.Kind != kind) { bool light = recipe != null && recipe.Light; recipe = TrailRecipe.Make(kind); recipe.Light = light; }
+            this.density = density;
             recipe.Density = density;
             recipe.Duration = duration;
             recipe.ClickFx = click;
             timer.Interval = 33;
             timer.Start();
+        }
+
+        protected override void WndProc(ref Message m)
+        {
+            if (m.Msg == 0x00FF && recipe != null && !paused && DateTime.UtcNow >= Trail.PreviewUntil)
+            {
+                uint size = RawSize, got = GetRawInputData(m.LParam, 0x10000003, raw, ref size, (uint)(IntPtr.Size == 8 ? 24 : 16));
+                int head = IntPtr.Size == 8 ? 24 : 16;
+                if (got != uint.MaxValue && got >= head + 8 && Marshal.ReadInt32(raw) == 0)
+                {
+                    ushort flags = (ushort)Marshal.ReadInt16(raw, head + 4);
+                    short data = Marshal.ReadInt16(raw, head + 6);
+                    if ((flags & 0x0400) != 0 && data != 0)
+                    {
+                        var p = Cursor.Position;
+                        recipe.Scale = (float)Arrange.Scale(Screen.FromPoint(p));
+                        recipe.Wheel(new PointF(p.X, p.Y), data > 0, Now);
+                        lastMove = Now;
+                        timer.Interval = saver ? 33 : 16;
+                    }
+                }
+            }
+            base.WndProc(ref m);
         }
 
         public void Stop() { timer.Stop(); if (shown) { ShowWindow(Handle, 0); shown = false; } }
@@ -157,6 +204,8 @@ namespace Lampfish
             timer.Stop();
             Release();
             probe.Dispose();
+            try { var device = new RAWINPUTDEVICE { usUsagePage = 1, usUsage = 2, dwFlags = 0x1, hwndTarget = IntPtr.Zero }; RegisterRawInputDevices(new[] { device }, 1, (uint)Marshal.SizeOf(typeof(RAWINPUTDEVICE))); } catch { }
+            if (raw != IntPtr.Zero) { Marshal.FreeHGlobal(raw); raw = IntPtr.Zero; }
             base.Dispose(disposing);
         }
 
@@ -179,7 +228,11 @@ namespace Lampfish
                 lastMove = now;
                 recipe.LastMove = now;
             }
+            if (pressed && !down) { pressAt = now; pressPoint = p; charged = false; }
             if (pressed && !down && recipe.ClickFx) recipe.Click(new PointF(p.X, p.Y), now);
+            // A long press charges a second effect (M8.1); a drag leaves a denser trail.
+            if (pressed && !charged && recipe.ClickFx && now - pressAt > 650 && Math.Abs(p.X - pressPoint.X) + Math.Abs(p.Y - pressPoint.Y) < 8 * k) { charged = true; recipe.Click(new PointF(p.X, p.Y), now); }
+            recipe.Density = pressed && p != last ? density * 1.8f : density;
             down = pressed;
             last = p;
             bool busy = recipe.Alive || now - lastMove < 600;
@@ -230,6 +283,13 @@ namespace Lampfish
 
         static bool Paused()
         {
+            var quiet = Program.R.TrailExcluded;
+            if (quiet != null && quiet.Count > 0)
+            {
+                uint pid;
+                GetWindowThreadProcessId(Native.GetForegroundWindow(), out pid);
+                try { if (pid != 0 && quiet.Contains(Process.GetProcessById((int)pid).ProcessName.ToLowerInvariant())) return true; } catch { }
+            }
             // A game or a player in a window that hides the pointer and keeps it in the middle would gather particles there.
             var info = new CURSORINFO { cbSize = Marshal.SizeOf(typeof(CURSORINFO)) };
             if (GetCursorInfo(ref info) && (info.flags & 1) == 0) return true;
@@ -303,6 +363,10 @@ namespace Lampfish
         [StructLayout(LayoutKind.Sequential)] struct CURSORINFO { public int cbSize, flags; public IntPtr cursor; public Native.POINT position; }
         [DllImport("user32.dll")] static extern bool GetCursorInfo(ref CURSORINFO info);
         [DllImport("user32.dll")] static extern int GetSystemMetrics(int index);
+        [StructLayout(LayoutKind.Sequential)] struct RAWINPUTDEVICE { public ushort usUsagePage, usUsage; public uint dwFlags; public IntPtr hwndTarget; }
+        [DllImport("user32.dll")] static extern bool RegisterRawInputDevices(RAWINPUTDEVICE[] devices, uint count, uint size);
+        [DllImport("user32.dll")] static extern uint GetRawInputData(IntPtr input, uint command, IntPtr data, ref uint size, uint header);
+        [DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint pid);
         [DllImport("user32.dll")] static extern IntPtr WindowFromPoint(Native.POINT point);
         [DllImport("user32.dll")] static extern IntPtr GetAncestor(IntPtr hwnd, uint flags);
         struct SYSTEM_POWER_STATUS { public byte ACLineStatus, BatteryFlag, BatteryLifePercent, SystemStatusFlag; public int BatteryLifeTime, BatteryFullLifeTime; }

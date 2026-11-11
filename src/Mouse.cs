@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -47,6 +47,14 @@ namespace Lampfish
             if (original != null && original.Roles != null && original.Roles.Values.Any(Ours)) original.Roles = null;
             try { Migrate(); } catch (Exception ex) { Program.Log(ex); }
             try { Migration.CursorThemes(); } catch (Exception ex) { Program.Log(ex); }
+            // A trial, a hidden pointer or a large one was on screen when lampfish stopped: the real cursors come back.
+            if (Program.R.CursorTemp) { Reload(); Program.R.CursorTemp = false; Program.Save(); }
+            if (Program.R.SwapTrial) { Adjust("invert", 0); Program.R.SwapTrial = false; Program.Save(); }
+            // A rescue from anywhere (M4.4): Ctrl+Alt+Shift+C gives back the cursors from before lampfish.
+            Hotkeys.Register(Hotkeys.Rescue, 2 | 1 | 4, 0x43, Rescue);
+            Hotkeys.Register(Hotkeys.NextTheme, 2 | 1 | 4, 0x4E, NextTheme);
+            lightNow = WindowsLight();
+            Microsoft.Win32.SystemEvents.UserPreferenceChanged += (s, e) => Program.OnInterface(FollowLight);
             try
             {
                 // 16 px was offered by older versions, below the 32 px where Windows starts.
@@ -377,7 +385,7 @@ namespace Lampfish
             return s;
         }
 
-        static readonly string[] PointerKeys = { "speed", "precision", "doubleClick", "knob", "invert", "shadow", "trails", "sonar", "hide", "buttonInitial" };
+        static readonly string[] PointerKeys = { "speed", "precision", "doubleClick", "knob", "invert", "shadow", "trails", "sonar", "hide", "buttonInitial", "hchars", "clickLock", "clickLockTime", "caret", "dblZone", "touch" };
 
         static Dictionary<string, int> PointerNow()
         {
@@ -390,6 +398,8 @@ namespace Lampfish
                 { "knob", rows < 0 || rows > 100 ? -1 : rows }, { "invert", GetSystemMetrics(23) != 0 ? 1 : 0 }, { "shadow", Read(SPI_GETCURSORSHADOW) != 0 ? 1 : 0 },
                 { "trails", Read(SPI_GETMOUSETRAILS) > 1 ? Read(SPI_GETMOUSETRAILS) : 0 }, { "sonar", Read(SPI_GETMOUSESONAR) != 0 ? 1 : 0 }, { "hide", Read(SPI_GETMOUSEVANISH) != 0 ? 1 : 0 },
                 { "buttonInitial", Read(SPI_GETSNAPTODEFBUTTON) != 0 ? 1 : 0 },
+                { "hchars", Read(SPI_GETWHEELSCROLLCHARS) }, { "clickLock", Read(SPI_GETMOUSECLICKLOCK) != 0 ? 1 : 0 }, { "clickLockTime", Read(SPI_GETMOUSECLICKLOCKTIME) },
+                { "caret", Read(SPI_GETCARETWIDTH) }, { "dblZone", GetSystemMetrics(36) }, { "touch", Read(SPI_GETCONTACTVISUALIZATION) },
             };
         }
 
@@ -418,8 +428,11 @@ namespace Lampfish
                 SetSize(Math.Max(1, Math.Min(15, (s.Size - 32) / 16 + 1)));
             }
             if (s.Pointer != null)
+            {
+                if (s.Pointer.ContainsKey("invert")) EndSwapTrial();
                 foreach (var p in s.Pointer)
                     if (PointerKeys.Contains(p.Key)) Adjust(p.Key, p.Value);
+            }
             Reload();
         }
 
@@ -463,6 +476,8 @@ namespace Lampfish
 
         public static void Uninstall()
         {
+            if (Program.R.CursorTemp) { Reload(); Program.R.CursorTemp = false; }
+            if (Program.R.SwapTrial) { Adjust("invert", 0); Program.R.SwapTrial = false; }
             var now = Capture();
             if (now.Roles.Values.Any(Ours))
             {
@@ -558,6 +573,228 @@ namespace Lampfish
         static readonly Dictionary<string, KeyValuePair<long, object>> previews = new Dictionary<string, KeyValuePair<long, object>>(StringComparer.OrdinalIgnoreCase);
 
         public static object PreviewOf(string file) { return Preview(file); }
+
+        // ---------- Cursors for a moment (M4, M7) ----------
+        // SetSystemCursor changes the cursors of Windows without the registry, for 13 roles (Help, Handwriting, Location and
+        // Person are not among them); SPI_SETCURSORS reads the registry again and ends it. One owner at a time: a trial,
+        // a large pointer while shaking, a pointer hidden while idle.
+        static readonly int[] OcrIds = { 32512, 32513, 32514, 32515, 32516, 32642, 32643, 32644, 32645, 32646, 32648, 32649, 32650 };
+        static readonly string[] OcrRoles = { "Arrow", "IBeam", "Wait", "Crosshair", "UpArrow", "SizeNWSE", "SizeNESW", "SizeWE", "SizeNS", "SizeAll", "No", "Hand", "AppStarting" };
+        public static string TempOwner;
+
+        public static bool SetTemp(string owner, Func<string, string> fileOf, int px)
+        {
+            int done = 0;
+            for (int i = 0; i < OcrIds.Length; i++)
+            {
+                string file = fileOf(OcrRoles[i]);
+                if (string.IsNullOrEmpty(file) || !File.Exists(file)) continue;
+                IntPtr cursor = LoadImage(IntPtr.Zero, file, IMAGE_CURSOR, px, px, LR_LOADFROMFILE);
+                if (cursor == IntPtr.Zero) continue;
+                if (SetSystemCursor(cursor, (uint)OcrIds[i])) done++; else DestroyCursor(cursor);
+            }
+            if (done == 0) return false;
+            TempOwner = owner;
+            if (!Program.R.CursorTemp) { Program.R.CursorTemp = true; Program.Save(); }
+            return true;
+        }
+
+        public static void EndTemp(string owner = null)
+        {
+            if (TempOwner == null || (owner != null && owner != TempOwner)) return;
+            TempOwner = null;
+            // Read the registry again for this session only: no message to every window and no write after each pause.
+            if (!SystemParametersInfo(SPI_SETCURSORS, 0, IntPtr.Zero, 0)) Reload();
+            if (Program.R.CursorTemp) { Program.R.CursorTemp = false; Program.Save(); }
+            FollowLight();
+        }
+
+        // Quit, a crash or an uninstall: nothing borrowed stays on screen and swapped buttons on trial come back.
+        public static void Stop()
+        {
+            if (tryTimer != null) tryTimer.Stop();
+            trying = null;
+            if (TempOwner != null) { TempOwner = null; Reload(); }
+            Program.R.CursorTemp = false;
+            if (Program.R.SwapTrial) Adjust("invert", 0);
+            EndSwapTrial();
+            Program.Save();
+        }
+
+        public static int EffectiveSize { get { return SizeOn(System.Windows.Forms.Screen.FromPoint(System.Windows.Forms.Cursor.Position)); } }
+
+        public static string CurrentFile(string role)
+        {
+            int i = Array.FindIndex(Roles, r => r[0] == role);
+            var now = Current();
+            return i >= 0 && i < now.Length ? now[i] : null;
+        }
+
+        // Light and dark (M6.2): a theme for each, applied when Windows changes, with nothing to click.
+        static bool lightNow;
+        static bool WindowsLight()
+        {
+            try { using (var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize")) return key != null && Convert.ToInt32(key.GetValue("AppsUseLightTheme", 0)) == 1; }
+            catch { return false; }
+        }
+        static void FollowLight()
+        {
+            bool now = WindowsLight();
+            if (now == lightNow || TempOwner != null) return;
+            lightNow = now;
+            if (!Program.R.CursorsFollowLight) return;
+            string name = now ? Program.R.CursorsDay : Program.R.CursorsNight;
+            if (string.IsNullOrEmpty(name) || Find(name) == null || CurrentTheme() == name) return;
+            ApplyTheme(name);
+            Program.SendState();
+        }
+
+        // Export (M6.5): a theme of the user or of the Workshop as a .zip that another PC can install, never the special edition.
+        static void Export(string name)
+        {
+            var theme = Find(name);
+            if (theme == null || theme.Source == "system" || Vip.IsVipTheme(name)) { Program.Announce("This theme cannot be exported"); return; }
+            string safe = new string(NameTheme(name).Select(c => Path.GetInvalidFileNameChars().Contains(c) || c == '%' ? '_' : c).ToArray()).Trim();
+            using (var dialog = new System.Windows.Forms.SaveFileDialog { FileName = safe + ".zip", Filter = "Zip|*.zip", Title = Language.T("Export the theme") })
+            {
+                if (dialog.ShowDialog(Program.SettingsWindow) != System.Windows.Forms.DialogResult.OK) return;
+                if (File.Exists(dialog.FileName)) File.Delete(dialog.FileName);
+                var files = new string[Roles.Length];
+                using (var zip = System.IO.Compression.ZipFile.Open(dialog.FileName, System.IO.Compression.ZipArchiveMode.Create))
+                {
+                    for (int i = 0; i < Roles.Length && i < theme.Paths.Length; i++)
+                    {
+                        string full = Environment.ExpandEnvironmentVariables(theme.Paths[i] ?? "");
+                        if (!File.Exists(full)) continue;
+                        files[i] = Roles[i][0] + Path.GetExtension(full).ToLowerInvariant();
+                        System.IO.Compression.ZipFileExtensions.CreateEntryFromFile(zip, full, safe + "/" + files[i]);
+                    }
+                    // The usual install.inf of cursor packs: a right click, Install. It copies into Windows, so it asks for the
+                    // administrator; the Workshop of lampfish reads the same file without it.
+                    var inf = new StringBuilder();
+                    inf.Append("[Version]\r\nsignature=\"$CHICAGO$\"\r\n\r\n[DefaultInstall]\r\nCopyFiles = Scheme.Cur\r\nAddReg = Scheme.Reg\r\n\r\n[DestinationDirs]\r\nScheme.Cur = 10,\"%CUR_DIR%\"\r\n\r\n[Scheme.Reg]\r\n");
+                    inf.Append("HKCU,\"Control Panel\\Cursors\\Schemes\",\"%SCHEME_NAME%\",,\"" + string.Join(",", files.Select(f => f == null ? "" : "%10%\\%CUR_DIR%\\" + f)) + "\"\r\n\r\n[Scheme.Cur]\r\n");
+                    foreach (string f in files.Where(f => f != null)) inf.Append(f + "\r\n");
+                    inf.Append("\r\n[Strings]\r\nCUR_DIR = \"Cursors\\" + safe + "\"\r\nSCHEME_NAME = \"" + NameTheme(name).Replace("\"", "").Replace("%", "") + "\"\r\n");
+                    using (var writer = new StreamWriter(zip.CreateEntry(safe + "/install.inf").Open(), Encoding.Unicode)) writer.Write(inf.ToString());
+                }
+                Program.Announce("“{0}” exported", NameTheme(name));
+            }
+        }
+
+        // Trying a theme for 15 s with the real cursor of Windows (M4.1), then back unless kept.
+        static string trying;
+        static DateTime tryingUntil;
+        static System.Windows.Forms.Timer tryTimer;
+
+        static bool Try(string name)
+        {
+            var theme = Find(name);
+            if (theme == null) return false;
+            EndTemp();
+            if (!SetTemp("try", role => { int i = Array.FindIndex(Roles, r => r[0] == role); return i >= 0 && i < theme.Paths.Length ? theme.Paths[i] : null; }, EffectiveSize)) return false;
+            trying = name;
+            tryingUntil = DateTime.UtcNow.AddSeconds(15);
+            if (tryTimer == null) { tryTimer = new System.Windows.Forms.Timer { Interval = 15000 }; tryTimer.Tick += (s, e) => { StopTry(); Program.SendState(); }; }
+            tryTimer.Stop();
+            tryTimer.Start();
+            return true;
+        }
+
+        static void StopTry()
+        {
+            if (tryTimer != null) tryTimer.Stop();
+            trying = null;
+            EndTemp("try");
+        }
+
+        // Swapped buttons come back by themselves after 15 s unless kept (M4.3), like a new resolution in Windows.
+        static DateTime swapUntil = DateTime.MinValue;
+        static System.Windows.Forms.Timer swapTimer;
+
+        static void EndSwapTrial()
+        {
+            if (swapTimer != null) swapTimer.Stop();
+            swapUntil = DateTime.MinValue;
+            if (Program.R.SwapTrial) { Program.R.SwapTrial = false; Program.Save(); }
+        }
+
+        static void StartSwapTrial()
+        {
+            swapUntil = DateTime.UtcNow.AddSeconds(15);
+            if (!Program.R.SwapTrial) { Program.R.SwapTrial = true; Program.Save(); }
+            if (swapTimer == null)
+            {
+                swapTimer = new System.Windows.Forms.Timer { Interval = 15000 };
+                swapTimer.Tick += (s, e) => { EndSwapTrial(); Adjust("invert", 0); Program.Announce("The buttons are back as they were"); Program.SendState(); };
+            }
+            swapTimer.Stop();
+            swapTimer.Start();
+        }
+
+        static void NextTheme()
+        {
+            var names = new HashSet<string>(Themes().Select(t => t.Name));
+            var pool = (Program.R.MouseFavorites ?? new List<string>()).Where(names.Contains).ToList();
+            if (pool.Count < 2) pool = (Program.R.MouseRecent ?? new List<string>()).Where(names.Contains).ToList();
+            if (pool.Count == 0) return;
+            StopTry();
+            string next = pool[(pool.IndexOf(CurrentTheme()) + 1) % pool.Count];
+            var before = UndoPoint();
+            ApplyTheme(next);
+            Trail.FollowCursor();
+            OfferUndo(Language.T("Cursors: {0}", NameTheme(next)), before);
+            Program.SendState();
+        }
+
+        static void Rescue()
+        {
+            StopTry();
+            EndTemp();
+            var before = Full();
+            if (Program.R.SwapTrial) Adjust("invert", 0);
+            EndSwapTrial();
+            var original = Program.R.CursorsOriginal;
+            if (original != null && original.Roles != null) Restore(new Snapshot { Roles = original.Roles, Scheme = original.Scheme, Source = original.Source, Size = original.Size });
+            else { ApplyTheme("Windows Aero"); SetSize(1); Reload(); }
+            Program.Undoable(Language.T("Cursors back to how they were"), () => Restore(before));
+            Program.SendState();
+        }
+
+        // The size Windows really shows on each screen: the chosen size times the step of the screen's scale (About Cursors:
+        // 32 px below 150 %, 48 to 200 %, 64 to 300 %...); SM_CXCURSOR gives the step at the default size.
+        static int[] ScreenSizes() { return System.Windows.Forms.Screen.AllScreens.Select(SizeOn).ToArray(); }
+
+        static int Step(System.Windows.Forms.Screen screen)
+        {
+            uint dpi = 96, y;
+            try
+            {
+                IntPtr monitor = MonitorFromPoint(new Native.POINT { X = screen.Bounds.X + screen.Bounds.Width / 2, Y = screen.Bounds.Y + screen.Bounds.Height / 2 }, 2);
+                GetDpiForMonitor(monitor, 0, out dpi, out y);
+            }
+            catch { }
+            return Native.Build >= 14393 ? GetSystemMetricsForDpi(13, dpi) : 32;
+        }
+
+        static int SizeOn(System.Windows.Forms.Screen screen) { return (int)Math.Round((32 + (PointerSize() - 1) * 16) * Step(screen) / 32.0); }
+
+        // The steps of scale seen on this PC are kept (32 below 150 %, 48 to 200 %...), sorted: the sizes made stay the same
+        // whether an external screen is plugged or not, and follow a new pointer size.
+        static int[] MadeSizes()
+        {
+            var seen = Program.R.CursorStepsSeen ?? new List<int>();
+            bool changed = false;
+            foreach (int step in System.Windows.Forms.Screen.AllScreens.Select(Step)) if (!seen.Contains(step)) { seen.Add(step); changed = true; }
+            seen = seen.OrderBy(x => x).Take(4).ToList();
+            if (changed) { Program.R.CursorStepsSeen = seen; Program.Save(); }
+            int chosen = 32 + (PointerSize() - 1) * 16;
+            return seen.Select(step => (int)Math.Round(chosen * step / 32.0)).Distinct().ToArray();
+        }
+
+        [DllImport("user32.dll")] static extern IntPtr MonitorFromPoint(Native.POINT point, uint flags);
+        [DllImport("shcore.dll")] static extern int GetDpiForMonitor(IntPtr monitor, int type, out uint x, out uint y);
+        [DllImport("user32.dll")] static extern int GetSystemMetricsForDpi(int index, uint dpi);
         public static bool IsCursor(string file) { return Readable(file); }
         public static string[] RoleNames { get { return Roles.Select(r => r[1]).ToArray(); } }
         public static string[] RoleIds { get { return Roles.Select(r => r[0]).ToArray(); } }
@@ -862,6 +1099,18 @@ namespace Lampfish
                 sonar = Read(SPI_GETMOUSESONAR) != 0,
                 hide = Read(SPI_GETMOUSEVANISH) != 0,
                 buttonInitial = Read(SPI_GETSNAPTODEFBUTTON) != 0,
+                mirror = Program.R.CursorsMirror,
+                followLight = Program.R.CursorsFollowLight,
+                day = Program.R.CursorsDay ?? "",
+                night = Program.R.CursorsNight ?? "",
+                hchars = Read(SPI_GETWHEELSCROLLCHARS),
+                clickLock = Read(SPI_GETMOUSECLICKLOCK) != 0,
+                clickLockTime = Read(SPI_GETMOUSECLICKLOCKTIME),
+                trailsLength = Math.Max(2, Read(SPI_GETMOUSETRAILS)),
+                caret = Math.Max(1, Read(SPI_GETCARETWIDTH)),
+                dblZone = GetSystemMetrics(36),
+                touch = Read(SPI_GETCONTACTVISUALIZATION) != 0,
+                touchScreen = GetSystemMetrics(95) > 0,
             };
         }
 
@@ -886,6 +1135,15 @@ namespace Lampfish
                 case "sonar": SystemParametersInfo(SPI_SETMOUSESONAR, 0, new IntPtr(n), write); break;
                 case "hide": SystemParametersInfo(SPI_SETMOUSEVANISH, 0, new IntPtr(n), write); break;
                 case "buttonInitial": SystemParametersInfo(SPI_SETSNAPTODEFBUTTON, (uint)n, IntPtr.Zero, write); break;
+                // M5: documented settings of SystemParametersInfo, kept by Back to original with the others.
+                case "hchars": SystemParametersInfo(SPI_SETWHEELSCROLLCHARS, (uint)Math.Max(1, Math.Min(100, n)), IntPtr.Zero, write); break;
+                case "wheelPage": SystemParametersInfo(SPI_SETWHEELSCROLLLINES, n != 0 ? 0xFFFFFFFF : 3u, IntPtr.Zero, write); break;
+                case "clickLock": SystemParametersInfo(SPI_SETMOUSECLICKLOCK, 0, new IntPtr(n != 0 ? 1 : 0), write); break;
+                case "clickLockTime": SystemParametersInfo(SPI_SETMOUSECLICKLOCKTIME, 0, new IntPtr(Math.Max(200, Math.Min(2200, n))), write); break;
+                case "trailsLength": SystemParametersInfo(SPI_SETMOUSETRAILS, (uint)Math.Max(2, Math.Min(16, n)), IntPtr.Zero, write); break;
+                case "caret": SystemParametersInfo(SPI_SETCARETWIDTH, 0, new IntPtr(Math.Max(1, Math.Min(20, n))), write); break;
+                case "dblZone": n = Math.Max(1, Math.Min(32, n)); SystemParametersInfo(SPI_SETDOUBLECLKWIDTH, (uint)n, IntPtr.Zero, write); SystemParametersInfo(SPI_SETDOUBLECLKHEIGHT, (uint)n, IntPtr.Zero, write); break;
+                case "touch": { int old = Read(SPI_GETCONTACTVISUALIZATION); SystemParametersInfo(SPI_SETCONTACTVISUALIZATION, 0, new IntPtr(n > 1 ? n & 3 : n != 0 ? old | 1 : old & ~1), write); break; }
             }
         }
 
@@ -986,11 +1244,51 @@ namespace Lampfish
                     Program.Undoable(Language.T("Mouse back to how it was before lampfish"), () => Restore(before));
                     return true;
                 }
+                case "try": return Try(Text(m, "name"));
+                case "export": Export(Text(m, "name")); return false;
+                case "light":
+                {
+                    if (m.ContainsKey("follow")) Program.R.CursorsFollowLight = Convert.ToBoolean(m["follow"]);
+                    if (m.ContainsKey("day")) Program.R.CursorsDay = Text(m, "day");
+                    if (m.ContainsKey("night")) Program.R.CursorsNight = Text(m, "night");
+                    Program.Save();
+                    lightNow = !WindowsLight();
+                    FollowLight();
+                    return true;
+                }
+                case "untry": StopTry(); return true;
+                case "keep":
+                {
+                    string name = trying;
+                    StopTry();
+                    if (name == null || Find(name) == null) return true;
+                    var before = UndoPoint();
+                    ApplyTheme(name);
+                    Chosen(name);
+                    OfferUndo(Language.T("Cursors: {0}", NameTheme(name)), before);
+                    return true;
+                }
+                case "swapKeep": EndSwapTrial(); return true;
+                // What lampfish leaves to Windows (M5.8): a fixed list of pages, never a page named by the page.
+                case "settings":
+                {
+                    var pages = new Dictionary<string, string> { { "mouse", "ms-settings:mousetouchpad" }, { "pointer", "ms-settings:easeofaccess-mousepointer" }, { "caret", "ms-settings:easeofaccess-cursor" }, { "keys", "ms-settings:easeofaccess-mouse" }, { "magnifier", "ms-settings:easeofaccess-magnifier" } };
+                    string page;
+                    if (pages.TryGetValue(Text(m, "page") ?? "", out page)) try { System.Diagnostics.Process.Start(page); } catch (Exception ex) { Program.Log(ex); }
+                    return false;
+                }
+                case "mirror":
+                {
+                    Program.R.CursorsMirror = m.ContainsKey("value") && Convert.ToBoolean(m["value"]);
+                    Program.Save();
+                    return true;
+                }
                 case "adjust":
                 {
                     bool live = m.ContainsKey("live") && Convert.ToBoolean(m["live"]);
                     Remember();
                     Adjust(Text(m, "what"), m["value"], live);
+                    if (Text(m, "what") == "invert" && !live) { if (m["value"] is bool && (bool)m["value"]) StartSwapTrial(); else EndSwapTrial(); }
                     return !live;
                 }
                 case "add":
@@ -1083,7 +1381,7 @@ namespace Lampfish
                     {
                         // Its own copy of engine files goes with it, unless another theme or the pointer still uses it.
                         string kept = Path.Combine(CustomFolder, "themes");
-                        var folders = row.Split(',').Select(p => Path.GetDirectoryName(Environment.ExpandEnvironmentVariables(p.Trim())) ?? "")
+                        var folders = row.Split(',').Select(p => { try { return Path.GetDirectoryName(Environment.ExpandEnvironmentVariables(p.Trim().Trim('"'))) ?? ""; } catch (ArgumentException) { return ""; } })
                             .Where(d => d.StartsWith(kept + "\\", StringComparison.OrdinalIgnoreCase)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
                         var stillUsed = Themes().SelectMany(t => t.Paths).Concat(Current()).Where(p => p != null).ToList();
                         foreach (string d in folders)
@@ -1171,6 +1469,10 @@ namespace Lampfish
                 roles = Roles.Select((r, i) => new { id = r[0], name = r[1], path = current[i], preview = Preview(current[i]) }).ToArray(),
                 settings = Settings(),
                 favorites = Program.R.MouseFavorites ?? new List<string>(),
+                cursorSizes = MadeSizes(),
+                trying = trying == null ? null : new { name = trying, title = NameTheme(trying), left = Math.Max(0, (int)Math.Ceiling((tryingUntil - DateTime.UtcNow).TotalSeconds)) },
+                swapLeft = swapUntil > DateTime.UtcNow ? (int)Math.Ceiling((swapUntil - DateTime.UtcNow).TotalSeconds) : 0,
+                screenSizes = System.Windows.Forms.Screen.AllScreens.Select((screen, i) => new { n = i + 1, px = SizeOn(screen), here = Program.SettingsWindow != null && System.Windows.Forms.Screen.FromControl(Program.SettingsWindow).DeviceName == screen.DeviceName }).ToArray(),
                 recent = Program.R.MouseRecent ?? new List<string>(),
             };
         }
@@ -1187,6 +1489,9 @@ namespace Lampfish
         const uint SPI_GETCURSORSHADOW = 0x101A, SPI_SETCURSORSHADOW = 0x101B, SPI_GETMOUSESONAR = 0x101C, SPI_SETMOUSESONAR = 0x101D;
         const uint SPI_GETMOUSEVANISH = 0x1020, SPI_SETMOUSEVANISH = 0x1021, SPI_SETCURSORBASESIZE = 0x2029;
         const uint SPIF_UPDATEINIFILE = 0x1, SPIF_SENDCHANGE = 0x2;
+        const uint SPI_GETWHEELSCROLLCHARS = 0x6C, SPI_SETWHEELSCROLLCHARS = 0x6D, SPI_GETMOUSECLICKLOCK = 0x101E, SPI_SETMOUSECLICKLOCK = 0x101F;
+        const uint SPI_GETMOUSECLICKLOCKTIME = 0x2008, SPI_SETMOUSECLICKLOCKTIME = 0x2009, SPI_GETCARETWIDTH = 0x2006, SPI_SETCARETWIDTH = 0x2007;
+        const uint SPI_SETDOUBLECLKWIDTH = 0x1D, SPI_SETDOUBLECLKHEIGHT = 0x1E, SPI_GETCONTACTVISUALIZATION = 0x2018, SPI_SETCONTACTVISUALIZATION = 0x2019;
         const uint IMAGE_CURSOR = 2, LR_LOADFROMFILE = 0x10, DI_NORMAL = 0x3;
 
         [DllImport("user32.dll", SetLastError = true)] static extern bool SystemParametersInfo(uint action, uint u, IntPtr p, uint ini);
@@ -1197,6 +1502,7 @@ namespace Lampfish
         [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)] static extern IntPtr LoadImage(IntPtr module, string name, uint type, int cx, int cy, uint options);
         [DllImport("user32.dll")] static extern bool DrawIconEx(IntPtr hdc, int x, int y, IntPtr icon, int cx, int cy, uint image, IntPtr wallpaper, uint options);
         [DllImport("user32.dll")] static extern bool DestroyCursor(IntPtr cursor);
+        [DllImport("user32.dll")] static extern bool SetSystemCursor(IntPtr cursor, uint id);
 
         [StructLayout(LayoutKind.Sequential)]
         struct BITMAPINFOHEADER

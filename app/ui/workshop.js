@@ -7,6 +7,7 @@
   const STYLES = [['flat', 'Flat', 'Body', 'Outline'], ['glass', 'Glass', 'Glass', 'Rim'], ['neon', 'Neon', 'Tube', 'Core'], ['metal', 'Metal', 'Metal', 'Shadow'],
     ['photophore', 'Photophore', 'Glow', 'Body'], ['depth', 'Deep', 'Surface', 'Depth'], ['nacre', 'Nacre', 'Pearl', 'Edge']];
   const PAIRS = { flat: ['#f6fbfa', '#08171a'], glass: ['#6ff3e1', '#effffd'], neon: ['#2ed9c6', '#ffffff'], metal: ['#cfd8db', '#3a4448'], photophore: ['#ff7a3d', '#25100a'], depth: ['#5b8cff', '#1b2f7a'], nacre: ['#f3c2b4', '#4a2a22'] };
+  let accent = null;
   const SUGGEST = [['#2ed9c6', '#08171a'], ['#ff7a3d', '#1a0b06'], ['#a37bff', '#120a24'], ['#ffd166', '#3a2a06'], ['#ff4f8b', '#2a0612'], ['#f6fbfa', '#0b1d20'], ['#7cc4ff', '#0b1a33'], ['#3ccf8e', '#06210f']];
   // A colour gets the name of the nearest of these, so a variant reads Teal or Amber like the families of lampfish.
   const COLOUR_NAMES = [['Red', '#e5484d'], ['Orange', '#ff7a3d'], ['Amber', '#ffb224'], ['Gold', '#e8b64c'], ['Yellow', '#ffe14d'], ['Lime', '#a3e635'], ['Green', '#3ccf8e'],
@@ -162,12 +163,17 @@
       b.addEventListener('click', () => { const v = cur(); v.style = key; [v.a, v.b] = PAIRS[key]; rename(v); render(); });
       return b;
     }));
-    $('w-suggest').replaceChildren(...SUGGEST.map(([a, b]) => {
+    renderPairs();
+  }
+  // The suggested pairs, headed by the accent colour of Windows when it is known (M6.2).
+  function renderPairs() {
+    const pairs = accent ? [[accent, '#0b0d12'], ...SUGGEST.filter(([a]) => a !== accent)] : SUGGEST;
+    $('w-suggest').replaceChildren(...pairs.map(([a, b]) => {
       const s = document.createElement('button');
       s.type = 'button';
       s.className = 'swatch w-pair';
       s.style.background = `linear-gradient(135deg, ${a} 50%, ${b} 50%)`;
-      s.title = tr(colourName(a));
+      s.title = a === accent ? tr('Accent colour of Windows') : tr(colourName(a));
       s.setAttribute('aria-label', s.title);
       s.addEventListener('click', () => { const v = cur(); v.a = a; v.b = b; rename(v); render(); });
       return s;
@@ -198,6 +204,7 @@
       const actions = c.querySelector('.theme__swatches');
       for (const [label, glyph, act] of [['Edit', 'pencil-simple', () => { draft = JSON.parse(JSON.stringify(f)); index = 0; render(); $('w-name').value = draft.name; document.querySelector('.view--workshop').scrollIntoView({ block: 'start' }); }],
         ['Use', 'cursor', () => { if (first && Lampfish.mouse) Lampfish.mouse.use(first); }],
+        ['Export', 'export', () => { if (first && Lampfish.mouse) Lampfish.mouse.exportTheme(first); }],
         ['Remove', 'trash-simple', () => send('workshop.remove', { key: f.key })]]) {
         const b = document.createElement('button');
         b.type = 'button';
@@ -230,6 +237,7 @@
 
   function state(n) {
     families = n.families || [];
+    if ((n.accent || null) !== accent) { accent = n.accent || null; renderPairs(); }
     E.setCustom(families);
     // After a first save, the draft becomes that family: the next save updates it instead of making a copy.
     if (!draft.key) { const made = families.find(f => f.name === draft.name.trim()); if (made) draft.key = made.key; }
