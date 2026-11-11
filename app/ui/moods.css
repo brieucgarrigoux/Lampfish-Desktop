@@ -62,7 +62,7 @@
 .mood__head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; min-width: 0; padding: 4px 6px 0; }
 .mood__name { margin: 0; min-width: 0; font: 600 var(--text-title)/1.2 var(--display); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mood__badge { flex: none; display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-badge); font-weight: 600; color: var(--accent); }
-.mood__badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+.mood__badge::before { content: ""; flex: none; width: 14px; height: 14px; border-radius: 0; box-shadow: none; -webkit-mask: var(--g) center / contain no-repeat; mask: var(--g) center / contain no-repeat; --g: var(--glyph-ok); background: var(--accent); }
 .mood__traits, .mood__starts { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; min-width: 0; padding: 0 6px; font-size: var(--text-caption); color: var(--text-soft); }
 .mood__starts { gap: 6px; }
 .trait { display: inline-flex; align-items: center; gap: 5px; min-width: 0; max-width: 100%; }

@@ -17,6 +17,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Changed
 
+- Mouse: a new page. On top, the theme in use with its colours, the size, the trail, Edit cursors and Restore. Below, every look in sections: lampfish, the special edition, the trails as live display cases, Bramble, Windows and your own themes. Changing one cursor at a time is a mode of its own, with the roles always in view and the save bar at hand.
+- Mouse: Back to original and Reset to default are one Restore menu, whose lines say what you get.
+- Mouse: without a code, one trail of the special edition can be tried in its display case.
+- A state is shown as an icon and a word, never a lit dot: Health, Network, Themes, Hardware, Notes, and the update mark of the bar.
 - Mouse: applying a cursor theme or a single cursor can be undone for 8 seconds. Trying the colours of a family one after the other is one change, and Undo goes back to before the first.
 - Mouse: the mouse panel of Windows lists only the lampfish theme in use, instead of every theme ever tried.
 - Mouse: a theme saved or copied from a lampfish theme keeps its own files, so it still works after lampfish draws that theme again.

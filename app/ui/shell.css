@@ -156,21 +156,23 @@ button.dial:active { transform: scale(.98); }
 .readout__end { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; min-width: 0; max-width: 220px; }
 .readout__value { display: flex; align-items: center; gap: 7px; max-width: 100%; font-size: var(--text-value); font-variant-numeric: tabular-nums; color: var(--text-soft); }
 .readout__value span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.readout__value i { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--text-pale); }
+.readout__value i { flex: none; width: 14px; height: 14px; border-radius: 0; box-shadow: none; -webkit-mask: var(--g) center / contain no-repeat; mask: var(--g) center / contain no-repeat; --g: var(--glyph-idle); background: var(--text-pale); }
 .readout .link { font-size: var(--text-caption); }
 .check--ok .check--warn .check--bad .check--warn .check--bad .check--ok .readout__value { color: var(--lit); }
 .check--warn .readout__value { color: var(--warn); }
 .check--bad .readout__value { color: var(--bad); }
-.check--ok .readout__value i { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
-.check--warn .readout__value i { background: var(--warn); box-shadow: 0 0 6px var(--warn); }
-.check--bad .readout__value i { background: var(--danger); box-shadow: 0 0 6px var(--danger); }
+.check--ok .readout__value i { --g: var(--glyph-ok); background: var(--accent); }
+.check--warn .readout__value i { --g: var(--glyph-warn); background: var(--warn); }
+.check--bad .readout__value i { --g: var(--glyph-bad); background: var(--danger); }
 
-/* A state is a lamp and a word, never a capsule. Lit is the normal case; warn and bad say what to watch or fix; idle is waiting. */
+/* A state is an icon and a word, never a capsule and never a lit dot (C66). Ok is the normal case; warn and bad say what to watch or fix, in their colour; idle is waiting. */
 .state { display: inline-flex; align-items: center; gap: 7px; flex: none; font-size: var(--text-caption); color: var(--text-soft); white-space: nowrap; }
-.state::before { content: ''; flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--lit); box-shadow: 0 0 6px color-mix(in srgb, var(--lit) 55%, transparent); }
-.state--warn::before { background: var(--warn); box-shadow: 0 0 6px color-mix(in srgb, var(--warn) 55%, transparent); }
-.state--bad::before { background: var(--bad); box-shadow: 0 0 6px color-mix(in srgb, var(--bad) 55%, transparent); }
-.state--idle::before { background: var(--text-pale); box-shadow: none; }
+.state::before { content: ''; flex: none; width: 14px; height: 14px; border-radius: 0; box-shadow: none; -webkit-mask: var(--g) center / contain no-repeat; mask: var(--g) center / contain no-repeat; --g: var(--glyph-ok); background: var(--lit); }
+.state--warn { color: var(--warn); }
+.state--warn::before { --g: var(--glyph-warn); background: var(--warn); }
+.state--bad { color: var(--bad); }
+.state--bad::before { --g: var(--glyph-bad); background: var(--bad); }
+.state--idle::before { --g: var(--glyph-idle); background: var(--text-pale); }
 .state[hidden] { display: none; }
 
 /* Settings as one block with thin rules between them, like an open group of the Settings app of Windows. Lists of data are not touched. */

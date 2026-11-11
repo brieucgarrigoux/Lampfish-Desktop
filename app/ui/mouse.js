@@ -1,11 +1,11 @@
 'use strict';
 
 (function () {
-  const TABS = [['all', 'All'], ['lampfish', 'lampfish'], ['windows', 'Windows'], ['mine', 'My cursors']];
-  const OLD_TABS = { themes: 'all', custom: 'mine' };
+  // The page shows the looks first (C66); one cursor at a time is a mode of its own, where these tabs filter the sources.
+  const TABS = [['all', 'All'], ['lampfish', 'lampfish'], ['windows', 'Windows'], ['mine', 'My files']];
   let s = null, library = null;
-  let role = 'Arrow', tab = 'all', keyLibrary = '';
-  try { const o = localStorage.getItem('mouse.tab'); const t = OLD_TABS[o] || o; if (TABS.some(x => x[0] === t)) tab = t; } catch (e) { }
+  let role = 'Arrow', tab = 'all', keyLibrary = '', keyGallery = '', editing = false, trailsAll = false, windowsAll = false;
+  try { const t = localStorage.getItem('mouse.filter'); if (TABS.some(x => x[0] === t)) tab = t; } catch (e) { }
 
   const url = (a, size) => `/app/cursor-cache/${encodeURIComponent(a.key)}-${size}.png`;
 
@@ -21,20 +21,62 @@
   const chosenRole = () => s && s.roles.find(r => r.id === role);
   const samePath = (a, b) => !!a && !!b && a.toLowerCase() === b.toLowerCase();
 
-  function renderDraft() {
+  // The line at the top: the theme in use, its colours, the size, the trail, and the ways to change or undo it.
+  function renderNow() {
+    if (!s) return;
+    const fam = currentFamily(), v = fam && fam.variants.find(x => x.name === s.theme);
     const title = $('s-theme');
-    title.textContent = s.themeTitle;
+    title.textContent = fam ? tr(fam.name) : s.themeTitle;
+    title.translate = !!fam || s.based;
     if (s.unsaved && s.based) {
-      const badge = Object.assign(document.createElement('span'), { className: 'badge-modified', innerHTML: icon('pencil-simple') });
+      const badge = Object.assign(document.createElement('button'), { type: 'button', className: 'badge-modified', innerHTML: icon('pencil-simple'), title: tr('Edit cursors') });
       badge.append(tr('Modified'));
+      badge.addEventListener('click', () => edit(true));
       title.append(badge);
     }
-    reveal($('s-draft'), s.unsaved);
+    $('s-theme-sub').textContent = fam && fam.variants.length > 1 && v ? tr(v.variant) : '';
+    const stage = $('s-now-stage');
+    stage.style.setProperty('--tint', fam && v ? tintOf(v.swatch) : 'var(--accent)');
+    if (fam && fam.engine && v) {
+      const cv = document.createElement('canvas');
+      cv.width = cv.height = Math.round(56 * devicePixelRatio);
+      cv.style.width = cv.style.height = '56px';
+      CursorEngine.draw(cv, cv.width, v.name, 'arrow', .6, false);
+      stage.replaceChildren(cv);
+    } else stage.replaceChildren(image(s.roles[0].preview));
+    const swatches = $('s-now-swatches');
+    swatches.replaceChildren(...(fam && fam.variants.length > 1 ? fam.variants : []).map(x => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'swatch';
+      b.style.setProperty('--swatch', x.swatch);
+      b.title = tr(x.variant);
+      b.setAttribute('aria-label', tr(x.variant));
+      b.setAttribute('aria-pressed', String(x.name === s.theme));
+      b.addEventListener('click', () => applyVariant(fam, x, null));
+      return b;
+    }));
+    $('s-original').disabled = !s.original;
+    $('s-initial').disabled = !!s.standard;
+    reveal($('s-draft'), editing && s.unsaved);
     $('s-draft-text').textContent = s.based ? tr('Changes not saved in a theme') : tr('These cursors are not saved in a theme');
     $('s-update').hidden = !s.editable;
     $('s-update').innerHTML = icon('arrows-clockwise');
     $('s-update').append(tr('Update “{0}”', s.themeTitle));
     $('s-discard').hidden = !s.based;
+  }
+
+  const currentFamily = () => s && library ? [...families(), ...(packReady ? CursorEngine.packFamilies.map(asFamily) : [])].find(f => f.variants.some(v => v.name === s.theme)) : null;
+
+  function edit(on) {
+    editing = on;
+    $('s-edit').hidden = !on;
+    $('s-gallery').hidden = on;
+    $('s-now').hidden = on;
+    if (on) { keyLibrary = ''; renderPicks(); renderRoles(); }
+    renderNow();
+    document.querySelector('.view--mouse').scrollIntoView({ block: 'start' });
+    (on ? $('s-roles').querySelector('.chosen') : $('s-edit-open'))?.focus({ preventScroll: true });
   }
 
   function renderRoles() {
@@ -51,7 +93,7 @@
       name.className = 'role__name';
       name.textContent = r.name;
       b.append(frame, name);
-      b.addEventListener('click', () => { role = r.id; renderRoles(); mark(); play(r); });
+      b.addEventListener('click', () => { role = r.id; renderRoles(); renderPicks(); play(r); });
       b.addEventListener('pointerenter', () => play(r));
       return b;
     }));
@@ -87,12 +129,11 @@
       b.textContent = tr(label);
       b.addEventListener('click', () => {
         tab = key;
-        try { localStorage.setItem('mouse.tab', key); } catch (e) { }
-        renderLibrary();
+        try { localStorage.setItem('mouse.filter', key); } catch (e) { }
+        renderPicks();
       });
       return b;
     }));
-    $('s-folder').hidden = tab !== 'mine';
   }
 
   function cursorTile(c) {
@@ -114,7 +155,9 @@
       const remove = document.createElement('button');
       remove.className = 'remove';
       remove.tabIndex = -1;
-      remove.textContent = 'Remove';
+      remove.innerHTML = icon('trash-simple');
+      remove.title = tr('Remove');
+      remove.setAttribute('aria-label', tr('Remove'));
       remove.addEventListener('click', e => { e.stopPropagation(); send('mouse.remove', { path: c.path }); });
       footer.append(remove);
     }
@@ -288,7 +331,7 @@
   function loadPack() {
     if (packAsked || !vipState().pack) return;
     packAsked = true;
-    CursorEngine.load(PACK).then(() => { packReady = true; keyLibrary = ''; renderLibrary(); renderDock(); refreshCurrent(); }).catch(e => console.error(e));
+    CursorEngine.load(PACK).then(() => { packReady = true; keyGallery = ''; renderNow(); renderGallery(); renderDock(); refreshCurrent(); }).catch(e => console.error(e));
   }
 
   // Locked: a display case of Lure Gold, alive, with the field for the code.
@@ -361,60 +404,167 @@
     return tile;
   }
 
-  function renderLibrary() {
-    if (!s) return;
-    renderTabs();
-    const zone = $('s-library');
-    if (!library) return;
-    const key = tab + '#' + packReady + vipState().unlocked + (vipMessage || '') + '#' + library.themes.map(t => t.name).join('|') + '#' + library.custom.map(p => p.path).join('|') + '#' + s.theme + '#' + LANGUAGE;
-    if (key === keyLibrary) { mark(); return; }
-    keyLibrary = key;
-    zone.replaceChildren();
-    const section = (label, count, kind, items, extra) => {
+  // The gallery, in sections (C66): lampfish, the special edition, the trails, Bramble, Windows on one row, the user's own.
+  function renderGallery() {
+    if (!s || !library) return;
+    const zone = $('s-gallery'), t = trailState();
+    const key = [packReady, vipState().pack, vipState().unlocked, vipMessage, library.themes.map(x => x.name).join('|'), s.theme, LANGUAGE, t.kind, t.effective, trailsAll, windowsAll].join('#');
+    if (key === keyGallery) { mark(); return; }
+    keyGallery = key;
+    const nodes = [];
+    const section = (label, count, items, extra) => {
       const head = document.createElement('h3');
       head.className = 'themes__title';
       head.innerHTML = '<span></span><span class="count"></span>';
       head.firstChild.textContent = label;
       head.lastChild.textContent = count || '';
+      if (extra) head.append(extra);
+      const grid = document.createElement('div');
+      grid.className = 'themes';
+      grid.append(...items);
+      nodes.push(head, grid);
+      return head;
+    };
+    houseSections((label, note, items) => {
+      section(label, note || label === tr('Special edition') ? '' : items.length, items);
+      if (label === tr('Special edition')) trailSection(section);
+    });
+    if (!packReady) trailSection(section);
+    const system = library.themes.filter(x => x.kind === 'system');
+    if (system.length) {
+      const more = document.createElement('button');
+      more.type = 'button';
+      more.className = 'link themes__more';
+      more.innerHTML = icon(windowsAll ? 'caret-up' : 'caret-down');
+      more.append(windowsAll ? tr('Show less') : tr('Show all {0}', system.length));
+      more.addEventListener('click', () => { windowsAll = !windowsAll; renderGallery(); });
+      const shown = windowsAll ? system : system.filter(x => x.name === s.theme).concat(system.filter(x => x.name !== s.theme)).slice(0, 3);
+      section(tr('Windows'), system.length, shown.map(themeCard), system.length > 3 ? more : null);
+    }
+    section(tr('My themes'), library.themes.filter(x => x.kind === 'mine').length, [...library.themes.filter(x => x.kind === 'mine').map(themeCard), newTheme()]);
+    zone.replaceChildren(...nodes);
+    mark();
+  }
+
+  // One cursor at a time: the cursors of every source for the role chosen in the strip.
+  function renderPicks() {
+    if (!s || !library || !editing) return;
+    renderTabs();
+    const r = chosenRole();
+    $('s-for').textContent = tr('Cursors for “{0}”', r ? tr(r.name) : '');
+    const zone = $('s-library');
+    const key = tab + '#' + role + '#' + library.custom.map(p => p.path).join('|') + '#' + (library.lampfishCursors || []).map(x => x.name).join('|') + '#' + LANGUAGE;
+    if (key === keyLibrary) { mark(); return; }
+    keyLibrary = key;
+    zone.replaceChildren();
+    const section = (label, items, extra, link) => {
+      const head = document.createElement('h3');
+      head.className = 'themes__title';
+      head.innerHTML = '<span></span><span class="count"></span>';
+      head.firstChild.textContent = label;
+      head.lastChild.textContent = items.length || '';
+      if (link) head.append(link);
       const g = document.createElement('div');
-      g.className = kind === 'themes' ? 'themes' : 'tiles tiles--cursors';
-      g.append(...items.map(kind === 'themes' ? themeCard : cursorTile));
+      g.className = 'tiles tiles--cursors';
+      g.append(...items.map(cursorTile));
       if (extra) g.append(extra);
       zone.append(head, g);
     };
-    const themes = kind => library.themes.filter(t => t.kind === kind);
-    const house = (label, note, nodes) => {
-      section(label, note ? '' : nodes.length, 'themes', []);
-      if (note) zone.lastChild.previousSibling.after(Object.assign(document.createElement('p'), { className: 'themes__note', textContent: note }));
-      zone.lastChild.append(...nodes);
-    };
-    if (tab === 'all') {
-      for (const [kind, label] of SECTIONS) {
-        if (kind === 'lampfish') { houseSections(house); continue; }
-        const list = themes(kind);
-        if (list.length || kind === 'mine') section(tr(label), list.length, 'themes', list, kind === 'mine' ? newTheme() : null);
-      }
-    } else if (tab === 'lampfish') {
-      houseSections(house);
-      for (const t of library.lampfishCursors || []) section(t.title, t.cursors.length, 'cursors', t.cursors);
-    } else if (tab === 'windows') {
-      section(tr('Themes'), themes('system').length, 'themes', themes('system'));
-      section(tr('Cursors'), library.windows.length, 'cursors', library.windows);
-    } else {
-      section(tr('Themes'), themes('mine').length, 'themes', themes('mine'), newTheme());
+    // One cursor per theme of lampfish for the chosen role, named after its theme.
+    if (tab === 'all' || tab === 'lampfish') section(tr('lampfish'), (library.lampfishCursors || []).flatMap(t => t.cursors.filter(c => r && c.role === r.name).map(c => ({ ...c, role: null, name: t.title }))));
+    if (tab === 'all' || tab === 'windows') section(tr('Windows'), library.windows);
+    if (tab === 'all' || tab === 'mine') {
       const add = document.createElement('button');
       add.className = 'tile-add';
-      add.innerHTML = '<strong>+</strong>Add';
+      add.innerHTML = icon('plus');
+      add.append(tr('Add'));
+      add.title = tr('Files .cur and .ani');
       add.addEventListener('click', () => send('mouse.add'));
-      section(tr('Cursors'), library.custom.length, 'cursors', library.custom, add);
+      const folder = document.createElement('button');
+      folder.type = 'button';
+      folder.className = 'link themes__more';
+      folder.innerHTML = icon('folder-open');
+      folder.append(tr('Open folder'));
+      folder.addEventListener('click', () => send('mouse.folder'));
+      section(tr('My files'), library.custom, add, folder);
     }
     mark();
+  }
+
+  // The trails as live display cases. Without a code, one case that can be tried, locked for the rest (C66, Q8).
+  function trailSection(section) {
+    if (!vipState().pack || !window.TrailPreview) return;
+    const t = trailState(), kind = t.kind || '';
+    if (!vipState().unlocked) {
+      const tile = trailTile('bubbles-gold', 'Trails', true);
+      section(tr('Trails'), '', [tile]);
+      return;
+    }
+    const modes = document.createElement('span');
+    modes.className = 'themes__modes';
+    for (const [k, label, glyph] of [['', 'Off', 'x'], ['auto', 'Match the cursor', 'link']]) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'tool-chip';
+      b.innerHTML = icon(glyph);
+      b.append(tr(label));
+      b.setAttribute('aria-pressed', String(kind === k));
+      b.addEventListener('click', () => send('trail.set', { kind: k }));
+      modes.append(b);
+    }
+    const all = TRAILS.flatMap(([group, items]) => items.map(([id, name]) => [id, name, group]));
+    const first = all.filter(x => x[0] === (kind === 'auto' ? t.effective : kind));
+    const shown = trailsAll ? all : first.concat(all.filter(x => !first.includes(x))).slice(0, 6);
+    const head = section(tr('Trails'), all.length, shown.map(([id, name, group]) => trailTile(id, name, false, group)), modes);
+    const more = document.createElement('button');
+    more.type = 'button';
+    more.className = 'link themes__more';
+    more.innerHTML = icon(trailsAll ? 'caret-up' : 'caret-down');
+    more.append(trailsAll ? tr('Show less') : tr('Show all {0}', all.length));
+    more.addEventListener('click', () => { trailsAll = !trailsAll; renderGallery(); });
+    head.append(more);
+  }
+
+  function trailTile(id, name, locked, group) {
+    const t = trailState(), kind = t.kind || '';
+    const c = document.createElement('div');
+    c.className = 'theme theme--family m-trail' + (locked ? ' is-locked' : '');
+    c.dataset.kind = id;
+    c.tabIndex = 0;
+    c.setAttribute('role', 'button');
+    c.innerHTML = '<span class="family__stage"><canvas></canvas><span class="m-trail__hint"></span></span><span class="family__foot"><span class="family__text"><span class="family__title"></span><span class="family__sub"><span></span></span></span><span class="theme__swatches"></span></span>';
+    c.querySelector('.m-trail__hint').textContent = tr('Move here');
+    c.querySelector('.family__title').textContent = locked ? tr(name) : tr(group);
+    c.querySelector('.family__sub').firstChild.textContent = locked ? tr('Special edition') : tr(name);
+    const chosen = !locked && kind === id, matched = !locked && kind === 'auto' && t.effective === id;
+    c.classList.toggle('current', chosen || matched);
+    if (chosen || matched) { const u = document.createElement('span'); u.className = 'family__use'; u.innerHTML = icon('check'); u.append(tr(chosen ? 'In use' : 'Matches the cursor')); c.querySelector('.family__sub').append(u); }
+    if (locked) {
+      const mark = document.createElement('span');
+      mark.className = 'm-trail__lock';
+      mark.innerHTML = '<span>' + icon('lock') + '</span>';
+      mark.firstChild.append(tr('Special edition'));
+      c.querySelector('.family__stage').append(mark);
+      const code = document.createElement('button');
+      code.type = 'button';
+      code.className = 'button';
+      code.innerHTML = icon('key');
+      code.append(tr('Use a code'));
+      code.addEventListener('click', e => { e.stopPropagation(); const input = document.querySelector('.view--mouse .theme--vip input'); if (input) { input.scrollIntoView({ block: 'center' }); input.focus({ preventScroll: true }); } });
+      c.querySelector('.theme__swatches').append(code);
+    } else {
+      const apply = () => send('trail.set', { kind: id });
+      c.addEventListener('click', apply);
+      c.addEventListener('keydown', e => { if (e.target === c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); apply(); } });
+    }
+    requestAnimationFrame(() => TrailPreview.zone(c.querySelector('.family__stage'), id));
+    return c;
   }
 
   function mark() {
     const r = chosenRole();
     for (const t of document.querySelectorAll('.tile-cursor')) t.classList.toggle('current', !!r && samePath(t.dataset.path, r.path));
-    for (const t of document.querySelectorAll('.theme')) t.classList.toggle('current', t.dataset.names ? t.dataset.names.split('|').includes(s.theme) : t.dataset.name === s.theme);
+    for (const t of document.querySelectorAll('.theme:not(.m-trail)')) t.classList.toggle('current', t.dataset.names ? t.dataset.names.split('|').includes(s.theme) : t.dataset.name === s.theme);
   }
 
   const TEXTS = {
@@ -481,43 +631,19 @@
     ['Sea', [['school', 'School'], ['ripples', 'Ripples'], ['snow', 'Marine snow'], ['constellation', 'Constellation']]],
     ['Paper and ink', [['sequins', 'Sequins'], ['confetti', 'Confetti'], ['halftone', 'Halftone'], ['ink', 'Ink']]],
   ];
-  let trailPreviews = null, trailAsked = false, trailKey = '';
   const trailState = () => (Lampfish.state && Lampfish.state.trail) || {};
+  const trailName = id => { for (const [group, items] of TRAILS) for (const [k, name] of items) if (k === id) return tr(group) + ' ' + tr(name); return ''; };
 
+  // The panel keeps only the settings of the trail; the trails themselves are in the gallery.
   function renderTrail() {
-    const open = !!vipState().unlocked;
+    const open = !!vipState().unlocked, t = trailState();
     $('s-trail-title').hidden = $('s-trail').hidden = !open;
+    const chip = $('s-trail-chip');
+    chip.hidden = !open;
     if (!open) return;
-    if (!trailPreviews && !trailAsked) { trailAsked = true; send('trail.previews'); }
-    const t = trailState(), kind = t.kind || '';
-    for (const b of document.querySelectorAll('[data-trail]')) b.setAttribute('aria-pressed', String(b.dataset.trail === kind));
-    const grid = $('s-trail-grid'), key = !!trailPreviews + LANGUAGE;
-    if (key !== trailKey) {
-      trailKey = key;
-      grid.replaceChildren();
-      for (const [group, items] of TRAILS) {
-        const head = document.createElement('p');
-        head.className = 'trail__group';
-        head.textContent = tr(group);
-        grid.append(head);
-        for (const [id, name] of items) {
-          const tile = document.createElement('button');
-          tile.type = 'button';
-          tile.className = 'trail';
-          tile.dataset.kind = id;
-          tile.innerHTML = '<span class="trail__stage"></span><span class="trail__name"></span>';
-          if (trailPreviews && trailPreviews[id]) tile.firstChild.append(Object.assign(document.createElement('img'), { src: trailPreviews[id], alt: '' }));
-          tile.lastChild.textContent = tr(name);
-          tile.addEventListener('click', () => send('trail.set', { kind: id }));
-          grid.append(tile);
-        }
-      }
-    }
-    // With Match the cursor, the tile of the trail in use gets a lighter ring: it follows, it was not chosen.
-    for (const tile of grid.querySelectorAll('.trail')) {
-      tile.setAttribute('aria-pressed', String(tile.dataset.kind === kind));
-      tile.classList.toggle('is-matched', kind === 'auto' && tile.dataset.kind === t.effective);
-    }
+    const id = t.kind === 'auto' ? t.effective : t.kind;
+    chip.lastChild.textContent = id ? tr('Trail: {0}', trailName(id)) : tr('Trail: off');
+    if (window.TrailPreview) { TrailPreview.settings.D = t.density || 1; TrailPreview.settings.L = t.duration || 1; TrailPreview.settings.clickFx = t.click !== false; }
     for (const field of document.querySelectorAll('[data-trail-adjust]')) {
       if (!field.matches(':active')) field.value = t[field.dataset.trailAdjust] || 1;
       trailValue(field);
@@ -528,7 +654,7 @@
     $(field.id + '-value').textContent = Math.round(field.value * 100) + ' %';
     field.style.setProperty('--pct', (field.value - field.min) / (field.max - field.min) * 100 + '%');
   }
-  for (const b of document.querySelectorAll('[data-trail]')) b.addEventListener('click', () => send('trail.set', { kind: b.dataset.trail }));
+  $('s-trail-chip').addEventListener('click', () => { const head = [...$('s-gallery').querySelectorAll('.themes__title')].find(h => h.firstChild.textContent === tr('Trails')); if (head) head.scrollIntoView({ block: 'start', behavior: 'smooth' }); });
   for (const field of document.querySelectorAll('[data-trail-adjust]')) {
     field.addEventListener('input', () => trailValue(field));
     field.addEventListener('change', () => send('trail.adjust', { what: field.dataset.trailAdjust, value: Number(field.value) }));
@@ -537,15 +663,14 @@
 
   function state(n) {
     s = n;
-    renderTrail();
     loadPack();
-    $('s-initial').disabled = !!s.standard;
-    $('s-original').hidden = !s.original;
     if (!chosenRole()) role = s.roles[0].id;
-    renderDraft();
+    renderTrail();
+    renderNow();
     renderRoles();
     renderSettings();
-    renderLibrary();
+    renderGallery();
+    renderPicks();
     renderDock();
   }
 
@@ -556,12 +681,13 @@
       if (r && r.path === m.path) play(r);
       return;
     }
-    if (m.type === 'trail.previews') { trailPreviews = m.previews; renderTrail(); return; }
-    if (m.type === 'vip.result') { vipMessage = m.ok ? null : tr('This code is not valid. Check the letters and try again.'); keyLibrary = ''; renderLibrary(); return; }
+    if (m.type === 'vip.result') { vipMessage = m.ok ? null : tr('This code is not valid. Check the letters and try again.'); keyGallery = ''; renderGallery(); return; }
     if (m.type !== 'mouse.library') return;
     library = m;
-    keyLibrary = '';
-    renderLibrary();
+    keyLibrary = keyGallery = '';
+    renderNow();
+    renderGallery();
+    renderPicks();
     renderDock();
     refreshCurrent();
   }
@@ -571,9 +697,24 @@
     if (yes && !library) send('mouse.library');
   }
 
-  $('s-initial').addEventListener('click', () => send('mouse.initial'));
-  $('s-original').addEventListener('click', () => send('mouse.original'));
-  $('s-folder').addEventListener('click', () => send('mouse.folder'));
+  // Restore: one button, a menu whose lines say what you get (C66), as the menu of Capture in Shelf.
+  function restoreMenu(open) {
+    $('s-restore-menu').hidden = !open;
+    $('s-restore').setAttribute('aria-expanded', String(open));
+    if (open) $('s-restore-menu').querySelector('button:not(:disabled)')?.focus();
+  }
+  $('s-restore').addEventListener('click', e => { e.stopPropagation(); restoreMenu($('s-restore-menu').hidden); });
+  $('s-restore-menu').addEventListener('keydown', e => {
+    const buttons = [...$('s-restore-menu').querySelectorAll('button:not(:disabled)')], i = buttons.indexOf(document.activeElement);
+    if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && buttons.length) { e.preventDefault(); buttons[(i + (e.key === 'ArrowDown' ? 1 : buttons.length - 1)) % buttons.length].focus(); }
+    if (e.key === 'Escape') { e.stopPropagation(); restoreMenu(false); $('s-restore').focus(); }
+  });
+  addEventListener('pointerdown', e => { if (!$('s-restore-menu').hidden && !(e.target.closest && e.target.closest('.m-now .s-capture'))) restoreMenu(false); });
+  $('s-initial').addEventListener('click', () => { restoreMenu(false); send('mouse.initial'); });
+  $('s-original').addEventListener('click', () => { restoreMenu(false); send('mouse.original'); });
+  $('s-edit-open').addEventListener('click', () => edit(true));
+  $('s-edit-done').addEventListener('click', () => edit(false));
+  $('s-edit').addEventListener('keydown', e => { if (e.key === 'Escape' && !e.target.closest('input')) { e.stopPropagation(); edit(false); } });
   $('s-draft').addEventListener('submit', e => {
     e.preventDefault();
     send('mouse.save', { name: $('s-draft-name').value });

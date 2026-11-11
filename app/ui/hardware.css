@@ -9,7 +9,7 @@
 .m-header__what .path { font-size: var(--text-caption); color: var(--text-pale); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .m-health { flex: none; display: flex; align-items: center; gap: 8px; color: var(--text-soft); font-size: var(--text-body); }
 .m-health[hidden] { display: none; }
-.m-health i { width: 7px; height: 7px; border-radius: 50%; background: var(--bad); box-shadow: 0 0 6px color-mix(in srgb, var(--bad) 55%, transparent); }
+.m-health i { flex: none; width: 14px; height: 14px; border-radius: 0; box-shadow: none; -webkit-mask: var(--g) center / contain no-repeat; mask: var(--g) center / contain no-repeat; --g: var(--glyph-bad); background: var(--bad); }
 
 .m-dash { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-auto-flow: dense; gap: 14px; margin-top: 16px; }
 .m-dash > .m-card { grid-column: span 4; }

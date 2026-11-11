@@ -40,8 +40,8 @@
 .n-title:hover { background: var(--hover); }
 .n-title:focus { outline: none; background: var(--sunken); }
 .n-saved { cursor: default; }
-.n-saved[data-state="saving"]::before { background: var(--text-pale); box-shadow: none; animation: n-pulse 1s ease-in-out infinite; }
-.n-saved[data-state="error"]::before, .n-saved[data-state="conflict"]::before { background: var(--warn); box-shadow: 0 0 6px color-mix(in srgb, var(--warn) 55%, transparent); }
+.n-saved[data-state="saving"]::before { --g: var(--glyph-idle); background: var(--text-pale); animation: n-pulse 1s ease-in-out infinite; }
+.n-saved[data-state="error"]::before, .n-saved[data-state="conflict"]::before { --g: var(--glyph-warn); background: var(--warn); }
 .n-saved[data-state="error"], .n-saved[data-state="conflict"] { color: var(--warn); }
 @keyframes n-pulse { 50% { opacity: .3; } }
 @media (prefers-reduced-motion: reduce) { .n-saved[data-state="saving"]::before { animation: none; } }

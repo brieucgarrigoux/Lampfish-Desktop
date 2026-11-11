@@ -53,6 +53,12 @@
   --text-rate: 40px;
 
   --icon: 16px;
+  /* State glyphs (C66, Q7): a state is a word with an icon, never a lit dot. Drawn as masks, so they take the colour of the state. */
+  --glyph-ok: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cg fill='black'%3E%3Cpath d='M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z'/%3E%3C/g%3E%3C/svg%3E");
+  --glyph-warn: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cg fill='black'%3E%3Cpath d='M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM222.93,203.8a8.5,8.5,0,0,1-7.48,4.2H40.55a8.5,8.5,0,0,1-7.48-4.2,7.59,7.59,0,0,1,0-7.72L120.52,44.21a8.75,8.75,0,0,1,15,0l87.45,151.87A7.59,7.59,0,0,1,222.93,203.8ZM120,144V104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm20,36a12,12,0,1,1-12-12A12,12,0,0,1,140,180Z'/%3E%3C/g%3E%3C/svg%3E");
+  --glyph-bad: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cg fill='black'%3E%3Cpath d='M165.66,101.66,139.31,128l26.35,26.34a8,8,0,0,1-11.32,11.32L128,139.31l-26.34,26.35a8,8,0,0,1-11.32-11.32L116.69,128,90.34,101.66a8,8,0,0,1,11.32-11.32L128,116.69l26.34-26.35a8,8,0,0,1,11.32,11.32ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z'/%3E%3C/g%3E%3C/svg%3E");
+  --glyph-idle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cg fill='black'%3E%3Cpath d='M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z'/%3E%3C/g%3E%3C/svg%3E");
+  --glyph-update: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cg fill='black'%3E%3Cpath d='M205.66,117.66a8,8,0,0,1-11.32,0L136,59.31V216a8,8,0,0,1-16,0V59.31L61.66,117.66a8,8,0,0,1-11.32-11.32l72-72a8,8,0,0,1,11.32,0l72,72A8,8,0,0,1,205.66,117.66Z'/%3E%3C/g%3E%3C/svg%3E");
   --icon-nav: 20px;
   --icon-big: 32px;
 
@@ -466,8 +472,8 @@ input[type=range]:focus-visible { outline-offset: 4px; border-radius: 4px; }
 .strip .type { flex: none; font-size: var(--text-caption); color: rgba(231, 234, 234, .6); }
 .strip .hero-screens { flex: none; background: rgba(0, 0, 0, .3); }
 .hero-screens button { flex: none; min-width: 34px; padding: 5px 10px; }
-.service.has-update::after { content: ""; position: absolute; top: 6px; right: 18px; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--wallpaper), 0 0 8px color-mix(in srgb, var(--accent) 80%, transparent); }
-@container rail (min-width: 140px) { .service.has-update::after { top: 50%; right: 12px; margin-top: -3.5px; box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 80%, transparent); } }
+.service.has-update::after { content: ""; position: absolute; top: 5px; right: 16px; width: 12px; height: 12px; background: var(--accent); -webkit-mask: var(--glyph-update) center / contain no-repeat; mask: var(--glyph-update) center / contain no-repeat; }
+@container rail (min-width: 140px) { .service.has-update::after { top: 50%; right: 12px; margin-top: -6px; } }
 .pause {
   flex: none; border: 0; border-radius: var(--radius-small); padding: 7px 14px; min-width: 96px;
   background: rgba(255, 255, 255, .1); font-weight: 600; font-size: var(--text-body);

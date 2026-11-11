@@ -308,33 +308,53 @@
 
   <section class="view view--mouse only-mouse" aria-label="Mouse">
     <h1>Mouse</h1>
-    <div class="target showcase-mouse">
-      <div class="showcase__header">
-        <div class="target__what"><span class="title" id="s-theme"></span><span class="path">Pick a role, then a cursor from the library to replace it</span></div>
-        <div class="showcase__controls">
-          <div class="size-cursor" role="group" aria-label="Pointer size">
-            <button class="size-cursor__step" id="s-minus" aria-label="Smaller" title="Smaller"><svg class="ph" aria-hidden="true"><use href="icons.svg#minus"/></svg></button>
-            <span class="size-cursor__value"><svg class="ph" aria-hidden="true"><use href="icons.svg#cursor"/></svg><b id="s-size-label"></b></span>
-            <button class="size-cursor__step" id="s-plus" aria-label="Larger" title="Larger"><svg class="ph" aria-hidden="true"><use href="icons.svg#plus"/></svg></button>
+    <div class="m-now" id="s-now">
+      <span class="m-now__stage" id="s-now-stage"></span>
+      <div class="m-now__text">
+        <span class="m-now__title" id="s-theme"></span>
+        <span class="m-now__sub" id="s-theme-sub"></span>
+        <div class="theme__swatches" id="s-now-swatches"></div>
+      </div>
+      <div class="m-now__actions">
+        <div class="size-cursor" role="group" aria-label="Pointer size">
+          <button class="size-cursor__step" id="s-minus" aria-label="Smaller" title="Smaller"><svg class="ph" aria-hidden="true"><use href="icons.svg#minus"/></svg></button>
+          <span class="size-cursor__value"><svg class="ph" aria-hidden="true"><use href="icons.svg#cursor"/></svg><b id="s-size-label"></b></span>
+          <button class="size-cursor__step" id="s-plus" aria-label="Larger" title="Larger"><svg class="ph" aria-hidden="true"><use href="icons.svg#plus"/></svg></button>
+        </div>
+        <button type="button" class="tool-chip" id="s-trail-chip" hidden><svg class="ph" aria-hidden="true"><use href="icons.svg#sparkle"/></svg><span></span></button>
+        <button type="button" class="button" id="s-edit-open"><svg class="ph" aria-hidden="true"><use href="icons.svg#pencil-simple"/></svg>Edit cursors</button>
+        <div class="s-capture">
+          <button type="button" class="button" id="s-restore" aria-haspopup="menu" aria-expanded="false"><svg class="ph" aria-hidden="true"><use href="icons.svg#arrow-counter-clockwise"/></svg>Restore<svg class="ph" aria-hidden="true"><use href="icons.svg#caret-down"/></svg></button>
+          <div class="s-menu" id="s-restore-menu" role="menu" hidden>
+            <button type="button" role="menuitem" id="s-original"><svg class="ph" aria-hidden="true"><use href="icons.svg#clock-counter-clockwise"/></svg><span>Cursors from before lampfish<small>As they were at the first change</small></span></button>
+            <button type="button" role="menuitem" id="s-initial"><svg class="ph" aria-hidden="true"><use href="icons.svg#arrow-counter-clockwise"/></svg><span>Windows cursors<small>The default of Windows, at 32 px</small></span></button>
           </div>
-          <button class="button" id="s-original" hidden><svg class="ph" aria-hidden="true"><use href="icons.svg#clock-counter-clockwise"/></svg>Back to original</button>
-          <button class="button" id="s-initial"><svg class="ph" aria-hidden="true"><use href="icons.svg#arrow-counter-clockwise"/></svg>Reset to default</button>
         </div>
       </div>
-      <form class="mouse-draft" id="s-draft" hidden>
+    </div>
+    <div id="s-gallery"><div class="waiting loading">Reading cursors</div></div>
+    <div class="m-edit" id="s-edit" hidden>
+      <div class="m-editbar">
+        <div class="m-editbar__head">
+          <h2>Edit cursors</h2>
+          <span class="m-editbar__hint">Pick a role, then its new cursor</span>
+          <button type="button" class="button button--accent" id="s-edit-done"><svg class="ph" aria-hidden="true"><use href="icons.svg#check"/></svg>Done</button>
+        </div>
+        <div class="m-strip" id="s-roles"></div>
+      </div>
+      <div class="title-section title-section--tabs">
+        <h2 id="s-for"></h2>
+        <div class="segments tabs" id="s-tabs" role="tablist" aria-label="Cursor library"></div>
+      </div>
+      <div id="s-library"></div>
+      <form class="mouse-draft m-savebar" id="s-draft" hidden>
         <span class="mouse-draft__text" id="s-draft-text"></span>
         <input id="s-draft-name" maxlength="40" placeholder="Name the new theme" autocomplete="off" aria-label="Theme name">
         <button class="button button--accent" type="submit"><svg class="ph" aria-hidden="true"><use href="icons.svg#floppy-disk"/></svg>Save as a theme</button>
         <button class="button" type="button" id="s-update" hidden></button>
         <button class="link" type="button" id="s-discard"><svg class="ph" aria-hidden="true"><use href="icons.svg#x"/></svg>Discard</button>
       </form>
-      <div class="roles" id="s-roles"></div>
     </div>
-    <div class="title-section title-section--tabs">
-      <div class="segments tabs" id="s-tabs" role="tablist" aria-label="Cursor library"></div>
-      <button class="link" id="s-folder"><svg class="ph" aria-hidden="true"><use href="icons.svg#folder-open"/></svg>Open folder</button>
-    </div>
-    <div id="s-library"><div class="waiting loading">Reading cursors</div></div>
   </section>
 
   <section class="view view--station only-station" aria-label="Sounds">
@@ -1217,36 +1237,8 @@
   </div>
 
   <div class="only-mouse">
-    <h2 id="s-trail-title" hidden>Trail</h2>
-    <div class="group" id="s-trail" hidden>
-      <div class="trail__modes" role="group" aria-label="Trail">
-        <button type="button" class="tool-chip" data-trail=""><svg class="ph" aria-hidden="true"><use href="icons.svg#x"/></svg>Off</button>
-        <button type="button" class="tool-chip" data-trail="auto"><svg class="ph" aria-hidden="true"><use href="icons.svg#link"/></svg>Match the cursor</button>
-      </div>
-      <div class="trail__grid" id="s-trail-grid"></div>
-      <div class="setting">
-        <label for="s-trail-density"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#sparkle"/></svg><span>Density<small>How much the pointer leaves behind</small></span></span><output id="s-trail-density-value"></output></label>
-        <input type="range" id="s-trail-density" data-trail-adjust="density" min="0.4" max="2" step="0.1">
-        <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
-      </div>
-      <div class="setting">
-        <label for="s-trail-duration"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#timer"/></svg><span>Duration<small>How long the trail stays</small></span></span><output id="s-trail-duration-value"></output></label>
-        <input type="range" id="s-trail-duration" data-trail-adjust="duration" min="0.5" max="2" step="0.1">
-        <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
-      </div>
-      <label class="toggle">
-        <input type="checkbox" id="s-trail-click">
-        <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#cursor-click"/></svg><span>Click effect<small>Each trail answers a click its own way</small></span></span>
-      </label>
-      <p class="trail__note">Paused in full screen or with animations off in Windows. Never captured.</p>
-    </div>
     <h2>Pointer</h2>
     <div class="group">
-      <div class="setting">
-        <label for="s-size"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#arrows-out-simple"/></svg><span>Pointer size<small>Makes every cursor bigger</small></span></span><output id="s-size-value"></output></label>
-        <input type="range" id="s-size" data-setting="size" min="1" max="15" step="1">
-        <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
-      </div>
       <label class="toggle">
         <input type="checkbox" id="s-shadow" data-setting="shadow">
         <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#lf-pointer-shadow"/></svg><span>Pointer shadow<small>Soft shadow under the cursor</small></span></span>
@@ -1281,11 +1273,29 @@
         <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#swap"/></svg><span>Swap buttons<small>Primary click on the right</small></span></span>
       </label>
     </div>
+    <h2 id="s-trail-title" hidden>Trail</h2>
+    <div class="group" id="s-trail" hidden>
+      <div class="setting">
+        <label for="s-trail-density"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#sparkle"/></svg><span>Density<small>Particles per move</small></span></span><output id="s-trail-density-value"></output></label>
+        <input type="range" id="s-trail-density" data-trail-adjust="density" min="0.4" max="2" step="0.1">
+        <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div class="setting">
+        <label for="s-trail-duration"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#timer"/></svg><span>Duration<small>How long the trail stays</small></span></span><output id="s-trail-duration-value"></output></label>
+        <input type="range" id="s-trail-duration" data-trail-adjust="duration" min="0.5" max="2" step="0.1">
+        <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="s-trail-click">
+        <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#cursor-click"/></svg><span>Click effect<small>Each trail answers a click its own way</small></span></span>
+      </label>
+      <p class="trail__note">Paused in full screen or with animations off in Windows. Never captured.</p>
+    </div>
     <h2>Extras</h2>
     <div class="group">
       <label class="toggle">
         <input type="checkbox" id="s-trails" data-setting="trails">
-        <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#lf-pointer-trails"/></svg><span>Pointer trails<small>A trail behind the cursor</small></span></span>
+        <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#lf-pointer-trails"/></svg><span>Pointer echoes<small>Copies of the cursor, from Windows</small></span></span>
       </label>
       <label class="toggle">
         <input type="checkbox" id="s-sonar" data-setting="sonar">
@@ -1293,7 +1303,7 @@
       </label>
       <label class="toggle">
         <input type="checkbox" id="s-hide" data-setting="hide">
-        <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#eye-slash"/></svg><span>Hide while typing<small>Hides while you type</small></span></span>
+        <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#eye-slash"/></svg><span>Hide while typing<small>For the text under the cursor</small></span></span>
       </label>
       <label class="toggle">
         <input type="checkbox" id="s-buttonInitial" data-setting="buttonInitial">
@@ -1429,6 +1439,7 @@
 <script src="icons.js"></script>
 <script src="arrange.js"></script>
 <script src="cursor-engine.js"></script>
+<script src="trail-preview.js"></script>
 <script src="mouse.js"></script>
 <script src="disk.js"></script>
 <script src="chart.js"></script>
