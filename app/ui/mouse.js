@@ -323,7 +323,7 @@
     return c;
   }
 
-  // The house sections: lampfish families, then the Bramble themes with a word on where they come from.
+  // The house sections: lampfish families, the special edition, then the Bramble themes.
   function houseSections(add) {
     add(tr('lampfish'), '', families().map(familyTile));
     if (packReady && CursorEngine.packFamilies.length) {
@@ -331,7 +331,7 @@
       else add(tr('Special edition'), '', [vipTile()]);
     }
     const bramble = library.themes.filter(isBramble);
-    if (bramble.length) add(tr('Bramble'), tr('The first cursors, from when the app was called Bramble'), bramble.map(themeCard));
+    if (bramble.length) add(tr('Bramble'), '', bramble.map(themeCard));
   }
 
   function newTheme() {
