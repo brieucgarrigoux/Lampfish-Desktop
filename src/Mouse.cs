@@ -328,6 +328,16 @@ namespace Lampfish
             return true;
         }
 
+        // A theme chosen in the page: it heads the recent ones and brings its trail back (R86).
+        static void Chosen(string name)
+        {
+            var recent = Program.R.MouseRecent ?? new List<string>();
+            recent.Remove(name);
+            recent.Insert(0, name);
+            Program.R.MouseRecent = recent.Take(8).ToList();
+            Trail.FollowCursor();
+        }
+
         // Trying the colours of a family one after the other is one change: Undo goes back to before the first click.
         static Snapshot undoBefore;
         static DateTime undoUntil;
@@ -872,6 +882,11 @@ namespace Lampfish
                     showcase = Showcase.Where(i => i < t.Paths.Length).Select(i => Preview(t.Paths[i])).Where(a => a != null).ToArray(),
                 }).OrderBy(t => t.lampfish ? 0 : t.custom ? 2 : 1).ToArray(),
                 windows = List(FolderWindows, false),
+                // The cursors of Windows by role, read from Windows' own schemes: each file goes to the role it was made for,
+                // named after its scheme (Windows, large, Black...). 189 files become a handful per role (M2.3).
+                windowsRoles = Roles.Select((r, i) => all.Where(t => t.Source == "system" && i < t.Paths.Length && t.Paths[i].Length > 0 && File.Exists(t.Paths[i]))
+                    .GroupBy(t => t.Paths[i], StringComparer.OrdinalIgnoreCase).Select(g => new { path = g.Key, name = NameTheme(g.First().Name), preview = Preview(g.Key) })
+                    .Where(x => x.preview != null).ToArray()).ToArray(),
                 custom = List(CustomFolder, true),
                 lampfishCursors = all.Where(t => t.Source == "lampfish" && !t.Made).Select(t => new
                 {
@@ -895,10 +910,33 @@ namespace Lampfish
                     if (Find(name) == null) return false;
                     var before = UndoPoint();
                     ApplyTheme(name);
+                    Chosen(name);
                     OfferUndo(Language.T("Cursors: {0}", NameTheme(name)), before);
                     return true;
                 }
                 case "make": return Make(m);
+                case "favorite":
+                {
+                    string name = Text(m, "name");
+                    if (string.IsNullOrEmpty(name)) return false;
+                    var list = Program.R.MouseFavorites ?? new List<string>();
+                    list.Remove(name);
+                    if (m.ContainsKey("on") && Convert.ToBoolean(m["on"])) list.Insert(0, name);
+                    Program.R.MouseFavorites = list.Take(64).ToList();
+                    Program.Save();
+                    return true;
+                }
+                // One cursor of a theme of lampfish for one role, by name: the page does not know where the files are.
+                case "assignTheme":
+                {
+                    var theme = Find(Text(m, "theme"));
+                    int i = Array.FindIndex(Roles, r => r[0] == Text(m, "role"));
+                    if (theme == null || i < 0 || i >= theme.Paths.Length) return false;
+                    var before = UndoPoint();
+                    if (!Assign(Roles[i][0], theme.Paths[i])) return false;
+                    OfferUndo(Language.T("Cursor changed"), before);
+                    return true;
+                }
                 case "assign":
                 {
                     var before = UndoPoint();
@@ -1077,7 +1115,7 @@ namespace Lampfish
             try { if (Directory.Exists(old)) Directory.Delete(old, true); } catch (Exception ex) { Program.Log(ex); }
             // The theme in use is applied again even if the page did not ask: a still .cur may have become an .ani.
             if (asked || CurrentTheme() == name) ApplyTheme(name);
-            if (asked) OfferUndo(Language.T("Cursors: {0}", NameTheme(name)), before);
+            if (asked) { Chosen(name); OfferUndo(Language.T("Cursors: {0}", NameTheme(name)), before); }
             Program.Send(Library());
             return true;
         }
@@ -1107,6 +1145,8 @@ namespace Lampfish
                 themeTitle = chosen == null ? Language.T("Custom") : NameTheme(theme),
                 roles = Roles.Select((r, i) => new { id = r[0], name = r[1], path = current[i], preview = Preview(current[i]) }).ToArray(),
                 settings = Settings(),
+                favorites = Program.R.MouseFavorites ?? new List<string>(),
+                recent = Program.R.MouseRecent ?? new List<string>(),
             };
         }
 

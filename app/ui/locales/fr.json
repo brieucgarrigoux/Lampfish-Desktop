@@ -2421,5 +2421,19 @@
  "Particles per move": "Particules par mouvement",
  "Pointer echoes": "Échos du pointeur",
  "Copies of the cursor, from Windows": "Copies du curseur, par Windows",
- "For the text under the cursor": "Pour voir le texte sous le curseur"
+ "For the text under the cursor": "Pour voir le texte sous le curseur",
+ "Recent": "Récents",
+ "No theme here yet": "Aucun thème ici pour le moment",
+ "Colorful": "Colorés",
+ "Animated": "Animés",
+ "High visibility": "Très visibles",
+ "Add to favorites": "Ajouter aux favoris",
+ "Remove from favorites": "Retirer des favoris",
+ "preparing the animation": "animation en préparation",
+ "Extra large": "Très grand",
+ "Vertical": "Vertical",
+ "Horizontal": "Horizontal",
+ "Diagonal down": "Diagonale descendante",
+ "Diagonal up": "Diagonale montante",
+ "Alternate": "Autre sélection"
 }

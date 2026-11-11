@@ -70,8 +70,9 @@ namespace Lampfish
         public static bool Receive(string action, Dictionary<string, object> m)
         {
             object v;
-            if (action == "previews") { SendPreviews(); return false; }
-            if (action == "set"&& m.TryGetValue("kind", out v))
+            // A preview of the gallery is under the pointer: the real trail would draw a second one on top of it.
+            if (action == "preview") { PreviewUntil = m.ContainsKey("on") && Convert.ToBoolean(m["on"]) ? DateTime.UtcNow.AddSeconds(2) : DateTime.MinValue; return false; }
+            if (action == "set" && m.TryGetValue("kind", out v))
             {
                 string k = v as string ?? "";
                 if (k.Length > 0 && k != "auto" && !Kinds.Contains(k)) return false;
@@ -90,56 +91,14 @@ namespace Lampfish
             return true;
         }
 
-        // A still of each trail, drawn by its own recipe along an S stroke, for the picker. Made once, on first ask.
-        static Dictionary<string, string> previews;
-        public static void SendPreviews()
+        public static DateTime PreviewUntil = DateTime.MinValue;
+
+        // A cursor theme chosen in Mouse brings its own trail back (R86), even after another trail or Off was picked.
+        public static void FollowCursor()
         {
-            if (previews == null)
-            {
-                previews = new Dictionary<string, string>();
-                const int W = 232, H = 104;
-                foreach (string kind in Kinds)
-                {
-                    var r = TrailRecipe.Make(kind);
-                    r.Scale = 2.6f; r.Density = 3; r.Duration = 1.5f;
-                    // Drawn twice as high as the tile, then framed on the weight of the drawing: bubbles rise, confetti falls.
-                    using (var tall = new Bitmap(W, H * 2, PixelFormat.Format32bppPArgb))
-                    using (var bmp = new Bitmap(W, H, PixelFormat.Format32bppPArgb))
-                    using (var g = Graphics.FromImage(tall))
-                    {
-                        g.SmoothingMode = SmoothingMode.AntiAlias;
-                        PointF prev = new PointF(22, H * 1.12f);
-                        double now = 0;
-                        for (int i = 1; i <= 40; i++)
-                        {
-                            now += 16;
-                            float t = i / 40f;
-                            var p = new PointF(22 + t * (W - 64), H + (float)Math.Sin(t * Math.PI * 1.6 + .5) * H * .2f);
-                            r.Move(p, prev, (float)(Math.Sqrt(Math.Pow(p.X - prev.X, 2) + Math.Pow(p.Y - prev.Y, 2)) / 2.6 / 16), now);
-                            r.LastMove = now;
-                            prev = p;
-                            g.Clear(Color.Transparent);
-                            r.Draw(g, 16, now);
-                        }
-                        for (int i = 0; i < 6; i++) { now += 16; g.Clear(Color.Transparent); r.Draw(g, 16, now); }
-                        var data = tall.LockBits(new Rectangle(0, 0, W, H * 2), ImageLockMode.ReadOnly, PixelFormat.Format32bppPArgb);
-                        var pixels = new byte[data.Stride * H * 2];
-                        Marshal.Copy(data.Scan0, pixels, 0, pixels.Length);
-                        tall.UnlockBits(data);
-                        double weight = 0, sum = 0;
-                        for (int y = 0; y < H * 2; y++)
-                            for (int x = 0; x < W; x += 2) { int a = pixels[y * data.Stride + x * 4 + 3]; weight += a; sum += a * y; }
-                        int top = weight > 0 ? (int)Math.Max(0, Math.Min(H, sum / weight - H / 2)) : H / 2;
-                        using (var gg = Graphics.FromImage(bmp)) gg.DrawImage(tall, new Rectangle(0, 0, W, H), new Rectangle(0, top, W, H), GraphicsUnit.Pixel);
-                        using (var ms = new System.IO.MemoryStream())
-                        {
-                            bmp.Save(ms, ImageFormat.Png);
-                            previews[kind] = "data:image/png;base64," + Convert.ToBase64String(ms.ToArray());
-                        }
-                    }
-                }
-            }
-            Program.Send(new { type = "trail.previews", previews = previews });
+            if (!Vip.Unlocked || Program.R.Trail == "auto") return;
+            Program.R.Trail = "auto";
+            Apply();
         }
 
         // The cursor changed: a trail that follows the cursor follows it.
@@ -210,7 +169,7 @@ namespace Lampfish
             var p = Cursor.Position;
             // GetAsyncKeyState reads the physical button: with swapped buttons the primary click is the right one.
             bool pressed = (GetAsyncKeyState(GetSystemMetrics(23) != 0 ? 0x02 : 0x01) & 0x8000) != 0;
-            if (paused) { recipe.Clear(); if (shown) { ShowWindow(Handle, 0); shown = false; } last = p; down = pressed; timer.Interval = 100; return; }
+            if (paused || DateTime.UtcNow < Trail.PreviewUntil) { recipe.Clear(); if (shown) { ShowWindow(Handle, 0); shown = false; } last = p; down = pressed; timer.Interval = paused ? 100 : 33; return; }
             float k = (float)Arrange.Scale(Screen.FromPoint(p));
             recipe.Scale = k;
             if (p != last)

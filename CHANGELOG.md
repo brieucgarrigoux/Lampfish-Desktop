@@ -17,6 +17,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Changed
 
+- Mouse: every theme comes in the same display case. Bramble is one case with its four colours, and Windows has its families (Windows, Black, Inverted, Standard, Magnified) with their sizes as chips.
+- Mouse: filters by look (dark, light, colorful, animated, high visibility), a star for favorites, and the themes used lately on top.
+- Mouse: when one cursor is changed, every family of lampfish offers its own for that role, and the cursors of Windows come by role, named after their theme, instead of 189 file names.
+- Mouse: choosing a cursor theme brings back the trail that goes with it.
 - Mouse: a new page. On top, the theme in use with its colours, the size, the trail, Edit cursors and Restore. Below, every look in sections: lampfish, the special edition, the trails as live display cases, Bramble, Windows and your own themes. Changing one cursor at a time is a mode of its own, with the roles always in view and the save bar at hand.
 - Mouse: Back to original and Reset to default are one Restore menu, whose lines say what you get.
 - Mouse: without a code, one trail of the special edition can be tried in its display case.
@@ -36,6 +40,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Fixed
 
+- Mouse: a trail no longer shows twice in its display case, and choosing a trail no longer redraws the gallery under the pointer.
 - Mouse: a damaged animated cursor could freeze lampfish. Files Windows cannot read are refused when added, with a message.
 - Mouse: Reset to default also gives back the default size.
 - Mouse: the trail answers the primary click when the buttons are swapped, and pauses when an app hides the pointer.

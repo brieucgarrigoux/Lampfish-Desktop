@@ -527,7 +527,9 @@ function zone(el, kind) {
       z.frame(now, 16);
     }
   };
-  new ResizeObserver(() => { if (fit() && !z.running) still(); }).observe(el);
+  const ro = new ResizeObserver(() => { if (fit() && !z.running) still(); });
+  ro.observe(el);
+  z.stop = () => ro.disconnect();
   const calm = matchMedia('(prefers-reduced-motion: reduce)');
   let last = null;
   const at = e => { const r = el.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top, t: performance.now() }; };

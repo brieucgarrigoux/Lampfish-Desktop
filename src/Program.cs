@@ -66,6 +66,8 @@ namespace Lampfish
         public double TrailDensity = 1;
         public double TrailDuration = 1;
         public bool TrailClick = true;
+        public List<string> MouseFavorites;
+        public List<string> MouseRecent;
         public WindowPlace Window;
         public bool UpdatesAuto;
         public string UpdatesLast;

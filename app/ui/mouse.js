@@ -34,7 +34,7 @@
       badge.addEventListener('click', () => edit(true));
       title.append(badge);
     }
-    $('s-theme-sub').textContent = fam && fam.variants.length > 1 && v ? tr(v.variant) : '';
+    $('s-theme-sub').textContent = (fam && fam.variants.length > 1 && v ? tr(v.variant) : '') + (making.has(s.theme) ? (fam && fam.variants.length > 1 ? ', ' : '') + tr('preparing the animation') : '');
     const stage = $('s-now-stage');
     stage.style.setProperty('--tint', fam && v ? tintOf(v.swatch) : 'var(--accent)');
     if (fam && fam.engine && v) {
@@ -48,8 +48,9 @@
     swatches.replaceChildren(...(fam && fam.variants.length > 1 ? fam.variants : []).map(x => {
       const b = document.createElement('button');
       b.type = 'button';
-      b.className = 'swatch';
-      b.style.setProperty('--swatch', x.swatch);
+      b.className = 'swatch' + (x.size ? ' swatch--size' : '');
+      if (x.size) b.textContent = x.size;
+      else b.style.setProperty('--swatch', x.swatch);
       b.title = tr(x.variant);
       b.setAttribute('aria-label', tr(x.variant));
       b.setAttribute('aria-pressed', String(x.name === s.theme));
@@ -66,7 +67,7 @@
     $('s-discard').hidden = !s.based;
   }
 
-  const currentFamily = () => s && library ? [...families(), ...(packReady ? CursorEngine.packFamilies.map(asFamily) : [])].find(f => f.variants.some(v => v.name === s.theme)) : null;
+  const currentFamily = () => s && library ? [...families(), ...(packReady ? CursorEngine.packFamilies.map(asFamily) : []), brambleFamily(), ...windowsFamilies()].filter(Boolean).find(f => f.variants.some(v => v.name === s.theme)) : null;
 
   function edit(on) {
     editing = on;
@@ -91,7 +92,7 @@
       frame.append(image(r.preview));
       const name = document.createElement('span');
       name.className = 'role__name';
-      name.textContent = r.name;
+      name.textContent = roleName(r.name);
       b.append(frame, name);
       b.addEventListener('click', () => { role = r.id; renderRoles(); renderPicks(); play(r); });
       b.addEventListener('pointerenter', () => play(r));
@@ -175,8 +176,7 @@
     remove: ['Remove', 'trash-simple'],
   };
 
-  function rename(card, th) {
-    const name = card.querySelector('.theme__name');
+  function rename(card, th, name = card.querySelector('.theme__name')) {
     const input = Object.assign(document.createElement('input'), { className: 'theme__rename', maxLength: 40, value: th.title });
     input.setAttribute('aria-label', tr('Theme name'));
     name.replaceWith(input);
@@ -208,6 +208,14 @@
     const apply = () => send('mouse.theme', { name: th.name });
     c.addEventListener('click', apply);
     c.addEventListener('keydown', e => { if (e.target === c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); apply(); } });
+    themeActions(c, th);
+    if (th.kind === 'mine') c.querySelector('.theme__name').addEventListener('dblclick', e => { e.stopPropagation(); rename(c, th); });
+    return c;
+  }
+
+  function themeActions(c, th) {
+    let bar = c.querySelector('.theme__actions');
+    if (!bar) { bar = document.createElement('span'); bar.className = 'theme__actions'; c.append(bar); }
     for (const what of th.kind === 'mine' ? ['rename', 'duplicate', 'remove'] : ['duplicate']) {
       const b = document.createElement('button');
       b.type = 'button';
@@ -217,14 +225,12 @@
       b.innerHTML = icon(ACTIONS[what][1]);
       b.addEventListener('click', e => {
         e.stopPropagation();
-        if (what === 'rename') rename(c, th);
+        if (what === 'rename') rename(c, th, c.querySelector('.theme__name') || c.querySelector('.family__title'));
         else if (what === 'duplicate') send('mouse.duplicate', { name: th.name });
         else send('mouse.removeTheme', { name: th.name });
       });
-      c.querySelector('.theme__actions').append(b);
+      bar.append(b);
     }
-    if (th.kind === 'mine') c.querySelector('.theme__name').addEventListener('dblclick', e => { e.stopPropagation(); rename(c, th); });
-    return c;
   }
 
   // Families of lampfish: one tile per look, its colours as swatches. Engine themes are drawn here and written by
@@ -260,6 +266,7 @@
     } finally {
       making.delete(v.name);
       if (tile) { tile.classList.remove('loading'); tile.removeAttribute('aria-busy'); }
+      renderNow();
     }
   }
 
@@ -272,15 +279,18 @@
   }
 
   // A display case per family: Normal large, Link and Busy beside it, on a ground tinted by the colour shown (C62).
+  // Every theme takes this shape (M2.2): lampfish, Bramble, the families of Windows, the user's own.
   const tintOf = sw => /^#f[0-9a-f]f[0-9a-f]f[0-9a-f]$|^#ffffff$/i.test(sw) ? '#9ff5ea' : sw;
+  const calm = matchMedia('(prefers-reduced-motion: reduce)');
   function familyTile(fam) {
     const current = fam.variants.find(v => v.name === s.theme);
     let v = current || fam.variants.find(x => x.name === chosen[fam.key]) || fam.variants[0];
     const c = document.createElement('div');
-    c.className = 'theme theme--family' + (current ? ' current' : '') + (making.has(v.name) ? ' loading' : '');
+    c.className = 'theme theme--family' + (current ? ' current' : '') + (making.has(v.name) ? ' loading' : '') + (fam.ground === 'neutral' ? ' is-neutral' : '');
     c.tabIndex = 0;
     c.setAttribute('role', 'button');
     c.dataset.names = fam.variants.map(x => x.name).join('|');
+    c.dataset.key = fam.key;
     c.innerHTML = '<span class="family__stage"><span class="family__hero"></span><span class="family__side"></span></span>'
       + '<span class="family__foot"><span class="family__text"><span class="family__title"></span><span class="family__sub"><span></span></span></span><span class="theme__swatches"></span></span>';
     const hero = c.querySelector('.family__hero'), side = c.querySelector('.family__side'), roles = ['arrow', 'hand', 'wait'], canvases = [];
@@ -290,9 +300,11 @@
       hero.replaceChildren(); side.replaceChildren(); canvases.length = 0;
       c.style.setProperty('--tint', tintOf(v.swatch));
       if (fam.engine) { hero.append(canvas(64)); side.append(canvas(34), canvas(34)); draw(.6, false); }
-      else { hero.append(image(v.theme.showcase[0])); side.append(image(v.theme.showcase[1]), image(v.theme.showcase[3])); }
-      c.querySelector('.family__title').textContent = tr(fam.name);
-      c.querySelector('.family__sub').firstChild.textContent = v.variant ? tr(v.variant) : '';
+      else { const sh = v.theme.showcase; hero.append(image(sh[0])); side.append(image(sh[1] || sh[0]), image(sh[3] || sh[2] || sh[0])); }
+      const title = c.querySelector('.family__title');
+      title.textContent = fam.mine ? v.theme.title : tr(fam.name);
+      title.translate = !fam.mine;
+      c.querySelector('.family__sub').firstChild.textContent = fam.variants.length > 1 || fam.sub ? tr(fam.sub || v.variant) : '';
       const use = c.querySelector('.family__use');
       if (current && current.name === v.name) { if (!use) { const u = document.createElement('span'); u.className = 'family__use'; u.innerHTML = icon('check'); u.append(tr('In use')); c.querySelector('.family__sub').append(u); } }
       else if (use) use.remove();
@@ -301,27 +313,89 @@
     for (const x of fam.variants.length > 1 ? fam.variants : []) {
       const b = document.createElement('button');
       b.type = 'button';
-      b.className = 'swatch';
+      b.className = 'swatch' + (x.size ? ' swatch--size' : '');
       b.dataset.name = x.name;
-      b.style.setProperty('--swatch', x.swatch);
+      if (x.size) b.textContent = x.size;
+      else b.style.setProperty('--swatch', x.swatch);
       b.title = tr(x.variant);
       b.setAttribute('aria-label', tr(x.variant));
       b.addEventListener('click', e => { e.stopPropagation(); v = x; chosen[fam.key] = x.name; fill(); applyVariant(fam, x, c); });
       c.querySelector('.theme__swatches').append(b);
     }
+    // A star on every case: the favourites are a filter of their own (M2.6).
+    const fav = document.createElement('button');
+    fav.type = 'button';
+    fav.className = 'family__fav';
+    const faved = () => (s.favorites || []).includes(fam.key);
+    const paint = () => { fav.innerHTML = icon(faved() ? 'lf-star-fill' : 'star'); fav.setAttribute('aria-pressed', String(faved())); fav.title = tr(faved() ? 'Remove from favorites' : 'Add to favorites'); fav.setAttribute('aria-label', fav.title); };
+    paint();
+    fav.addEventListener('click', e => { e.stopPropagation(); const on = !faved(); s.favorites = on ? [fam.key, ...(s.favorites || [])] : (s.favorites || []).filter(k => k !== fam.key); paint(); send('mouse.favorite', { name: fam.key, on }); });
+    c.querySelector('.family__stage').append(fav);
+    if (fam.mine) themeActions(c, v.theme);
     fill();
-    let raf = 0, last = 0;
-    const still = matchMedia('(prefers-reduced-motion: reduce)');
+    // The animation starts after a short rest under the pointer or on focus (M2.7), never on a pass across the grid.
+    let raf = 0, last = 0, wait = 0;
     const loop = now => { if (!c.isConnected) { raf = 0; return; } if (now - last > 32) { last = now; draw(CursorEngine.phase(now / 1000), true); } raf = requestAnimationFrame(loop); };
+    const startAnim = () => { clearTimeout(wait); wait = setTimeout(() => { if (!calm.matches && !raf && c.isConnected) raf = requestAnimationFrame(loop); }, 300); };
+    const stopAnim = () => { clearTimeout(wait); cancelAnimationFrame(raf); raf = 0; draw(.6, false); };
     if (fam.engine) {
-      c.addEventListener('pointerenter', () => { if (!still.matches && !raf) raf = requestAnimationFrame(loop); });
-      c.addEventListener('pointerleave', () => { cancelAnimationFrame(raf); raf = 0; draw(.6, false); });
+      c.addEventListener('pointerenter', startAnim);
+      c.addEventListener('pointerleave', stopAnim);
+      c.addEventListener('focus', startAnim);
+      c.addEventListener('blur', stopAnim);
     }
     const apply = () => applyVariant(fam, v, c);
     c.addEventListener('click', apply);
     c.addEventListener('keydown', e => { if (e.target === c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); apply(); } });
     return c;
   }
+
+  // The families of the gallery that are made of files: Bramble in one case, the large families of Windows (R88), the user's own.
+  const BRAMBLE_SWATCH = { Glass: '#b9a6ff', Berry: '#7c3aed', Night: '#2a1f4d', Snow: '#f5f3ff' };
+  function brambleFamily() {
+    const list = library.themes.filter(isBramble);
+    return list.length ? { key: 'bramble', name: 'Bramble', engine: false, variants: list.map(t => { const k = t.name.slice('Bramble '.length); return { name: t.name, variant: k, swatch: BRAMBLE_SWATCH[k] || '#8b6cff', theme: t }; }) } : null;
+  }
+  const WINDOWS_FAMILY = { 'Windows Aero': 'Windows', 'Windows Black': 'Black', 'Windows Inverted': 'Inverted', 'Windows Standard': 'Standard', 'Magnified': 'Magnified' };
+  const SIZES = [['', 'S', 'Standard'], ['large', 'L', 'Large'], ['extra large', 'XL', 'Extra large']];
+  function windowsFamilies() {
+    const groups = new Map();
+    for (const t of library.themes.filter(x => x.kind === 'system')) {
+      // Windows writes sizes three ways: "(large)", " L" and " XL)" (sic, in Windows 11).
+      const m = t.name.match(/^(.*?)(?: \((large|extra large)\)| (L|XL)\)?)?$/);
+      const base = m[1], size = m[2] || ({ L: 'large', XL: 'extra large' })[m[3]] || '';
+      if (!groups.has(base)) groups.set(base, []);
+      const [, short, label] = SIZES.find(x => x[0] === size) || SIZES[0];
+      groups.get(base).push({ name: t.name, variant: label, size: short, swatch: '#cfd6d8', theme: t, rank: SIZES.findIndex(x => x[0] === size) });
+    }
+    return [...groups].map(([base, variants]) => ({
+      key: 'windows-' + base.toLowerCase().replace(/\W+/g, '-'), name: WINDOWS_FAMILY[base] || base, engine: false, windows: true,
+      ground: /Black|Inverted|Standard/.test(base) ? 'neutral' : '', variants: variants.sort((a, b) => a.rank - b.rank),
+    })).sort((a, b) => Object.keys(WINDOWS_FAMILY).indexOf(a.variants[0].name.replace(/ \(.*$/, '')) - Object.keys(WINDOWS_FAMILY).indexOf(b.variants[0].name.replace(/ \(.*$/, '')));
+  }
+  const mineFamilies = () => library.themes.filter(t => t.kind === 'mine').map(t => ({ key: 'mine-' + t.name, name: t.title, mine: true, engine: false, variants: [{ name: t.name, variant: '', swatch: '#2ed9c6', theme: t }] }));
+
+  // What a family looks like, for the filters (M2.6): its colours, whether it moves, whether it is made to be seen.
+  const lum = hex => { const n = parseInt((hex || '#888888').slice(1), 16), c = [n >> 16 & 255, n >> 8 & 255, n & 255].map(x => { x /= 255; return x <= .03928 ? x / 12.92 : Math.pow((x + .055) / 1.055, 2.4); }); return .2126 * c[0] + .7152 * c[1] + .0722 * c[2]; };
+  const chroma = hex => { const n = parseInt((hex || '#888888').slice(1), 16), c = [n >> 16 & 255, n >> 8 & 255, n & 255]; return (Math.max(...c) - Math.min(...c)) / 255; };
+  function tagsOf(fam) {
+    const t = new Set();
+    for (const v of fam.variants) {
+      if (fam.windows) { if (/Black/.test(v.name)) t.add('dark'); else t.add('light'); if (v.size !== 'S' || /Black|Inverted|Magnified/.test(v.name)) t.add('visible'); continue; }
+      const l = lum(v.swatch);
+      if (l < .06) t.add('dark');
+      if (l > .6) t.add('light');
+      if (chroma(v.swatch) > .4) t.add('colorful');
+      const engine = fam.engine && CursorEngine.THEME[v.name];
+      if ((engine && engine.style !== 'flat') || fam.key === 'bramble') t.add('animated');
+    }
+    if (/neon|lure/i.test(fam.key)) t.add('visible');
+    if ((s.favorites || []).includes(fam.key)) t.add('favorite');
+    return t;
+  }
+  const LOOKS = [['all', 'All'], ['dark', 'Dark'], ['light', 'Light'], ['colorful', 'Colorful'], ['animated', 'Animated'], ['visible', 'High visibility'], ['favorite', 'Favorites']];
+  let look = 'all';
+  try { const l = localStorage.getItem('mouse.look'); if (LOOKS.some(x => x[0] === l)) look = l; } catch (e) { }
 
   // The special edition: its pack is loaded when it is in this copy, its families open with a VIP code (Vip.cs).
   const PACK = '../vip/vip-cursors.js';
@@ -404,14 +478,36 @@
     return tile;
   }
 
-  // The gallery, in sections (C66): lampfish, the special edition, the trails, Bramble, Windows on one row, the user's own.
+  // The gallery, in sections (C66): what was used lately, lampfish, the special edition, the trails, Bramble, the families
+  // of Windows, the user's own, with filters on top (M2.6). The trail in use is marked in place, never by a new gallery.
+  let zones = [];
   function renderGallery() {
     if (!s || !library) return;
-    const zone = $('s-gallery'), t = trailState();
-    const key = [packReady, vipState().pack, vipState().unlocked, vipMessage, library.themes.map(x => x.name).join('|'), s.theme, LANGUAGE, t.kind, t.effective, trailsAll, windowsAll].join('#');
-    if (key === keyGallery) { mark(); return; }
+    const zone = $('s-gallery');
+    const key = [packReady, vipState().pack, vipState().unlocked, vipMessage, library.themes.map(x => x.name).join('|'), s.theme, LANGUAGE, trailsAll, look, (s.favorites || []).join('|'), (s.recent || []).join('|')].join('#');
+    if (key === keyGallery) { mark(); markTrails(); return; }
     keyGallery = key;
+    for (const z of zones) z.stop();
+    zones = [];
+    const all = [...families(), ...(packReady && vipState().unlocked ? CursorEngine.packFamilies.map(asFamily) : []), brambleFamily(), ...windowsFamilies(), ...mineFamilies()].filter(Boolean);
+    const shows = fam => look === 'all' || tagsOf(fam).has(look);
     const nodes = [];
+    const filters = document.createElement('div');
+    filters.className = 'm-looks';
+    filters.setAttribute('role', 'radiogroup');
+    filters.setAttribute('aria-label', tr('Show'));
+    for (const [k, label] of LOOKS) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'tool-chip';
+      b.setAttribute('role', 'radio');
+      b.setAttribute('aria-checked', String(look === k));
+      if (k === 'favorite') b.innerHTML = icon('star');
+      b.append(tr(label));
+      b.addEventListener('click', () => { look = k; try { localStorage.setItem('mouse.look', k); } catch (e) { } renderGallery(); });
+      filters.append(b);
+    }
+    nodes.push(filters);
     const section = (label, count, items, extra) => {
       const head = document.createElement('h3');
       head.className = 'themes__title';
@@ -425,70 +521,112 @@
       nodes.push(head, grid);
       return head;
     };
-    houseSections((label, note, items) => {
-      section(label, note || label === tr('Special edition') ? '' : items.length, items);
-      if (label === tr('Special edition')) trailSection(section);
-    });
-    if (!packReady) trailSection(section);
-    const system = library.themes.filter(x => x.kind === 'system');
-    if (system.length) {
-      const more = document.createElement('button');
-      more.type = 'button';
-      more.className = 'link themes__more';
-      more.innerHTML = icon(windowsAll ? 'caret-up' : 'caret-down');
-      more.append(windowsAll ? tr('Show less') : tr('Show all {0}', system.length));
-      more.addEventListener('click', () => { windowsAll = !windowsAll; renderGallery(); });
-      const shown = windowsAll ? system : system.filter(x => x.name === s.theme).concat(system.filter(x => x.name !== s.theme)).slice(0, 3);
-      section(tr('Windows'), system.length, shown.map(themeCard), system.length > 3 ? more : null);
+    const cases = list => list.filter(shows).map(familyTile);
+    if (look === 'all') {
+      const recent = [];
+      for (const name of s.recent || []) { const f = all.find(x => x.variants.some(v => v.name === name)); if (f && !recent.includes(f) && f.variants.every(v => v.name !== s.theme)) recent.push(f); }
+      if (recent.length) section(tr('Recent'), '', recent.slice(0, 3).map(familyTile));
     }
-    section(tr('My themes'), library.themes.filter(x => x.kind === 'mine').length, [...library.themes.filter(x => x.kind === 'mine').map(themeCard), newTheme()]);
+    const lamp = cases(families());
+    if (lamp.length) section(tr('lampfish'), lamp.length, lamp);
+    if (packReady && CursorEngine.packFamilies.length) {
+      if (vipState().unlocked) { const vip = cases(CursorEngine.packFamilies.map(asFamily)); if (vip.length) section(tr('Special edition'), '', vip); }
+      else if (look === 'all') section(tr('Special edition'), '', [vipTile()]);
+    }
+    if (look === 'all') trailSection(section);
+    const bramble = cases([brambleFamily()].filter(Boolean));
+    if (bramble.length) section(tr('Bramble'), '', bramble);
+    const win = cases(windowsFamilies());
+    if (win.length) section(tr('Windows'), win.length, win);
+    const mine = cases(mineFamilies());
+    if (look === 'all' || mine.length) section(tr('My themes'), mine.length, look === 'all' ? [...mine, newTheme()] : mine);
+    if (nodes.length === 1) nodes.push(Object.assign(document.createElement('p'), { className: 'themes__note', textContent: tr('No theme here yet') }));
     zone.replaceChildren(...nodes);
     mark();
+    markTrails();
   }
 
-  // One cursor at a time: the cursors of every source for the role chosen in the strip.
+  // One cursor at a time: the cursors of every source for the role chosen in the strip. The families of lampfish are drawn
+  // for that role and made on the first pick (M2.1); the cursors of Windows come by role, named after their scheme (M2.3).
+  const ENGINE_ROLE = id => id === 'SizeAll' ? 'move' : id.toLowerCase();
+  const SHORT = { 'Working in background': 'Background', 'Vertical resize': 'Vertical', 'Horizontal resize': 'Horizontal', 'Diagonal resize 1': 'Diagonal down', 'Diagonal resize 2': 'Diagonal up', 'Alternate select': 'Alternate' };
+  const roleName = name => tr(SHORT[name] || name);
   function renderPicks() {
     if (!s || !library || !editing) return;
     renderTabs();
-    const r = chosenRole();
-    $('s-for').textContent = tr('Cursors for “{0}”', r ? tr(r.name) : '');
+    const r = chosenRole(), index = s.roles.indexOf(r);
+    $('s-for').textContent = tr('Cursors for “{0}”', r ? roleName(r.name) : '');
     const zone = $('s-library');
-    const key = tab + '#' + role + '#' + library.custom.map(p => p.path).join('|') + '#' + (library.lampfishCursors || []).map(x => x.name).join('|') + '#' + LANGUAGE;
+    const key = tab + '#' + role + '#' + packReady + '#' + library.custom.map(p => p.path).join('|') + '#' + library.themes.map(x => x.name).join('|') + '#' + LANGUAGE;
     if (key === keyLibrary) { mark(); return; }
     keyLibrary = key;
     zone.replaceChildren();
-    const section = (label, items, extra, link) => {
+    const section = (label, tiles, link) => {
+      if (!tiles.length && !link) return;
       const head = document.createElement('h3');
       head.className = 'themes__title';
       head.innerHTML = '<span></span><span class="count"></span>';
       head.firstChild.textContent = label;
-      head.lastChild.textContent = items.length || '';
+      head.lastChild.textContent = tiles.filter(t => !t.classList.contains('m-drop')).length || '';
       if (link) head.append(link);
       const g = document.createElement('div');
       g.className = 'tiles tiles--cursors';
-      g.append(...items.map(cursorTile));
-      if (extra) g.append(extra);
+      g.append(...tiles);
       zone.append(head, g);
     };
-    // One cursor per theme of lampfish for the chosen role, named after its theme.
-    if (tab === 'all' || tab === 'lampfish') section(tr('lampfish'), (library.lampfishCursors || []).flatMap(t => t.cursors.filter(c => r && c.role === r.name).map(c => ({ ...c, role: null, name: t.title }))));
-    if (tab === 'all' || tab === 'windows') section(tr('Windows'), library.windows);
+    if (tab === 'all' || tab === 'lampfish') {
+      const drawn = [...CursorEngine.FAMILIES, ...(packReady && vipState().unlocked ? CursorEngine.packFamilies : [])].flatMap(f => f.variants.map(v => engineTile(f, v, r)));
+      const files = (library.lampfishCursors || []).flatMap(t => t.cursors.filter(c => r && c.role === r.name).map(c => cursorTile({ ...c, role: null, name: t.title })));
+      section(tr('lampfish'), [...drawn, ...files]);
+    }
+    if (tab === 'all' || tab === 'windows') section(tr('Windows'), ((library.windowsRoles || [])[index] || []).map(c => { const t = cursorTile(c); t.classList.add('is-neutral'); return t; }));
     if (tab === 'all' || tab === 'mine') {
-      const add = document.createElement('button');
-      add.className = 'tile-add';
-      add.innerHTML = icon('plus');
-      add.append(tr('Add'));
-      add.title = tr('Files .cur and .ani');
-      add.addEventListener('click', () => send('mouse.add'));
+      const drop = document.createElement('button');
+      drop.type = 'button';
+      drop.className = 'tile m-drop';
+      drop.innerHTML = icon('upload-simple');
+      drop.append(Object.assign(document.createElement('span'), { textContent: tr('Files .cur and .ani') }));
+      drop.title = tr('Add cursors');
+      drop.addEventListener('click', () => send('mouse.add'));
       const folder = document.createElement('button');
       folder.type = 'button';
       folder.className = 'link themes__more';
       folder.innerHTML = icon('folder-open');
       folder.append(tr('Open folder'));
       folder.addEventListener('click', () => send('mouse.folder'));
-      section(tr('My files'), library.custom, add, folder);
+      section(tr('My files'), [...library.custom.map(cursorTile), drop], folder);
     }
     mark();
+  }
+
+  // A cursor of a lampfish family for the chosen role: drawn live, written with its whole theme the first time.
+  function engineTile(f, v, r) {
+    const t = document.createElement('div');
+    t.className = 'tile tile--name tile-cursor';
+    t.tabIndex = 0;
+    t.dataset.theme = v.name;
+    t.title = tr(f.name) + (f.variants.length > 1 ? ' ' + tr(v.variant) : '');
+    t.innerHTML = '<div class="tile__case"></div><div class="tile__footer"><span class="name"></span></div>';
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = Math.round(48 * devicePixelRatio);
+    cv.style.width = cv.style.height = '48px';
+    if (r) CursorEngine.draw(cv, cv.width, v.name, ENGINE_ROLE(r.id), .6, false);
+    t.firstChild.append(cv);
+    t.querySelector('.name').textContent = t.title;
+    const pick = async () => {
+      if (!r || making.has(v.name)) return;
+      if (!libraryTheme(v.name)) {
+        making.add(v.name);
+        t.classList.add('loading');
+        try { send('mouse.make', { ...await CursorEngine.build(v.name), apply: false }); }
+        catch (e) { console.error(e); return; }
+        finally { making.delete(v.name); t.classList.remove('loading'); }
+      }
+      send('mouse.assignTheme', { theme: v.name, role: r.id });
+    };
+    t.addEventListener('click', pick);
+    t.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+    return t;
   }
 
   // The trails as live display cases. Without a code, one case that can be tried, locked for the rest (C66, Q8).
@@ -508,12 +646,14 @@
       b.className = 'tool-chip';
       b.innerHTML = icon(glyph);
       b.append(tr(label));
+      b.dataset.kind = k;
       b.setAttribute('aria-pressed', String(kind === k));
       b.addEventListener('click', () => send('trail.set', { kind: k }));
       modes.append(b);
     }
     const all = TRAILS.flatMap(([group, items]) => items.map(([id, name]) => [id, name, group]));
     const first = all.filter(x => x[0] === (kind === 'auto' ? t.effective : kind));
+    modes.dataset.modes = '1';
     const shown = trailsAll ? all : first.concat(all.filter(x => !first.includes(x))).slice(0, 6);
     const head = section(tr('Trails'), all.length, shown.map(([id, name, group]) => trailTile(id, name, false, group)), modes);
     const more = document.createElement('button');
@@ -526,7 +666,6 @@
   }
 
   function trailTile(id, name, locked, group) {
-    const t = trailState(), kind = t.kind || '';
     const c = document.createElement('div');
     c.className = 'theme theme--family m-trail' + (locked ? ' is-locked' : '');
     c.dataset.kind = id;
@@ -536,15 +675,12 @@
     c.querySelector('.m-trail__hint').textContent = tr('Move here');
     c.querySelector('.family__title').textContent = locked ? tr(name) : tr(group);
     c.querySelector('.family__sub').firstChild.textContent = locked ? tr('Special edition') : tr(name);
-    const chosen = !locked && kind === id, matched = !locked && kind === 'auto' && t.effective === id;
-    c.classList.toggle('current', chosen || matched);
-    if (chosen || matched) { const u = document.createElement('span'); u.className = 'family__use'; u.innerHTML = icon('check'); u.append(tr(chosen ? 'In use' : 'Matches the cursor')); c.querySelector('.family__sub').append(u); }
     if (locked) {
-      const mark = document.createElement('span');
-      mark.className = 'm-trail__lock';
-      mark.innerHTML = '<span>' + icon('lock') + '</span>';
-      mark.firstChild.append(tr('Special edition'));
-      c.querySelector('.family__stage').append(mark);
+      const lock = document.createElement('span');
+      lock.className = 'm-trail__lock';
+      lock.innerHTML = '<span>' + icon('lock') + '</span>';
+      lock.firstChild.append(tr('Special edition'));
+      c.querySelector('.family__stage').append(lock);
       const code = document.createElement('button');
       code.type = 'button';
       code.className = 'button';
@@ -557,8 +693,25 @@
       c.addEventListener('click', apply);
       c.addEventListener('keydown', e => { if (e.target === c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); apply(); } });
     }
-    requestAnimationFrame(() => TrailPreview.zone(c.querySelector('.family__stage'), id));
+    // While the pointer is over the preview, the real trail of lampfish steps aside: two trails at once looked broken.
+    const stage = c.querySelector('.family__stage');
+    let beat = 0;
+    stage.addEventListener('pointerenter', () => { send('trail.preview', { on: true }); clearInterval(beat); beat = setInterval(() => { if (c.isConnected) send('trail.preview', { on: true }); else clearInterval(beat); }, 1500); });
+    stage.addEventListener('pointerleave', () => { clearInterval(beat); send('trail.preview', { on: false }); });
+    requestAnimationFrame(() => { if (!c.isConnected) return; const z = TrailPreview.zone(stage, id); if (z) zones.push(z); });
     return c;
+  }
+
+  // The trail in use, marked on the cases already there: choosing one never rebuilds the gallery under the pointer.
+  function markTrails() {
+    const t = trailState(), kind = t.kind || '';
+    for (const b of document.querySelectorAll('.view--mouse [data-modes] .tool-chip')) b.setAttribute('aria-pressed', String((b.dataset.kind || '') === kind));
+    for (const c of document.querySelectorAll('.view--mouse .m-trail:not(.is-locked)')) {
+      const chosen = kind === c.dataset.kind, matched = kind === 'auto' && t.effective === c.dataset.kind;
+      c.classList.toggle('current', chosen || matched);
+      c.querySelector('.family__use')?.remove();
+      if (chosen || matched) { const u = document.createElement('span'); u.className = 'family__use'; u.innerHTML = icon('check'); u.append(tr(chosen ? 'In use' : 'Matches the cursor')); c.querySelector('.family__sub').append(u); }
+    }
   }
 
   function mark() {
@@ -620,7 +773,7 @@
     field.addEventListener('change', () => send('mouse.adjust', { what: q, value: Number(field.value) }));
   }
 
-  // The trails of the special edition (Trail.cs). Each tile shows a still drawn by the trail's own recipe.
+  // The trails of the special edition (Trail.cs), by group, with the ids Trail.cs and trail-preview.js share.
   const TRAILS = [
     ['Bubbles', [['bubbles-gold', 'Gold'], ['bubbles-abyss', 'Abyss'], ['bubbles-pearl', 'Pearl'], ['bubbles-prism', 'Prism'], ['bubbles-soap', 'Soap']]],
     ['Plankton', [['plankton-abyss', 'Abyss'], ['plankton-gold', 'Gold'], ['plankton-berry', 'Berry']]],
@@ -672,6 +825,7 @@
     renderGallery();
     renderPicks();
     renderDock();
+    markTrails();
   }
 
   function event(m) {
@@ -696,6 +850,16 @@
     if (yes) CursorEngine.warm();
     if (yes && !library) send('mouse.library');
   }
+
+  // The arrow keys move through a grid of cases or cursors, by its real number of columns.
+  for (const id of ['s-gallery', 's-library']) $(id).addEventListener('keydown', e => {
+    const here = e.target.closest('.theme, .tile-cursor, .m-drop');
+    if (!here || !/^Arrow(Left|Right|Up|Down)$/.test(e.key) || e.target !== here) return;
+    const items = [...here.parentElement.children].filter(x => x.matches('.theme, .tile, .m-drop'));
+    const cols = Math.max(1, Math.round(here.parentElement.clientWidth / here.offsetWidth));
+    const i = items.indexOf(here), j = i + ({ ArrowLeft: -1, ArrowRight: 1, ArrowUp: -cols, ArrowDown: cols })[e.key];
+    if (items[j]) { e.preventDefault(); items[j].focus(); }
+  });
 
   // Restore: one button, a menu whose lines say what you get (C66), as the menu of Capture in Shelf.
   function restoreMenu(open) {
