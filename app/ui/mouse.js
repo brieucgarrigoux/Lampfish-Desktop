@@ -67,7 +67,7 @@
     $('s-discard').hidden = !s.based;
   }
 
-  const currentFamily = () => s && library ? [...families(), ...(packReady ? CursorEngine.packFamilies.map(asFamily) : []), brambleFamily(), ...windowsFamilies()].filter(Boolean).find(f => f.variants.some(v => v.name === s.theme)) : null;
+  const currentFamily = () => s && library ? [...families(), ...(packReady ? CursorEngine.packFamilies.map(asFamily) : []), ...customFamilies(), brambleFamily(), ...windowsFamilies()].filter(Boolean).find(f => f.variants.some(v => v.name === s.theme)) : null;
 
   function edit(on) {
     editing = on;
@@ -274,7 +274,7 @@
   function refreshCurrent() {
     const t = s && libraryTheme(s.theme);
     if (!t || !t.made || t.version === CursorEngine.VERSION || !CursorEngine.has(t.name) || making.has(t.name)) return;
-    const fam = [...families(), ...CursorEngine.packFamilies.map(asFamily)].find(f => f.variants.some(v => v.name === t.name));
+    const fam = [...families(), ...CursorEngine.packFamilies.map(asFamily), ...customFamilies()].find(f => f.variants.some(v => v.name === t.name));
     if (fam) applyVariant(fam, fam.variants.find(v => v.name === t.name), null, true);
   }
 
@@ -302,8 +302,8 @@
       if (fam.engine) { hero.append(canvas(64)); side.append(canvas(34), canvas(34)); draw(.6, false); }
       else { const sh = v.theme.showcase; hero.append(image(sh[0])); side.append(image(sh[1] || sh[0]), image(sh[3] || sh[2] || sh[0])); }
       const title = c.querySelector('.family__title');
-      title.textContent = fam.mine ? v.theme.title : tr(fam.name);
-      title.translate = !fam.mine;
+      title.textContent = fam.mine ? v.theme.title : fam.custom ? fam.name : tr(fam.name);
+      title.translate = !fam.mine && !fam.custom;
       c.querySelector('.family__sub').firstChild.textContent = fam.variants.length > 1 || fam.sub ? tr(fam.sub || v.variant) : '';
       const use = c.querySelector('.family__use');
       if (current && current.name === v.name) { if (!use) { const u = document.createElement('span'); u.className = 'family__use'; u.innerHTML = icon('check'); u.append(tr('In use')); c.querySelector('.family__sub').append(u); } }
@@ -373,6 +373,7 @@
       ground: /Black|Inverted|Standard/.test(base) ? 'neutral' : '', variants: variants.sort((a, b) => a.rank - b.rank),
     })).sort((a, b) => Object.keys(WINDOWS_FAMILY).indexOf(a.variants[0].name.replace(/ \(.*$/, '')) - Object.keys(WINDOWS_FAMILY).indexOf(b.variants[0].name.replace(/ \(.*$/, '')));
   }
+  const customFamilies = () => CursorEngine.customFamilies.map(f => ({ ...asFamily(f), mine: false, custom: true }));
   const mineFamilies = () => library.themes.filter(t => t.kind === 'mine').map(t => ({ key: 'mine-' + t.name, name: t.title, mine: true, engine: false, variants: [{ name: t.name, variant: '', swatch: '#2ed9c6', theme: t }] }));
 
   // What a family looks like, for the filters (M2.6): its colours, whether it moves, whether it is made to be seen.
@@ -484,12 +485,12 @@
   function renderGallery() {
     if (!s || !library) return;
     const zone = $('s-gallery');
-    const key = [packReady, vipState().pack, vipState().unlocked, vipMessage, library.themes.map(x => x.name).join('|'), s.theme, LANGUAGE, trailsAll, look, (s.favorites || []).join('|'), (s.recent || []).join('|')].join('#');
+    const key = [packReady, vipState().pack, vipState().unlocked, vipMessage, library.themes.map(x => x.name).join('|'), JSON.stringify(CursorEngine.customFamilies.map(f => [f.key, f.name, f.variants.map(v => v.name + v.a + v.b)])), s.theme, LANGUAGE, trailsAll, look, (s.favorites || []).join('|'), (s.recent || []).join('|')].join('#');
     if (key === keyGallery) { mark(); markTrails(); return; }
     keyGallery = key;
     for (const z of zones) z.stop();
     zones = [];
-    const all = [...families(), ...(packReady && vipState().unlocked ? CursorEngine.packFamilies.map(asFamily) : []), brambleFamily(), ...windowsFamilies(), ...mineFamilies()].filter(Boolean);
+    const all = [...families(), ...(packReady && vipState().unlocked ? CursorEngine.packFamilies.map(asFamily) : []), ...customFamilies(), brambleFamily(), ...windowsFamilies(), ...mineFamilies()].filter(Boolean);
     const shows = fam => look === 'all' || tagsOf(fam).has(look);
     const nodes = [];
     const filters = document.createElement('div');
@@ -538,6 +539,17 @@
     if (bramble.length) section(tr('Bramble'), '', bramble);
     const win = cases(windowsFamilies());
     if (win.length) section(tr('Windows'), win.length, win);
+    const made = cases(customFamilies());
+    if (look === 'all' || made.length) {
+      const make = document.createElement('button');
+      make.type = 'button';
+      make.className = 'theme theme--add';
+      make.innerHTML = '<strong>+</strong><span></span>';
+      make.lastChild.textContent = tr('Make your own');
+      make.title = tr('Opens the Workshop');
+      make.addEventListener('click', () => showView('workshop'));
+      section(tr('My families'), made.length, look === 'all' ? [...made, make] : made);
+    }
     const mine = cases(mineFamilies());
     if (look === 'all' || mine.length) section(tr('My themes'), mine.length, look === 'all' ? [...mine, newTheme()] : mine);
     if (nodes.length === 1) nodes.push(Object.assign(document.createElement('p'), { className: 'themes__note', textContent: tr('No theme here yet') }));
@@ -557,7 +569,7 @@
     const r = chosenRole(), index = s.roles.indexOf(r);
     $('s-for').textContent = tr('Cursors for “{0}”', r ? roleName(r.name) : '');
     const zone = $('s-library');
-    const key = tab + '#' + role + '#' + packReady + '#' + library.custom.map(p => p.path).join('|') + '#' + library.themes.map(x => x.name).join('|') + '#' + LANGUAGE;
+    const key = tab + '#' + role + '#' + packReady + '#' + CursorEngine.customFamilies.map(f => f.variants.map(v => v.name + v.a + v.b).join()).join('|') + '#' + library.custom.map(p => p.path).join('|') + '#' + library.themes.map(x => x.name).join('|') + '#' + LANGUAGE;
     if (key === keyLibrary) { mark(); return; }
     keyLibrary = key;
     zone.replaceChildren();
@@ -575,7 +587,7 @@
       zone.append(head, g);
     };
     if (tab === 'all' || tab === 'lampfish') {
-      const drawn = [...CursorEngine.FAMILIES, ...(packReady && vipState().unlocked ? CursorEngine.packFamilies : [])].flatMap(f => f.variants.map(v => engineTile(f, v, r)));
+      const drawn = [...CursorEngine.FAMILIES, ...(packReady && vipState().unlocked ? CursorEngine.packFamilies : []), ...CursorEngine.customFamilies].flatMap(f => f.variants.map(v => engineTile(f, v, r)));
       const files = (library.lampfishCursors || []).flatMap(t => t.cursors.filter(c => r && c.role === r.name).map(c => cursorTile({ ...c, role: null, name: t.title })));
       section(tr('lampfish'), [...drawn, ...files]);
     }
@@ -921,5 +933,10 @@
     mark();
   }
 
-  Lampfish.mouse = { state, event, visible, renderDock };
+  function use(name) {
+    const fam = [...families(), ...customFamilies(), ...(packReady ? CursorEngine.packFamilies.map(asFamily) : [])].find(f => f.variants.some(v => v.name === name));
+    if (fam) applyVariant(fam, fam.variants.find(v => v.name === name), null);
+  }
+
+  Lampfish.mouse = { state, event, visible, renderDock, use };
 })();

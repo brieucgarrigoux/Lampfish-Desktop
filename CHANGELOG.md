@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Workshop, a new service next to Mouse: a cursor family of your own from one of seven styles (Flat, Glass, Neon, Metal, Photophore, Deep, Nacre) and two colours, with as many colours as you like in the family. Everything is drawn live, with a zone to try the real cursor. The families go to Mouse, under My families.
+- Workshop, From files: a cursor pack downloaded from the web (.zip, its install.inf, or loose .cur and .ani files) becomes a theme of Mouse. The install.inf is only read to find which file goes to which role, never run; each role can then be changed by hand.
 - Mouse: new lampfish cursor themes in families, each with its colours: Photophore, Nacre, Deep, Neon, Metal, Scale, Origami, Riso, Bubble, Flat, Glass and Pixel. Every theme has the 17 cursors of Windows, and the ones that move loop without a jump. They are drawn by lampfish and written the first time they are applied, about 3 seconds.
 - Mouse: the Bramble themes have their own section, under the lampfish ones.
 - Mouse: a special edition, Lure, Gold and Black Gold, opened by a VIP code typed in Mouse. The code is checked on the PC and nothing is sent. Its cursors come in a pack that is not part of this repository and has its own license.

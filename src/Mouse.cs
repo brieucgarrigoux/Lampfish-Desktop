@@ -557,6 +557,31 @@ namespace Lampfish
         // The library asks for about 500 previews each time it is sent: the answer is kept per file and date, in memory.
         static readonly Dictionary<string, KeyValuePair<long, object>> previews = new Dictionary<string, KeyValuePair<long, object>>(StringComparer.OrdinalIgnoreCase);
 
+        public static object PreviewOf(string file) { return Preview(file); }
+        public static bool IsCursor(string file) { return Readable(file); }
+        public static string[] RoleNames { get { return Roles.Select(r => r[1]).ToArray(); } }
+        public static string[] RoleIds { get { return Roles.Select(r => r[0]).ToArray(); } }
+
+        // A pack made into a theme in the Workshop: its files copied into the user's own folder, then a scheme like any theme.
+        public static string AddPack(string wanted, string[] files)
+        {
+            string name = FreeName(wanted);
+            string safe = new string(name.Select(c => Path.GetInvalidFileNameChars().Contains(c) ? '_' : c).ToArray()).Trim();
+            string folder = Path.Combine(CustomFolder, "packs", safe.Length == 0 ? "pack" : safe);
+            Directory.CreateDirectory(folder);
+            var row = new string[Roles.Length];
+            for (int i = 0; i < Roles.Length; i++)
+            {
+                if (i >= files.Length || string.IsNullOrEmpty(files[i]) || !File.Exists(files[i])) { row[i] = ""; continue; }
+                string target = Path.Combine(folder, Roles[i][0] + Path.GetExtension(files[i]).ToLowerInvariant());
+                File.Copy(files[i], target, true);
+                row[i] = target;
+            }
+            WriteScheme(name, string.Join(",", row));
+            Program.Send(Library());
+            return name;
+        }
+
         static object Preview(string file)
         {
             if (string.IsNullOrEmpty(file)) return null;
@@ -1072,7 +1097,7 @@ namespace Lampfish
             return false;
         }
 
-        static readonly System.Text.RegularExpressions.Regex MadeName = new System.Text.RegularExpressions.Regex(@"^lampfish [A-Za-z][A-Za-z ]{0,40}$");
+        static readonly System.Text.RegularExpressions.Regex MadeName = new System.Text.RegularExpressions.Regex(@"^lampfish [\p{L}\p{N}][\p{L}\p{N} '-]{0,60}$");
 
         // Writes the files the page drew for a theme, in a fresh folder that replaces the old one in one move, then applies it if asked.
         static bool Make(Dictionary<string, object> m)

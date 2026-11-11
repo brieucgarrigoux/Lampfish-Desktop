@@ -500,8 +500,51 @@ async function build(name, progress, roles = ROLES, still = false) {
 
 // A pack (the special edition) adds its own families and styles with the same drawing tools.
 const packs = [], packFamilies = [];
+
+// Families made in the Workshop (C67): a style and two colours per variant, on top of a real variant of that style.
+// The page and the workers derive the same drawing from the same three values, so only those are kept in the settings.
+const hex2rgb = h => { const n = parseInt(String(h).slice(1), 16) || 0; return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+const rgb2hex = c => '#' + c.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
+const mixHex = (a, b, k) => { const x = hex2rgb(a), y = hex2rgb(b); return rgb2hex(x.map((v, i) => v + (y[i] - v) * k)); };
+const lightHex = (c, k) => mixHex(c, '#ffffff', k), darkHex = (c, k) => mixHex(c, '#000000', k);
+const rgbStr = c => hex2rgb(c).join(','), rgbaStr = (c, a) => `rgba(${rgbStr(c)},${a})`;
+const CUSTOM_STYLES = {
+  flat: (a, b) => ({ body: a, edge: b, lamp: b, ink: b, crease: rgbaStr(b, .45) }),
+  glass: (a, b) => ({ top: lightHex(a, .35), bottom: darkHex(a, .35), rim: b, glow: a, ink: b, crease: rgbaStr(b, .4) }),
+  neon: (a, b) => ({ tube: a, core: rgbaStr(lightHex(mixHex(a, b, .5), .8), .95) }),
+  metal: (a, b) => ({ stops: [[0, lightHex(a, .9)], [.16, lightHex(a, .5)], [.34, mixHex(a, b, .5)], [.5, lightHex(a, .85)], [.66, a], [.84, darkHex(mixHex(a, b, .5), .4)], [1, lightHex(a, .45)]], edge: darkHex(b, .7) }),
+  photophore: (a, b) => ({ body: [darkHex(b, .7), darkHex(b, .9)], rim: mixHex(a, b, .6), halo: rgbaStr(lightHex(a, .4), .45), dot: rgbStr(lightHex(a, .75)), glow: rgbStr(a) }),
+  depth: (a, b) => ({ stops: [[0, lightHex(a, .8)], [.22, a], [.6, mixHex(a, b, .65)], [1, darkHex(b, .6)]], edge: darkHex(b, .85), lamp: lightHex(a, .45), arc: lightHex(a, .85) }),
+  nacre: (a, b) => ({ stops: [lightHex(a, .85), lightHex(a, .55), lightHex(mixHex(a, '#c9b8ff', .5), .6), lightHex(mixHex(a, '#ffb3d1', .5), .6), lightHex(mixHex(a, '#fff3cf', .5), .7), lightHex(a, .65), lightHex(a, .85)], edge: darkHex(b, .3), arc: mixHex(a, b, .5), crease: rgbaStr(b, .4) }),
+};
+const customFamilies = [];
+function customVariant(style, a, b) {
+  const base = FAMILIES.flatMap(f => f.variants).find(v => v.style === style);
+  const own = JSON.parse(JSON.stringify(base));
+  delete own.name; delete own.family; delete own.variant;
+  return Object.assign(own, CUSTOM_STYLES[style](a, b), { style, swatch: a });
+}
+// Registers the families of the Workshop, replacing any earlier copy of the same family.
+function setCustom(list) {
+  customFamilies.length = 0;
+  for (const f of list || []) {
+    if (!f || !f.name || !Array.isArray(f.variants)) continue;
+    const family = { key: f.key, name: f.name, custom: true, variants: [] };
+    for (const v of f.variants) {
+      if (!CUSTOM_STYLES[v.style]) continue;
+      const theme = customVariant(v.style, v.a, v.b);
+      theme.variant = v.variant;
+      theme.name = ('lampfish ' + f.name + ' ' + v.variant).trim();
+      theme.family = f.key;
+      theme.a = v.a; theme.b = v.b;
+      THEME[theme.name] = theme;
+      family.variants.push(theme);
+    }
+    if (family.variants.length) customFamilies.push(family);
+  }
+}
 const api = {
-  VERSION, FAMILIES, THEME, ROLES, packs, packFamilies,
+  VERSION, FAMILIES, THEME, ROLES, packs, packFamilies, customFamilies, CUSTOM_STYLES, setCustom, customVariant,
   kit: { STYLES, layer, stamp, band, inner, paint, glow, noGlow, lin, conic, star, finish, details, busyArc, lampAt, wave, frac, TAU },
   addFamilies: list => { for (const f of list) { for (const v of f.variants) { v.name = ('lampfish ' + f.name + ' ' + v.variant).trim(); v.family = f.key; THEME[v.name] = v; } packFamilies.push(f); } },
   has: name => !!THEME[name],
@@ -514,6 +557,7 @@ if (typeof document === 'undefined') {
   self.onmessage = async e => {
     try {
       for (const url of e.data.packs || []) if (!packs.includes(url)) { importScripts(url); packs.push(url); }
+      if (e.data.custom) setCustom(e.data.custom);
       postMessage({ done: await build(e.data.build, p => postMessage({ progress: p }), e.data.roles, e.data.still) }); }
     catch (err) { postMessage({ error: String(err) }); }
   };
@@ -528,7 +572,7 @@ if (typeof document === 'undefined') {
       if (e.data.error) no(new Error(e.data.error)); else ok(e.data.done.files);
     };
     worker.onerror = err => { drop(); no(err); };
-    worker.postMessage({ build: name, roles, still, packs });
+    worker.postMessage({ build: name, roles, still, packs, custom: customFamilies.map(f => ({ key: f.key, name: f.name, variants: f.variants.map(v => ({ variant: v.variant, style: v.style, a: v.a, b: v.b })) })) });
   });
   const run = async (name, progress, still) => {
     try { workers = workers || Array.from({ length: COUNT }, () => new Worker('cursor-engine.js')); }

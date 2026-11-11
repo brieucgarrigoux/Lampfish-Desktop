@@ -38,11 +38,18 @@ const HELP_CARDS = {
     ['.panel .only-icons .fold', 'Folders already changed', 'Every folder with a new icon, to find it again or undo it.'],
   ],
   mouse: [
-    ['#s-roles', 'One cursor per role', 'Pick a role, then a cursor of the library below to replace it.'],
-    ['.size-cursor', 'Size of the pointer', 'Larger or smaller cursors, for every role at once.'],
-    ['.showcase__controls .button:not([hidden])', 'Undo the cursor changes', 'Back to original returns to the cursors before lampfish, Reset to default to those of Windows.'],
-    ['#s-library .theme, #s-tabs', 'Sets of cursors', 'A click on a set gives all its cursors at once.'],
+    ['#s-now', 'The cursors in use', 'Its colours, the size, the trail; Edit cursors changes one role at a time.'],
+    ['#s-restore', 'Go back', 'The cursors from before lampfish, or those of Windows, with Undo.'],
+    ['.m-looks', 'Filter the looks', 'Dark, light, colorful, animated, easy to see, or your favorites.'],
+    ['#s-gallery .theme--family', 'Pick a look', 'A click applies it; the swatches are its colours.'],
     ['.panel .only-mouse .fold', 'Settings of the pointer', 'Speed, clicks and wheel: the same settings as in Windows.'],
+  ],
+  workshop: [
+    ['#w-stage', 'Your cursor, live', 'Drawn as it will be on screen; the try zone below wears it.'],
+    ['#w-styles', 'A style', 'Seven looks of lampfish that take your colours.'],
+    ['#w-family', 'A family of colours', 'Each colour added becomes a swatch, like the families of lampfish.'],
+    ['#w-form', 'Name it', 'Create puts it in Mouse, under My families.'],
+    ['#w-families', 'Your families', 'Edit, use or remove the families made here.'],
   ],
   station: [
     ['#knob', 'Volume of the sounds', 'Drag left or right, or scroll over it. Only the sounds of lampfish change.'],

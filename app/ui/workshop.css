@@ -1,0 +1,67 @@
+/* The Workshop (C67): a well with the cursor large, the 17 roles, a try zone; style, colours, family and name in the panel. */
+.view--workshop { max-width: 1120px; margin-inline: auto; }
+.w-head { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-bottom: 16px; }
+.w-head h1 { margin: 0; }
+.w-space { flex: 1; }
+.w-stage { position: relative; display: grid; place-items: center; height: 260px; border-radius: var(--radius-card);
+  background: linear-gradient(180deg, rgba(255, 255, 255, .05), transparent 45%), radial-gradient(70% 110% at 50% 40%, color-mix(in srgb, var(--tint, var(--accent)) 30%, transparent), transparent 66%), var(--sunken); }
+.w-ground { position: absolute; bottom: 54px; left: 50%; width: 120px; height: 16px; margin-left: -60px; border-radius: 50%; background: radial-gradient(closest-side, rgba(0, 0, 0, .45), transparent); }
+.w-stage canvas { position: relative; z-index: 1; }
+.w-stage__name { position: absolute; left: 18px; bottom: 14px; display: flex; flex-direction: column; }
+.w-stage__name b { font: 600 var(--text-title)/1.2 var(--display); }
+.w-stage__name small { font-size: var(--text-caption); color: var(--text-soft); }
+.w-roles { display: grid; grid-template-columns: repeat(auto-fill, minmax(68px, 1fr)); gap: 6px; margin-top: 12px; }
+.w-roles span { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; padding: 8px 2px; border-radius: var(--radius-control); background: var(--group); }
+.w-roles small { max-width: 100%; font-size: var(--text-micro); color: var(--text-pale); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.w-try { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.w-try > * { display: grid; place-items: center; min-height: 48px; border: 0; border-radius: var(--radius-control); background: var(--group); color: var(--text-soft); font: inherit; font-size: var(--text-caption); }
+.w-try a { color: var(--accent); text-decoration: underline; }
+.w-try input { padding: 0 12px; color: var(--text); outline: none; text-align: center; }
+.w-styles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 10px; }
+.w-styles button { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; padding: 8px 2px 6px; border: 0; border-radius: var(--radius-control); background: none; color: var(--text-soft); font-size: var(--text-micro); transition: background var(--fast); }
+.w-styles button:hover { background: var(--group-up); }
+.w-styles button[aria-checked="true"] { color: var(--text); background: var(--accent-tint); box-shadow: var(--pressed); }
+.w-colors { display: flex; flex-wrap: wrap; gap: 10px 18px; padding: 12px 14px; }
+.w-colour { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.w-colour span { display: flex; flex-direction: column; }
+.w-colour b { font-size: var(--text-body); font-weight: 600; }
+.w-colour small { font-size: var(--text-caption); color: var(--text-pale); }
+.w-colour input { width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; }
+.w-colour input::-webkit-color-swatch-wrapper { padding: 0; }
+.w-colour input::-webkit-color-swatch { border: 0; border-radius: 50%; box-shadow: inset 0 0 0 1px var(--hairline-strong); }
+.w-suggest { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 14px 14px; }
+.w-pair { box-shadow: inset 0 0 0 1px var(--hairline-strong); }
+.w-family { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 14px; }
+.w-family .swatch { width: 26px; height: 26px; }
+.w-swatch { position: relative; display: inline-flex; }
+.w-swatch__remove { position: absolute; top: -6px; right: -6px; width: 16px; height: 16px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: var(--group-up); color: var(--text-soft); box-shadow: inset 0 0 0 1px var(--hairline-strong); opacity: 0; transition: opacity var(--fast); }
+.w-swatch__remove .ph { width: 10px; height: 10px; }
+.w-swatch:hover .w-swatch__remove, .w-swatch__remove:focus-visible { opacity: 1; }
+.w-name { display: flex; gap: 8px; padding: 12px 14px 6px; }
+.w-name input { flex: 1; min-width: 0; border: 0; border-radius: var(--radius-control); padding: 8px 12px; background: var(--sunken); color: var(--text); font: inherit; font-size: var(--text-body); outline: none; box-shadow: inset 0 0 0 1px var(--hairline); }
+.w-name input:focus { box-shadow: inset 0 0 0 1px var(--accent); }
+.w-note { min-height: 18px; margin: 0; padding: 0 14px 12px; font-size: var(--text-caption); color: var(--text-pale); }
+.w-note.is-error { color: var(--bad); }
+#w-families .theme__swatches { gap: 4px; }
+
+/* From files (W2): a drop zone, then the 17 roles as found in the pack, each one replaceable. */
+#w-tabs button { width: auto; padding: 0 12px; white-space: nowrap; }
+.w-drop { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; padding: 18px; border-radius: var(--radius-card); outline: 1.5px dashed var(--hairline-strong); outline-offset: -6px; color: var(--text-soft); }
+.w-drop > .ph { width: 32px; height: 32px; flex: none; }
+.w-drop > span { flex: 1 1 220px; display: flex; flex-direction: column; gap: 2px; }
+.w-drop b { color: var(--text); font-size: var(--text-body); }
+.w-drop small { font-size: var(--text-caption); color: var(--text-pale); }
+.w-packhead { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-bottom: 6px; }
+.w-packhead input { flex: 1 1 220px; min-width: 0; border: 0; border-radius: var(--radius-control); padding: 8px 12px; background: var(--sunken); color: var(--text); font: inherit; font-size: var(--text-body); outline: none; box-shadow: inset 0 0 0 1px var(--hairline); }
+.w-packhead input:focus { box-shadow: inset 0 0 0 1px var(--accent); }
+#w-files > .w-note { padding: 0 2px 10px; }
+.w-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; margin-bottom: 18px; }
+.w-slot { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 4px 9px; border-radius: var(--radius-control); background: var(--group); cursor: pointer; transition: background var(--fast); }
+.w-slot:hover { background: var(--group-up); }
+.w-slot:hover .w-swatch__remove, .w-slot:focus-within .w-swatch__remove { opacity: 1; }
+.w-slot .w-swatch__remove { top: 4px; right: 4px; }
+.w-slot__case { width: 56px; height: 56px; display: grid; place-items: center; border-radius: var(--radius-small); background: radial-gradient(circle, #9aa3a4, #6b7375); }
+.w-slot__case img { width: 40px; height: 40px; }
+.w-slot__case img.retro { width: 48px; height: 48px; }
+.w-slot.is-empty .w-slot__case { background: var(--sunken); color: var(--text-pale); outline: 1.5px dashed var(--hairline-strong); outline-offset: -4px; }
+.w-slot__name { max-width: 100%; font-size: var(--text-caption); color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

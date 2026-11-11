@@ -68,6 +68,7 @@ namespace Lampfish
         public bool TrailClick = true;
         public List<string> MouseFavorites;
         public List<string> MouseRecent;
+        public List<WorkshopFamily> Workshop;
         public WindowPlace Window;
         public bool UpdatesAuto;
         public string UpdatesLast;
@@ -885,6 +886,11 @@ namespace Lampfish
                 if (Vip.Receive(action.Substring(action.IndexOf('.') + 1), m)) { Save(); SendState(); }
                 return;
             }
+            if (action.StartsWith("workshop."))
+            {
+                if (Workshop.Receive(action.Substring(action.IndexOf('.') + 1), m, files)) { Save(); SendState(); }
+                return;
+            }
             if (action.StartsWith("trail."))
             {
                 if (Trail.Receive(action.Substring(action.IndexOf('.') + 1), m)) { Save(); SendState(); }
@@ -1072,6 +1078,7 @@ namespace Lampfish
                 mouse = Mouse.State(),
                 vip = Vip.State(),
                 trail = Trail.State(),
+                workshop = Workshop.State(),
                 arrange = Arrange.State(),
                 files = DiskUsage.State(),
                 duplicates = Duplicates.State(),

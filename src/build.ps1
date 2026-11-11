@@ -51,7 +51,7 @@ $csc = "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
 # Path options are quoted whole because the folder name may contain spaces.
 $exe = if ($Output) { $Output } else { "$root\Lampfish.exe" }
 & $csc /nologo /target:winexe /platform:x64 /optimize+ "/out:$exe" "/win32icon:$ico" "/resource:$ico,icon.ico" `
-    /r:System.Windows.Forms.dll /r:System.Drawing.dll /r:System.Web.Extensions.dll /r:Microsoft.VisualBasic.dll /r:System.Management.dll `
+    /r:System.Windows.Forms.dll /r:System.Drawing.dll /r:System.Web.Extensions.dll /r:Microsoft.VisualBasic.dll /r:System.Management.dll /r:System.IO.Compression.dll /r:System.IO.Compression.FileSystem.dll `
     "/lib:$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\WPF" /r:System.Runtime.WindowsRuntime.dll /r:PresentationCore.dll /r:WindowsBase.dll /r:System.Xaml.dll /r:Microsoft.CSharp.dll `
     "/r:$lib\Microsoft.Web.WebView2.Core.dll" "/r:$lib\Microsoft.Web.WebView2.WinForms.dll" "/r:$lib\PdfSharp.dll" `
     "$src\*.cs"

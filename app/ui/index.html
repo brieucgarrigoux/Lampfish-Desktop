@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="icons.css">
 <link rel="stylesheet" href="arrange.css">
 <link rel="stylesheet" href="mouse.css">
+<link rel="stylesheet" href="workshop.css">
 <link rel="stylesheet" href="disk.css">
 <link rel="stylesheet" href="hardware.css">
 <link rel="stylesheet" href="network.css">
@@ -70,6 +71,10 @@
     <button class="service" data-view="mouse">
       <svg class="ph" aria-hidden="true"><use href="icons.svg#cursor"/></svg>
       Mouse
+    </button>
+    <button class="service" data-view="workshop">
+      <svg class="ph" aria-hidden="true"><use href="icons.svg#swatches"/></svg>
+      Workshop
     </button>
     <button class="service" data-view="station">
       <svg class="ph" aria-hidden="true"><use href="icons.svg#waveform"/></svg>
@@ -355,6 +360,32 @@
         <button class="link" type="button" id="s-discard"><svg class="ph" aria-hidden="true"><use href="icons.svg#x"/></svg>Discard</button>
       </form>
     </div>
+  </section>
+
+  <section class="view view--workshop only-workshop" aria-label="Workshop">
+    <div class="w-head">
+      <h1>Workshop</h1>
+      <div class="segments" id="w-tabs" role="tablist" aria-label="Workshop">
+        <button type="button" role="tab" data-tab="design" aria-checked="true">Design</button>
+        <button type="button" role="tab" data-tab="files" aria-checked="false">From files</button>
+      </div>
+      <span class="w-space"></span>
+      <button type="button" class="button button--accent" id="w-create"><svg class="ph" aria-hidden="true"><use href="icons.svg#plus"/></svg>Create</button>
+    </div>
+    <div id="w-design">
+      <div class="w-stage" id="w-stage"><span class="w-ground"></span><span class="w-stage__name"><b id="w-title"></b><small id="w-sub"></small></span></div>
+      <div class="w-roles" id="w-roles"></div>
+      <h3 class="themes__title">Try it</h3>
+      <div class="w-try" id="w-try">
+        <a href="#" id="w-try-link">A link</a>
+        <input id="w-try-text" value="Some text" aria-label="Some text">
+        <span data-role="sizewe">Drag the edge</span>
+        <span data-role="wait">Busy</span>
+      </div>
+      <h3 class="themes__title"><span>My families</span><span class="count" id="w-count"></span></h3>
+      <div class="themes" id="w-families"></div>
+    </div>
+    <div id="w-files" hidden></div>
   </section>
 
   <section class="view view--station only-station" aria-label="Sounds">
@@ -901,6 +932,10 @@
         <summary class="row action"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#cursor"/></svg><span>Mouse<small>Cursors and pointer settings</small></span></span><svg class="ph chevron" aria-hidden="true"><use href="icons.svg#caret-right"/></svg></summary>
         <dl class="tr-body"><dt>Reads</dt><dd>The cursor settings of Windows</dd><dt>Changes</dt><dd>The cursors, the cursor size and the pointer settings of Windows</dd><dt>To undo</dt><dd>Back to original, or uninstalling lampfish for the cursors</dd></dl>
       </details>
+      <details class="tr-row" data-view="workshop">
+        <summary class="row action"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#swatches"/></svg><span>Workshop<small>Makes cursor families of your own</small></span></span><svg class="ph chevron" aria-hidden="true"><use href="icons.svg#caret-right"/></svg></summary>
+        <dl class="tr-body"><dt>Reads</dt><dd>Nothing but what you pick in it</dd><dt>Changes</dt><dd>Nothing until a colour is applied in Mouse; the cursors are then written in the folder of lampfish</dd><dt>To undo</dt><dd>Remove the family, with Undo</dd></dl>
+      </details>
       <details class="tr-row" data-view="station">
         <summary class="row action"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#waveform"/></svg><span>Sounds<small>Plays a sound on Windows events</small></span></span><svg class="ph chevron" aria-hidden="true"><use href="icons.svg#caret-right"/></svg></summary>
         <dl class="tr-body"><dt>Reads</dt><dd>Windows events: lock, sleep, power, USB devices</dd><dt>Changes</dt><dd>Nothing in Windows: it only plays its own sounds</dd><dt>To undo</dt><dd>Nothing to undo</dd></dl>
@@ -1312,6 +1347,29 @@
     </div>
   </div>
 
+  <div class="only-workshop">
+    <h2>Style</h2>
+    <div class="group"><div class="w-styles" id="w-styles" role="radiogroup" aria-label="Style"></div></div>
+    <h2>Colours</h2>
+    <div class="group">
+      <div class="w-colors">
+        <label class="w-colour"><input type="color" id="w-a"><span><b id="w-a-label"></b><small>First colour</small></span></label>
+        <label class="w-colour"><input type="color" id="w-b"><span><b id="w-b-label"></b><small>Second colour</small></span></label>
+      </div>
+      <div class="w-suggest" id="w-suggest"></div>
+    </div>
+    <h2>Family</h2>
+    <div class="group"><div class="w-family" id="w-family"></div></div>
+    <h2>Name</h2>
+    <div class="group">
+      <form class="w-name" id="w-form">
+        <input id="w-name" maxlength="30" autocomplete="off" placeholder="Name the family" aria-label="Name the family">
+        <button type="submit" class="button button--accent" id="w-save"><svg class="ph" aria-hidden="true"><use href="icons.svg#plus"/></svg>Create</button>
+      </form>
+      <p class="w-note" id="w-note"></p>
+    </div>
+  </div>
+
   <div class="only-files">
     <h2>Drive or folder analyzed</h2>
     <div class="group" id="f-sources"></div>
@@ -1441,6 +1499,7 @@
 <script src="cursor-engine.js"></script>
 <script src="trail-preview.js"></script>
 <script src="mouse.js"></script>
+<script src="workshop.js"></script>
 <script src="disk.js"></script>
 <script src="chart.js"></script>
 <script src="hardware.js"></script>

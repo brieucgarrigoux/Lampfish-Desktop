@@ -169,7 +169,7 @@ h2 .count { margin-left: 8px; font: 400 var(--text-caption) var(--numbers); font
 /* A page that holds a second service shows it below, under its own smaller title. */
 .view--duplicates > h1, .view--assistant > h1, .view--plugins > h1 { margin-top: 44px; font-size: 22px; }
 body:not([data-view="wallpaper"]) .only-wallpaper, body:not([data-view="station"]) .only-station,
-body:not([data-view="icons"]) .only-icons, body:not([data-view="mouse"]) .only-mouse, body:not([data-view="network"]) .only-network, body:not([data-view="arrange"]) .only-arrange,
+body:not([data-view="icons"]) .only-icons, body:not([data-view="mouse"]) .only-mouse, body:not([data-view="workshop"]) .only-workshop, body:not([data-view="network"]) .only-network, body:not([data-view="arrange"]) .only-arrange,
 body:not([data-view="files"]) .only-files, body:not([data-view="hardware"]) .only-hardware,
 body:not([data-view="tasks"]) .only-tasks, body:not([data-view="create"]) .only-create, body:not([data-view="settings"]) .only-settings, body:not([data-view="home"]) .only-home,
 body:not([data-view="modes"]) .only-modes, body:not([data-view="display"]) .only-display, body:not([data-view="settings"]) .only-assistant, body:not([data-view="settings"]) .only-plugins, body:not([data-view="audio"]) .only-audio, body:not([data-view="taskbar"]) .only-taskbar, body:not([data-view="convert"]) .only-convert, body:not([data-view="notes"]) .only-notes, body:not([data-view="shelf"]) .only-shelf, body:not([data-view="health"]) .only-health, body:not([data-view="files"]) .only-duplicates, body:not([data-view="help"]) .only-help { display: none !important; }

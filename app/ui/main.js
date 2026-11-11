@@ -1,7 +1,7 @@
 'use strict';
 
-const Lampfish = { state: null, station: null, icons: null, arrange: null, mouse: null, network: null, files: null, hardware: null, tasks: null, moods: null, creator: null };
-const VIEWS = ['home', 'modes', 'wallpaper', 'create', 'icons', 'mouse', 'station', 'display', 'audio', 'taskbar', 'arrange', 'notes', 'shelf', 'convert', 'assistant', 'plugins', 'health', 'tasks', 'files', 'duplicates', 'hardware', 'network', 'help', 'settings'];
+const Lampfish = { state: null, station: null, icons: null, arrange: null, mouse: null, workshop: null, network: null, files: null, hardware: null, tasks: null, moods: null, creator: null };
+const VIEWS = ['home', 'modes', 'wallpaper', 'create', 'icons', 'mouse', 'workshop', 'station', 'display', 'audio', 'taskbar', 'arrange', 'notes', 'shelf', 'convert', 'assistant', 'plugins', 'health', 'tasks', 'files', 'duplicates', 'hardware', 'network', 'help', 'settings'];
 
 const scrolls = {}, narrowLayout = matchMedia('(max-width: 900px)');
 const scrollZones = () => narrowLayout.matches ? [document.scrollingElement] : [document.querySelector('.contents'), document.querySelector('.panel')];
@@ -71,6 +71,7 @@ function showView(view) {
   if (Lampfish.station) Lampfish.station.visible(view === 'station');
   if (Lampfish.icons) Lampfish.icons.visible(view === 'icons');
   if (Lampfish.mouse) Lampfish.mouse.visible(view === 'mouse');
+  if (Lampfish.workshop) Lampfish.workshop.visible(view === 'workshop');
   if (Lampfish.network) Lampfish.network.visible(view === 'network');
   if (Lampfish.arrange) Lampfish.arrange.visible(view === 'arrange');
   if (Lampfish.files) Lampfish.files.visible(view === 'files');
@@ -133,6 +134,7 @@ webview.addEventListener('message', e => {
   if (m.type && m.type.startsWith('station.')) { if (Lampfish.station) Lampfish.station.event(m); return; }
   if (m.type && m.type.startsWith('icons.')) { if (Lampfish.icons) Lampfish.icons.event(m); return; }
   if (m.type && m.type.startsWith('mouse.')) { if (Lampfish.mouse) Lampfish.mouse.event(m); return; }
+  if (m.type && m.type.startsWith('workshop.')) { if (Lampfish.workshop) Lampfish.workshop.event(m); return; }
   if (m.type && (m.type.startsWith('vip.') || m.type.startsWith('trail.'))) { if (Lampfish.mouse) Lampfish.mouse.event(m); return; }
   if (m.type && m.type.startsWith('network.')) { if (Lampfish.network) Lampfish.network.event(m); return; }
   if (m.type && m.type.startsWith('arrange.')) { if (Lampfish.arrange) Lampfish.arrange.event(m); return; }
@@ -195,6 +197,7 @@ function render(state) {
   renderWallpaper(state, before);
   if (Lampfish.station && state.station) Lampfish.station.state(state.station);
   if (Lampfish.icons && state.icons) Lampfish.icons.state(state.icons);
+  if (Lampfish.workshop && state.workshop) Lampfish.workshop.state(state.workshop);
   if (Lampfish.mouse && state.mouse) Lampfish.mouse.state(state.mouse);
   if (Lampfish.arrange && state.arrange) Lampfish.arrange.state(state.arrange);
   if (Lampfish.arrange && state.grid) Lampfish.arrange.grid(state.grid);
@@ -282,7 +285,7 @@ confirmReset($('r-reset'), 'The icons go back to where they were before lampfish
 
 let depth = 0;
 const carriesFiles = e => [...e.dataTransfer.types].includes('Files');
-const DROP_HINTS = { wallpaper: 'Videos, GIFs, images or HTML pages', icons: 'ICO files or images', mouse: 'Cursor files, .cur or .ani', station: 'MP3, AAC, OGG, FLAC or WAV sounds', shelf: 'Any file: a copy goes on the shelf', convert: 'Files to convert: images, PDF, text, Office' };
+const DROP_HINTS = { wallpaper: 'Videos, GIFs, images or HTML pages', icons: 'ICO files or images', mouse: 'Cursor files, .cur or .ani', workshop: 'A cursor pack: .zip, .inf, .cur or .ani', station: 'MP3, AAC, OGG, FLAC or WAV sounds', shelf: 'Any file: a copy goes on the shelf', convert: 'Files to convert: images, PDF, text, Office' };
 addEventListener('dragenter', e => {
   const view = document.body.dataset.view;
   // A card of Shelf on its way out to another app is not a file coming in.
@@ -302,7 +305,7 @@ addEventListener('drop', e => {
   const files = e.dataTransfer.files;
   if (!files.length || (Lampfish.shelf && Lampfish.shelf.out)) return;
   const view = document.body.dataset.view;
-  const action = { icons: 'icons.drop', mouse: 'mouse.drop', wallpaper: 'drop', shelf: 'shelf.drop', convert: 'convert.drop' }[view];
+  const action = { icons: 'icons.drop', mouse: 'mouse.drop', workshop: 'workshop.drop', wallpaper: 'drop', shelf: 'shelf.drop', convert: 'convert.drop' }[view];
   if (view === 'station' && Lampfish.station) Lampfish.station.ingest([...files]);
   else if (action) {
     try { webview.postMessageWithAdditionalObjects({ action }, files); }
