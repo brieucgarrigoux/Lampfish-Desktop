@@ -12,7 +12,7 @@ namespace Lampfish
 {
     // The trails of the special edition: particles drawn behind the pointer by a small window that lets every click through.
     // It only covers a square around the pointer and follows it; it draws while the pointer moves and the particles live,
-    // then hides and only watches the pointer. Paused in full screen on the pointer's screen, on battery and when Windows
+    // then hides and only watches the pointer. Paused in full screen on the pointer's screen and when Windows
     // asks for less motion. Never in a screen capture or a screen share.
     static class Trail
     {
@@ -148,7 +148,7 @@ namespace Lampfish
         readonly Stopwatch clock = Stopwatch.StartNew();
         TrailRecipe recipe;
         Point last;
-        bool down, shown, paused;
+        bool down, shown, paused, saver;
         double lastMove = -10000, lastFrame, lastCheck = -10000;
         Point origin;
         Bitmap frame;
@@ -200,7 +200,7 @@ namespace Lampfish
         void Tick()
         {
             double now = Now;
-            if (now - lastCheck > 2000) { lastCheck = now; paused = Paused(); }
+            if (now - lastCheck > 2000) { lastCheck = now; paused = Paused(); saver = Saver(); }
             var p = Cursor.Position;
             bool pressed = (GetAsyncKeyState(0x01) & 0x8000) != 0;
             if (paused) { recipe.Clear(); if (shown) { ShowWindow(Handle, 0); shown = false; } last = p; down = pressed; timer.Interval = 100; return; }
@@ -224,7 +224,7 @@ namespace Lampfish
                 lastFrame = now;
                 return;
             }
-            timer.Interval = 16;
+            timer.Interval = saver ? 33 : 16;
             if (now - lastSample > 500) { lastSample = now; Sample(p); }
             // The square follows the pointer; the particles live in screen coordinates and are drawn shifted by its corner.
             int half = Box / 2;
@@ -252,9 +252,15 @@ namespace Lampfish
             catch { }
         }
 
+        // With the energy saver on, the trail keeps going at half the frame rate rather than vanishing.
+        static bool Saver()
+        {
+            SYSTEM_POWER_STATUS power;
+            return GetSystemPowerStatus(out power) && power.SystemStatusFlag == 1;
+        }
+
         static bool Paused()
         {
-            if (SystemInformation.PowerStatus.PowerLineStatus == PowerLineStatus.Offline) return true;
             bool motion = true;
             SystemParametersInfo(0x1042, 0, ref motion, 0);
             if (!motion) return true;
@@ -322,6 +328,8 @@ namespace Lampfish
         [DllImport("user32.dll")] static extern bool SetWindowDisplayAffinity(IntPtr hwnd, uint affinity);
         [DllImport("user32.dll")] static extern bool SystemParametersInfo(uint action, uint param, ref bool value, uint ini);
         [DllImport("shell32.dll")] static extern int SHQueryUserNotificationState(out int state);
+        struct SYSTEM_POWER_STATUS { public byte ACLineStatus, BatteryFlag, BatteryLifePercent, SystemStatusFlag; public int BatteryLifeTime, BatteryFullLifeTime; }
+        [DllImport("kernel32.dll")] static extern bool GetSystemPowerStatus(out SYSTEM_POWER_STATUS status);
         [DllImport("gdi32.dll")] static extern IntPtr CreateDIBSection(IntPtr dc, ref BITMAPINFOHEADER info, uint usage, out IntPtr bits, IntPtr section, uint offset);
         [DllImport("gdi32.dll")] static extern IntPtr CreateCompatibleDC(IntPtr dc);
         [DllImport("gdi32.dll")] static extern IntPtr SelectObject(IntPtr dc, IntPtr obj);
