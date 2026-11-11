@@ -195,11 +195,18 @@ namespace Lampfish
             else Place();
         }
 
-        // The state Windows keeps for "a full-screen application is running" (2), Direct3D full screen (3) and presentation mode (4).
-        static bool FullScreenApp()
+        // Windows says a full-screen application is running (2), Direct3D full screen (3) or presentation mode (4) for the whole PC,
+        // not where: the screen covered is the one of the window in front. Presentation mode keeps the button away on every screen.
+        // null: nothing in full screen; Empty: every screen; otherwise the bounds of the screen covered.
+        static Rectangle? FullScreenArea()
         {
             int state;
-            return SHQueryUserNotificationState(out state) == 0 && (state == 2 || state == 3 || state == 4);
+            if (SHQueryUserNotificationState(out state) != 0 || !(state == 2 || state == 3 || state == 4)) return null;
+            if (state == 4) return Rectangle.Empty;
+            Native.RECT r;
+            IntPtr front = Native.GetForegroundWindow();
+            if (front == IntPtr.Zero || !Native.GetWindowRect(front, out r)) return Rectangle.Empty;
+            return Screen.FromRectangle(Rectangle.FromLTRB(r.Left, r.Top, r.Right, r.Bottom)).Bounds;
         }
         [DllImport("shell32.dll")] static extern int SHQueryUserNotificationState(out int state);
 
@@ -214,7 +221,21 @@ namespace Lampfish
             var area = Screen.FromPoint(home).WorkingArea;
             if (S.X == int.MinValue) { S.X = area.Right - side; S.Y = area.Top + area.Height * 3 / 5; }
             var at = new Point(Math.Max(area.Left, Math.Min(area.Right - side, S.X)), Math.Max(area.Top, Math.Min(area.Bottom - side, S.Y)));
-            if (FullScreenApp()) { if (dot.Visible) dot.Hide(); return; }
+            var full = FullScreenArea();
+            if (full.HasValue)
+            {
+                if (full.Value.IsEmpty) { if (dot.Visible) dot.Hide(); return; }
+                if (Screen.FromPoint(home).Bounds == full.Value)
+                {
+                    // A film over the button's screen: the button waits on the screen in use, at the same place in proportion,
+                    // and its own place is kept for when the film ends.
+                    var other = Screen.AllScreens.Where(sc => sc.Bounds != full.Value).OrderBy(sc => sc.Bounds.Contains(Cursor.Position) ? 0 : 1).FirstOrDefault();
+                    if (other == null) { if (dot.Visible) dot.Hide(); return; }
+                    var b = other.WorkingArea;
+                    double fx = (at.X - area.Left) / (double)Math.Max(1, area.Width - side), fy = (at.Y - area.Top) / (double)Math.Max(1, area.Height - side);
+                    at = new Point(b.Left + (int)Math.Round(fx * (b.Width - side)), b.Top + (int)Math.Round(fy * (b.Height - side)));
+                }
+            }
             if (!dot.Gliding && (!dot.Visible || dot.Location != at || dot.Width != side)) dot.Put(at);
             // Another window that is always on top (the taskbar after a click, a video player) can end up above the button.
             else if (!dot.Gliding) dot.Raise();
