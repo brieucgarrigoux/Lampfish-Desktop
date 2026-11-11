@@ -88,7 +88,7 @@
     const name = t.querySelector('.name-ag');
     name.textContent = d.name;
     name.translate = false;
-    t.title = d.name + ' · ' + d.screens + ' · ' + formatDate(d.date) + (d.current ? '' : ' · ' + tr('Saved with other screens'));
+    t.title = [d.name, d.screens, formatDate(d.date), d.current ? '' : tr('Saved with other screens')].filter(Boolean).join('\n');
     const remove = t.querySelector('.arrangement__remove');
     remove.innerHTML = REMOVE;
     remove.title = tr('Remove');
@@ -188,7 +188,7 @@
 
         const name = document.createElement('span');
         name.className = 'screen-label' + (e.primary ? ' primary' : '');
-        name.textContent = e.n + (e.primary ? tr(' · main') : '');
+        name.textContent = e.n + (e.primary ? tr(' (main)') : '');
         if (!e.primary && map.screens.length > 1) {
           screen.classList.add('can-main');
           screen.title = tr('Click to make it the main screen, the icons follow');

@@ -655,7 +655,7 @@ function renderScreens(state) {
     b.setAttribute('role', 'radio');
     b.setAttribute('aria-checked', String(d.key === heroScreen));
     b.textContent = d.n;
-    b.title = d.key ? tr('Screen {0}', d.n) + ' · ' + d.w + ' × ' + d.h + (d.primary ? tr(' · main') : '') : tr('Every screen');
+    b.title = d.key ? tr('Screen {0}', d.n) + (d.primary ? tr(' (main)') : '') + '\n' + d.w + ' × ' + d.h : tr('Every screen');
     b.addEventListener('click', () => {
       heroScreen = d.key;
       try { localStorage.setItem('wallpaper.screen', heroScreen); } catch (e) { }

@@ -560,7 +560,7 @@
     }
 
     if (choice === 'screens')
-      for (const e of inv.screens) sections.push(...group(tr('Screen {0}', e.n) + (e.primary ? tr(' · main') : ''), [
+      for (const e of inv.screens) sections.push(...group(tr('Screen {0}', e.n) + (e.primary ? tr(' (main)') : ''), [
         ['Manufacturer', e.manufacturer], ['Model', e.name && e.name !== e.manufacturer ? e.name : e.code],
         ['Diagonal', e.inches ? tr('{0} in', e.inches.toLocaleString(LOCALE)) : null],
         ['Resolution', `${e.w} × ${e.h}`], ['Refresh rate', e.hz ? e.hz + ' Hz' : null],

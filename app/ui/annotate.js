@@ -36,7 +36,7 @@
     tool = id;
     for (const b of document.querySelectorAll('[data-tool]')) b.setAttribute('aria-checked', String(b.dataset.tool === id));
     const t = TOOLS.find(x => x[0] === id);
-    $('an-hint').textContent = tr(t[1]) + ' · ' + tr(t[4]);
+    $('an-hint').replaceChildren(Object.assign(document.createElement('b'), { textContent: tr(t[1]) }), ' ' + tr(t[4]));
   }
   function pick(group, attr, value) { for (const b of document.querySelectorAll(`${group} [${attr}]`)) b.setAttribute('aria-checked', String(b.getAttribute(attr) === value)); }
   for (const b of document.querySelectorAll('[data-color]')) { b.style.setProperty('--swatch', b.dataset.color); b.addEventListener('click', () => { color = b.dataset.color; pick('.an-colors', 'data-color', color); }); }
@@ -201,6 +201,6 @@
     img.src = m.data;
   });
   pickTool('arrow');
-  document.title = tr('Annotate') + ' · ' + name;
+  document.title = tr('Annotate') + ': ' + name;
   send('annotate.load', { name });
 })();
