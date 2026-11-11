@@ -242,7 +242,7 @@
     const fill = () => {
       hero.replaceChildren(); side.replaceChildren(); canvases.length = 0;
       c.style.setProperty('--tint', tintOf(v.swatch));
-      if (fam.engine) { hero.append(canvas(56)); side.append(canvas(32), canvas(32)); draw(.6, false); }
+      if (fam.engine) { hero.append(canvas(64)); side.append(canvas(34), canvas(34)); draw(.6, false); }
       else { hero.append(image(v.theme.showcase[0])); side.append(image(v.theme.showcase[1]), image(v.theme.showcase[3])); }
       c.querySelector('.family__title').textContent = tr(fam.name);
       c.querySelector('.family__sub').firstChild.textContent = v.variant ? tr(v.variant) : '';
