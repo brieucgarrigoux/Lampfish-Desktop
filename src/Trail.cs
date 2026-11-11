@@ -43,8 +43,10 @@ namespace Lampfish
             string k = Program.R.Trail ?? "auto";
             if (!Vip.Unlocked || k.Length == 0) return null;
             if (k != "auto") return Kinds.Contains(k) ? k : null;
+            // Only a lampfish family has a trail of its own: Windows, Bramble and the user's themes come without one.
             string cursor = Mouse.ThemeName, found;
-            return cursor != null && Match.TryGetValue(cursor, out found) ? found : "bubbles-abyss";
+            if (cursor == null || !cursor.StartsWith("lampfish ", StringComparison.Ordinal)) return null;
+            return Match.TryGetValue(cursor, out found) ? found : "bubbles-abyss";
         }
 
         public static void Start() { Apply(); }
