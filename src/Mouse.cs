@@ -203,6 +203,7 @@ namespace Lampfish
                 using (var schemas = Registry.CurrentUser.CreateSubKey(Key + @"\Schemes"))
                     schemas.SetValue(name, string.Join(",", theme.Paths), RegistryValueKind.ExpandString);
             Reload();
+            Trail.CursorChanged();
         }
 
         static void Assign(string role, string file)

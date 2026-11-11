@@ -1217,6 +1217,29 @@
   </div>
 
   <div class="only-mouse">
+    <h2 id="s-trail-title" hidden>Trail</h2>
+    <div class="group" id="s-trail" hidden>
+      <div class="trail__modes" role="group" aria-label="Trail">
+        <button type="button" class="tool-chip" data-trail=""><svg class="ph" aria-hidden="true"><use href="icons.svg#x"/></svg>Off</button>
+        <button type="button" class="tool-chip" data-trail="auto"><svg class="ph" aria-hidden="true"><use href="icons.svg#link"/></svg>Match the cursor</button>
+      </div>
+      <div class="trail__grid" id="s-trail-grid"></div>
+      <div class="setting">
+        <label for="s-trail-density"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#sparkle"/></svg><span>Density<small>How much the pointer leaves behind</small></span></span><output id="s-trail-density-value"></output></label>
+        <input type="range" id="s-trail-density" data-trail-adjust="density" min="0.4" max="2" step="0.1">
+        <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div class="setting">
+        <label for="s-trail-duration"><span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#timer"/></svg><span>Duration<small>How long the trail stays</small></span></span><output id="s-trail-duration-value"></output></label>
+        <input type="range" id="s-trail-duration" data-trail-adjust="duration" min="0.5" max="2" step="0.1">
+        <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="s-trail-click">
+        <span class="caption"><svg class="ph glyph" aria-hidden="true"><use href="icons.svg#cursor-click"/></svg><span>Click effect<small>Each trail answers a click its own way</small></span></span>
+      </label>
+      <p class="trail__note">Paused in full screen and on battery. Never in a screenshot or a shared screen.</p>
+    </div>
     <h2>Pointer</h2>
     <div class="group">
       <div class="setting">

@@ -62,6 +62,10 @@ namespace Lampfish
         public Mouse.Snapshot CursorsOriginal;
         public bool Vip;
         public string VipCode;
+        public string Trail;
+        public double TrailDensity = 1;
+        public double TrailDuration = 1;
+        public bool TrailClick = true;
         public WindowPlace Window;
         public bool UpdatesAuto;
         public string UpdatesLast;
@@ -164,6 +168,7 @@ namespace Lampfish
                 Notes.Start();
                 ClaudeUsage.Start();
                 Companion.Start();
+                Trail.Start();
                 DesktopGrid.Start();
                 Moods.Start();
                 if (requestedFolder != null) { Icons.Ask(requestedFolder); requestedView = "icons"; }
@@ -878,6 +883,11 @@ namespace Lampfish
                 if (Vip.Receive(action.Substring(action.IndexOf('.') + 1), m)) { Save(); SendState(); }
                 return;
             }
+            if (action.StartsWith("trail."))
+            {
+                if (Trail.Receive(action.Substring(action.IndexOf('.') + 1), m)) { Save(); SendState(); }
+                return;
+            }
             if (action.StartsWith("mouse."))
             {
                 if (Mouse.Receive(action.Substring(action.IndexOf('.') + 1), m, files)) SendState();
@@ -1059,6 +1069,7 @@ namespace Lampfish
                 icons = Icons.State(),
                 mouse = Mouse.State(),
                 vip = Vip.State(),
+                trail = Trail.State(),
                 arrange = Arrange.State(),
                 files = DiskUsage.State(),
                 duplicates = Duplicates.State(),

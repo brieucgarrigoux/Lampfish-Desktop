@@ -65,7 +65,7 @@ namespace Lampfish
             }
             catch (Exception ex) { Program.Log(ex); }
             Program.Send(new { type = "vip.result", ok = ok });
-            if (ok) Program.Announce("The special edition is open");
+            if (ok) { Program.Announce("The special edition is open"); Trail.Apply(); }
             return ok;
         }
     }

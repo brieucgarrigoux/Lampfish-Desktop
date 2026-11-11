@@ -464,8 +464,74 @@
     field.addEventListener('change', () => send('mouse.adjust', { what: q, value: Number(field.value) }));
   }
 
+  // The trails of the special edition (Trail.cs). Each tile shows a still drawn by the trail's own recipe.
+  const TRAILS = [
+    ['Bubbles', [['bubbles-gold', 'Gold'], ['bubbles-abyss', 'Abyss'], ['bubbles-pearl', 'Pearl'], ['bubbles-prism', 'Prism'], ['bubbles-soap', 'Soap']]],
+    ['Plankton', [['plankton-abyss', 'Abyss'], ['plankton-gold', 'Gold'], ['plankton-berry', 'Berry']]],
+    ['Sparkles', [['sparkles-gold', 'Gold'], ['sparkles-silver', 'Silver'], ['sparkles-rose', 'Rose']]],
+    ['Ribbon', [['ribbon-lagoon', 'Lagoon'], ['ribbon-sunset', 'Sunset'], ['comet', 'Comet']]],
+    ['Neon', [['neon-pink', 'Pink'], ['neon-teal', 'Teal']]],
+    ['Pearls', [['pearls', 'Pearl'], ['pearls-gold', 'Gold']]],
+    ['Sea', [['school', 'School'], ['ripples', 'Ripples'], ['snow', 'Marine snow'], ['constellation', 'Constellation']]],
+    ['Paper and ink', [['sequins', 'Sequins'], ['confetti', 'Confetti'], ['halftone', 'Halftone'], ['ink', 'Ink']]],
+  ];
+  let trailPreviews = null, trailAsked = false, trailKey = '';
+  const trailState = () => (Lampfish.state && Lampfish.state.trail) || {};
+
+  function renderTrail() {
+    const open = !!vipState().unlocked;
+    $('s-trail-title').hidden = $('s-trail').hidden = !open;
+    if (!open) return;
+    if (!trailPreviews && !trailAsked) { trailAsked = true; send('trail.previews'); }
+    const t = trailState(), kind = t.kind || '';
+    for (const b of document.querySelectorAll('[data-trail]')) b.setAttribute('aria-pressed', String(b.dataset.trail === kind));
+    const grid = $('s-trail-grid'), key = !!trailPreviews + LANGUAGE;
+    if (key !== trailKey) {
+      trailKey = key;
+      grid.replaceChildren();
+      for (const [group, items] of TRAILS) {
+        const head = document.createElement('p');
+        head.className = 'trail__group';
+        head.textContent = tr(group);
+        grid.append(head);
+        for (const [id, name] of items) {
+          const tile = document.createElement('button');
+          tile.type = 'button';
+          tile.className = 'trail';
+          tile.dataset.kind = id;
+          tile.innerHTML = '<span class="trail__stage"></span><span class="trail__name"></span>';
+          if (trailPreviews && trailPreviews[id]) tile.firstChild.append(Object.assign(document.createElement('img'), { src: trailPreviews[id], alt: '' }));
+          tile.lastChild.textContent = tr(name);
+          tile.addEventListener('click', () => send('trail.set', { kind: id }));
+          grid.append(tile);
+        }
+      }
+    }
+    // With Match the cursor, the tile of the trail in use gets a lighter ring: it follows, it was not chosen.
+    for (const tile of grid.querySelectorAll('.trail')) {
+      tile.setAttribute('aria-pressed', String(tile.dataset.kind === kind));
+      tile.classList.toggle('is-matched', kind === 'auto' && tile.dataset.kind === t.effective);
+    }
+    for (const field of document.querySelectorAll('[data-trail-adjust]')) {
+      if (!field.matches(':active')) field.value = t[field.dataset.trailAdjust] || 1;
+      trailValue(field);
+    }
+    $('s-trail-click').checked = t.click !== false;
+  }
+  function trailValue(field) {
+    $(field.id + '-value').textContent = Math.round(field.value * 100) + ' %';
+    field.style.setProperty('--pct', (field.value - field.min) / (field.max - field.min) * 100 + '%');
+  }
+  for (const b of document.querySelectorAll('[data-trail]')) b.addEventListener('click', () => send('trail.set', { kind: b.dataset.trail }));
+  for (const field of document.querySelectorAll('[data-trail-adjust]')) {
+    field.addEventListener('input', () => trailValue(field));
+    field.addEventListener('change', () => send('trail.adjust', { what: field.dataset.trailAdjust, value: Number(field.value) }));
+  }
+  $('s-trail-click').addEventListener('change', e => send('trail.adjust', { what: 'click', value: e.target.checked }));
+
   function state(n) {
     s = n;
+    renderTrail();
     loadPack();
     $('s-initial').disabled = !!s.standard;
     $('s-original').hidden = !s.original;
@@ -484,6 +550,7 @@
       if (r && r.path === m.path) play(r);
       return;
     }
+    if (m.type === 'trail.previews') { trailPreviews = m.previews; renderTrail(); return; }
     if (m.type === 'vip.result') { vipMessage = m.ok ? null : tr('This code is not valid. Check the letters and try again.'); keyLibrary = ''; renderLibrary(); return; }
     if (m.type !== 'mouse.library') return;
     library = m;
