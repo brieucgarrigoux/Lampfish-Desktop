@@ -24,7 +24,11 @@
   function renderDraft() {
     const title = $('s-theme');
     title.textContent = s.themeTitle;
-    if (s.unsaved && s.based) title.append(Object.assign(document.createElement('span'), { className: 'badge-modified state state--warn', textContent: tr('Modified') }));
+    if (s.unsaved && s.based) {
+      const badge = Object.assign(document.createElement('span'), { className: 'badge-modified', innerHTML: icon('pencil-simple') });
+      badge.append(tr('Modified'));
+      title.append(badge);
+    }
     reveal($('s-draft'), s.unsaved);
     $('s-draft-text').textContent = s.based ? tr('Changes not saved in a theme') : tr('These cursors are not saved in a theme');
     $('s-update').hidden = !s.editable;
@@ -420,16 +424,16 @@
     knob: v => v == 1 ? tr('1 line') : tr('{0} lines', v),
   };
 
-  const PX = n => n === 0 ? 16 : 32 + (n - 1) * 16;
+  const PX = n => 32 + (Math.max(1, n) - 1) * 16;
   function renderSize() {
     const n = s.settings.size;
     $('s-size-label').textContent = PX(n) + ' px';
-    $('s-minus').disabled = n <= 0;
+    $('s-minus').disabled = n <= 1;
     $('s-plus').disabled = n >= 15;
   }
   for (const [id, step] of [['s-minus', -1], ['s-plus', 1]])
     $(id).addEventListener('click', () => {
-      const n = Math.max(0, Math.min(15, s.settings.size + step));
+      const n = Math.max(1, Math.min(15, s.settings.size + step));
       s.settings.size = n;
       renderSize();
       renderSettings();
@@ -443,8 +447,10 @@
       const q = field.dataset.setting;
       if (field.type === 'checkbox') { field.checked = !!r[q]; continue; }
       if (field.matches(':active')) continue;
-      field.value = q === 'knob' && !r[q] ? 20 : r[q];
+      field.value = q === 'knob' ? (r.knob <= 0 ? 20 : Math.min(20, r.knob)) : r[q];
       updateCursor(field);
+      // The slider stops at 20; a wheel set higher in Windows, or to one screen at a time, keeps its real value in the label.
+      if (q === 'knob' && (r.knob <= 0 || r.knob > 20)) $(field.id + '-value').textContent = r.knob <= 0 ? tr('One screen') : tr('{0} lines', r.knob);
     }
   }
   function updateCursor(field) {

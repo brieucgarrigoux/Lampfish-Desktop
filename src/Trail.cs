@@ -169,7 +169,8 @@ namespace Lampfish
             timer.Tick += (s, e) => Tick();
             CreateHandle();
             // Like the pointer itself, the trail is never in a screenshot, a recording or a shared screen (Windows 10 2004 and later).
-            try { SetWindowDisplayAffinity(Handle, 0x11); } catch (Exception ex) { Program.Log(ex); }
+            // Before 2004 the same call blanks the window in captures instead of leaving it out: a grey square would show.
+            if (Native.Build >= 19041) try { SetWindowDisplayAffinity(Handle, 0x11); } catch (Exception ex) { Program.Log(ex); }
             last = Cursor.Position;
         }
 
@@ -207,7 +208,8 @@ namespace Lampfish
             double now = Now;
             if (now - lastCheck > 2000) { lastCheck = now; paused = Paused(); saver = Saver(); }
             var p = Cursor.Position;
-            bool pressed = (GetAsyncKeyState(0x01) & 0x8000) != 0;
+            // GetAsyncKeyState reads the physical button: with swapped buttons the primary click is the right one.
+            bool pressed = (GetAsyncKeyState(GetSystemMetrics(23) != 0 ? 0x02 : 0x01) & 0x8000) != 0;
             if (paused) { recipe.Clear(); if (shown) { ShowWindow(Handle, 0); shown = false; } last = p; down = pressed; timer.Interval = 100; return; }
             float k = (float)Arrange.Scale(Screen.FromPoint(p));
             recipe.Scale = k;
@@ -266,6 +268,9 @@ namespace Lampfish
 
         static bool Paused()
         {
+            // A game or a player in a window that hides the pointer and keeps it in the middle would gather particles there.
+            var info = new CURSORINFO { cbSize = Marshal.SizeOf(typeof(CURSORINFO)) };
+            if (GetCursorInfo(ref info) && (info.flags & 1) == 0) return true;
             bool motion = true;
             SystemParametersInfo(0x1042, 0, ref motion, 0);
             if (!motion) return true;
@@ -333,6 +338,9 @@ namespace Lampfish
         [DllImport("user32.dll")] static extern bool SetWindowDisplayAffinity(IntPtr hwnd, uint affinity);
         [DllImport("user32.dll")] static extern bool SystemParametersInfo(uint action, uint param, ref bool value, uint ini);
         [DllImport("shell32.dll")] static extern int SHQueryUserNotificationState(out int state);
+        [StructLayout(LayoutKind.Sequential)] struct CURSORINFO { public int cbSize, flags; public IntPtr cursor; public Native.POINT position; }
+        [DllImport("user32.dll")] static extern bool GetCursorInfo(ref CURSORINFO info);
+        [DllImport("user32.dll")] static extern int GetSystemMetrics(int index);
         struct SYSTEM_POWER_STATUS { public byte ACLineStatus, BatteryFlag, BatteryLifePercent, SystemStatusFlag; public int BatteryLifeTime, BatteryFullLifeTime; }
         [DllImport("kernel32.dll")] static extern bool GetSystemPowerStatus(out SYSTEM_POWER_STATUS status);
         [DllImport("gdi32.dll")] static extern IntPtr CreateDIBSection(IntPtr dc, ref BITMAPINFOHEADER info, uint usage, out IntPtr bits, IntPtr section, uint offset);

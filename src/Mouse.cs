@@ -41,10 +41,60 @@ namespace Lampfish
         {
             Directory.CreateDirectory(CustomFolder);
             Directory.CreateDirectory(Cache);
+            // A first state that already held a cursor of lampfish is not the state of Windows: only its cursors are dropped,
+            // the speed, wheel and clicks it kept are still the user's own.
             var original = Program.R.CursorsOriginal;
-            if (original != null && original.Roles != null && original.Roles.Values.Any(Ours)) Program.R.CursorsOriginal = null;
+            if (original != null && original.Roles != null && original.Roles.Values.Any(Ours)) original.Roles = null;
             try { Migrate(); } catch (Exception ex) { Program.Log(ex); }
             try { Migration.CursorThemes(); } catch (Exception ex) { Program.Log(ex); }
+            try
+            {
+                // 16 px was offered by older versions, below the 32 px where Windows starts.
+                using (var key = Registry.CurrentUser.OpenSubKey(Key))
+                    if (key != null && key.GetValue("CursorBaseSize") is int && (int)key.GetValue("CursorBaseSize") < 32) { SetSize(1); Reload(); }
+                // Older versions left every theme of lampfish ever tried in the mouse panel of Windows.
+                ShowInWindows(CurrentTheme());
+            }
+            catch (Exception ex) { Program.Log(ex); }
+            var later = new System.Windows.Forms.Timer { Interval = 30000 };
+            later.Tick += (s, e) => { later.Dispose(); var moods = Program.R.Moods.Concat(new[] { Program.R.MoodBefore }).Where(x => x != null).Select(x => x.Theme).ToList(); System.Threading.ThreadPool.QueueUserWorkItem(_ => Purge(moods)); };
+            later.Start();
+        }
+
+        // Previews are keyed by file and date, so every rewrite left old ones behind (12.8 MB seen); made themes pile up
+        // too (85 MB). Kept: what any cursor still on this PC needs, and every made theme in use, in a scheme or a theme of
+        // lampfish, or touched in the last 30 days. The engine makes a theme again in seconds if it is ever wanted.
+        static void Purge(List<string> moods)
+        {
+            try
+            {
+                var themes = LoadThemes();
+                var files = themes.SelectMany(t => t.Paths)
+                    .Concat(Directory.Exists(FolderWindows) ? Directory.GetFiles(FolderWindows) : new string[0])
+                    .Concat(Directory.Exists(CustomFolder) ? Directory.GetFiles(CustomFolder) : new string[0])
+                    .Where(f => !string.IsNullOrEmpty(f) && File.Exists(f)).Distinct(StringComparer.OrdinalIgnoreCase);
+                var keys = new HashSet<string>(files.Select(KeyOf));
+                var pattern = new System.Text.RegularExpressions.Regex(@"^(.*-[0-9a-f]{8})(-32\.png|-64\.png|\.retro|-s\d+\.png)$");
+                if (Directory.Exists(Cache))
+                    foreach (string f in Directory.GetFiles(Cache))
+                    {
+                        var match = pattern.Match(Path.GetFileName(f));
+                        if (match.Success && !keys.Contains(match.Groups[1].Value)) try { File.Delete(f); } catch { }
+                    }
+
+                if (!Directory.Exists(Made)) return;
+                var used = new HashSet<string>(moods.Where(x => !string.IsNullOrEmpty(x)), StringComparer.OrdinalIgnoreCase) { CurrentTheme() ?? "" };
+                var pointed = themes.Where(t => t.Source != "lampfish").SelectMany(t => t.Paths).Concat(Current()).Concat((Program.R.CursorsOriginal != null && Program.R.CursorsOriginal.Roles != null) ? (IEnumerable<string>)Program.R.CursorsOriginal.Roles.Values : new string[0])
+                    .Where(p => !string.IsNullOrEmpty(p)).Select(p => Environment.ExpandEnvironmentVariables(p)).ToList();
+                foreach (string folder in Directory.GetDirectories(Made))
+                {
+                    string name = Path.GetFileName(folder);
+                    if (used.Contains(name) || pointed.Any(p => p.StartsWith(folder + "\\", StringComparison.OrdinalIgnoreCase))) continue;
+                    if ((DateTime.UtcNow - Directory.GetLastWriteTimeUtc(folder)).TotalDays < 30) continue;
+                    try { Directory.Delete(folder, true); } catch { }
+                }
+            }
+            catch (Exception ex) { Program.Log(ex); }
         }
 
         // Older versions saved every hand-picked cursor into a scheme of their own, which read like a built-in theme.
@@ -102,6 +152,7 @@ namespace Lampfish
         static void WriteScheme(string name, string row)
         {
             using (var schemes = Registry.CurrentUser.CreateSubKey(Key + @"\Schemes")) schemes.SetValue(name, row, RegistryValueKind.ExpandString);
+            Changed();
         }
 
         static string ReadScheme(string name)
@@ -113,6 +164,7 @@ namespace Lampfish
         static void DeleteScheme(string name)
         {
             using (var schemes = Registry.CurrentUser.OpenSubKey(Key + @"\Schemes", true)) if (schemes != null) schemes.DeleteValue(name, false);
+            Changed();
         }
 
         static void Name(string name)
@@ -124,7 +176,42 @@ namespace Lampfish
             }
         }
 
-        static string Row() { return string.Join(",", Current().Select(p => p ?? "")); }
+        // The registry values as written (%SystemRoot% kept), so a scheme stays valid on another PC or drive letter.
+        static string[] RawRow()
+        {
+            var s = Capture();
+            return Roles.Select(r => { string v; return s.Roles.TryGetValue(r[0], out v) && v != null ? v : ""; }).ToArray();
+        }
+
+        // A theme made by the engine is rewritten whenever the engine changes: a theme of the user that uses its files
+        // gets its own copy, or it would point at files that no longer exist.
+        static string[] Keep(string name, string[] paths)
+        {
+            string safe = new string(name.Select(c => Path.GetInvalidFileNameChars().Contains(c) ? '_' : c).ToArray()).Trim();
+            string folder = Path.Combine(CustomFolder, "themes", safe.Length == 0 ? "theme" : safe);
+            return paths.Select(p =>
+            {
+                string full = Environment.ExpandEnvironmentVariables(p ?? "");
+                if (!full.StartsWith(Made + "\\", StringComparison.OrdinalIgnoreCase) || !File.Exists(full)) return p ?? "";
+                Directory.CreateDirectory(folder);
+                string target = Path.Combine(folder, Path.GetFileName(full));
+                File.Copy(full, target, true);
+                return target;
+            }).ToArray();
+        }
+
+        // Saves what is on screen under a name; the pointer then uses the kept copies, so the theme does not read as modified.
+        static void SaveAs(string name)
+        {
+            var raw = RawRow();
+            var kept = Keep(name, raw);
+            WriteScheme(name, string.Join(",", kept));
+            if (!kept.SequenceEqual(raw))
+                using (var key = Registry.CurrentUser.CreateSubKey(Key))
+                    for (int i = 0; i < Roles.Length; i++) key.SetValue(Roles[i][0], kept[i], RegistryValueKind.ExpandString);
+            Name(name);
+            Reload();
+        }
 
         class Theme { public string Name, Source, Version; public string[] Paths; public bool Made; }
 
@@ -137,7 +224,20 @@ namespace Lampfish
             public Dictionary<string, int> Pointer;
         }
 
+        // Each state sent to the page asked for the list several times: 17 file checks per theme, two registry reads.
+        // It is kept for a few seconds, and dropped by every change lampfish makes; Windows' own panel is seen within 3 s.
+        static List<Theme> themes;
+        static DateTime themesAt;
+
         static List<Theme> Themes()
+        {
+            if (themes == null || (DateTime.UtcNow - themesAt).TotalSeconds > 3) { themes = LoadThemes(); themesAt = DateTime.UtcNow; }
+            return themes;
+        }
+
+        static void Changed() { themes = null; }
+
+        static List<Theme> LoadThemes()
         {
             var list = new List<Theme>();
 
@@ -199,19 +299,46 @@ namespace Lampfish
                 key.SetValue("Scheme Source", theme.Source == "system" ? 2 : 1, RegistryValueKind.DWord);
             }
 
-            if (theme.Source == "lampfish")
-                using (var schemas = Registry.CurrentUser.CreateSubKey(Key + @"\Schemes"))
-                    schemas.SetValue(name, string.Join(",", theme.Paths), RegistryValueKind.ExpandString);
+            ShowInWindows(name);
             Reload();
             Trail.CursorChanged();
         }
 
-        static void Assign(string role, string file)
+        // The mouse panel of Windows shows the theme of lampfish in use, and only that one: each theme tried used to stay there.
+        static void ShowInWindows(string name)
         {
-            if (!Roles.Any(r => r[0] == role) || !File.Exists(file)) return;
+            var own = Themes().Where(t => t.Source == "lampfish").ToList();
+            var ownNames = new HashSet<string>(own.Select(t => t.Name), StringComparer.OrdinalIgnoreCase);
+            var theme = own.FirstOrDefault(t => t.Name == name);
+            using (var schemas = Registry.CurrentUser.CreateSubKey(Key + @"\Schemes"))
+            {
+                foreach (string other in schemas.GetValueNames())
+                    if (ownNames.Contains(other) && other != name) schemas.DeleteValue(other, false);
+                if (theme != null) schemas.SetValue(name, string.Join(",", theme.Paths), RegistryValueKind.ExpandString);
+            }
+            Changed();
+        }
+
+        static bool Assign(string role, string file)
+        {
+            if (!Roles.Any(r => r[0] == role) || !File.Exists(file)) return false;
             Remember();
             using (var key = Registry.CurrentUser.CreateSubKey(Key)) key.SetValue(role, file, RegistryValueKind.ExpandString);
             Reload();
+            return true;
+        }
+
+        // Trying the colours of a family one after the other is one change: Undo goes back to before the first click.
+        static Snapshot undoBefore;
+        static DateTime undoUntil;
+
+        static Snapshot UndoPoint() { return DateTime.UtcNow < undoUntil && undoBefore != null ? undoBefore : Capture(); }
+
+        static void OfferUndo(string text, Snapshot before)
+        {
+            undoBefore = before;
+            undoUntil = DateTime.UtcNow.AddSeconds(8);
+            Program.Undoable(text, () => { undoBefore = null; undoUntil = DateTime.MinValue; Restore(before); Trail.CursorChanged(); });
         }
 
         static string[] aero;
@@ -250,8 +377,8 @@ namespace Lampfish
             return new Dictionary<string, int>
             {
                 { "speed", Read(SPI_GETMOUSESPEED) }, { "precision", acceleration[2] != 0 ? 1 : 0 }, { "doubleClick", (int)GetDoubleClickTime() },
-                { "knob", rows < 0 || rows > 100 ? 0 : rows }, { "invert", GetSystemMetrics(23) != 0 ? 1 : 0 }, { "shadow", Read(SPI_GETCURSORSHADOW) != 0 ? 1 : 0 },
-                { "trails", Read(SPI_GETMOUSETRAILS) > 1 ? 1 : 0 }, { "sonar", Read(SPI_GETMOUSESONAR) != 0 ? 1 : 0 }, { "hide", Read(SPI_GETMOUSEVANISH) != 0 ? 1 : 0 },
+                { "knob", rows < 0 || rows > 100 ? -1 : rows }, { "invert", GetSystemMetrics(23) != 0 ? 1 : 0 }, { "shadow", Read(SPI_GETCURSORSHADOW) != 0 ? 1 : 0 },
+                { "trails", Read(SPI_GETMOUSETRAILS) > 1 ? Read(SPI_GETMOUSETRAILS) : 0 }, { "sonar", Read(SPI_GETMOUSESONAR) != 0 ? 1 : 0 }, { "hide", Read(SPI_GETMOUSEVANISH) != 0 ? 1 : 0 },
                 { "buttonInitial", Read(SPI_GETSNAPTODEFBUTTON) != 0 ? 1 : 0 },
             };
         }
@@ -272,17 +399,27 @@ namespace Lampfish
                     foreach (var r in Roles)
                     {
                         string v;
-                        key.SetValue(r[0], s.Roles.TryGetValue(r[0], out v) && v != null ? v : "", RegistryValueKind.ExpandString);
+                        key.SetValue(r[0], s.Roles.TryGetValue(r[0], out v) && v != null ? Still(v) : "", RegistryValueKind.ExpandString);
                     }
                     if (s.Scheme != null) key.SetValue("", s.Scheme); else key.DeleteValue("", false);
                     key.SetValue("Scheme Source", s.Source, RegistryValueKind.DWord);
                 }
-                SetSize(s.Size < 32 ? 0 : Math.Max(1, Math.Min(15, (s.Size - 32) / 16 + 1)));
+                ShowInWindows(s.Scheme);
+                SetSize(Math.Max(1, Math.Min(15, (s.Size - 32) / 16 + 1)));
             }
             if (s.Pointer != null)
                 foreach (var p in s.Pointer)
                     if (PointerKeys.Contains(p.Key)) Adjust(p.Key, p.Value);
             Reload();
+        }
+
+        // A theme made by the engine first comes as still .cur files, then as .ani: a saved state may name the one that is gone.
+        static string Still(string path)
+        {
+            string full = Environment.ExpandEnvironmentVariables(path ?? "");
+            if (full.Length == 0 || File.Exists(full) || !full.StartsWith(Made + "\\", StringComparison.OrdinalIgnoreCase)) return path;
+            string other = Path.ChangeExtension(full, full.EndsWith(".ani", StringComparison.OrdinalIgnoreCase) ? ".cur" : ".ani");
+            return File.Exists(other) ? other : path;
         }
 
         static bool Same(Snapshot a, Snapshot b)
@@ -343,6 +480,9 @@ namespace Lampfish
                         string row = schemes.GetValue(name, null, RegistryValueOptions.DoNotExpandEnvironmentNames) as string;
                         if (row != null && row.Split(',').Any(Ours)) schemes.DeleteValue(name, false);
                     }
+            // The 16 px of older versions is below what Windows offers: give back its smallest size.
+            using (var key = Registry.CurrentUser.OpenSubKey(Key))
+                if (key != null && key.GetValue("CursorBaseSize") is int && (int)key.GetValue("CursorBaseSize") < 32) { SetSize(1); Reload(); }
         }
 
         static void Remember()
@@ -371,6 +511,19 @@ namespace Lampfish
         }
 
         public static string ThemeName { get { return CurrentTheme(); } }
+
+        // A theme of lampfish keeps the cursors by name. Cursors changed one by one and not saved would be lost:
+        // they are saved first as a theme of the user named after it.
+        public static string ThemeForMood(string mood)
+        {
+            string name = CurrentTheme();
+            var chosen = Find(name);
+            if (chosen != null && !Differs(chosen, Current())) return name;
+            if (chosen == null && Program.R.CursorsOriginal == null) return name;
+            string saved = FreeName(Language.T("{0} cursors", mood));
+            SaveAs(saved);
+            return saved;
+        }
 
         public static bool HasTheme(string name) { return Themes().Any(t => t.Name == name); }
 
@@ -440,12 +593,15 @@ namespace Lampfish
                 byte[] data = File.ReadAllBytes(file);
                 int steps = 0, jiffies = 6;
                 uint[] rates = null;
-                for (int p = 12; p + 8 <= data.Length;)
+                // A damaged or hostile file must not loop forever: every chunk must move forward and fit in the file.
+                for (int p = 12, guard = 0; p + 8 <= data.Length && guard < 10000; guard++)
                 {
                     string id = Encoding.ASCII.GetString(data, p, 4);
                     int length = BitConverter.ToInt32(data, p + 4);
+                    if (length < 0 || (long)p + 8 + length > data.Length) break;
+                    if (id == "anih" && length < 36) break;
                     if (id == "anih") { steps = BitConverter.ToInt32(data, p + 16); jiffies = BitConverter.ToInt32(data, p + 36); }
-                    else if (id == "rate" && steps > 0 && length >= steps * 4)
+                    else if (id == "rate" && steps > 0 && steps <= 4096 && length >= steps * 4)
                     {
                         rates = new uint[steps];
                         for (int i = 0; i < steps; i++) rates[i] = BitConverter.ToUInt32(data, p + 8 + i * 4);
@@ -456,13 +612,22 @@ namespace Lampfish
                 if (steps < 2) return;
                 string key = KeyOf(file);
                 var delays = new int[steps];
-                for (int i = 0; i < steps; i++)
+                IntPtr cursor = IntPtr.Zero;
+                try
                 {
-                    string png = Path.Combine(Cache, key + "-s" + i + ".png");
-                    if (!File.Exists(png))
-                        using (var b = Render(file, 64, (uint)i)) { if (b == null) return; b.Save(png, ImageFormat.Png); }
-                    delays[i] = (int)((rates != null ? rates[i] : (uint)jiffies) * 1000 / 60);
+                    for (int i = 0; i < steps; i++)
+                    {
+                        string png = Path.Combine(Cache, key + "-s" + i + ".png");
+                        if (!File.Exists(png))
+                        {
+                            if (cursor == IntPtr.Zero) cursor = LoadImage(IntPtr.Zero, file, IMAGE_CURSOR, 64, 64, LR_LOADFROMFILE);
+                            if (cursor == IntPtr.Zero) return;
+                            using (var b = Render(cursor, 64, (uint)i)) b.Save(png, ImageFormat.Png);
+                        }
+                        delays[i] = (int)((rates != null ? rates[i] : (uint)jiffies) * 1000 / 60);
+                    }
                 }
+                finally { if (cursor != IntPtr.Zero) DestroyCursor(cursor); }
                 Program.Send(new { type = "mouse.frames", path = file, key = key, delays = delays });
             }
             catch (Exception ex) { Program.Log(ex); }
@@ -481,7 +646,12 @@ namespace Lampfish
         {
             IntPtr cursor = LoadImage(IntPtr.Zero, file, IMAGE_CURSOR, size, size, LR_LOADFROMFILE);
             if (cursor == IntPtr.Zero) return null;
-            try
+            try { return Render(cursor, size, step); }
+            finally { DestroyCursor(cursor); }
+        }
+
+        static Bitmap Render(IntPtr cursor, int size, uint step)
+        {
             {
                 {
                     int[] n = Paint(cursor, size, 0, step), w = Paint(cursor, size, 0xFFFFFF, step), output = new int[n.Length];
@@ -501,7 +671,6 @@ namespace Lampfish
                     return image;
                 }
             }
-            finally { DestroyCursor(cursor); }
         }
 
         static int[] Pixels(Bitmap b)
@@ -556,12 +725,27 @@ namespace Lampfish
                 .Where(x => x.preview != null).ToArray();
         }
 
+        // Windows itself must be able to read the file, and a cursor is never several megabytes.
+        static bool Readable(string file)
+        {
+            try
+            {
+                if (new FileInfo(file).Length > 4 * 1024 * 1024) return false;
+                IntPtr cursor = LoadImage(IntPtr.Zero, file, IMAGE_CURSOR, 32, 32, LR_LOADFROMFILE);
+                if (cursor == IntPtr.Zero) return false;
+                DestroyCursor(cursor);
+                return true;
+            }
+            catch { return false; }
+        }
+
         static int Add(IEnumerable<string> files)
         {
             int n = 0;
             foreach (string f in files.Where(f => Formats.Contains(Path.GetExtension(f).ToLowerInvariant())))
                 try
                 {
+                    if (!Readable(f)) continue;
                     string name = Path.GetFileNameWithoutExtension(f), ext = Path.GetExtension(f).ToLowerInvariant();
                     string target = Path.Combine(CustomFolder, name + ext);
                     for (int i = 2; File.Exists(target); i++) target = Path.Combine(CustomFolder, name + " (" + i + ")" + ext);
@@ -603,7 +787,7 @@ namespace Lampfish
             {
                 object v = key == null ? null : key.GetValue("CursorBaseSize");
                 int base_ = v is int ? (int)v : 32;
-                return base_ < 32 ? 0 : Math.Max(1, Math.Min(15, (base_ - 32) / 16 + 1));
+                return Math.Max(1, Math.Min(15, (base_ - 32) / 16 + 1));
             }
         }
 
@@ -616,8 +800,9 @@ namespace Lampfish
 
         static void SetSize(int n)
         {
-            n = Math.Max(0, Math.Min(15, n));
-            int pixels = n == 0 ? 16 : 32 + (n - 1) * 16;
+            // Windows starts at 32 px: the 16 px step of older versions wrote two keys that disagreed.
+            n = Math.Max(1, Math.Min(15, n));
+            int pixels = 32 + (n - 1) * 16;
             using (var key = Registry.CurrentUser.CreateSubKey(Key)) key.SetValue("CursorBaseSize", pixels, RegistryValueKind.DWord);
             using (var key = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Accessibility")) key.SetValue("CursorSize", Math.Max(1, n), RegistryValueKind.DWord);
 
@@ -635,7 +820,7 @@ namespace Lampfish
                 speed = Read(SPI_GETMOUSESPEED),
                 precision = acceleration[2] != 0,
                 doubleClick = (int)GetDoubleClickTime(),
-                knob = rows < 0 || rows > 100 ? 0 : rows,
+                knob = rows < 0 || rows > 100 ? -1 : rows,
                 invert = GetSystemMetrics(23 ) != 0,
                 shadow = Read(SPI_GETCURSORSHADOW) != 0,
                 trails = Read(SPI_GETMOUSETRAILS) > 1,
@@ -645,20 +830,24 @@ namespace Lampfish
             };
         }
 
-        static void Adjust(string what, object value)
+        // While a slider moves, the value is applied without rewriting the profile or telling every window; the release does both.
+        // Values come back whole from "Back to original": a wheel at 30 lines, one screen at a time, a trail of 4, 1500 ms.
+        static void Adjust(string what, object value, bool live = false)
         {
-            const uint write = SPIF_UPDATEINIFILE | SPIF_SENDCHANGE;
+            uint write = live ? 0 : SPIF_UPDATEINIFILE | SPIF_SENDCHANGE;
             int n = Convert.ToInt32(value is bool ? ((bool)value ? 1 : 0) : value);
             switch (what)
             {
                 case "size": AdjustSize(n); break;
                 case "speed": SystemParametersInfo(SPI_SETMOUSESPEED, 0, new IntPtr(Math.Max(1, Math.Min(20, n))), write); break;
                 case "precision": SystemParametersInfo(SPI_SETMOUSE, 0, n != 0 ? new[] { 6, 10, 1 } : new[] { 0, 0, 0 }, write); break;
-                case "doubleClick": SystemParametersInfo(SPI_SETDOUBLECLICKTIME, (uint)Math.Max(200, Math.Min(900, n)), IntPtr.Zero, write); break;
-                case "knob": SystemParametersInfo(SPI_SETWHEELSCROLLLINES, n <= 0 ? 0xFFFFFFFF : (uint)Math.Min(20, n), IntPtr.Zero, write); break;
+                case "doubleClick": SystemParametersInfo(SPI_SETDOUBLECLICKTIME, (uint)Math.Max(100, Math.Min(5000, n)), IntPtr.Zero, write); break;
+                // 0 and below mean one screen at a time: older saves wrote 0 for it, and a wheel that never scrolls helps nobody.
+                case "knob": SystemParametersInfo(SPI_SETWHEELSCROLLLINES, n <= 0 ? 0xFFFFFFFF : (uint)Math.Min(100, n), IntPtr.Zero, write); break;
                 case "invert": SystemParametersInfo(SPI_SETMOUSEBUTTONSWAP, (uint)n, IntPtr.Zero, write); break;
                 case "shadow": SystemParametersInfo(SPI_SETCURSORSHADOW, 0, new IntPtr(n), write); break;
-                case "trails": SystemParametersInfo(SPI_SETMOUSETRAILS, n != 0 ? 7u : 0u, IntPtr.Zero, write); break;
+                // The switch sends true or false; a saved state sends the length (an older save sent 1 for on).
+                case "trails": SystemParametersInfo(SPI_SETMOUSETRAILS, value is bool ? (n != 0 ? 7u : 0u) : n == 0 ? 0u : n == 1 ? 7u : (uint)Math.Min(16, n), IntPtr.Zero, write); break;
                 case "sonar": SystemParametersInfo(SPI_SETMOUSESONAR, 0, new IntPtr(n), write); break;
                 case "hide": SystemParametersInfo(SPI_SETMOUSEVANISH, 0, new IntPtr(n), write); break;
                 case "buttonInitial": SystemParametersInfo(SPI_SETSNAPTODEFBUTTON, (uint)n, IntPtr.Zero, write); break;
@@ -700,13 +889,29 @@ namespace Lampfish
             {
                 case "library": Program.Send(Library()); return false;
                 case "frames": Frames(Text(m, "path")); return false;
-                case "theme": ApplyTheme(Text(m, "name")); return true;
+                case "theme":
+                {
+                    string name = Text(m, "name");
+                    if (Find(name) == null) return false;
+                    var before = UndoPoint();
+                    ApplyTheme(name);
+                    OfferUndo(Language.T("Cursors: {0}", NameTheme(name)), before);
+                    return true;
+                }
                 case "make": return Make(m);
-                case "assign": Assign(Text(m, "role"), Text(m, "path")); return true;
+                case "assign":
+                {
+                    var before = UndoPoint();
+                    if (!Assign(Text(m, "role"), Text(m, "path"))) return false;
+                    OfferUndo(Language.T("Cursor changed"), before);
+                    return true;
+                }
                 case "initial":
                 {
                     var before = Capture();
                     ApplyTheme("Windows Aero");
+                    SetSize(1);
+                    Reload();
                     Program.Undoable(Language.T("Cursors back to the Windows default"), () => Restore(before));
                     return true;
                 }
@@ -718,7 +923,13 @@ namespace Lampfish
                     Program.Undoable(Language.T("Mouse back to how it was before lampfish"), () => Restore(before));
                     return true;
                 }
-                case "adjust": Remember(); Adjust(Text(m, "what"), m["value"]); return !(m.ContainsKey("live") && Convert.ToBoolean(m["live"]));
+                case "adjust":
+                {
+                    bool live = m.ContainsKey("live") && Convert.ToBoolean(m["live"]);
+                    Remember();
+                    Adjust(Text(m, "what"), m["value"], live);
+                    return !live;
+                }
                 case "add":
                 {
                     using (var dialog = new System.Windows.Forms.OpenFileDialog())
@@ -727,7 +938,7 @@ namespace Lampfish
                         dialog.Multiselect = true;
                         dialog.Filter = Language.T("Cursors") + "|*.cur;*.ani";
                         if (dialog.ShowDialog(Program.SettingsWindow) != System.Windows.Forms.DialogResult.OK) return false;
-                        Add(dialog.FileNames);
+                        if (Add(dialog.FileNames) < dialog.FileNames.Length) Program.Announce("Some files could not be read as cursors");
                     }
                     Program.Send(Library());
                     return false;
@@ -735,7 +946,7 @@ namespace Lampfish
                 case "drop":
                 {
                     int n = Add(files);
-                    if (n < files.Count) Program.Announce("Only .cur and .ani files are supported");
+                    if (n < files.Count) Program.Announce(files.All(f => Formats.Contains(Path.GetExtension(f).ToLowerInvariant())) ? "Some files could not be read as cursors" : "Only .cur and .ani files are supported");
                     Program.Send(Library());
                     return true;
                 }
@@ -743,8 +954,7 @@ namespace Lampfish
                 case "save":
                 {
                     string name = FreeName(Text(m, "name"));
-                    WriteScheme(name, Row());
-                    Name(name);
+                    SaveAs(name);
                     Program.Announce("“{0}” saved", name);
                     Program.Send(Library());
                     return true;
@@ -754,7 +964,7 @@ namespace Lampfish
                     var theme = Find(CurrentTheme());
                     if (theme == null || theme.Source != "user") return false;
                     string before = ReadScheme(theme.Name), name = theme.Name;
-                    WriteScheme(name, Row());
+                    SaveAs(name);
                     Program.Undoable(Language.T("“{0}” updated", name), () => { if (before != null) WriteScheme(name, before); Program.Send(Library()); });
                     Program.Send(Library());
                     return true;
@@ -787,7 +997,7 @@ namespace Lampfish
                     var theme = Find(Text(m, "name"));
                     if (theme == null) return false;
                     string name = FreeName(Language.T("{0} copy", NameTheme(theme.Name)));
-                    WriteScheme(name, string.Join(",", theme.Paths));
+                    WriteScheme(name, string.Join(",", Keep(name, theme.Paths)));
                     Program.Announce("“{0}” added", name);
                     Program.Send(Library());
                     return true;
@@ -806,6 +1016,15 @@ namespace Lampfish
                         WriteScheme(name, row);
                         if (current) Name(name);
                         Program.Send(Library());
+                    }, () =>
+                    {
+                        // Its own copy of engine files goes with it, unless another theme or the pointer still uses it.
+                        string kept = Path.Combine(CustomFolder, "themes");
+                        var folders = row.Split(',').Select(p => Path.GetDirectoryName(Environment.ExpandEnvironmentVariables(p.Trim())) ?? "")
+                            .Where(d => d.StartsWith(kept + "\\", StringComparison.OrdinalIgnoreCase)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+                        var stillUsed = Themes().SelectMany(t => t.Paths).Concat(Current()).Where(p => p != null).ToList();
+                        foreach (string d in folders)
+                            if (!stillUsed.Any(p => p.StartsWith(d + "\\", StringComparison.OrdinalIgnoreCase)) && Directory.Exists(d)) Directory.Delete(d, true);
                     });
                     Program.Send(Library());
                     return true;
@@ -825,6 +1044,9 @@ namespace Lampfish
             var files = m.TryGetValue("files", out raw) ? raw as Dictionary<string, object> : null;
             if (files == null || name == null || !MadeName.IsMatch(name)) return false;
             if (Vip.IsVipTheme(name) && !Vip.Unlocked) return false;
+            object apply;
+            bool asked = m.TryGetValue("apply", out apply) && Convert.ToBoolean(apply);
+            var before = asked ? UndoPoint() : null;
             var allowed = new HashSet<string>(Roles.SelectMany(r => Formats.Select(f => r[0] + f)), StringComparer.OrdinalIgnoreCase);
             if (files.Count != Roles.Length || files.Keys.Any(k => !allowed.Contains(k))) return false;
             Directory.CreateDirectory(Made);
@@ -843,6 +1065,7 @@ namespace Lampfish
                     if (Directory.Exists(folder)) Directory.Move(folder, old);
                     Directory.Move(fresh, folder);
                     moved = true;
+                    Changed();
                 }
                 catch (IOException ex)
                 {
@@ -853,8 +1076,8 @@ namespace Lampfish
             }
             try { if (Directory.Exists(old)) Directory.Delete(old, true); } catch (Exception ex) { Program.Log(ex); }
             // The theme in use is applied again even if the page did not ask: a still .cur may have become an .ani.
-            object apply;
-            if ((m.TryGetValue("apply", out apply) && Convert.ToBoolean(apply)) || CurrentTheme() == name) ApplyTheme(name);
+            if (asked || CurrentTheme() == name) ApplyTheme(name);
+            if (asked) OfferUndo(Language.T("Cursors: {0}", NameTheme(name)), before);
             Program.Send(Library());
             return true;
         }
@@ -865,7 +1088,7 @@ namespace Lampfish
             string theme = CurrentTheme();
             var now = Full();
             var aero = Aero();
-            Func<Snapshot, bool> standard = x => aero != null && x.Size == 32 && Roles.Select((r, i) => i).All(i =>
+            Func<Snapshot, bool> standard = x => aero != null && x.Size <= 32 && Roles.Select((r, i) => i).All(i =>
             {
                 string v;
                 x.Roles.TryGetValue(Roles[i][0], out v);

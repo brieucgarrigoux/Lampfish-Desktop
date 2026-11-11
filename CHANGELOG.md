@@ -17,6 +17,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Changed
 
+- Mouse: applying a cursor theme or a single cursor can be undone for 8 seconds. Trying the colours of a family one after the other is one change, and Undo goes back to before the first.
+- Mouse: the mouse panel of Windows lists only the lampfish theme in use, instead of every theme ever tried.
+- Mouse: a theme saved or copied from a lampfish theme keeps its own files, so it still works after lampfish draws that theme again.
+- Mouse: the smallest pointer size is 32 px, where Windows starts. A pointer set to 16 px moves to 32 px.
+- Mouse: Back to original keeps the wheel, double-click and trail values as they were, above the ranges of the sliders included, and a wheel set to one screen at a time stays so.
+- Mouse: a theme of lampfish made while cursors were changed one by one keeps those cursors.
+- Mouse: less work while the page is open, and old previews and unused made themes are cleared.
 - Magnetic grid: an arrangement says when it turns the grid off. It still has to: Windows would pull the icons back onto its cells.
 - The zoom stays on screen at the foot of the bar on the left, instead of appearing only under the pointer.
 - Day mode: the page is a lighter gray, and the title bar and the tray menu follow it.
@@ -25,6 +32,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Fixed
 
+- Mouse: a damaged animated cursor could freeze lampfish. Files Windows cannot read are refused when added, with a message.
+- Mouse: Reset to default also gives back the default size.
+- Mouse: the trail answers the primary click when the buttons are swapped, and pauses when an app hides the pointer.
+- On a narrow window, the end of every page sits above Options and the zoom.
 - Day mode: every text reaches a contrast of 4.5:1. Titles of Sounds and values of Hardware were dark on dark, and white on the main buttons was too faint.
 - Magnetic grid: changing the size of the icons, or moving one in the plan of Arrange, no longer turns the grid off. Each icon keeps its cell and the cells follow the new size.
 - Magnetic grid: the last column of the desktop has its cells, and Straighten no longer moves the icons out of it.

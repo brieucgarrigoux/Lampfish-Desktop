@@ -412,6 +412,7 @@ namespace Lampfish
                     string name = Text(m, "name").Trim();
                     if (name.Length == 0) name = string.Format(Language.T("Theme {0}"), All.Count + 1);
                     var fresh = Capture(name.Length > 40 ? name.Substring(0, 40) : name);
+                    fresh.Theme = Mouse.ThemeForMood(fresh.Name);
                     All.Add(fresh);
                     Program.R.CurrentMood = fresh.Id;
                     return true;
@@ -438,7 +439,9 @@ namespace Lampfish
                 }
                 case "update":
                     if (mood == null) return false;
-                    Overwrite(mood, Capture(mood.Name));
+                    var updated = Capture(mood.Name);
+                    updated.Theme = Mouse.ThemeForMood(mood.Name);
+                    Overwrite(mood, updated);
                     Program.R.CurrentMood = mood.Id;
                     Program.Announce("{0} updated", mood.Name);
                     return true;

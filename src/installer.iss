@@ -107,6 +107,7 @@ Filename: "{app}\Lampfish.exe"; Parameters: "--uninstall"; Flags: runhidden wait
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\app\cursor-made"
+Type: filesandordirs; Name: "{app}\app\cursor-cache"
 
 [Code]
 const

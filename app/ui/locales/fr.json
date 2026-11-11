@@ -2382,7 +2382,7 @@
   "How long the trail stays": "Le temps que la traînée reste",
   "Click effect": "Effet au clic",
   "Each trail answers a click its own way": "Chaque traînée répond au clic à sa façon",
-  "Paused in full screen, slower with the energy saver. Never in a screenshot or a shared screen.": "En pause en plein écran, plus lente avec l'économiseur. Jamais dans une capture ni un écran partagé.",
+  "Paused in full screen or with animations off in Windows. Never captured.": "En pause en plein écran ou sans animations Windows. Jamais capturée.",
   "Plankton": "Plancton",
   "Sparkles": "Étincelles",
   "Ribbon": "Ruban",
@@ -2396,5 +2396,9 @@
   "Sequins": "Sequins",
   "Confetti": "Confettis",
   "Halftone": "Trame",
-  "Ink": "Encre"
+  "Ink": "Encre",
+ "Cursor changed": "Curseur changé",
+ "Some files could not be read as cursors": "Certains fichiers ne sont pas des curseurs lisibles",
+ "{0} cursors": "Curseurs de {0}",
+ "One screen": "Un écran"
 }
