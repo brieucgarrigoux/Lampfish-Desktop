@@ -38,7 +38,7 @@
       const b = document.createElement('button');
       b.className = 'role' + (r.id === role ? ' chosen' : '');
       b.dataset.path = r.path || '';
-      b.title = tr(r.name) + ' · ' + (r.path ? r.path.split('\\').pop() : tr('Windows cursor'));
+      b.title = tr(r.name) + '\n' +(r.path ? r.path.split('\\').pop() : tr('Windows cursor'));
       const frame = document.createElement('span');
       frame.className = 'role__case';
       frame.innerHTML = '';
@@ -200,10 +200,12 @@
     if (made && made.version === CursorEngine.VERSION) { send('mouse.theme', { name: v.name }); return; }
     if (making.has(v.name)) return;
     making.add(v.name);
-    if (tile) { tile.classList.add('loading'); tile.setAttribute('aria-busy', 'true'); }
+    if (tile) { tile.classList.add('loading'); tile.setAttribute('aria-busy', 'true'); tile.style.setProperty('--progress', 0); }
     try {
-      const built = await CursorEngine.build(v.name);
-      send('mouse.make', { ...built, apply: true });
+      // A still version first, so the pointer changes at once, then the animated files replace it.
+      if (!made) send('mouse.make', { ...await CursorEngine.build(v.name, null, true), apply: true });
+      const built = await CursorEngine.build(v.name, p => { if (tile) tile.style.setProperty('--progress', p); });
+      send('mouse.make', { ...built, apply: s.theme === v.name });
     } catch (e) {
       console.error(e);
     } finally {
@@ -228,7 +230,7 @@
     c.tabIndex = 0;
     c.setAttribute('role', 'button');
     c.dataset.names = fam.variants.map(x => x.name).join('|');
-    c.innerHTML = '<span class="theme__showcase"></span><span class="theme__name"></span><span class="theme__swatches"></span>';
+    c.innerHTML = '<span class="theme__showcase"></span><span class="theme__name"><span></span><span class="theme__variant"></span></span><span class="theme__swatches"></span>';
     const show = c.querySelector('.theme__showcase'), roles = ['arrow', 'hand', 'wait'], canvases = [];
     const draw = (w, anim) => canvases.forEach((cv, i) => CursorEngine.draw(cv, cv.width, v.name, roles[i], w, anim || roles[i] === 'wait'));
     const fill = () => {
@@ -238,7 +240,8 @@
         for (const r of roles) { const cv = document.createElement('canvas'); cv.width = cv.height = Math.round(32 * devicePixelRatio); canvases.push(cv); show.append(cv); }
         draw(.6, false);
       } else for (const i of [0, 1, 3]) show.append(image(v.theme.showcase[i]));
-      c.querySelector('.theme__name').textContent = tr(fam.name) + (v.variant ? ' · ' + tr(v.variant) : '');
+      c.querySelector('.theme__name').firstChild.textContent = tr(fam.name);
+      c.querySelector('.theme__variant').textContent = v.variant ? tr(v.variant) : '';
       for (const b of c.querySelectorAll('.swatch')) b.setAttribute('aria-pressed', String(b.dataset.name === v.name));
     };
     for (const x of fam.variants.length > 1 ? fam.variants : []) {
@@ -255,7 +258,8 @@
     fill();
     let raf = 0;
     const still = matchMedia('(prefers-reduced-motion: reduce)');
-    const loop = now => { draw(CursorEngine.phase(now / 1000), true); raf = requestAnimationFrame(loop); };
+    let last = 0;
+    const loop = now => { if (now - last > 32) { last = now; draw(CursorEngine.phase(now / 1000), true); } raf = requestAnimationFrame(loop); };
     if (fam.engine) {
       c.addEventListener('pointerenter', () => { if (!still.matches && !raf) raf = requestAnimationFrame(loop); });
       c.addEventListener('pointerleave', () => { cancelAnimationFrame(raf); raf = 0; draw(.6, false); });

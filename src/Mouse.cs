@@ -390,9 +390,24 @@ namespace Lampfish
             using (var key = Registry.CurrentUser.OpenSubKey(Key)) return key == null ? null : key.GetValue("") as string;
         }
 
+        // The library asks for about 500 previews each time it is sent: the answer is kept per file and date, in memory.
+        static readonly Dictionary<string, object> previews = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
         static object Preview(string file)
         {
-            if (string.IsNullOrEmpty(file) || !File.Exists(file)) return null;
+            if (string.IsNullOrEmpty(file)) return null;
+            var info = new FileInfo(file);
+            if (!info.Exists) return null;
+            string id = file + "|" + info.LastWriteTimeUtc.Ticks;
+            object known;
+            lock (previews) if (previews.TryGetValue(id, out known)) return known;
+            object made = MakePreview(file);
+            if (made != null) lock (previews) previews[id] = made;
+            return made;
+        }
+
+        static object MakePreview(string file)
+        {
             try
             {
                 string key = KeyOf(file);
@@ -452,13 +467,13 @@ namespace Lampfish
             catch (Exception ex) { Program.Log(ex); }
         }
 
+        static readonly SHA1 sha = SHA1.Create();
+
         static string KeyOf(string file)
         {
-            using (var sha = SHA1.Create())
-            {
-                byte[] h = sha.ComputeHash(Encoding.UTF8.GetBytes("v2|" + file.ToLowerInvariant() + "|" + File.GetLastWriteTimeUtc(file).Ticks));
-                return Path.GetFileNameWithoutExtension(file).ToLowerInvariant().Replace(' ', '-') + "-" + BitConverter.ToString(h, 0, 4).Replace("-", "").ToLowerInvariant();
-            }
+            byte[] h;
+            lock (sha) h = sha.ComputeHash(Encoding.UTF8.GetBytes("v2|" + file.ToLowerInvariant() + "|" + File.GetLastWriteTimeUtc(file).Ticks));
+            return Path.GetFileNameWithoutExtension(file).ToLowerInvariant().Replace(' ', '-') + "-" + BitConverter.ToString(h, 0, 4).Replace("-", "").ToLowerInvariant();
         }
 
         static Bitmap Render(string file, int size, uint step = 0)
@@ -651,10 +666,11 @@ namespace Lampfish
 
         static object Library()
         {
+            var all = Themes();
             return new
             {
                 type = "mouse.library",
-                themes = Themes().Select(t => new
+                themes = all.Select(t => new
                 {
                     name = t.Name,
                     title = NameTheme(t.Name),
@@ -667,7 +683,7 @@ namespace Lampfish
                 }).OrderBy(t => t.lampfish ? 0 : t.custom ? 2 : 1).ToArray(),
                 windows = List(FolderWindows, false),
                 custom = List(CustomFolder, true),
-                lampfishCursors = Themes().Where(t => t.Source == "lampfish" && !t.Made).Select(t => new
+                lampfishCursors = all.Where(t => t.Source == "lampfish" && !t.Made).Select(t => new
                 {
                     name = t.Name,
                     title = NameTheme(t.Name),
@@ -819,8 +835,9 @@ namespace Lampfish
             if (Directory.Exists(folder)) Directory.Move(folder, old);
             Directory.Move(fresh, folder);
             try { if (Directory.Exists(old)) Directory.Delete(old, true); } catch (Exception ex) { Program.Log(ex); }
+            // The theme in use is applied again even if the page did not ask: a still .cur may have become an .ani.
             object apply;
-            if (m.TryGetValue("apply", out apply) && Convert.ToBoolean(apply)) ApplyTheme(name);
+            if ((m.TryGetValue("apply", out apply) && Convert.ToBoolean(apply)) || CurrentTheme() == name) ApplyTheme(name);
             Program.Send(Library());
             return true;
         }

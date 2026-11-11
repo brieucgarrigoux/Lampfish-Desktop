@@ -2,7 +2,8 @@
 // Draws the cursor themes of lampfish and makes their files for Windows. A style draws one image for a phase w in [0, 2pi):
 // image k of n uses w = 2pi k / n, so the last image of a loop leads back to the first.
 (function () {
-const DPR = window.devicePixelRatio || 1;
+// The same file runs in the page, for previews, and in a worker, which makes the files of a theme without freezing the page.
+const canvas = size => new OffscreenCanvas(size, size);
 const TAU = Math.PI * 2;
 
 // ---------- Shapes, 32 unit grid ----------
@@ -27,7 +28,8 @@ function pen() {
   crease.moveTo(...a); crease.lineTo(...b); crease.moveTo(...c1); crease.lineTo(...c2);
   return { parts: [body], crease, tip: N };
 }
-const HAND_CREASES = (() => { const p = new Path2D(); for (const [x, y0, y1] of [[15.15, 13.6, 18.6], [19.25, 14.9, 19], [23.1, 16.2, 19.4]]) { p.moveTo(x, y0); p.lineTo(x, y1); } p.moveTo(10.9, 20.6); p.quadraticCurveTo(11.6, 22.6, 11.2, 24.6); return p; })();
+// Only the gaps between the folded fingers, never into the palm: longer lines read as bars across the hand.
+const HAND_CREASES = (() => { const p = new Path2D(); for (const [x, y0, y1] of [[15.15, 13.5, 16.9], [19.25, 14.8, 17.3], [23.1, 16.1, 17.7]]) { p.moveTo(x, y0); p.lineTo(x, y1); } return p; })();
 const BASE = {
   arrow: { parts: [arrowPath()], tip: [4, 3] },
   hand: { parts: [rrect(10.9, 3, 4.25, 16, [2.12, 2.12, 0, 0]), rrect(15.15, 11.4, 4.1, 8.6, [2.05, 2.05, 0, 0]), rrect(19.25, 12.7, 3.85, 8, [1.92, 1.92, 0, 0]), rrect(23.1, 14.2, 3.4, 6.8, [1.7, 1.7, 0, 0]),
@@ -69,7 +71,7 @@ function shape(name, inset = .92) {
   }
   if (b.ring) s.ring = { c: tp(b.ring.c), r: b.ring.r * inset };
   if (b.badge) s.badge = { c: tp(b.badge.c), r: b.badge.r * inset };
-  const probe = document.createElement('canvas').getContext('2d');
+  const probe = canvas(32).getContext('2d');
   s.inside = (x, y) => probe.isPointInPath(path, x, y);
   return (shapeCache[key] = s);
 }
@@ -77,7 +79,7 @@ function shape(name, inset = .92) {
 // ---------- Helpers ----------
 // Canvases that are read back stay in memory rather than on the graphics card: reading them is then cheap.
 let CPU = false;
-function layer(size) { const c = document.createElement('canvas'); c.width = c.height = size; const x = c.getContext('2d', { willReadFrequently: CPU }); x.setTransform(size / 32, 0, 0, size / 32, 0, 0); return [c, x]; }
+function layer(size) { const c = canvas(size); const x = c.getContext('2d', { willReadFrequently: CPU }); x.setTransform(size / 32, 0, 0, size / 32, 0, 0); return [c, x]; }
 function stamp(x, c) { x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.drawImage(c, 0, 0); x.restore(); }
 const layers = new Map();
 function cached(key, make) { let c = layers.get(key); if (!c) { c = make(); layers.set(key, c); } return c; }
@@ -101,7 +103,7 @@ function inner(s, size, dx, dy) {
     return c;
   });
 }
-function paint(src, size, make) { const c = document.createElement('canvas'); c.width = c.height = size; const x = c.getContext('2d'); x.drawImage(src, 0, 0); x.setTransform(size / 32, 0, 0, size / 32, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = make(x); x.fillRect(-2, -2, 36, 36); return c; }
+function paint(src, size, make) { const c = canvas(size); const x = c.getContext('2d'); x.drawImage(src, 0, 0); x.setTransform(size / 32, 0, 0, size / 32, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = make(x); x.fillRect(-2, -2, 36, 36); return c; }
 function seeded(seed) { let v = seed >>> 0; return () => { v = (v * 1664525 + 1013904223) >>> 0; return v / 4294967296; }; }
 function glow(x, k, blur, color) { x.shadowColor = color; x.shadowBlur = blur * k; x.shadowOffsetX = 0; x.shadowOffsetY = 0; }
 function noGlow(x) { x.shadowColor = 'transparent'; x.shadowBlur = 0; }
@@ -141,7 +143,7 @@ const wave = (w, k = 1, p = 0) => Math.sin(w * k + p);        // k whole: loops 
 const frac = (w, k = 1, p = 0) => (((w * k / TAU + p) % 1) + 1) % 1;
 // Glyphs and creases go on top of the body: the ? of Help, the hole of Pin, the folds of the hand and the pen.
 function details(x, s, crease, ink) {
-  if (s.crease) { x.save(); x.clip(s.path); x.strokeStyle = crease; x.lineWidth = .75; x.lineCap = 'round'; x.stroke(s.crease); x.restore(); }
+  if (s.crease) { x.save(); x.clip(s.path); x.strokeStyle = crease; x.lineWidth = .6; x.lineCap = 'round'; x.stroke(s.crease); x.restore(); }
   if (s.glyph) {
     x.save();
     if (s.glyph.stroke) { x.strokeStyle = ink; x.lineWidth = 1.45; x.lineCap = 'round'; x.lineJoin = 'round'; x.stroke(s.glyph.stroke); x.fillStyle = ink; x.beginPath(); x.arc(s.glyph.dot[0], s.glyph.dot[1], .9, 0, TAU); x.fill(); }
@@ -262,7 +264,7 @@ const STYLES = {
     const flick = anim ? .82 + .18 * wave(w, 19) * wave(w, 6) : 1;
     x.save(); glow(x, k, 3.2, th.tube); x.globalAlpha = flick; stamp(x, band(s, size, 0, 1.35, th.tube)); x.restore();
     stamp(x, band(s, size, .45, .9, th.core));
-    x.save(); glow(x, k, 2, th.tube); details(x, s, th.tube, th.core); x.restore();
+    x.save(); x.globalAlpha = .55; details(x, s, th.tube, th.core); x.restore();
     x.save(); glow(x, k, 3, th.tube); busyArc(x, s, th.core, w, 1.6); x.restore();
     finish(ctx, size, L, .2);
   },
@@ -390,9 +392,9 @@ const THEME = {};
 for (const f of FAMILIES) for (const v of f.variants) { v.name = ('lampfish ' + f.name + ' ' + v.variant).trim(); v.family = f.key; THEME[v.name] = v; }
 
 // ---------- Rendering ----------
-function drawTheme(canvas, px, theme, role, w = 0, anim = false) {
-  const ctx = canvas.getContext('2d');
-  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height);
+function drawTheme(target, px, theme, role, w = 0, anim = false) {
+  const ctx = target.getContext('2d');
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, target.width, target.height);
   const s = shape(role, .92);
   ctx.setTransform(px / 32, 0, 0, px / 32, 0, 0);
   STYLES[theme.style](ctx, px, s, theme, w, anim);
@@ -403,7 +405,7 @@ function drawTheme(canvas, px, theme, role, w = 0, anim = false) {
 
 // ---------- Files for Windows ----------
 // Frames are stored as PNG inside the .cur and .ani containers, which Windows reads since Vista: a theme weighs about 1 MB.
-const VERSION = '1';
+const VERSION = '2';
 const LOOP = 2.4, BUSY_FRAMES = 24, FRAMES = 12;
 const SIZES_ANI = [32, 48, 64, 96], SIZES_CUR = [32, 48, 64, 96, 128];
 const MOVING = theme => theme.style !== 'flat';
@@ -437,7 +439,7 @@ async function png(canvas) {
 }
 function sizes(theme, role, w, anim, list) {
   return Promise.all(list.map(size => {
-    const c = document.createElement('canvas'); c.width = c.height = size; c.getContext('2d', { willReadFrequently: true });
+    const c = canvas(size); c.getContext('2d', { willReadFrequently: true });
     const [hx, hy] = drawTheme(c, size, theme, role, w, anim);
     return png(c).then(data => ({ size, hx: Math.max(0, Math.min(size - 1, Math.round(hx))), hy: Math.max(0, Math.min(size - 1, Math.round(hy))), data }));
   }));
@@ -473,32 +475,64 @@ function ani(frames, jiffies) {
 function base64(bytes) { let s = ''; for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(s); }
 
 // Every role of the theme, animated ones looping exactly: busy roles turn in 24 images, the others breathe in 12.
-async function build(name, progress) {
+// still: one image per cursor, written in a fraction of a second so the pointer changes at once; the animated files follow.
+async function build(name, progress, roles = ROLES, still = false) {
   const theme = THEME[name];
   if (!theme) throw new Error('Unknown cursor theme ' + name);
   const files = {};
   CPU = true;
   try {
-    for (let i = 0; i < ROLES.length; i++) {
-      const role = ROLES[i];
-      if (BUSY(role) || MOVING(theme)) {
+    for (let i = 0; i < roles.length; i++) {
+      const role = roles[i];
+      if (!still && (BUSY(role) || MOVING(theme))) {
         const n = BUSY(role) ? BUSY_FRAMES : FRAMES;
         const frames = (await Promise.all(Array.from({ length: n }, (_, k) => sizes(theme, role, k / n * TAU, true, SIZES_ANI)))).map(cur);
         files[ROLE_FILE[role] + '.ani'] = base64(ani(frames, Math.round(LOOP / n * 60)));
       } else files[ROLE_FILE[role] + '.cur'] = base64(cur(await sizes(theme, role, .6, false, SIZES_CUR)));
-      if (progress) progress((i + 1) / ROLES.length);
+      if (progress) progress((i + 1) / roles.length);
     }
   } finally {
     CPU = false;
   }
-  return { name, version: VERSION, files };
+  return { name, version: still ? VERSION + '-still' : VERSION, files };
 }
 
-window.CursorEngine = {
+const api = {
   VERSION, FAMILIES, THEME, ROLES,
   has: name => !!THEME[name],
-  draw: (canvas, px, name, role, w, anim) => drawTheme(canvas, px, THEME[name], role, w, anim),
+  draw: (target, px, name, role, w, anim) => drawTheme(target, px, THEME[name], role, w, anim),
   phase: seconds => (seconds % LOOP) / LOOP * TAU,
-  build,
 };
+
+if (typeof document === 'undefined') {
+  self.onmessage = async e => {
+    try { postMessage({ done: await build(e.data.build, p => postMessage({ progress: p }), e.data.roles, e.data.still) }); }
+    catch (err) { postMessage({ error: String(err) }); }
+  };
+} else {
+  // Workers share the roles of a theme, so that it is made several times faster and the page never waits.
+  const COUNT = Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 2) - 1));
+  let workers = null, queue = Promise.resolve();
+  const part = (worker, name, roles, still, report) => new Promise((ok, no) => {
+    worker.onmessage = e => {
+      if (e.data.progress != null) { report(e.data.progress * roles.length); return; }
+      if (e.data.error) no(new Error(e.data.error)); else ok(e.data.done.files);
+    };
+    worker.onerror = err => { workers = null; no(err); };
+    worker.postMessage({ build: name, roles, still });
+  });
+  const run = async (name, progress, still) => {
+    try { workers = workers || Array.from({ length: COUNT }, () => new Worker('cursor-engine.js')); }
+    catch (err) { return build(name, progress, ROLES, still); }
+    // The busy roles are the heaviest: they are spread first so every worker gets a fair share.
+    const order = ROLES.slice().sort((a, b) => (b === 'wait' || b === 'appstarting') - (a === 'wait' || a === 'appstarting'));
+    const shares = workers.map(() => []);
+    order.forEach((role, i) => shares[i % workers.length].push(role));
+    const done = workers.map(() => 0);
+    const parts = await Promise.all(workers.map((w, i) => part(w, name, shares[i], still, n => { done[i] = n; if (progress) progress(done.reduce((a, b) => a + b, 0) / ROLES.length); })));
+    return { name, version: still ? VERSION + '-still' : VERSION, files: Object.assign({}, ...parts) };
+  };
+  api.build = (name, progress, still = false) => (queue = queue.then(() => run(name, progress, still), () => run(name, progress, still)));
+  window.CursorEngine = api;
+}
 })();
