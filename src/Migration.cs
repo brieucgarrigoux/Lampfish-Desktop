@@ -279,7 +279,7 @@ namespace Lampfish
                     {
                         string value = key.GetValue(name, null, RegistryValueOptions.DoNotExpandEnvironmentNames) as string;
                         if (value == null) continue;
-                        string now = name.Length == 0 ? (OldCursorThemes.Contains(value) ? Renamed(value) : value) : MoveCursor(value, null);
+                        string now = name.Length == 0 ? (OldCursorThemes.Contains(value) ? Renamed(value) : value) : RenameCursor(value);
                         if (now == value) continue;
                         if (name.Length == 0) key.SetValue(name, now);
                         else key.SetValue(name, now, RegistryValueKind.ExpandString);
@@ -291,7 +291,7 @@ namespace Lampfish
                     {
                         string row = schemes.GetValue(name, null, RegistryValueOptions.DoNotExpandEnvironmentNames) as string;
                         if (row == null) continue;
-                        string now = string.Join(",", row.Split(',').Select(p => MoveCursor(p, null)));
+                        string now = string.Join(",", row.Split(',').Select(RenameCursor));
                         string title = OldCursorThemes.Contains(name) ? Renamed(name) : name;
                         if (now == row && title == name) continue;
                         // Applying a theme of lampfish writes its scheme again, so an old copy can simply go.
@@ -312,6 +312,21 @@ namespace Lampfish
                 if (!Directory.Exists(folder) || !Directory.Exists(themes + Renamed(old)) || PointsInto(folder + "\\")) continue;
                 try { Directory.Delete(folder, true); } catch (Exception ex) { Program.Log(ex); }
             }
+        }
+
+        // Only a path into one of the four old folders changes, and it stays in its own copy of the app: a second copy on
+        // the same PC (a build next to an install) must never pull the pointer to itself.
+        static string RenameCursor(string path)
+        {
+            foreach (string old in OldCursorThemes)
+            {
+                string from = ThemesFolder + old + "\\";
+                int at = path.IndexOf(from, StringComparison.OrdinalIgnoreCase);
+                if (at < 0) continue;
+                string moved = path.Substring(0, at) + ThemesFolder + Renamed(old) + "\\" + path.Substring(at + from.Length);
+                return File.Exists(Environment.ExpandEnvironmentVariables(moved)) ? moved : path;
+            }
+            return path;
         }
 
         static bool PointsInto(string folder)

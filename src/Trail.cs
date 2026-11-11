@@ -54,8 +54,13 @@ namespace Lampfish
             string kind = Effective();
             if (kind == null) { if (window != null) { window.Stop(); window.Dispose(); window = null; } return; }
             if (window == null) window = new TrailWindow();
+            // settings.json can be edited by hand: a value out of range would freeze a recipe or break its colours.
+            Program.R.TrailDensity = Clamp(Program.R.TrailDensity, .4, 2);
+            Program.R.TrailDuration = Clamp(Program.R.TrailDuration, .5, 2);
             window.Use(kind, (float)Program.R.TrailDensity, (float)Program.R.TrailDuration, Program.R.TrailClick);
         }
+
+        static double Clamp(double v, double min, double max) { return double.IsNaN(v) ? 1 : Math.Max(min, Math.Min(max, v)); }
 
         public static object State()
         {

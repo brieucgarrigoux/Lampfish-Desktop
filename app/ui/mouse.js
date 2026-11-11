@@ -265,7 +265,7 @@
     fill();
     let raf = 0, last = 0;
     const still = matchMedia('(prefers-reduced-motion: reduce)');
-    const loop = now => { if (now - last > 32) { last = now; draw(CursorEngine.phase(now / 1000), true); } raf = requestAnimationFrame(loop); };
+    const loop = now => { if (!c.isConnected) { raf = 0; return; } if (now - last > 32) { last = now; draw(CursorEngine.phase(now / 1000), true); } raf = requestAnimationFrame(loop); };
     if (fam.engine) {
       c.addEventListener('pointerenter', () => { if (!still.matches && !raf) raf = requestAnimationFrame(loop); });
       c.addEventListener('pointerleave', () => { cancelAnimationFrame(raf); raf = 0; draw(.6, false); });
@@ -317,7 +317,7 @@
     c.querySelector('form').addEventListener('submit', e => { e.preventDefault(); if (input.value.trim()) send('vip.unlock', { code: input.value }); });
     let raf = 0, last = 0;
     const still = matchMedia('(prefers-reduced-motion: reduce)');
-    const loop = now => { if (now - last > 32) { last = now; draw(CursorEngine.phase(now / 1000), true); } raf = requestAnimationFrame(loop); };
+    const loop = now => { if (!c.isConnected) { raf = 0; return; } if (now - last > 32) { last = now; draw(CursorEngine.phase(now / 1000), true); } raf = requestAnimationFrame(loop); };
     c.addEventListener('pointerenter', () => { if (!still.matches && !raf) raf = requestAnimationFrame(loop); });
     c.addEventListener('pointerleave', () => { cancelAnimationFrame(raf); raf = 0; draw(.6, false); });
     return c;

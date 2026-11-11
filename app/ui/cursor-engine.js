@@ -512,20 +512,22 @@ const api = {
 if (typeof document === 'undefined') {
   self.CursorEngine = api;
   self.onmessage = async e => {
-    for (const url of e.data.packs || []) if (!packs.includes(url)) { importScripts(url); packs.push(url); }
-    try { postMessage({ done: await build(e.data.build, p => postMessage({ progress: p }), e.data.roles, e.data.still) }); }
+    try {
+      for (const url of e.data.packs || []) if (!packs.includes(url)) { importScripts(url); packs.push(url); }
+      postMessage({ done: await build(e.data.build, p => postMessage({ progress: p }), e.data.roles, e.data.still) }); }
     catch (err) { postMessage({ error: String(err) }); }
   };
 } else {
   // Workers share the roles of a theme, so that it is made several times faster and the page never waits.
   const COUNT = Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 2) - 1));
   let workers = null, queue = Promise.resolve();
+  const drop = () => { if (workers) for (const w of workers) w.terminate(); workers = null; };
   const part = (worker, name, roles, still, report) => new Promise((ok, no) => {
     worker.onmessage = e => {
       if (e.data.progress != null) { report(e.data.progress * roles.length); return; }
       if (e.data.error) no(new Error(e.data.error)); else ok(e.data.done.files);
     };
-    worker.onerror = err => { workers = null; no(err); };
+    worker.onerror = err => { drop(); no(err); };
     worker.postMessage({ build: name, roles, still, packs });
   });
   const run = async (name, progress, still) => {

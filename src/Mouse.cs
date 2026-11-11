@@ -392,18 +392,18 @@ namespace Lampfish
         }
 
         // The library asks for about 500 previews each time it is sent: the answer is kept per file and date, in memory.
-        static readonly Dictionary<string, object> previews = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        static readonly Dictionary<string, KeyValuePair<long, object>> previews = new Dictionary<string, KeyValuePair<long, object>>(StringComparer.OrdinalIgnoreCase);
 
         static object Preview(string file)
         {
             if (string.IsNullOrEmpty(file)) return null;
             var info = new FileInfo(file);
             if (!info.Exists) return null;
-            string id = file + "|" + info.LastWriteTimeUtc.Ticks;
-            object known;
-            lock (previews) if (previews.TryGetValue(id, out known)) return known;
+            long date = info.LastWriteTimeUtc.Ticks;
+            KeyValuePair<long, object> known;
+            lock (previews) if (previews.TryGetValue(file, out known) && known.Key == date) return known.Value;
             object made = MakePreview(file);
-            if (made != null) lock (previews) previews[id] = made;
+            if (made != null) lock (previews) previews[file] = new KeyValuePair<long, object>(date, made);
             return made;
         }
 
@@ -834,8 +834,23 @@ namespace Lampfish
             foreach (var f in files) File.WriteAllBytes(Path.Combine(fresh, f.Key), Convert.FromBase64String(f.Value as string ?? ""));
             File.WriteAllText(Path.Combine(fresh, "engine.txt"), Text(m, "version") ?? "");
             if (Directory.Exists(old)) Directory.Delete(old, true);
-            if (Directory.Exists(folder)) Directory.Move(folder, old);
-            Directory.Move(fresh, folder);
+            // An antivirus may still hold a file just written: retry, and never leave the registry pointing at no folder.
+            bool moved = false;
+            for (int i = 0; i < 5 && !moved; i++)
+            {
+                try
+                {
+                    if (Directory.Exists(folder)) Directory.Move(folder, old);
+                    Directory.Move(fresh, folder);
+                    moved = true;
+                }
+                catch (IOException ex)
+                {
+                    if (!Directory.Exists(folder) && Directory.Exists(old)) try { Directory.Move(old, folder); } catch (Exception back) { Program.Log(back); }
+                    if (i == 4) { Program.Log(ex); return false; }
+                    System.Threading.Thread.Sleep(150);
+                }
+            }
             try { if (Directory.Exists(old)) Directory.Delete(old, true); } catch (Exception ex) { Program.Log(ex); }
             // The theme in use is applied again even if the page did not ask: a still .cur may have become an .ani.
             object apply;
