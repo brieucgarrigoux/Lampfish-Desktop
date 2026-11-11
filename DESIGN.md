@@ -112,6 +112,7 @@ Fonts: `--display` (Geist, the font of the logo) for titles, the clock and lit t
 - **Main button with a menu** (`.s-capture` in Shelf): the main action on the left, a narrow arrow on the right that opens the other ways to do it, as rows with a glyph, a title and a gray line.
 - **Floating menu and lifted element**: `--group-up`, a `--hairline-strong` edge and the `--float` shadow. A veil over a block in an edit mode is `--veil`.
 - **Warning note** (`.warning-note`): amber, under the group it is about, only before a reset.
+- **Family tile** (`.theme--family` in Mouse): one tile per look with its Normal, Link and Busy cursors, its name and its colours as round swatches (`.swatch`, the chosen one ringed with the accent). A click on the tile applies the colour shown, a click on a swatch applies that colour. The cursors are drawn live (`cursor-engine.js`) and move only under the pointer; the first time a theme is applied the tile shows `.loading` for the 3 seconds it takes to write its files.
 
 ## Writing
 

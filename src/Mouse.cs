@@ -16,6 +16,8 @@ namespace Lampfish
         static readonly string CustomFolder = Path.Combine(Program.Root, "cursors");
         static readonly string Cache = Path.Combine(Program.Root, "app", "cursor-cache");
         static readonly string FolderThemes = Path.Combine(Program.Root, "app", "cursor-themes");
+        // Themes drawn by the page (cursor-engine.js) and written here the first time they are applied.
+        static readonly string Made = Path.Combine(Program.Root, "app", "cursor-made");
         static readonly string FolderWindows = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Cursors");
         const string Key = @"Control Panel\Cursors";
         const string SchemesKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Control Panel\Cursors\Schemes";
@@ -124,7 +126,7 @@ namespace Lampfish
 
         static string Row() { return string.Join(",", Current().Select(p => p ?? "")); }
 
-        class Theme { public string Name, Source; public string[] Paths; }
+        class Theme { public string Name, Source, Version; public string[] Paths; public bool Made; }
 
         public class Snapshot
         {
@@ -139,16 +141,19 @@ namespace Lampfish
         {
             var list = new List<Theme>();
 
-            if (Directory.Exists(FolderThemes))
-                foreach (string folder in Directory.GetDirectories(FolderThemes).OrderBy(d => Path.GetFileName(d) != Flagship).ThenBy(d => d))
-                {
-                    var paths = Roles.Select(r =>
+            foreach (string root in new[] { FolderThemes, Made })
+                if (Directory.Exists(root))
+                    foreach (string folder in Directory.GetDirectories(root).Where(d => !d.EndsWith(".new") && !d.EndsWith(".old")).OrderBy(d => Path.GetFileName(d) != Flagship).ThenBy(d => d))
                     {
-                        string ani = Path.Combine(folder, r[0] + ".ani");
-                        return File.Exists(ani) ? ani : Path.Combine(folder, r[0] + ".cur");
-                    }).ToArray();
-                    if (File.Exists(paths[0])) list.Add(new Theme { Name = Path.GetFileName(folder), Source = "lampfish", Paths = paths });
-                }
+                        var paths = Roles.Select(r =>
+                        {
+                            string ani = Path.Combine(folder, r[0] + ".ani");
+                            return File.Exists(ani) ? ani : Path.Combine(folder, r[0] + ".cur");
+                        }).ToArray();
+                        if (!paths.All(File.Exists) || list.Any(t => t.Name == Path.GetFileName(folder))) continue;
+                        string version = Path.Combine(folder, "engine.txt");
+                        list.Add(new Theme { Name = Path.GetFileName(folder), Source = "lampfish", Paths = paths, Made = root == Made, Version = File.Exists(version) ? File.ReadAllText(version).Trim() : null });
+                    }
             Read(Registry.LocalMachine, SchemesKey, "system", list);
             Read(Registry.CurrentUser, Key + @"\Schemes", "user", list);
             return list;
@@ -305,7 +310,7 @@ namespace Lampfish
         static bool Ours(string path)
         {
             path = Environment.ExpandEnvironmentVariables(path ?? "");
-            return path.StartsWith(FolderThemes + "\\", StringComparison.OrdinalIgnoreCase) || path.StartsWith(CustomFolder + "\\", StringComparison.OrdinalIgnoreCase);
+            return new[] { FolderThemes, Made, CustomFolder }.Any(root => path.StartsWith(root + "\\", StringComparison.OrdinalIgnoreCase));
         }
 
         public static void Uninstall()
@@ -655,12 +660,14 @@ namespace Lampfish
                     title = NameTheme(t.Name),
                     custom = t.Source == "user",
                     lampfish = t.Source == "lampfish",
+                    made = t.Made,
+                    version = t.Version,
                     kind = t.Source == "lampfish" ? "lampfish" : t.Source == "user" ? "mine" : "system",
                     showcase = Showcase.Where(i => i < t.Paths.Length).Select(i => Preview(t.Paths[i])).Where(a => a != null).ToArray(),
                 }).OrderBy(t => t.lampfish ? 0 : t.custom ? 2 : 1).ToArray(),
                 windows = List(FolderWindows, false),
                 custom = List(CustomFolder, true),
-                lampfishCursors = Themes().Where(t => t.Source == "lampfish").Select(t => new
+                lampfishCursors = Themes().Where(t => t.Source == "lampfish" && !t.Made).Select(t => new
                 {
                     name = t.Name,
                     title = NameTheme(t.Name),
@@ -677,6 +684,7 @@ namespace Lampfish
                 case "library": Program.Send(Library()); return false;
                 case "frames": Frames(Text(m, "path")); return false;
                 case "theme": ApplyTheme(Text(m, "name")); return true;
+                case "make": return Make(m);
                 case "assign": Assign(Text(m, "role"), Text(m, "path")); return true;
                 case "initial":
                 {
@@ -788,6 +796,33 @@ namespace Lampfish
                 case "folder": System.Diagnostics.Process.Start("explorer.exe", "\"" + CustomFolder + "\""); return false;
             }
             return false;
+        }
+
+        static readonly System.Text.RegularExpressions.Regex MadeName = new System.Text.RegularExpressions.Regex(@"^lampfish [A-Za-z][A-Za-z ]{0,40}$");
+
+        // Writes the files the page drew for a theme, in a fresh folder that replaces the old one in one move, then applies it if asked.
+        static bool Make(Dictionary<string, object> m)
+        {
+            string name = Text(m, "name");
+            object raw;
+            var files = m.TryGetValue("files", out raw) ? raw as Dictionary<string, object> : null;
+            if (files == null || name == null || !MadeName.IsMatch(name)) return false;
+            var allowed = new HashSet<string>(Roles.SelectMany(r => Formats.Select(f => r[0] + f)), StringComparer.OrdinalIgnoreCase);
+            if (files.Count != Roles.Length || files.Keys.Any(k => !allowed.Contains(k))) return false;
+            Directory.CreateDirectory(Made);
+            string folder = Path.Combine(Made, name), fresh = folder + ".new", old = folder + ".old";
+            if (Directory.Exists(fresh)) Directory.Delete(fresh, true);
+            Directory.CreateDirectory(fresh);
+            foreach (var f in files) File.WriteAllBytes(Path.Combine(fresh, f.Key), Convert.FromBase64String(f.Value as string ?? ""));
+            File.WriteAllText(Path.Combine(fresh, "engine.txt"), Text(m, "version") ?? "");
+            if (Directory.Exists(old)) Directory.Delete(old, true);
+            if (Directory.Exists(folder)) Directory.Move(folder, old);
+            Directory.Move(fresh, folder);
+            try { if (Directory.Exists(old)) Directory.Delete(old, true); } catch (Exception ex) { Program.Log(ex); }
+            object apply;
+            if (m.TryGetValue("apply", out apply) && Convert.ToBoolean(apply)) ApplyTheme(name);
+            Program.Send(Library());
+            return true;
         }
 
         public static object State()

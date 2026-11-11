@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Mouse: new lampfish cursor themes in families, each with its colours: Photophore, Nacre, Deep, Neon, Metal, Scale, Origami, Riso, Bubble, Flat, Glass and Pixel. Every theme has the 17 cursors of Windows, and the ones that move loop without a jump. They are drawn by lampfish and written the first time they are applied, about 3 seconds.
+- Mouse: the Bramble themes have their own section, under the lampfish ones.
 - Assistant: the dashboard shows the battery and the Wi-Fi next to the processor and the memory.
 - Assistant: the Settings tab chooses the appearance of lampfish, and the window follows at once. The switch for Windows is now named Windows dark mode.
 - Day mode: screens, seals, dials, the speed gauge, the knob, the battery and the Wi-Fi arcs now have a light version, in the main window and in the assistant.

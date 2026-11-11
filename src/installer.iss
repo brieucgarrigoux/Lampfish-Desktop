@@ -105,6 +105,9 @@ Filename: "{app}\Lampfish.exe"; Flags: nowait; Check: WizardSilent
 [UninstallRun]
 Filename: "{app}\Lampfish.exe"; Parameters: "--uninstall"; Flags: runhidden waituntilterminated; RunOnceId: "UndoWindowsChanges"
 
+[UninstallDelete]
+Type: filesandordirs; Name: "{app}\app\cursor-made"
+
 [Code]
 const
   WebView2Client = 'Software\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}';
