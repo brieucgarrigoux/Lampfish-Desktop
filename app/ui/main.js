@@ -133,6 +133,7 @@ webview.addEventListener('message', e => {
   if (m.type && m.type.startsWith('station.')) { if (Lampfish.station) Lampfish.station.event(m); return; }
   if (m.type && m.type.startsWith('icons.')) { if (Lampfish.icons) Lampfish.icons.event(m); return; }
   if (m.type && m.type.startsWith('mouse.')) { if (Lampfish.mouse) Lampfish.mouse.event(m); return; }
+  if (m.type && m.type.startsWith('vip.')) { if (Lampfish.mouse) Lampfish.mouse.event(m); return; }
   if (m.type && m.type.startsWith('network.')) { if (Lampfish.network) Lampfish.network.event(m); return; }
   if (m.type && m.type.startsWith('arrange.')) { if (Lampfish.arrange) Lampfish.arrange.event(m); return; }
   if (m.type && m.type.startsWith('files.')) { if (Lampfish.files) Lampfish.files.event(m); return; }

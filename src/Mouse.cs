@@ -823,6 +823,7 @@ namespace Lampfish
             object raw;
             var files = m.TryGetValue("files", out raw) ? raw as Dictionary<string, object> : null;
             if (files == null || name == null || !MadeName.IsMatch(name)) return false;
+            if (Vip.IsVipTheme(name) && !Vip.Unlocked) return false;
             var allowed = new HashSet<string>(Roles.SelectMany(r => Formats.Select(f => r[0] + f)), StringComparer.OrdinalIgnoreCase);
             if (files.Count != Roles.Length || files.Keys.Any(k => !allowed.Contains(k))) return false;
             Directory.CreateDirectory(Made);

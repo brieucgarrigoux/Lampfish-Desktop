@@ -220,7 +220,7 @@
   function refreshCurrent() {
     const t = s && libraryTheme(s.theme);
     if (!t || !t.made || t.version === CursorEngine.VERSION || !CursorEngine.has(t.name) || making.has(t.name)) return;
-    const fam = families().find(f => f.variants.some(v => v.name === t.name));
+    const fam = [...families(), ...CursorEngine.packFamilies.map(asFamily)].find(f => f.variants.some(v => v.name === t.name));
     if (fam) applyVariant(fam, fam.variants.find(v => v.name === t.name), null, true);
   }
 
@@ -276,9 +276,60 @@
     return c;
   }
 
+  // The special edition: its pack is loaded when it is in this copy, its families open with a VIP code (Vip.cs).
+  const PACK = '../vip/vip-cursors.js';
+  let packReady = false, packAsked = false, vipMessage = null;
+  const vipState = () => (Lampfish.state && Lampfish.state.vip) || {};
+  const asFamily = f => ({ key: f.key, name: f.name, engine: true, variants: f.variants.map(v => ({ name: v.name, variant: v.variant, swatch: v.swatch })) });
+  function loadPack() {
+    if (packAsked || !vipState().pack) return;
+    packAsked = true;
+    CursorEngine.load(PACK).then(() => { packReady = true; keyLibrary = ''; renderLibrary(); renderDock(); refreshCurrent(); }).catch(e => console.error(e));
+  }
+
+  // Locked: a display case of Lure Gold, alive, with the field for the code.
+  function vipTile() {
+    const fam = asFamily(CursorEngine.packFamilies[0]), v = fam.variants[0];
+    const c = document.createElement('div');
+    c.className = 'theme theme--family theme--vip';
+    c.style.setProperty('--tint', v.swatch);
+    c.innerHTML = '<span class="family__stage"><span class="family__hero"></span><span class="family__side"></span></span>'
+      + '<form class="vip__form"><span class="family__text"><span class="family__title"></span><span class="family__sub"></span></span>'
+      + '<span class="vip__row"><input autocomplete="off" spellcheck="false" maxlength="24"><button class="button button--accent" type="submit"></button></span><span class="vip__message"></span></form>';
+    const roles = ['arrow', 'hand', 'wait'], canvases = [];
+    const canvas = css => { const cv = document.createElement('canvas'); cv.width = cv.height = Math.round(css * devicePixelRatio); cv.style.width = cv.style.height = css + 'px'; canvases.push(cv); return cv; };
+    c.querySelector('.family__hero').append(canvas(64));
+    c.querySelector('.family__side').append(canvas(34), canvas(34));
+    const draw = (w, anim) => canvases.forEach((cv, i) => CursorEngine.draw(cv, cv.width, v.name, roles[i], w, anim || roles[i] === 'wait'));
+    draw(.6, false);
+    c.querySelector('.family__title').textContent = tr('Special edition');
+    c.querySelector('.family__sub').textContent = tr('Lure, Gold and Black Gold, for VIP members');
+    const input = c.querySelector('input'), message = c.querySelector('.vip__message');
+    input.placeholder = 'LAMP-XXXX-XXXX-XXXX';
+    input.setAttribute('aria-label', tr('VIP code'));
+    c.querySelector('button').textContent = tr('Use this code');
+    message.textContent = vipMessage || tr('Have a VIP code? Type it here. Nothing is sent anywhere.');
+    message.classList.toggle('is-error', !!vipMessage);
+    input.addEventListener('input', () => {
+      const raw = input.value.toUpperCase().replace(/[^0-9A-Z]/g, ''), body = raw.startsWith('LAMP') ? raw.slice(4) : raw;
+      input.value = body ? ['LAMP', ...(body.match(/.{1,4}/g) || [])].slice(0, 4).join('-') : '';
+    });
+    c.querySelector('form').addEventListener('submit', e => { e.preventDefault(); if (input.value.trim()) send('vip.unlock', { code: input.value }); });
+    let raf = 0, last = 0;
+    const still = matchMedia('(prefers-reduced-motion: reduce)');
+    const loop = now => { if (now - last > 32) { last = now; draw(CursorEngine.phase(now / 1000), true); } raf = requestAnimationFrame(loop); };
+    c.addEventListener('pointerenter', () => { if (!still.matches && !raf) raf = requestAnimationFrame(loop); });
+    c.addEventListener('pointerleave', () => { cancelAnimationFrame(raf); raf = 0; draw(.6, false); });
+    return c;
+  }
+
   // The house sections: lampfish families, then the Bramble themes with a word on where they come from.
   function houseSections(add) {
     add(tr('lampfish'), '', families().map(familyTile));
+    if (packReady && CursorEngine.packFamilies.length) {
+      if (vipState().unlocked) add(tr('Special edition'), tr('For VIP members'), CursorEngine.packFamilies.map(f => familyTile(asFamily(f))));
+      else add(tr('Special edition'), '', [vipTile()]);
+    }
     const bramble = library.themes.filter(isBramble);
     if (bramble.length) add(tr('Bramble'), tr('The first cursors, from when the app was called Bramble'), bramble.map(themeCard));
   }
@@ -311,7 +362,7 @@
     renderTabs();
     const zone = $('s-library');
     if (!library) return;
-    const key = tab + '#' + library.themes.map(t => t.name).join('|') + '#' + library.custom.map(p => p.path).join('|') + '#' + s.theme + '#' + LANGUAGE;
+    const key = tab + '#' + packReady + vipState().unlocked + (vipMessage || '') + '#' + library.themes.map(t => t.name).join('|') + '#' + library.custom.map(p => p.path).join('|') + '#' + s.theme + '#' + LANGUAGE;
     if (key === keyLibrary) { mark(); return; }
     keyLibrary = key;
     zone.replaceChildren();
@@ -415,6 +466,7 @@
 
   function state(n) {
     s = n;
+    loadPack();
     $('s-initial').disabled = !!s.standard;
     $('s-original').hidden = !s.original;
     if (!chosenRole()) role = s.roles[0].id;
@@ -432,6 +484,7 @@
       if (r && r.path === m.path) play(r);
       return;
     }
+    if (m.type === 'vip.result') { vipMessage = m.ok ? null : tr('This code is not valid. Check the letters and try again.'); keyLibrary = ''; renderLibrary(); return; }
     if (m.type !== 'mouse.library') return;
     library = m;
     keyLibrary = '';
@@ -459,7 +512,7 @@
   function renderDock() {
     const zone = $('dock-pick');
     if (document.body.dataset.dock !== 'mouse' || !s || !library) return;
-    const key = library.themes.map(t => t.name + '/' + t.title).join('|') + '#' + LANGUAGE;
+    const key = packReady + '' + vipState().unlocked + '#' + library.themes.map(t => t.name + '/' + t.title).join('|') + '#' + LANGUAGE;
     if (zone.dataset.key === key && zone.firstChild) { mark(); return; }
     zone.dataset.key = key;
     const nodes = [];

@@ -113,6 +113,7 @@ Fonts: `--display` (Geist, the font of the logo) for titles, the clock and lit t
 - **Floating menu and lifted element**: `--group-up`, a `--hairline-strong` edge and the `--float` shadow. A veil over a block in an edit mode is `--veil`.
 - **Warning note** (`.warning-note`): amber, under the group it is about, only before a reset.
 - **Family tile** (`.theme--family` in Mouse): one display case per look. On top, a well (`.family__stage`, `--sunken`) lit from above, with the chosen colour (`--tint`) as its main light and a touch of it in the far corner; the Normal cursor at 64 px stands on a soft shadow and rises 2 px under the pointer, Link and Busy at 34 px sit together on a small base. Below, the name of the family in the display font, its colour in gray and, for the theme in use, a check and In use in the accent; the colours as round swatches on the right (`.swatch`, 20 px, the chosen one with a detached accent ring). A click on the tile applies the colour shown, a click on a swatch applies that colour. The cursors are drawn live (`cursor-engine.js`) and move only under the pointer. While a theme is made, a thin accent bar fills the foot of the tile. Never a lamp for a state and never a dot between two names.
+- **Special edition** (`.theme--vip` in Mouse): while it is locked, one display case twice as wide with Lure Gold alive in its well, the field for the code and Use this code; a wrong code says so in red under the field. Once open, its families are display cases like the others, in their own section between lampfish and Bramble.
 
 ## Writing
 

@@ -1,5 +1,7 @@
 # Builds the installer attached to a GitHub release: dist\Lampfish-Setup-<version>.exe
 # Ships only what the app needs to run: never settings, logs, caches, or the user's own icons, cursors and sounds.
+# -VipPack <folder>: adds the special edition, kept out of this repository under its own license, to app\vip.
+param([string]$VipPack)
 $ErrorActionPreference = 'Stop'
 $src = $PSScriptRoot
 $root = Split-Path $src -Parent
@@ -16,6 +18,10 @@ $target = Join-Path $tmp 'Lampfish'
 Copy-Item (Join-Path $root 'Lampfish.exe'), (Join-Path $root 'Lampfish.exe.config'), (Join-Path $root 'README.md'), (Join-Path $root 'CHANGELOG.md'), (Join-Path $root 'LICENSE') $target
 foreach ($d in 'app\ui', 'app\player', 'app\sounds', 'app\templates', 'app\lib', 'app\cursor-themes', 'brand\logo', 'brand\badge') {
     Copy-Item (Join-Path $root $d) (Join-Path $target $d) -Recurse -Force
+}
+if ($VipPack) {
+    New-Item -ItemType Directory -Force (Join-Path $target 'app\vip') | Out-Null
+    Copy-Item (Join-Path $VipPack '*') (Join-Path $target 'app\vip') -Force
 }
 # Only the wallpapers that come with Lampfish: the ones made or added on this PC stay here.
 New-Item -ItemType Directory -Force (Join-Path $target 'wallpapers') | Out-Null

@@ -396,11 +396,11 @@ for (const f of FAMILIES) for (const v of f.variants) { v.name = ('lampfish ' + 
 function drawTheme(target, px, theme, role, w = 0, anim = false) {
   const ctx = target.getContext('2d');
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, target.width, target.height);
-  const s = shape(role, .92);
+  const s = shape(role, theme.inset || .92);
   ctx.setTransform(px / 32, 0, 0, px / 32, 0, 0);
   STYLES[theme.style](ctx, px, s, theme, w, anim);
   // The click point is the visible tip, outline included.
-  const edge = s.center ? 0 : .9;
+  const edge = s.center || theme.tipEdge === 0 ? 0 : .9;
   return [(s.tip[0] - edge * .45) * px / 32, (s.tip[1] - edge * .8) * px / 32];
 }
 
@@ -498,15 +498,21 @@ async function build(name, progress, roles = ROLES, still = false) {
   return { name, version: still ? VERSION + '-still' : VERSION, files };
 }
 
+// A pack (the special edition) adds its own families and styles with the same drawing tools.
+const packs = [], packFamilies = [];
 const api = {
-  VERSION, FAMILIES, THEME, ROLES,
+  VERSION, FAMILIES, THEME, ROLES, packs, packFamilies,
+  kit: { STYLES, layer, stamp, band, inner, paint, glow, noGlow, lin, conic, star, finish, details, busyArc, lampAt, wave, frac, TAU },
+  addFamilies: list => { for (const f of list) { for (const v of f.variants) { v.name = ('lampfish ' + f.name + ' ' + v.variant).trim(); v.family = f.key; THEME[v.name] = v; } packFamilies.push(f); } },
   has: name => !!THEME[name],
   draw: (target, px, name, role, w, anim) => drawTheme(target, px, THEME[name], role, w, anim),
   phase: seconds => (seconds % LOOP) / LOOP * TAU,
 };
 
 if (typeof document === 'undefined') {
+  self.CursorEngine = api;
   self.onmessage = async e => {
+    for (const url of e.data.packs || []) if (!packs.includes(url)) { importScripts(url); packs.push(url); }
     try { postMessage({ done: await build(e.data.build, p => postMessage({ progress: p }), e.data.roles, e.data.still) }); }
     catch (err) { postMessage({ error: String(err) }); }
   };
@@ -520,7 +526,7 @@ if (typeof document === 'undefined') {
       if (e.data.error) no(new Error(e.data.error)); else ok(e.data.done.files);
     };
     worker.onerror = err => { workers = null; no(err); };
-    worker.postMessage({ build: name, roles, still });
+    worker.postMessage({ build: name, roles, still, packs });
   });
   const run = async (name, progress, still) => {
     try { workers = workers || Array.from({ length: COUNT }, () => new Worker('cursor-engine.js')); }
@@ -535,6 +541,14 @@ if (typeof document === 'undefined') {
   };
   api.warm = () => { try { workers = workers || Array.from({ length: COUNT }, () => new Worker('cursor-engine.js')); } catch (err) { } };
   api.build = (name, progress, still = false) => (queue = queue.then(() => run(name, progress, still), () => run(name, progress, still)));
+  // The page loads a pack once; the workers load it with their next request.
+  api.load = url => packs.includes(url) ? Promise.resolve() : new Promise((ok, no) => {
+    const tag = document.createElement('script');
+    tag.src = url;
+    tag.onload = () => { packs.push(url); ok(); };
+    tag.onerror = no;
+    document.head.append(tag);
+  });
   window.CursorEngine = api;
 }
 })();

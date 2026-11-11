@@ -60,6 +60,8 @@ namespace Lampfish
         public DiskUsageSettings DiskUsage = new DiskUsageSettings();
         public DuplicatesSettings Duplicates = new DuplicatesSettings();
         public Mouse.Snapshot CursorsOriginal;
+        public bool Vip;
+        public string VipCode;
         public WindowPlace Window;
         public bool UpdatesAuto;
         public string UpdatesLast;
@@ -871,6 +873,11 @@ namespace Lampfish
                 return;
             }
 
+            if (action.StartsWith("vip."))
+            {
+                if (Vip.Receive(action.Substring(action.IndexOf('.') + 1), m)) { Save(); SendState(); }
+                return;
+            }
             if (action.StartsWith("mouse."))
             {
                 if (Mouse.Receive(action.Substring(action.IndexOf('.') + 1), m, files)) SendState();
@@ -1051,6 +1058,7 @@ namespace Lampfish
                 station = Sounds.State(),
                 icons = Icons.State(),
                 mouse = Mouse.State(),
+                vip = Vip.State(),
                 arrange = Arrange.State(),
                 files = DiskUsage.State(),
                 duplicates = Duplicates.State(),
