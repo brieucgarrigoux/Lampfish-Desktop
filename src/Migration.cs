@@ -28,8 +28,11 @@ namespace Lampfish
         static readonly Dictionary<string, string> Names = new Dictionary<string, string>
         {
             { "bramble-logo.html", "lampfish-logo.html" }, { "bramble-dusk.html", "lampfish-dusk.html" }, { "bramble.html", "lampfish.html" },
-            { "Bramble Glass", "Lampfish Glass" }, { "Bramble Night", "Lampfish Night" }, { "Bramble Snow", "Lampfish Snow" }, { "Bramble Berry", "Lampfish Violet" },
+            { "Lampfish Glass", "Bramble Glass" }, { "Lampfish Night", "Bramble Night" }, { "Lampfish Snow", "Bramble Snow" }, { "Lampfish Violet", "Bramble Berry" },
         };
+
+        // 0.5.0 called the four first cursor themes Lampfish Glass, Night, Snow and Violet; they have their first names again.
+        static readonly string[] OldCursorThemes = { "Lampfish Glass", "Lampfish Night", "Lampfish Snow", "Lampfish Violet" };
 
         static readonly string[][] WallpaperWords =
         {
@@ -263,6 +266,62 @@ namespace Lampfish
                         if (title != name) schemes.DeleteValue(name, false);
                     }
             if (changed) Mouse.Reload();
+        }
+
+        // Runs at every start and does nothing once done: the pointer in use, the schemes of Windows and the themes of lampfish
+        // follow the new folder names, then the old folders go once nothing points into them.
+        public static void CursorThemes()
+        {
+            bool changed = false;
+            using (var key = Registry.CurrentUser.OpenSubKey(CursorsKey, true))
+                if (key != null)
+                    foreach (string name in key.GetValueNames())
+                    {
+                        string value = key.GetValue(name, null, RegistryValueOptions.DoNotExpandEnvironmentNames) as string;
+                        if (value == null) continue;
+                        string now = name.Length == 0 ? (OldCursorThemes.Contains(value) ? Renamed(value) : value) : MoveCursor(value, null);
+                        if (now == value) continue;
+                        if (name.Length == 0) key.SetValue(name, now);
+                        else key.SetValue(name, now, RegistryValueKind.ExpandString);
+                        changed = true;
+                    }
+            using (var schemes = Registry.CurrentUser.OpenSubKey(CursorsKey + @"\Schemes", true))
+                if (schemes != null)
+                    foreach (string name in schemes.GetValueNames())
+                    {
+                        string row = schemes.GetValue(name, null, RegistryValueOptions.DoNotExpandEnvironmentNames) as string;
+                        if (row == null) continue;
+                        string now = string.Join(",", row.Split(',').Select(p => MoveCursor(p, null)));
+                        string title = OldCursorThemes.Contains(name) ? Renamed(name) : name;
+                        if (now == row && title == name) continue;
+                        // Applying a theme of lampfish writes its scheme again, so an old copy can simply go.
+                        if (title != name && schemes.GetValue(title) != null) { schemes.DeleteValue(name, false); continue; }
+                        schemes.SetValue(title, now, RegistryValueKind.ExpandString);
+                        if (title != name) schemes.DeleteValue(name, false);
+                    }
+            bool moods = false;
+            foreach (var mood in Program.R.Moods.Concat(new[] { Program.R.MoodBefore }).Where(m => m != null && m.Theme != null))
+                if (OldCursorThemes.Contains(mood.Theme)) { mood.Theme = Renamed(mood.Theme); moods = true; }
+            if (moods) Program.Save();
+            if (changed) Mouse.Reload();
+
+            string themes = Program.Root + ThemesFolder;
+            foreach (string old in OldCursorThemes)
+            {
+                string folder = themes + old;
+                if (!Directory.Exists(folder) || !Directory.Exists(themes + Renamed(old)) || PointsInto(folder + "\\")) continue;
+                try { Directory.Delete(folder, true); } catch (Exception ex) { Program.Log(ex); }
+            }
+        }
+
+        static bool PointsInto(string folder)
+        {
+            Func<string, bool> inside = p => Environment.ExpandEnvironmentVariables(p ?? "").Trim().StartsWith(folder, StringComparison.OrdinalIgnoreCase);
+            using (var key = Registry.CurrentUser.OpenSubKey(CursorsKey))
+                if (key != null && key.GetValueNames().Any(n => n.Length > 0 && inside(key.GetValue(n, null, RegistryValueOptions.DoNotExpandEnvironmentNames) as string))) return true;
+            using (var schemes = Registry.CurrentUser.OpenSubKey(CursorsKey + @"\Schemes"))
+                if (schemes != null && schemes.GetValueNames().Any(n => ((schemes.GetValue(n, null, RegistryValueOptions.DoNotExpandEnvironmentNames) as string) ?? "").Split(',').Any(inside))) return true;
+            return false;
         }
 
         static void MoveStartup()

@@ -17,6 +17,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - The zoom stays on screen at the foot of the bar on the left, instead of appearing only under the pointer.
 - Day mode: the page is a lighter gray, and the title bar and the tray menu follow it.
 - Titles and the clock use Geist, the font of the logo. The rest stays in Segoe.
+- Mouse: the four first cursor themes take back their names from the Bramble days: Bramble Glass, Bramble Night, Bramble Snow and Bramble Berry. The update follows by itself: the pointer in use, the schemes of Windows and the themes of lampfish that use one of them keep the same cursors.
 
 ### Fixed
 

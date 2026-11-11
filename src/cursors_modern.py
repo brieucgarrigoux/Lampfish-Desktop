@@ -1,14 +1,14 @@
-"""Builds the smooth (non pixel-art) Lampfish cursor theme: python src/cursors_modern.py
+"""Builds the smooth (non pixel-art) Bramble Glass cursor theme: python src/cursors_modern.py
 
 Every cursor is drawn as vectors on a 32 unit canvas, rendered at 16x then reduced, so edges are antialiased
-and the alpha channel carries a soft shadow. Output: app/cursor-themes/Lampfish Glass/<role>.cur|.ani
+and the alpha channel carries a soft shadow. Output: app/cursor-themes/Bramble Glass/<role>.cur|.ani
 """
 import math, os, struct
 from PIL import Image, ImageDraw, ImageFilter, ImageChops
 
 import cursors
 
-THEME = 'Lampfish Glass'
+THEME = 'Bramble Glass'
 SIZES = [32, 48, 64, 128]
 SIZES_CUR = [16, 32, 48, 64, 128]
 UNITS = 32

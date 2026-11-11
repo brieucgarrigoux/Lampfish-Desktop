@@ -20,7 +20,7 @@ namespace Lampfish
         const string Key = @"Control Panel\Cursors";
         const string SchemesKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Control Panel\Cursors\Schemes";
         const string LegacyScheme = Migration.OldCursorScheme;
-        const string Flagship = "Lampfish Glass";
+        const string Flagship = "Bramble Glass";
 
         static readonly string[][] Roles =
         {
@@ -42,6 +42,7 @@ namespace Lampfish
             var original = Program.R.CursorsOriginal;
             if (original != null && original.Roles != null && original.Roles.Values.Any(Ours)) Program.R.CursorsOriginal = null;
             try { Migrate(); } catch (Exception ex) { Program.Log(ex); }
+            try { Migration.CursorThemes(); } catch (Exception ex) { Program.Log(ex); }
         }
 
         // Older versions saved every hand-picked cursor into a scheme of their own, which read like a built-in theme.
