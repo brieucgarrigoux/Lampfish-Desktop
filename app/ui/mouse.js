@@ -222,26 +222,31 @@
     if (fam) applyVariant(fam, fam.variants.find(v => v.name === t.name), null);
   }
 
+  // A display case per family: Normal large, Link and Busy beside it, on a ground tinted by the colour shown (C62).
+  const tintOf = sw => /^#f[0-9a-f]f[0-9a-f]f[0-9a-f]$|^#ffffff$/i.test(sw) ? '#9ff5ea' : sw;
   function familyTile(fam) {
     const current = fam.variants.find(v => v.name === s.theme);
     let v = current || fam.variants.find(x => x.name === chosen[fam.key]) || fam.variants[0];
     const c = document.createElement('div');
-    c.className = 'theme theme--family' + (current ? ' current' : '');
+    c.className = 'theme theme--family' + (current ? ' current' : '') + (making.has(v.name) ? ' loading' : '');
     c.tabIndex = 0;
     c.setAttribute('role', 'button');
     c.dataset.names = fam.variants.map(x => x.name).join('|');
-    c.innerHTML = '<span class="theme__showcase"></span><span class="theme__name"><span></span><span class="theme__variant"></span></span><span class="theme__swatches"></span>';
-    const show = c.querySelector('.theme__showcase'), roles = ['arrow', 'hand', 'wait'], canvases = [];
+    c.innerHTML = '<span class="family__stage"><span class="family__hero"></span><span class="family__side"></span></span>'
+      + '<span class="family__foot"><span class="family__text"><span class="family__title"></span><span class="family__sub"><span></span></span></span><span class="theme__swatches"></span></span>';
+    const hero = c.querySelector('.family__hero'), side = c.querySelector('.family__side'), roles = ['arrow', 'hand', 'wait'], canvases = [];
     const draw = (w, anim) => canvases.forEach((cv, i) => CursorEngine.draw(cv, cv.width, v.name, roles[i], w, anim || roles[i] === 'wait'));
+    const canvas = css => { const cv = document.createElement('canvas'); cv.width = cv.height = Math.round(css * devicePixelRatio); cv.style.width = cv.style.height = css + 'px'; canvases.push(cv); return cv; };
     const fill = () => {
-      show.replaceChildren();
-      canvases.length = 0;
-      if (fam.engine) {
-        for (const r of roles) { const cv = document.createElement('canvas'); cv.width = cv.height = Math.round(32 * devicePixelRatio); canvases.push(cv); show.append(cv); }
-        draw(.6, false);
-      } else for (const i of [0, 1, 3]) show.append(image(v.theme.showcase[i]));
-      c.querySelector('.theme__name').firstChild.textContent = tr(fam.name);
-      c.querySelector('.theme__variant').textContent = v.variant ? tr(v.variant) : '';
+      hero.replaceChildren(); side.replaceChildren(); canvases.length = 0;
+      c.style.setProperty('--tint', tintOf(v.swatch));
+      if (fam.engine) { hero.append(canvas(56)); side.append(canvas(32), canvas(32)); draw(.6, false); }
+      else { hero.append(image(v.theme.showcase[0])); side.append(image(v.theme.showcase[1]), image(v.theme.showcase[3])); }
+      c.querySelector('.family__title').textContent = tr(fam.name);
+      c.querySelector('.family__sub').firstChild.textContent = v.variant ? tr(v.variant) : '';
+      const use = c.querySelector('.family__sub .state');
+      if (current && current.name === v.name) { if (!use) c.querySelector('.family__sub').append(Object.assign(document.createElement('span'), { className: 'state', textContent: tr('In use') })); }
+      else if (use) use.remove();
       for (const b of c.querySelectorAll('.swatch')) b.setAttribute('aria-pressed', String(b.dataset.name === v.name));
     };
     for (const x of fam.variants.length > 1 ? fam.variants : []) {
@@ -256,9 +261,8 @@
       c.querySelector('.theme__swatches').append(b);
     }
     fill();
-    let raf = 0;
+    let raf = 0, last = 0;
     const still = matchMedia('(prefers-reduced-motion: reduce)');
-    let last = 0;
     const loop = now => { if (now - last > 32) { last = now; draw(CursorEngine.phase(now / 1000), true); } raf = requestAnimationFrame(loop); };
     if (fam.engine) {
       c.addEventListener('pointerenter', () => { if (!still.matches && !raf) raf = requestAnimationFrame(loop); });
