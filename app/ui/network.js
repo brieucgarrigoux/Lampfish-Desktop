@@ -72,7 +72,7 @@
       return;
     }
     $('r-name').textContent = cx.wifi ? (cx.network || 'Wi-Fi') : 'Cable';
-    $('r-detail').textContent = [cx.wifi ? cx.standard || 'Wi-Fi' : 'Ethernet', cx.wifi && cx.strip ? cx.strip : '', cx.wifi && cx.signal >= 0 ? tr('signal {0} %', cx.signal) : '', cx.card].filter(Boolean).join(' · ');
+    $('r-detail').textContent = [cx.wifi ? cx.standard || 'Wi-Fi' : 'Ethernet', cx.wifi && cx.strip ? cx.strip : '', cx.wifi && cx.signal >= 0 ? tr('signal {0} %', cx.signal) : '', cx.card].filter(Boolean).join(', ');
     $('r-ip').textContent = cx.ipv4 || '';
   }
 
@@ -254,7 +254,7 @@
 
     const sv = res('server');
     $('r-server').textContent = sv && sv.ok
-      ? tr('Cloudflare server in {0} ({1}) · provider {2}', sv.city || sv.colo, sv.colo, sv.provider || '–') + (down && down.server === 'OVH' ? ' · ' + tr('download measured at OVH (Cloudflare was limiting tests)') : '')
+      ? tr('Cloudflare server in {0} ({1}), provider {2}', sv.city || sv.colo, sv.colo, sv.provider || '–') + (down && down.server === 'OVH' ? '. ' + tr('Download measured at OVH, Cloudflare was limiting tests') : '')
       : tr('Router, Internet, DNS then speed, in about twenty seconds');
     $('r-server').title = $('r-server').textContent;
 
@@ -408,7 +408,7 @@
     const enc = {
       icon: 'lock', title: 'Encryption',
       state: t.enc === 'none' || t.enc === 'weak' ? 'bad' : t.enc === 'unknown' ? 'warn' : 'ok',
-      value: cx.wifi ? [authName(cx.security), cipher].filter(Boolean).join(' · ') : tr('Wired'),
+      value: cx.wifi ? [authName(cx.security), cipher].filter(Boolean).join(', ') : tr('Wired'),
       detail: t.enterprise ? 'Personal sign-in for each user' : ENC_TEXT[t.enc],
       advice: t.enc === 'none' ? 'Avoid entering passwords here, or turn on a VPN'
         : t.enc === 'weak' ? 'Ask for WPA2 or WPA3 on the router, or use a VPN' : t.enc === 'unknown' ? 'Check the network protection in Windows settings' : '',
@@ -517,7 +517,7 @@
       row('wifi', 'Network', 'Wi-Fi name', text(cx.network)),
       row('signal', 'Signal', 'Received strength', text(cx.signal >= 0 ? cx.signal + ' %' : '')),
       row('standard', 'Standard', 'Wi-Fi generation', text(cx.standard)),
-      row('strip', 'Band', 'Frequency and channel', text([cx.strip, cx.channel ? tr('channel {0}', cx.channel) : ''].filter(Boolean).join(' · '))),
+      row('strip', 'Band', 'Frequency and channel', text([cx.strip, cx.channel ? tr('channel {0}', cx.channel) : ''].filter(Boolean).join(', '))),
       row('speed', 'Radio rate', 'Download / upload', text(cx.received ? `${Math.round(cx.received)} / ${Math.round(cx.sent)} Mbit/s` : '')),
     );
     c.replaceChildren(

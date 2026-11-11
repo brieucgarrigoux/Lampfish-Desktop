@@ -104,7 +104,7 @@
       r.name.textContent = t.count > 1 ? `${t.name} (${t.count})` : t.name;
       const parts = [filter === 'all' ? tr(KIND_NAMES[t.kind]) : '', d.description && d.description.toLowerCase() !== t.name.toLowerCase() ? d.description : '', d.company]
         .filter(Boolean);
-      r.detail.textContent = parts.join(' · ');
+      r.detail.textContent = parts.join(', ');
       r.el.title = d.path || '';
       r.cpu.textContent = pct(t.cpu);
       r.memory.textContent = size(t.memory);
@@ -282,7 +282,7 @@
       go.className = 'button t-free__go' + (armed ? ' armed' : '');
       go.disabled = chosenItems.length === 0 || closing;
       go.textContent = closing ? tr('Closing…') : !chosenItems.length ? tr('Tick what to close') : armed ? tr('Confirm: close {0}', chosenItems.length === 1 ? tr('1 program') : tr('{0} programs', chosenItems.length))
-        : tr('Close {0} · {1}', chosenItems.length === 1 ? tr('1 program') : tr('{0} programs', chosenItems.length), size(total));
+        : tr('Close {0} ({1})', chosenItems.length === 1 ? tr('1 program') : tr('{0} programs', chosenItems.length), size(total));
       go.addEventListener('click', () => {
         clearTimeout(armed);
         if (!armed) { armed = setTimeout(() => { armed = 0; renderFree(); }, 4000); renderFree(); return; }

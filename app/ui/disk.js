@@ -148,7 +148,7 @@
       value = size(n.t);
       const part = total ? Math.round(n.t / total * 1000) / 10 : 0;
       detail = n.s === 'system' ? 'unreadable without administrator rights'
-        : (n.d || n.s ? plural(n.f, 'file') + ' · ' : '') + part.toLocaleString(LOCALE) + ' %';
+        : (n.d || n.s ? plural(n.f, 'file') + ', ' : '') + part.toLocaleString(LOCALE) + ' %';
     } else if (view && view.tree) {
       name = view.crumbs[view.crumbs.length - 1].name;
       value = size(total);
@@ -296,7 +296,7 @@
     $('f-copy').hidden = !view;
     if (f && f.running) return;
     $('f-footer').textContent = f && f.analyzed
-      ? `${plural(f.files, 'file')} · ${size(f.bytes)} · ${tr('analyzed in {0} s', Math.max(1, Math.round(f.duration)).toLocaleString(LOCALE))}`
+      ? `${plural(f.files, 'file')}, ${size(f.bytes)}, ${tr('analyzed in {0} s', Math.max(1, Math.round(f.duration)).toLocaleString(LOCALE))}`
       : '';
   }
 
@@ -417,7 +417,7 @@
       l.querySelector('.name-element').textContent = TYPES[t.type] || t.type;
       l.querySelector('.size').textContent = size(t.bytes);
       l.querySelector('i').style.width = `calc((100% - 64px) * ${(t.bytes / types[0].bytes).toFixed(4)})`;
-      l.title = plural(t.number, 'file') + ' · ' + (Math.round(t.bytes / total * 1000) / 10).toLocaleString(LOCALE) + ' %';
+      l.title = plural(t.number, 'file') + ', ' + (Math.round(t.bytes / total * 1000) / 10).toLocaleString(LOCALE) + ' %';
       return l;
     }));
   }

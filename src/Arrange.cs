@@ -67,7 +67,7 @@ namespace Lampfish
         static string Label(string signature)
         {
             var sizes = signature.Split('|').Select(p => p.Split('@')[0].Replace("x", " × ")).ToList();
-            return (sizes.Count == 1 ? Language.T("1 screen") : Language.T("{0} screens", sizes.Count)) + " · " + string.Join(", ", sizes);
+            return (sizes.Count == 1 ? Language.T("1 screen") : Language.T("{0} screens", sizes.Count)) + ": " + string.Join(", ", sizes);
         }
 
         static List<Screen> TargetScreens()

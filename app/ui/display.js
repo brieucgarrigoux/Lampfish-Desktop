@@ -129,7 +129,7 @@ const Quick = (() => {
     const s = (screens || []).find(x => x.key === chosen);
     if (!s) return;
     $('d-name').textContent = name(s);
-    $('d-specs').textContent = [`${s.w} × ${s.h}`, s.scale + ' %', s.hz ? s.hz + ' Hz' : '', s.inches ? tr('{0} in', s.inches.toLocaleString(LOCALE)) : '', s.port].filter(Boolean).join(' · ');
+    $('d-specs').textContent = [`${s.w} × ${s.h}`, s.scale + ' %', s.hz ? s.hz + ' Hz' : '', s.inches ? tr('{0} in', s.inches.toLocaleString(LOCALE)) : '', s.port].filter(Boolean).join(', ');
     $('d-main').hidden = !s.primary;
     $('d-help').textContent = screens.length < 2 ? tr('With a second screen plugged in, lampfish can choose which one is the main screen') : tr('A click on a screen makes it the main screen, which shows the Start menu and opens new windows');
   }
@@ -199,7 +199,7 @@ const Quick = (() => {
         row.className = 'row';
         row.innerHTML = `<span class="caption">${icon(MONITOR, 'glyph')}<span><span translate="no"></span><small></small></span></span>`;
         row.querySelector('[translate]').textContent = name(s);
-        row.querySelector('small').textContent = `${s.w} × ${s.h} · ${s.scale} %`;
+        row.querySelector('small').textContent = `${s.w} × ${s.h}, ${s.scale} %`;
         if (s.primary) row.append(Object.assign(document.createElement('span'), { className: 'd-badge state', textContent: tr('Main screen') }));
         else if (all.length > 1) {
           const b = Object.assign(document.createElement('button'), { className: 'button', innerHTML: icon('monitor'), title: tr('The Start menu and new windows will open on this screen') });

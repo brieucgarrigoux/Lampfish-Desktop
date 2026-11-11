@@ -187,7 +187,7 @@ function render(state) {
   if (zoomAsked == null) { zoomNow = state.zoom || 100; settleZoom(); }
   renderUpdates(state.updates);
   if (state.about) {
-    $('about-version').textContent = tr('Version {0} · built on {1}', state.about.version, new Date(state.about.compile).toLocaleDateString(LOCALE, { day: 'numeric', month: 'long', year: 'numeric' }));
+    $('about-version').textContent = tr('Version {0}, built on {1}', state.about.version, new Date(state.about.compile).toLocaleDateString(LOCALE, { day: 'numeric', month: 'long', year: 'numeric' }));
     $('about-folder').textContent = state.about.folder;
     $('folder-lampfish').title = state.about.folder;
     $('about-errors').textContent = tr(state.about.errors ? 'Some errors were logged' : 'No errors logged');
@@ -384,7 +384,7 @@ function claudeText(c) {
   if (!c || !c.on) return '';
   const u = c.usage;
   if (c.status !== 'ok' || !u) return tr(CLAUDE_STATES[c.status] || 'Reading');
-  return [u.session && tr('Session {0} %, resets in {1}', u.session.percent, resetIn(u.session.resets)), u.week && tr('Week {0} %', u.week.percent)].filter(Boolean).join(' · ');
+  return [u.session && tr('Session {0} %, resets in {1}', u.session.percent, resetIn(u.session.resets)), u.week && tr('Week {0} %', u.week.percent)].filter(Boolean).join(', ');
 }
 
 const PIN = icon('map-pin', 'glyph');

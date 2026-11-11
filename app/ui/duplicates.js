@@ -135,7 +135,7 @@
       + `<button class="dup-tool" type="button">${icon(ICONS.show)}</button><button class="dup-tool dup-bin" type="button">${icon(ICONS.clean)}</button>`;
     r.querySelector('.dup-file__name').textContent = file.name;
     r.querySelector('small span').textContent = file.folder;
-    if (file.modified) r.querySelector('small').append(' · ' + day(file.modified));
+    if (file.modified) r.querySelector('small').append(', ' + day(file.modified));
     r.querySelector('.size').textContent = size(file.size);
     r.title = file.path;
     const box = r.querySelector('input');
@@ -220,7 +220,7 @@
       r.innerHTML = '<span class="dup-file__what"><span class="dup-file__name" translate="no"></span><small><span translate="no"></span></small></span><span class="size"></span><button class="button dup-restore"></button>';
       r.querySelector('.dup-file__name').textContent = c.name;
       r.querySelector('small span').textContent = c.folder;
-      r.querySelector('small').append(' · ' + tr('cleaned {0}', day(c.when)));
+      r.querySelector('small').append(', ' + tr('cleaned {0}', day(c.when)));
       r.querySelector('.size').textContent = size(c.size);
       r.title = c.path;
       const back = r.querySelector('button');

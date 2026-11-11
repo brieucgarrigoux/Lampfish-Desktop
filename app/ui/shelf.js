@@ -42,7 +42,7 @@
       c.querySelector('.s-ext').textContent = (item.name.split('.').pop() || '').toUpperCase().slice(0, 5);
     }
     c.querySelector('.s-name').textContent = c.querySelector('.s-name').title = item.name;
-    c.querySelector('.s-size').textContent = size(item.size) + ' · ' + new Date(item.when).toLocaleDateString(LOCALE, { day: 'numeric', month: 'short' });
+    c.querySelector('.s-size').textContent = size(item.size) + ', ' + new Date(item.when).toLocaleDateString(LOCALE, { day: 'numeric', month: 'short' });
     const thumb = c.querySelector('.s-thumb');
     thumb.title = tr('Open, or drag into another app');
     thumb.addEventListener('click', () => { if (thumb._dragged) { thumb._dragged = false; return; } send('shelf.open', { name: item.name }); });

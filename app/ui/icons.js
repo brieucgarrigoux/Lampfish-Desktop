@@ -121,7 +121,7 @@
     return t;
   }
 
-  const systemTitle = i => `${i.source} · ${i.id.slice(i.id.lastIndexOf(',') + 1)}`;
+  const systemTitle = i => `${i.source}, ${i.id.slice(i.id.lastIndexOf(',') + 1)}`;
 
   function grid(elements) {
     const g = document.createElement('div');

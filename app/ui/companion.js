@@ -144,7 +144,7 @@
     const worst = Math.max(d.processor >= 95 ? 2 : d.processor >= 80 ? 1 : 0, d.memory >= 85 ? 2 : d.memory >= 75 ? 1 : 0, d.disk && d.disk.free / d.disk.total < .08 ? 2 : d.disk && d.disk.free / d.disk.total < .15 ? 1 : 0);
     const verdict = $('c-verdict');
     verdict.className = 'state' + (worst === 2 ? ' state--bad' : worst === 1 ? ' state--warn' : '');
-    verdict.textContent = tr('{0} % processor, {1} % memory', Math.round(d.processor), Math.round(d.memory)) + (free ? ' · ' + tr('{0} free', free) : '');
+    verdict.textContent = tr('{0} % processor, {1} % memory', Math.round(d.processor), Math.round(d.memory)) + (free ? ', ' + tr('{0} free', free) : '');
     dials($('c-dials'), [
       { part: d.processor, value: Math.round(d.processor) + ' %', label: tr('Processor'), level: level(d.processor, 80, 95) },
       { part: d.memory, value: Math.round(d.memory) + ' %', label: tr('Memory'), level: level(d.memory, 75, 85) },
@@ -293,7 +293,7 @@
     const src = item.url || item.icon;
     if (src) { const img = document.createElement('img'); img.alt = ''; img.draggable = false; img.src = src; thumb.append(img); } else thumb.innerHTML = glyph('file');
     row.querySelector('.c-file__name').textContent = item.name;
-    row.querySelector('small').textContent = size(item.size) + ' · ' + new Date(item.when).toLocaleDateString(LOCALE, { day: 'numeric', month: 'short' });
+    row.querySelector('small').textContent = size(item.size) + ', ' + new Date(item.when).toLocaleDateString(LOCALE, { day: 'numeric', month: 'short' });
     const copy = row.querySelector('.c-copy'), reveal = row.querySelector('.c-reveal');
     copy.innerHTML = icon(GLYPHS.copy);
     reveal.innerHTML = icon(GLYPHS.reveal);
@@ -438,7 +438,7 @@
     else if (tab === 'audio') outputs();
   }
 
-  const HINT = 'A new note in Notes · Ctrl + Enter adds it';
+  const HINT = 'A new note in Notes. Ctrl + Enter adds it';
   function save() {
     const text = $('c-text').value, title = $('c-title').value.trim();
     if (!text.trim() && !title) { $('c-text').focus(); return; }
@@ -483,7 +483,7 @@
       open.append(tr('Open'));
       open.addEventListener('click', () => send('companion.openNote', { name: m.name }));
       const name = Object.assign(document.createElement('span'), { textContent: m.name, translate: false });
-      $('c-saved').replaceChildren(tr('Added to Notes:') + ' ', name, ' · ', open);
+      $('c-saved').replaceChildren(tr('Added to Notes:') + ' ', name, ' ', open);
       clearTimeout(hintTimer);
       hintTimer = setTimeout(() => { $('c-saved').textContent = tr(HINT); }, 6000);
     }

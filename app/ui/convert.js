@@ -207,7 +207,7 @@
     const r = el('div', 'row cv-file');
     r.innerHTML = `<span class="caption">${icon(FILE, 'glyph')}<span><span class="cv-name" translate="no"></span><small></small></span></span><span class="cv-tools"></span>`;
     r.querySelector('.cv-name').textContent = o.name;
-    r.querySelector('small').textContent = old ? size(o.size) + (o.from ? ' · ' + o.from : '') : size(o.size);
+    r.querySelector('small').textContent = old ? size(o.size) + (o.from ? ', ' + o.from : '') : size(o.size);
     const tools = r.querySelector('.cv-tools');
     for (const [label, action, symbol] of [['Open', 'shelf.open', 'arrow-square-out'], ['Show in File Explorer', 'shelf.reveal', 'folder-open'], ['Save as…', 'convert.save', 'floppy-disk']]) {
       const b = el('button', 'link');

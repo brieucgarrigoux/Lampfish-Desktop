@@ -27,7 +27,7 @@ webview.addEventListener('message', e => {
   if (e.data.mica !== undefined) document.documentElement.classList.toggle('mica', !!e.data.mica);
 });
 
-addEventListener('error', e => { if (/ResizeObserver loop/.test(e.message)) return;  try { send('pageError', { text: e.message + ' · ' + (e.filename || '').replace(/^.*\//, '') + ':' + e.lineno }); } catch (x) { } });
+addEventListener('error', e => { if (/ResizeObserver loop/.test(e.message)) return;  try { send('pageError', { text: e.message + ' at ' + (e.filename || '').replace(/^.*\//, '') + ':' + e.lineno }); } catch (x) { } });
 addEventListener('unhandledrejection', e => { try { send('pageError', { text: String(e.reason) }); } catch (x) { } });
 
 const LANGUAGE = window.LANGUAGE || 'en';

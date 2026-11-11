@@ -124,7 +124,7 @@
     header.className = 'm-header';
     header.innerHTML = `${glyph('system')}<div class="m-header__what"><span class="title"></span><span class="path"></span></div><div class="m-health"><i></i><span id="m-health"></span></div>`;
     header.querySelector('.title').textContent = [s.manufacturer, s.model].filter(Boolean).join(' ') || 'Computer';
-    header.querySelector('.path').textContent = [(s.windows || '').replace(/^Microsoft\s+/, ''), s.version].filter(Boolean).join(' · ');
+    header.querySelector('.path').textContent = [(s.windows || '').replace(/^Microsoft\s+/, ''), s.version].filter(Boolean).join(' ');
     header.append(Object.assign(document.createElement('div'), { className: 'dials dials--rows', id: 'm-gauges' }));
 
     const threads = '<div class="m-threads">' + '<i></i>'.repeat(Math.max(1, p.threads || 1)) + '</div>';
@@ -132,7 +132,7 @@
     cards.processor.threads = [...cpu.querySelectorAll('.m-threads i')];
 
     const m = inv.memory, installed = m.modules.reduce((t, b) => t + b.capacity, 0);
-    const ram = card('memory', 'memory', 'Memory', [size(installed, 0), m.modules[0] && m.modules[0].type].filter(Boolean).join(' · '),
+    const ram = card('memory', 'memory', 'Memory', [size(installed, 0), m.modules[0] && m.modules[0].type].filter(Boolean).join(' '),
       '<div class="m-bar"><i></i></div>');
     cards.memory.bar = ram.querySelector('.m-bar i');
 
@@ -189,8 +189,8 @@
     scr.querySelector('.m-list-screens').replaceChildren(...e.map(x => {
       const li = document.createElement('li');
       li.innerHTML = '<b></b><span></span>';
-      li.querySelector('b').textContent = x.n + ' · ' + nameScreen(x);
-      li.querySelector('span').textContent = [`${x.w} × ${x.h}`, x.hz ? x.hz + ' Hz' : '', x.inches ? tr('{0} in', x.inches.toLocaleString(LOCALE)) : '', x.port].filter(Boolean).join(' · ');
+      li.querySelector('b').textContent = x.n + '. ' + nameScreen(x);
+      li.querySelector('span').textContent = [`${x.w} × ${x.h}`, x.hz ? x.hz + ' Hz' : '', x.inches ? tr('{0} in', x.inches.toLocaleString(LOCALE)) : '', x.port].filter(Boolean).join(', ');
       return li;
     }));
     cards.screens.facts.textContent = '';
@@ -225,14 +225,14 @@
   }
 
   function summary() {
-    const s = inv.system, p = inv.processor || {}, m = inv.memory, line = (label, ...parts) => tr(label) + ': ' + parts.filter(Boolean).join(' · ');
+    const s = inv.system, p = inv.processor || {}, m = inv.memory, line = (label, ...parts) => tr(label) + ': ' + parts.filter(Boolean).join(', ');
     const lines = [[s.manufacturer, s.model].filter(Boolean).join(' ') || tr('Computer'),
       line('Windows', (s.windows || '').replace(/^Microsoft\s+/, ''), s.version),
       line('Processor', shortName(p.name), p.cores ? tr('{0} cores', p.cores) : '', p.threads ? tr('{0} threads', p.threads) : ''),
       line('Memory', size(m.modules.reduce((t, b) => t + b.capacity, 0), 0), m.modules[0] && m.modules[0].type)];
     for (const g of inv.graphics) lines.push(line('Graphics', g.name, g.memory > 0 ? size(g.memory, 0) : ''));
     for (const d of inv.disks) lines.push(line('Storage', d.name, d.type, d.bus, size(d.size, 0), ...d.volumes.map(v => v.letter + ' ' + tr('{0} free', size(v.free, 0)))));
-    for (const e of inv.screens) lines.push(line('Screen', e.n + ' · ' + nameScreen(e), `${e.w} × ${e.h}`, e.hz ? e.hz + ' Hz' : '', e.inches ? tr('{0} in', e.inches.toLocaleString(LOCALE)) : '', e.port));
+    for (const e of inv.screens) lines.push(line('Screen', e.n + '. ' + nameScreen(e), `${e.w} × ${e.h}`, e.hz ? e.hz + ' Hz' : '', e.inches ? tr('{0} in', e.inches.toLocaleString(LOCALE)) : '', e.port));
     if (inv.battery) lines.push(line('Battery', inv.battery.name, stats && stats.battery ? stats.battery.charge + ' %' : ''));
     for (const n of inv.networks) lines.push(line('Network', n.name, n.type, n.speed > 0 ? tr('link {0}', link(n.speed)) : ''));
     return lines.join('\r\n');
@@ -245,7 +245,7 @@
     c.value.textContent = pct(p.total);
     c.word.textContent = charge(p.total);
     c.el.dataset.level = level(p.total);
-    c.facts.textContent = [tr('{0} cores', (inv.processor || {}).cores || '?'), p.frequency ? ghz(p.frequency) : '', stats.temperature != null ? Math.round(stats.temperature) + ' °C' : ''].filter(Boolean).join(' · ');
+    c.facts.textContent = [tr('{0} cores', (inv.processor || {}).cores || '?'), p.frequency ? ghz(p.frequency) : '', stats.temperature != null ? Math.round(stats.temperature) + ' °C' : ''].filter(Boolean).join(', ');
     c.threads.forEach((f, i) => f.style.setProperty('--h', Math.min(100, p.threads[i] || 0) + '%'));
     plot(c.curve, record('processor', p.total), 100);
     if (p.total >= 90) alerts.push(tr('The processor is maxed out'));
@@ -274,7 +274,7 @@
       if (!k || !v) continue;
       k.value.textContent = pct(v.activity);
       k.word.textContent = tr(v.activity < 5 ? 'Idle' : v.activity < 60 ? 'Working' : 'Very busy');
-      k.facts.textContent = [d.type, d.bus, size(d.size, 0), '↓ ' + throughput(v.read), '↑ ' + throughput(v.write)].filter(Boolean).join(' · ');
+      k.facts.textContent = [d.type, d.bus, size(d.size, 0), '↓ ' + throughput(v.read), '↑ ' + throughput(v.write)].filter(Boolean).join(', ');
       plot(k.curve, record('disk-' + d.number, v.activity), 100);
       for (const vol of d.volumes) if (vol.free / vol.size < 0.1) alerts.push(tr('Drive {0} is almost full', vol.letter));
     }
@@ -284,7 +284,7 @@
       const h = record('network-' + n.id, v.received + v.sent);
       k.value.textContent = throughput(v.received + v.sent);
       k.word.textContent = tr(v.received + v.sent < 10 * 1024 ? 'Quiet' : 'Active');
-      k.facts.textContent = [n.type, n.speed > 0 ? tr('link {0}', link(n.speed)) : '', '↓ ' + throughput(v.received), '↑ ' + throughput(v.sent)].filter(Boolean).join(' · ');
+      k.facts.textContent = [n.type, n.speed > 0 ? tr('link {0}', link(n.speed)) : '', '↓ ' + throughput(v.received), '↑ ' + throughput(v.sent)].filter(Boolean).join(', ');
       plot(k.curve, h, Math.max(64 * 1024, ...h));
     }
     if (cards.battery && stats.battery) {
@@ -327,7 +327,7 @@
     const p0 = inv.processor || {}, ram0 = inv.memory, g0 = inv.graphics[0];
     const facts = {
       processor: [[tr('Model'), shortName(p0.name)], [tr('Cores'), p0.cores ? tr('{0} cores, {1} threads', p0.cores, p0.threads) : ''], [tr('Clock'), p.frequency ? ghz(p.frequency) : '']],
-      memory: [[tr('Installed'), [size(ram0.modules.reduce((t, x) => t + x.capacity, 0), 0), ram0.modules[0] && ram0.modules[0].type].filter(Boolean).join(' · ')],
+      memory: [[tr('Installed'), [size(ram0.modules.reduce((t, x) => t + x.capacity, 0), 0), ram0.modules[0] && ram0.modules[0].type].filter(Boolean).join(' ')],
         [tr('Speed'), ram0.modules[0] && ram0.modules[0].speed ? ram0.modules[0].speed + ' MT/s' : ''], [tr('Slots'), ram0.slots ? tr('{0} of {1} used', ram0.modules.length, ram0.slots) : '']],
       'graphics-0': g0 ? [[tr('Model'), g0.name], [tr('Memory used'), size(g.memory, 1)]] : [],
       battery: [[tr('Model'), inv.battery ? inv.battery.name : ''], [tr('Power'), b && b.mains ? tr('Plugged in') : tr('On battery')]],

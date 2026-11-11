@@ -362,7 +362,7 @@
     $('h-pause').setAttribute('aria-pressed', String(!!e.paused));
     $('h-next').disabled = $('h-previous').disabled = !e.wallpapers || e.wallpapers.length < 2;
     renderQuick(e);
-    if (wallpaper) set('wallpaper', wallpaper.name.replace(/\.[^.]+$/, ''), TYPES[wallpaper.type] + (paused ? ' · ' + tr('Paused') : ''));
+    if (wallpaper) set('wallpaper', wallpaper.name.replace(/\.[^.]+$/, ''), TYPES[wallpaper.type] + (paused ? ', ' + tr('paused') : ''));
     const made = (e.wallpapers || []).filter(w => w.custom && !w.bundled).length;
     set('create', tr('Make a wallpaper'), made === 1 ? tr('1 made') : made ? tr('{0} made', made) : '');
     const screens = e.displays || [];
@@ -406,11 +406,11 @@
       const busy = top('cpu'), heavy = top('memory');
       pc.push({ key: 'processor', part: cpu, value: Math.round(cpu) + ' %', label: tr('Processor'), sub: tr('{0} threads', stats.processor.threads.length), level: level(cpu, 80, 95),
         details: { title: tr('Processor'), value: Math.round(cpu) + ' %', lines: [[tr('Clock'), stats.processor.frequency ? (stats.processor.frequency / 1000).toLocaleString(LOCALE, { maximumFractionDigits: 2 }) + ' GHz' : ''],
-          [tr('Threads'), String(stats.processor.threads.length)], [tr('Busiest'), busy && busy.cpu >= 1 ? busy.name + ' · ' + Math.round(busy.cpu) + ' %' : '']] } });
+          [tr('Threads'), String(stats.processor.threads.length)], [tr('Busiest'), busy && busy.cpu >= 1 ? busy.name + ', ' + Math.round(busy.cpu) + ' %' : '']] } });
       pc.push({ key: 'memory', part: ram, value: Math.round(ram) + ' %', label: tr('Memory'), level: level(ram, 75, 85),
         sub: memoryHigh ? tr('Free it up') : tr('{0} of {1}', size(stats.memory.used).replace(/ \S+$/, ''), size(stats.memory.total)),
         details: { title: tr('Memory'), value: Math.round(ram) + ' %', lines: [[tr('In use'), size(stats.memory.used)], [tr('Available'), size(stats.memory.total - stats.memory.used)],
-          [tr('Installed'), size(stats.memory.total)], [tr('Heaviest'), heavy ? heavy.name + ' · ' + size(heavy.memory) : '']] } });
+          [tr('Installed'), size(stats.memory.total)], [tr('Heaviest'), heavy ? heavy.name + ', ' + size(heavy.memory) : '']] } });
     }
     if (stats) {
       set('hardware', tr('Processor {0} %', Math.round(stats.processor.total)), stats.temperature != null ? Math.round(stats.temperature) + ' °C' : '');
@@ -460,7 +460,7 @@
 
     if (tasks) {
       const apps = tasks.items.filter(t => t.kind === 'app').sort((a, b) => b.memory - a.memory), top = apps[0];
-      set('tasks', tr(apps.length > 1 ? '{0} apps open' : apps.length ? '1 app open' : 'No app open', apps.length), top ? tr('Busiest: {0}', top.name) + ' · ' + size(top.memory) : '');
+      set('tasks', tr(apps.length > 1 ? '{0} apps open' : apps.length ? '1 app open' : 'No app open', apps.length), top ? tr('Busiest: {0}', top.name) + ', ' + size(top.memory) : '');
       visual('tasks', '<span class="h-images">' + apps.filter(t => appIcons.get(t.id)).slice(0, 4).map(t => `<img src="${appIcons.get(t.id)}" alt="">`).join('') + '</span>');
     }
   }
@@ -527,8 +527,8 @@
     $('h-weather-temp').textContent = weather.temperature + ' °C';
     $('h-weather-what').textContent = tr(what);
     $('h-weather-city').textContent = weather.city || '';
-    $('h-weather-details').textContent = [tr('{0} / {1} °C', weather.min, weather.max), tr('wind {0} km/h', weather.wind), weather.rain >= 0 ? tr('rain {0} %', weather.rain) : ''].filter(Boolean).join(' · ');
-    $('h-weather').title = tr('Feels like {0} °C · humidity {1} %', weather.feels, weather.humidity);
+    $('h-weather-details').textContent = [tr('{0} / {1} °C', weather.min, weather.max), tr('wind {0} km/h', weather.wind), weather.rain >= 0 ? tr('rain {0} %', weather.rain) : ''].filter(Boolean).join(', ');
+    $('h-weather').title = tr('Feels like {0} °C, humidity {1} %', weather.feels, weather.humidity);
   }
 
   let screenSize = null;

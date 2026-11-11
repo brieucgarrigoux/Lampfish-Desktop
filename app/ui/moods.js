@@ -98,7 +98,7 @@
     return img;
   }
 
-  const SOUNDS = { on: 'Sounds on · {0} %', off: 'Sounds off' };
+  const SOUNDS = { on: 'Sounds on, {0} %', off: 'Sounds off' };
   function traits(m) {
     const row = el('div', 'mood__traits');
     const theme = m.look ? m.look.title : m.theme;
@@ -362,7 +362,7 @@
       row(ICONS.wallpaper, tr('Wallpaper'), m.screenWallpapers === 1 ? tr('Plus one screen with its own wallpaper') : m.screenWallpapers > 1 ? tr('Plus {0} screens with their own wallpaper', m.screenWallpapers) : '', value(wallpaper)),
       row(ICONS.dim, tr('Dim'), '', value(m.dim > 0 ? m.dim + ' %' : tr('Not dimmed'))),
       row(ICONS.cursor, tr('Cursors'), '', value(theme || tr('Unchanged'))),
-      row(ICONS[m.sounds] || ICONS.on, tr('Sounds'), '', value(m.sounds === 'on' ? tr('On · {0} %', m.volume) : tr('Off'))));
+      row(ICONS[m.sounds] || ICONS.on, tr('Sounds'), '', value(m.sounds === 'on' ? tr('On, {0} %', m.volume) : tr('Off'))));
     if (m.warm != null) brings.append(row(ICONS.warm, tr('Warm screen'), '', value(m.warm > 0 ? m.warm + ' %' : tr('Off'))));
     if (m.reactive != null) brings.append(row(ICONS.react, tr('React to sound'), '', value(tr(m.reactive ? 'On' : 'Off'))));
     if (m.output != null) { const v = value(m.output || tr('Unchanged')); v.translate = false; brings.append(row(ICONS.output, tr('Audio output'), tr('When it is plugged in'), v)); }

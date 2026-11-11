@@ -84,7 +84,7 @@
     $('banner-event').textContent = e.label;
     $('sounds-for').textContent = tr(e.label);
     const state = !s.active || s.silence ? 'Sounds off' : !e.active ? 'Off' : '';
-    $('banner-sound-name').textContent = [tr(packOf(e.sound)), tr(titleOf(e.sound))].filter(Boolean).join(' · ');
+    $('banner-sound-name').textContent = [tr(packOf(e.sound)), tr(titleOf(e.sound))].filter(Boolean).join(': ');
     $('banner-state').textContent = state ? tr(state) : '';
     $('banner-sound').classList.toggle('muted', !s.active || s.silence);
     $('banner-listen').classList.toggle('playing', !!playback);

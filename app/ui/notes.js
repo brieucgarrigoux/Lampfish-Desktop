@@ -252,7 +252,7 @@
       reload.append(tr('Load theirs'));
       keep.addEventListener('click', () => { dirty = true; save(true); });
       reload.addEventListener('click', () => { dirty = false; const n = current; current = null; open(n); });
-      $('n-status').append(keep, ' · ', reload);
+      $('n-status').append(keep, ' ', reload);
     } else if (m.type === 'notes.error') { saved('error'); status('The file could not be written'); }
     else if (m.type === 'notes.open') { current = null; open(m.name); }
   }
