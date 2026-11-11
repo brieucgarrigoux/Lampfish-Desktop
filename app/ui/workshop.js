@@ -53,10 +53,17 @@
     return taken ? tr('This name is already taken') : '';
   }
 
+  // A colour dragged in its well sends dozens of changes a second: they are drawn once per frame, and the cursors of the
+  // try zone (five pictures turned into page cursors) only once the colour rests.
+  let frame = 0, rest = 0;
   function render() {
+    if (frame) return;
+    frame = requestAnimationFrame(() => { frame = 0; paint(); });
+  }
+  function paint() {
     register();
     const v = cur(), [, styleName, labelA, labelB] = STYLES.find(x => x[0] === v.style);
-    for (const a of canvases) if (a.c.isConnected) E.draw(a.c, a.c.width, a.name, a.role, .6, false);
+    for (const a of canvases) if (a.name === DRAFT && a.c.isConnected) E.draw(a.c, a.c.width, a.name, a.role, .6, false);
     $('w-stage').style.setProperty('--tint', v.a);
     $('w-title').textContent = draft.name.trim() || tr('My family');
     $('w-title').translate = false;
@@ -66,12 +73,8 @@
     $('w-a').value = v.a;
     $('w-b').value = v.b;
     for (const b of $('w-styles').children) b.setAttribute('aria-checked', String(b.dataset.style === v.style));
-    // The try zone wears the real cursor of the draft, as a cursor of the page.
-    const cursor = (role, x, y) => { const c = document.createElement('canvas'); c.width = c.height = 32; E.draw(c, 32, DRAFT, role, .6, false); return `url(${c.toDataURL()}) ${x} ${y}, auto`; };
-    $('w-stage').style.cursor = cursor('arrow', 2, 2);
-    $('w-try-link').style.cursor = cursor('hand', 10, 2);
-    $('w-try-text').style.cursor = cursor('ibeam', 16, 16);
-    for (const s of $('w-try').querySelectorAll('[data-role]')) s.style.cursor = cursor(s.dataset.role, 16, 16);
+    clearTimeout(rest);
+    rest = setTimeout(tryZone, 160);
     renderFamily();
     const problem = nameProblem();
     $('w-note').textContent = note || (draft.name.trim() ? problem : '');
@@ -82,6 +85,15 @@
       b.append(tr(draft.key ? 'Save' : 'Create'));
       b.disabled = !!problem;
     }
+  }
+
+  // The try zone wears the real cursor of the draft, as a cursor of the page.
+  function tryZone() {
+    const cursor = (role, x, y) => { const c = document.createElement('canvas'); c.width = c.height = 32; E.draw(c, 32, DRAFT, role, .6, false); return `url(${c.toDataURL()}) ${x} ${y}, auto`; };
+    $('w-stage').style.cursor = cursor('arrow', 2, 2);
+    $('w-try-link').style.cursor = cursor('hand', 10, 2);
+    $('w-try-text').style.cursor = cursor('ibeam', 16, 16);
+    for (const s of $('w-try').querySelectorAll('[data-role]')) s.style.cursor = cursor(s.dataset.role, 16, 16);
   }
 
   // The colours of the family as swatches; a click edits one, the cross takes it out.
@@ -144,7 +156,9 @@
       b.dataset.style = key;
       const name = 'lampfish (workshop ' + key + ')';
       E.THEME[name] = Object.assign(E.customVariant(key, PAIRS[key][0], PAIRS[key][1]), { name });
-      b.append(canvas(32, 'arrow', name), tr(label));
+      const preview = canvas(32, 'arrow', name);
+      E.draw(preview, preview.width, name, 'arrow', .6, false);
+      b.append(preview, tr(label));
       b.addEventListener('click', () => { const v = cur(); v.style = key; [v.a, v.b] = PAIRS[key]; rename(v); render(); });
       return b;
     }));
@@ -203,7 +217,8 @@
     add.lastChild.textContent = tr('New family');
     add.addEventListener('click', () => { draft = fresh(); index = 0; $('w-name').value = ''; render(); $('w-name').focus(); });
     $('w-families').replaceChildren(...tiles, add);
-    for (const a of canvases) if (a.c.isConnected && a.name !== DRAFT) E.draw(a.c, a.c.width, a.name, a.role, .6, false);
+    for (let i = canvases.length - 1; i >= 0; i--) if (!canvases[i].c.isConnected) canvases.splice(i, 1);
+    for (const a of canvases) if (a.name !== DRAFT && a.c.closest('#w-families')) E.draw(a.c, a.c.width, a.name, a.role, .6, false);
   }
 
   function save(e) {

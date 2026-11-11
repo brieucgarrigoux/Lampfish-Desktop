@@ -191,7 +191,9 @@ namespace Lampfish
                 return;
             }
             timer.Interval = saver ? 33 : 16;
-            if (now - lastSample > 500) { lastSample = now; Sample(p); }
+            // Reading the screen makes Windows wait for the graphics card: done when the pointer reaches another window, at most
+            // every 3 s, so moving it never stutters.
+            if (now - lastSample > 3000) { IntPtr under = GetAncestor(WindowFromPoint(new Native.POINT { X = p.X, Y = p.Y }), 2); if (under != lastUnder) { lastUnder = under; lastSample = now; Sample(p); } }
             // The square follows the pointer; the particles live in screen coordinates and are drawn shifted by its corner.
             int half = Box / 2;
             if (!shown || Math.Abs(p.X - (origin.X + half)) > Box / 4 || Math.Abs(p.Y - (origin.Y + half)) > Box / 4) origin = new Point(p.X - half, p.Y - half);
@@ -203,6 +205,7 @@ namespace Lampfish
         // captures, so the copy only sees what is under it. Two thresholds, so a grey area does not make it flicker.
         readonly Bitmap probe = new Bitmap(24, 24, PixelFormat.Format32bppArgb);
         double lastSample = -10000;
+        IntPtr lastUnder = IntPtr.Zero;
         void Sample(Point p)
         {
             try
@@ -300,6 +303,8 @@ namespace Lampfish
         [StructLayout(LayoutKind.Sequential)] struct CURSORINFO { public int cbSize, flags; public IntPtr cursor; public Native.POINT position; }
         [DllImport("user32.dll")] static extern bool GetCursorInfo(ref CURSORINFO info);
         [DllImport("user32.dll")] static extern int GetSystemMetrics(int index);
+        [DllImport("user32.dll")] static extern IntPtr WindowFromPoint(Native.POINT point);
+        [DllImport("user32.dll")] static extern IntPtr GetAncestor(IntPtr hwnd, uint flags);
         struct SYSTEM_POWER_STATUS { public byte ACLineStatus, BatteryFlag, BatteryLifePercent, SystemStatusFlag; public int BatteryLifeTime, BatteryFullLifeTime; }
         [DllImport("kernel32.dll")] static extern bool GetSystemPowerStatus(out SYSTEM_POWER_STATUS status);
         [DllImport("gdi32.dll")] static extern IntPtr CreateDIBSection(IntPtr dc, ref BITMAPINFOHEADER info, uint usage, out IntPtr bits, IntPtr section, uint offset);
