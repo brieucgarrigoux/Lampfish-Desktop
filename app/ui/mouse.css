@@ -54,6 +54,8 @@
 .family__text { display: flex; flex-direction: column; min-width: 0; }
 .family__title { font-size: var(--text-body); font-weight: 600; color: var(--text); }
 .family__sub { display: flex; align-items: center; gap: 10px; min-height: 17px; font-size: var(--text-caption); color: var(--text-pale); white-space: nowrap; }
+.family__use { display: inline-flex; align-items: center; gap: 4px; color: var(--accent); }
+.family__use .ph { width: 13px; height: 13px; }
 .theme--family.loading { cursor: progress; }
 .theme--family.loading::before { display: none; }
 .theme--family.loading::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--accent); transform: scaleX(var(--progress, 0)); transform-origin: left; transition: transform .2s; }

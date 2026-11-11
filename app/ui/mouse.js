@@ -189,23 +189,25 @@
 
   function families() {
     const list = CursorEngine.FAMILIES.map(f => ({ key: f.key, name: f.name, engine: true, variants: f.variants.map(v => ({ name: v.name, variant: v.variant, swatch: v.swatch })) }));
-    const pixel = library.themes.filter(t => t.name.startsWith(PIXEL)).map(t => ({ name: t.name, variant: t.name.slice(PIXEL.length), swatch: PIXEL_SWATCH[t.name.slice(PIXEL.length)] || '#1EBBAA', theme: t }));
+    const ORDER = ['Foam', 'Lagoon', 'Abyss'], rank = t => ORDER.indexOf(t.name.slice(PIXEL.length));
+    const pixel = library.themes.filter(t => t.name.startsWith(PIXEL)).sort((a, b) => rank(a) - rank(b)).map(t => ({ name: t.name, variant: t.name.slice(PIXEL.length), swatch: PIXEL_SWATCH[t.name.slice(PIXEL.length)] || '#1EBBAA', theme: t }));
     if (pixel.length) list.push({ key: 'pixel', name: 'Pixel', engine: false, variants: pixel });
     return list;
   }
 
-  async function applyVariant(fam, v, tile) {
+  // A theme already on disk is applied at once, whatever engine made it; a newer drawing follows in the background and
+  // Mouse.cs puts it in place by itself if the theme is still in use. A theme never made gets a still version first.
+  async function applyVariant(fam, v, tile, refresh = false) {
     if (!fam.engine) { send('mouse.theme', { name: v.name }); return; }
     const made = libraryTheme(v.name);
-    if (made && made.version === CursorEngine.VERSION) { send('mouse.theme', { name: v.name }); return; }
-    if (making.has(v.name)) return;
+    if (made && !refresh) send('mouse.theme', { name: v.name });
+    if ((made && made.version === CursorEngine.VERSION) || making.has(v.name)) return;
     making.add(v.name);
     if (tile) { tile.classList.add('loading'); tile.setAttribute('aria-busy', 'true'); tile.style.setProperty('--progress', 0); }
     try {
-      // A still version first, so the pointer changes at once, then the animated files replace it.
       if (!made) send('mouse.make', { ...await CursorEngine.build(v.name, null, true), apply: true });
       const built = await CursorEngine.build(v.name, p => { if (tile) tile.style.setProperty('--progress', p); });
-      send('mouse.make', { ...built, apply: s.theme === v.name });
+      send('mouse.make', { ...built, apply: false });
     } catch (e) {
       console.error(e);
     } finally {
@@ -219,7 +221,7 @@
     const t = s && libraryTheme(s.theme);
     if (!t || !t.made || t.version === CursorEngine.VERSION || !CursorEngine.has(t.name) || making.has(t.name)) return;
     const fam = families().find(f => f.variants.some(v => v.name === t.name));
-    if (fam) applyVariant(fam, fam.variants.find(v => v.name === t.name), null);
+    if (fam) applyVariant(fam, fam.variants.find(v => v.name === t.name), null, true);
   }
 
   // A display case per family: Normal large, Link and Busy beside it, on a ground tinted by the colour shown (C62).
@@ -244,8 +246,8 @@
       else { hero.append(image(v.theme.showcase[0])); side.append(image(v.theme.showcase[1]), image(v.theme.showcase[3])); }
       c.querySelector('.family__title').textContent = tr(fam.name);
       c.querySelector('.family__sub').firstChild.textContent = v.variant ? tr(v.variant) : '';
-      const use = c.querySelector('.family__sub .state');
-      if (current && current.name === v.name) { if (!use) c.querySelector('.family__sub').append(Object.assign(document.createElement('span'), { className: 'state', textContent: tr('In use') })); }
+      const use = c.querySelector('.family__use');
+      if (current && current.name === v.name) { if (!use) { const u = document.createElement('span'); u.className = 'family__use'; u.innerHTML = icon('check'); u.append(tr('In use')); c.querySelector('.family__sub').append(u); } }
       else if (use) use.remove();
       for (const b of c.querySelectorAll('.swatch')) b.setAttribute('aria-pressed', String(b.dataset.name === v.name));
     };
@@ -439,6 +441,7 @@
   }
 
   function visible(yes) {
+    if (yes) CursorEngine.warm();
     if (yes && !library) send('mouse.library');
   }
 

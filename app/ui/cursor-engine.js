@@ -344,48 +344,49 @@ const STYLES = {
 
 // ---------- Themes ----------
 // One family per look, its variants as colours. The name of a theme is its folder, its scheme in Windows and its name in lampfish.
+// Shown in this order, each with a different colour first, so the page is not a wall of turquoise.
 const FAMILIES = [
   { key: 'photophore', name: 'Photophore', variants: [
-    { variant: 'Abyss', swatch: '#2ED9C6', style: 'photophore', body: ['#0a2226', '#020607'], rim: '#1b6f69', halo: 'rgba(150,255,243,.45)', dot: '200,255,248', glow: '80,255,235' },
+    { variant: 'Ember', swatch: '#ff7a3d', style: 'photophore', body: ['#25100a', '#070302'], rim: '#7a2e16', halo: 'rgba(255,170,130,.45)', dot: '255,228,205', glow: '255,120,60' },
     { variant: 'Gold', swatch: '#ffc45a', style: 'photophore', body: ['#1d160a', '#060402'], rim: '#6b5320', halo: 'rgba(255,226,150,.45)', dot: '255,240,200', glow: '255,196,80' },
     { variant: 'Berry', swatch: '#a882ff', style: 'photophore', body: ['#1a0f2e', '#06030c'], rim: '#5b3fa0', halo: 'rgba(200,170,255,.45)', dot: '235,220,255', glow: '170,130,255' },
-    { variant: 'Ember', swatch: '#ff7a3d', style: 'photophore', body: ['#25100a', '#070302'], rim: '#7a2e16', halo: 'rgba(255,170,130,.45)', dot: '255,228,205', glow: '255,120,60' },
+    { variant: 'Abyss', swatch: '#2ED9C6', style: 'photophore', body: ['#0a2226', '#020607'], rim: '#1b6f69', halo: 'rgba(150,255,243,.45)', dot: '200,255,248', glow: '80,255,235' },
   ] },
   { key: 'nacre', name: 'Nacre', variants: [
+    { variant: 'Rose', swatch: '#f3c2b4', style: 'nacre', stops: ['#fff1ea', '#f5c9b8', '#ffe3d1', '#f2b8c6', '#fff4d6', '#f8d6c8', '#fff1ea'], edge: '#4a2a22', shine: .7, arc: '#a8634f', crease: 'rgba(74,42,34,.4)' },
     { variant: 'Pearl', swatch: '#d8f2ee', style: 'nacre', stops: ['#e8fffb', '#a9efe6', '#d8d0ff', '#ffd3ea', '#fff3cf', '#b8f5ea', '#e8fffb'], edge: '#13262b', shine: .75, arc: '#0F9D8F', crease: 'rgba(19,38,43,.4)' },
     { variant: 'Black Pearl', swatch: '#2f4a4e', style: 'nacre', stops: ['#33464b', '#1b5a58', '#3d3366', '#5a2d4a', '#55502e', '#22605a', '#33464b'], edge: '#030607', halo: 'rgba(200,240,235,.5)', shine: .35, arc: '#9ff5ea', crease: 'rgba(200,240,235,.35)' },
-    { variant: 'Rose', swatch: '#f3c2b4', style: 'nacre', stops: ['#fff1ea', '#f5c9b8', '#ffe3d1', '#f2b8c6', '#fff4d6', '#f8d6c8', '#fff1ea'], edge: '#4a2a22', shine: .7, arc: '#a8634f', crease: 'rgba(74,42,34,.4)' },
   ] },
   { key: 'deep', name: 'Deep', variants: [
-    { variant: 'Lagoon', swatch: '#1EBBAA', style: 'depth', stops: [[0, '#c8fff8'], [.22, '#2ED9C6'], [.6, '#0d5d70'], [1, '#081a36']], edge: '#020c12', caustic: 'rgba(220,255,252,.22)', lamp: '#7ffff0', arc: '#d9fffa', crease: 'rgba(2,12,18,.5)', ink: '#020c12' },
     { variant: 'Midnight', swatch: '#5b8cff', style: 'depth', stops: [[0, '#dce8ff'], [.22, '#5b8cff'], [.6, '#1b2f7a'], [1, '#070a24']], edge: '#02040f', caustic: 'rgba(210,225,255,.22)', lamp: '#9ab8ff', arc: '#dce8ff', crease: 'rgba(2,4,15,.5)', ink: '#02040f' },
     { variant: 'Sunset', swatch: '#ff9a5c', style: 'depth', stops: [[0, '#fff1c9'], [.22, '#ffb35c'], [.6, '#c2416b'], [1, '#2a0f3a']], edge: '#1a0612', caustic: 'rgba(255,240,220,.25)', lamp: '#ffd27a', arc: '#fff1c9', crease: 'rgba(26,6,18,.5)', ink: '#1a0612' },
+    { variant: 'Lagoon', swatch: '#1EBBAA', style: 'depth', stops: [[0, '#c8fff8'], [.22, '#2ED9C6'], [.6, '#0d5d70'], [1, '#081a36']], edge: '#020c12', caustic: 'rgba(220,255,252,.22)', lamp: '#7ffff0', arc: '#d9fffa', crease: 'rgba(2,12,18,.5)', ink: '#020c12' },
   ] },
   { key: 'neon', name: 'Neon', variants: [
-    { variant: 'Teal', swatch: '#2ED9C6', style: 'neon', tube: '#2ED9C6', core: 'rgba(235,255,252,.95)' },
     { variant: 'Pink', swatch: '#ff4fd8', style: 'neon', tube: '#ff4fd8', core: 'rgba(255,235,250,.95)' },
     { variant: 'Amber', swatch: '#ffc23d', style: 'neon', tube: '#ffc23d', core: 'rgba(255,248,225,.95)' },
     { variant: 'Violet', swatch: '#a37bff', style: 'neon', tube: '#a37bff', core: 'rgba(240,232,255,.95)' },
+    { variant: 'Teal', swatch: '#2ED9C6', style: 'neon', tube: '#2ED9C6', core: 'rgba(235,255,252,.95)' },
   ] },
   { key: 'metal', name: 'Metal', variants: [
     { variant: 'Silver', swatch: '#cfd8db', style: 'metal', stops: [[0, '#ffffff'], [.16, '#d7dee1'], [.34, '#7d898e'], [.5, '#f4f8f9'], [.66, '#b9c3c7'], [.84, '#59656a'], [1, '#d9e0e3']], edge: '#1a2023', light: 'rgba(255,255,255,.9)', shade: 'rgba(20,28,32,.5)', arc: '#1EBBAA', spark: '#ffffff', crease: 'rgba(26,32,35,.5)', ink: '#1a2023' },
     { variant: 'Rose Gold', swatch: '#e8a690', style: 'metal', stops: [[0, '#ffeee6'], [.16, '#f0b8a4'], [.34, '#a8634f'], [.5, '#ffd9cb'], [.66, '#d9937c'], [.84, '#7e3f31'], [1, '#ecb19c']], edge: '#3a1a12', light: 'rgba(255,240,232,.85)', shade: 'rgba(70,25,15,.5)', arc: '#3a1a12', spark: '#fff4ee', crease: 'rgba(58,26,18,.5)', ink: '#3a1a12' },
-    { variant: 'Anodized', swatch: '#1EBBAA', style: 'metal', stops: [[0, '#d6fff9'], [.16, '#4fe3d2'], [.34, '#0d7a70'], [.5, '#9ff5ea'], [.66, '#1EBBAA'], [.84, '#07463f'], [1, '#3fd6c4']], edge: '#02201c', light: 'rgba(230,255,252,.8)', shade: 'rgba(0,40,36,.55)', arc: '#02201c', spark: '#f0fffd', crease: 'rgba(2,32,28,.55)', ink: '#02201c' },
     { variant: 'Black Chrome', swatch: '#1b1f21', style: 'lacquer', rim: [[0, '#ffffff'], [.2, '#aab4b8'], [.45, '#4a5458'], [.6, '#f2f6f7'], [.8, '#6d787c'], [1, '#d9e0e3']], arc: '#d9e0e3', spark: '#ffffff', crease: 'rgba(217,224,227,.5)', ink: '#d9e0e3' },
+    { variant: 'Anodized', swatch: '#1EBBAA', style: 'metal', stops: [[0, '#d6fff9'], [.16, '#4fe3d2'], [.34, '#0d7a70'], [.5, '#9ff5ea'], [.66, '#1EBBAA'], [.84, '#07463f'], [1, '#3fd6c4']], edge: '#02201c', light: 'rgba(230,255,252,.8)', shade: 'rgba(0,40,36,.55)', arc: '#02201c', spark: '#f0fffd', crease: 'rgba(2,32,28,.55)', ink: '#02201c' },
   ] },
-  { key: 'scale', name: 'Scale', variants: [{ variant: '', swatch: '#0F9D8F', style: 'scales' }] },
-  { key: 'origami', name: 'Origami', variants: [{ variant: '', swatch: '#4fd6c6', style: 'origami' }] },
   { key: 'riso', name: 'Riso', variants: [{ variant: '', swatch: '#f6f3ec', style: 'riso' }] },
+  { key: 'scale', name: 'Scale', variants: [{ variant: '', swatch: '#0F9D8F', style: 'scales' }] },
   { key: 'bubble', name: 'Bubble', variants: [{ variant: '', swatch: '#c9b8ff', style: 'bubble' }] },
+  { key: 'origami', name: 'Origami', variants: [{ variant: '', swatch: '#4fd6c6', style: 'origami' }] },
   { key: 'flat', name: 'Flat', variants: [
-    { variant: 'Abyss', swatch: '#0b1d20', style: 'flat', body: '#0b1d20', edge: '#2ED9C6', lamp: '#8ffff2', crease: 'rgba(46,217,198,.6)', ink: '#2ED9C6' },
     { variant: 'Foam', swatch: '#f6fbfa', style: 'flat', body: '#f6fbfa', edge: '#08171A', lamp: '#0F9D8F', crease: 'rgba(8,23,26,.45)', ink: '#08171A' },
     { variant: 'Lagoon', swatch: '#13a898', style: 'flat', body: '#13a898', edge: '#08171A', lamp: '#eafffc', crease: 'rgba(8,23,26,.5)', ink: '#08171A' },
+    { variant: 'Abyss', swatch: '#0b1d20', style: 'flat', body: '#0b1d20', edge: '#2ED9C6', lamp: '#8ffff2', crease: 'rgba(46,217,198,.6)', ink: '#2ED9C6' },
   ] },
   { key: 'glass', name: 'Glass', variants: [
-    { variant: 'Abyss', swatch: '#16494b', style: 'glass', top: '#16494b', bottom: '#031416', rim: '#5ff0de', glow: '#2ED9C6', crease: 'rgba(95,240,222,.45)', ink: '#5ff0de' },
     { variant: 'Foam', swatch: '#ffffff', style: 'glass', top: '#ffffff', bottom: '#c7ebe6', rim: '#08171A', glow: '#1EBBAA', crease: 'rgba(8,23,26,.4)', ink: '#08171A' },
     { variant: 'Lagoon', swatch: '#6ff3e1', style: 'glass', top: '#6ff3e1', bottom: '#0a7f74', rim: '#effffd', glow: '#2ED9C6', crease: 'rgba(3,40,36,.45)', ink: '#03201d' },
+    { variant: 'Abyss', swatch: '#16494b', style: 'glass', top: '#16494b', bottom: '#031416', rim: '#5ff0de', glow: '#2ED9C6', crease: 'rgba(95,240,222,.45)', ink: '#5ff0de' },
   ] },
 ];
 const THEME = {};
@@ -532,6 +533,7 @@ if (typeof document === 'undefined') {
     const parts = await Promise.all(workers.map((w, i) => part(w, name, shares[i], still, n => { done[i] = n; if (progress) progress(done.reduce((a, b) => a + b, 0) / ROLES.length); })));
     return { name, version: still ? VERSION + '-still' : VERSION, files: Object.assign({}, ...parts) };
   };
+  api.warm = () => { try { workers = workers || Array.from({ length: COUNT }, () => new Worker('cursor-engine.js')); } catch (err) { } };
   api.build = (name, progress, still = false) => (queue = queue.then(() => run(name, progress, still), () => run(name, progress, still)));
   window.CursorEngine = api;
 }
