@@ -14,8 +14,8 @@ using Microsoft.Win32;
 
 [assembly: System.Reflection.AssemblyTitle("lampfish")]
 [assembly: System.Reflection.AssemblyProduct("lampfish")]
-[assembly: System.Reflection.AssemblyVersion("0.5.0.0")]
-[assembly: System.Reflection.AssemblyFileVersion("0.5.0.0")]
+[assembly: System.Reflection.AssemblyVersion("0.6.0.0")]
+[assembly: System.Reflection.AssemblyFileVersion("0.6.0.0")]
 
 namespace Lampfish
 {

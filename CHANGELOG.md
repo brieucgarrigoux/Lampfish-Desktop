@@ -5,6 +5,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-14
+
 ### Added
 
 - Workshop, a new service next to Mouse: a cursor family of your own from one of seven styles (Flat, Glass, Neon, Metal, Photophore, Deep, Nacre) and two colours, with as many colours as you like in the family. Everything is drawn live, with a zone to try the real cursor. The families go to Mouse, under My families.
