@@ -734,9 +734,14 @@ namespace Lampfish
 
         static void NextTheme()
         {
-            var names = new HashSet<string>(Themes().Select(t => t.Name));
-            var pool = (Program.R.MouseFavorites ?? new List<string>()).Where(names.Contains).ToList();
-            if (pool.Count < 2) pool = (Program.R.MouseRecent ?? new List<string>()).Where(names.Contains).ToList();
+            var all = Themes().Select(t => t.Name).ToList();
+            var names = new HashSet<string>(all);
+            var recent = (Program.R.MouseRecent ?? new List<string>()).Where(names.Contains).ToList();
+            // Favorites are kept by family: each one gives the colour used last, or its first theme on this PC.
+            var pool = (Program.R.MouseFavorites ?? new List<string>())
+                .Select(key => { var family = all.Where(n => InFamily(key, n)).ToList(); return recent.FirstOrDefault(family.Contains) ?? family.FirstOrDefault(); })
+                .Where(n => n != null).Distinct().ToList();
+            if (pool.Count < 2) pool = recent;
             if (pool.Count == 0) return;
             StopTry();
             string next = pool[(pool.IndexOf(CurrentTheme()) + 1) % pool.Count];
@@ -745,6 +750,19 @@ namespace Lampfish
             Trail.FollowCursor();
             OfferUndo(Language.T("Cursors: {0}", NameTheme(next)), before);
             Program.SendState();
+        }
+
+        // The family keys of the page: an engine or special edition family by its name, a Workshop family by its key,
+        // Bramble, a family of Windows by its name in lower case, a theme of the user by its own name.
+        static bool InFamily(string key, string theme)
+        {
+            if (string.IsNullOrEmpty(key) || theme == null) return false;
+            if (key.StartsWith("mine-")) return theme == key.Substring(5);
+            if (key == "bramble") return theme.StartsWith("Bramble ");
+            if (key.StartsWith("windows-")) return System.Text.RegularExpressions.Regex.Replace(theme.ToLowerInvariant(), @"\W+", "-").StartsWith(key.Substring(8));
+            var made = (Program.R.Workshop ?? new List<WorkshopFamily>()).FirstOrDefault(f => f.Key == key);
+            string prefix = "lampfish " + (made != null ? made.Name : key);
+            return theme.Equals(prefix, StringComparison.OrdinalIgnoreCase) || theme.StartsWith(prefix + " ", StringComparison.OrdinalIgnoreCase);
         }
 
         static void Rescue()
