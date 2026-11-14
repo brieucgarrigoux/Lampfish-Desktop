@@ -1,4 +1,4 @@
-﻿# lampfish design system
+# lampfish design system
 
 The rules every page of lampfish follows. Values live as tokens in `:root` of `app/ui/main.css`; shared components live in `main.css` and `shell.css`. A raw value used twice becomes a token.
 

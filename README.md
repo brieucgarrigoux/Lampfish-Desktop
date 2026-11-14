@@ -5,13 +5,13 @@
 <p align="center">Customize and monitor your Windows PC from a single app.</p>
 
 <p align="center">
-  <a href="#services">Services</a> ·
-  <a href="#install">Install</a> ·
-  <a href="#build-from-source">Build</a> ·
+  <a href="#services">Services</a>&emsp;
+  <a href="#install">Install</a>&emsp;
+  <a href="#build-from-source">Build</a>&emsp;
   <a href="CHANGELOG.md">Changelog</a>
 </p>
 
-lampfish lives in the system tray and brings together wallpapers, icons, cursors, sounds, desktop layout, the health of the PC, disk usage, network, hardware and running programs. It needs no administrator rights, no account and no server, and it collects no data: everything stays on the PC. Settings lists the few outside services it calls (weather, connection test, update check) and when. An assistant, if you turn it on, sits as a round button wherever you put it on the screen: a click opens a small window to write a note, take a capture (also Ctrl Alt S) or glance at the PC, and Ctrl Alt N writes a note from any app. In Plugins, Claude usage shows how much of a Claude plan is used, read with the sign-in of Claude Code on the PC; it is off until you turn it on. On the very first start, a short welcome shows what it does and asks four questions, all of them skippable.
+lampfish lives in the system tray and brings together wallpapers, icons, cursors, sounds, desktop layout, the health of the PC, disk usage, network, hardware and running programs. It needs no administrator rights, no account and no server, and it collects no data: everything stays on the PC. Settings lists the few outside services it calls (weather, connection test, update check) and when. An assistant, if you turn it on, sits as a round button wherever you put it on the screen: a click opens a small window to write a note, take a capture (also Ctrl Alt S) or glance at the PC, and Ctrl Alt N writes a note from any app. In Settings, under Plugins, Claude usage shows how much of a Claude plan is used, read with the sign-in of Claude Code on the PC; it is off until you turn it on. On the very first start, a short welcome shows what it does and asks four questions, all of them skippable.
 
 ## Services
 
@@ -25,18 +25,19 @@ lampfish lives in the system tray and brings together wallpapers, icons, cursors
 | **Audio** | Every speaker, headset, screen and microphone of the PC as a tile with its format, live level, volume and mute. A click makes one the default for every app, and an optional shortcut switches to the next output from any app. |
 | **Taskbar** | The settings Windows keeps for the taskbar in one page: alignment, the search, Task View, Widgets, the show desktop corner, seconds in the clock, combining windows, the taskbar on every screen and its automatic hiding, each change with Undo. The position, size and transparency are left alone: Windows has no setting for them. |
 | **Icons** | Gives any folder an icon from the Windows library (sorted retro pixel / modern) or your own, from the app or the right-click menu, with a way back to the icon it had before. |
-| **Mouse** | Cursor themes (including original pixel-art themes and a smooth, lightly animated one) sorted by family, any single cursor for a role, per-role cursors saved as your own themes, pointer size, speed, double-click, wheel and extras, with a way back to the mouse you had before. |
+| **Mouse** | Cursor themes in families with their colours, drawn by lampfish at the real size of each screen, next to Bramble, Windows and your own themes, with filters, favorites and a 15-second try on the real pointer before choosing. Any single cursor for a role, a theme for light and one for dark, left-handed cursors, export of your themes, pointer size, speed, double-click, wheel, ClickLock and the other mouse settings of Windows, and Presentation: a halo, rings at each click, shake to find and a pointer hidden when idle. A special edition, opened by a code, adds more cursors and a trail behind the pointer. Ctrl Alt Shift C puts the cursors you had before back from anywhere. |
+| **Workshop** | Your own cursor family from seven styles and as many colours as you like, drawn live and tried on the real pointer, or a cursor pack downloaded from the web (.zip, install.inf, .cur and .ani files): its install.inf is only read to place each file, never run. What you make goes to Mouse. |
 | **Sounds** | A sound for thirteen system events (startup, lock, sleep, charger, USB devices, docking station, speed test), with a sound library, loudness matching and import. |
 | **Arrange** | A live map of your screens (one, two, three or more) to sort and lay out desktop icons in eight even arrangements, five icon sizes, undo, a way back to the original layout, your own saved arrangements, and layouts saved per screen setup. |
 | **Notes** | Notes written in Markdown, with a bar for titles, lists, tasks and links, and a reading view. They save themselves as they are written, as plain .md files in lampfish's folder or in a folder of an Obsidian vault. |
 | **Shelf** | A place to keep files and captures at hand: drop files to keep a copy, take a capture of a zone, a window or a screen, draw on it (pen, arrows, frames, numbered steps, text, pixelate, crop), copy it, or drag it into another app. |
 | **Convert** | Changes the kind of a file on this PC, with nothing sent anywhere: images into PNG, JPG, BMP, GIF, TIFF, an icon or a PDF, a PDF into images, merged, cut or turned, text and Office documents into a PDF. The results go to the Shelf and the originals are never touched. |
 | **Health** | Why the PC is slow, in plain words with the button that helps, a security check (antivirus, firewall, updates, encryption), the privacy switches of Windows and the programs that start with Windows, each with a switch. |
-| **Storage** | What takes up space on a drive, as rings (in the spirit of DaisyDisk), without administrator rights, and whether File Explorer shows file extensions and hidden files. |
-| **Duplicates** | Files stored twice, compared byte for byte, with the copies that are safe to clean ticked, a summary before anything goes to the Recycle Bin, and Restore. |
+| **Storage** | What takes up space on a drive, as rings (in the spirit of DaisyDisk), without administrator rights, and whether File Explorer shows file extensions and hidden files. Duplicates, from the same page: files stored twice, compared byte for byte, with the copies that are safe to clean ticked, a summary before anything goes to the Recycle Bin, and Restore. |
 | **Network** | Connection details, live traffic, a security check of the connection, and a speed test with jitter, loaded latency (graded A to F) and history. |
 | **Tasks** | What is running, grouped by program with its icon, publisher, memory and processor use, sorted into apps, command-line, background and system programs, with a search and a sheet per program (version, location, start with Windows, open connections). Ends a program on request, and a Memory card shows what closing the programs not in use would free, then closes what you tick. |
 | **Hardware** | Processor, memory, graphics, storage, battery, screens, temperature and connected devices, read live, with a plain-language health summary and a summary to copy. |
+| **Help** | A small guide, the fish of lampfish, that answers by topic and opens the right page; it is also a tab of the assistant. Every page has a help chip next to its title, with short cards on what it shows. |
 
 The interface is in English, with a French translation (automatic, following the Windows language, or chosen in Settings). The bar opens each family in a flyout, a Go to search (Ctrl K) opens any service by name, and the cards of Home can be dropped in any cell of a grid. The bar can be arranged from its foot: services move inside their family, families move, and a service can be hidden. Ctrl 1 to 9 open the services in the order of the bar, Ctrl Tab the next one, Ctrl comma the settings, and the tray menu skips to the next wallpaper, pauses it or applies a theme. `Lampfish.exe --quit` closes a running lampfish.
 

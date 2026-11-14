@@ -14,15 +14,22 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Mouse: a special edition, Lure, Gold and Black Gold, opened by a VIP code typed in Mouse. The code is checked on the PC and nothing is sent. Its cursors come in a pack that is not part of this repository and has its own license.
 - Mouse: the special edition adds 26 trails behind the pointer, bubbles, plankton, sparkles, ribbons, neon, pearls, a school of fish and more, each with its own answer to a click. By default the trail matches the cursor; the cursors of Windows, Bramble and your own themes come without one. Density, duration and the click effect can be set. The trail pauses in full screen and when Windows asks for less motion, and draws half as often with the energy saver on, and it never shows in a screenshot or a shared screen.
 - Mouse: a theme can be tried for 15 seconds before it is chosen. The registry is not touched, and the pointer comes back by itself, or at once with Keep or Back now.
-- Mouse: Ctrl + Alt + Shift + C puts the cursors back as Windows has them, from anywhere. If lampfish stops while a cursor is only borrowed, the next start puts them back too.
+- Mouse: Ctrl + Alt + Shift + C puts back the cursors you had before lampfish, from anywhere. If lampfish stops while a cursor is only borrowed, the next start puts them back too.
 - Mouse: swapped buttons come back after 15 seconds unless kept, like a new resolution in Windows.
 - Mouse: lampfish themes are drawn at the size the pointer really has on each screen, and the size control says it for every screen.
 - Mouse: left-handed cursors, where arrows and hands point the other way.
 - Mouse: one theme for light and one for dark, following Windows.
 - Mouse: your own themes can be exported as a .zip with an install.inf, to install on another PC with or without lampfish.
 - Mouse: more of Windows in one place: the sideways wheel, ClickLock and its delay, the length of the pointer echoes, the width of the text cursor, the double-click area and the touch indicator, with a zone to try the double click. Each value says the Windows default, and the rest opens the right page of Windows Settings.
-- Mouse: Presentation, for a demo or a call: a halo around the pointer, a ring at each click in two colours, a pointer that grows when shaken, and a pointer hidden when idle. One switch turns on the halo and the clicks and turns off the trail, then gives everything back. Ctrl + Alt + Shift + H for the halo, Ctrl + Alt + Shift + T for the trail.
+- Mouse: Presentation, for a demo or a call: a halo around the pointer, a ring at each click in two colours, a pointer that grows when shaken, and a pointer hidden when idle. One switch turns on the halo and the clicks and turns off the trail, then gives everything back. Ctrl + Alt + Shift + H for the halo, Ctrl + Alt + Shift + T for the trail, Ctrl + Alt + Shift + N for the next favorite theme.
 - Mouse: the trail of the special edition answers the wheel, a long press and a drag, and goes quiet in the apps you list.
+- Workshop: the accent colour of Windows heads the suggested pairs.
+- Help: a new page where a small guide answers by topic and opens the right page, also as a tab of the assistant.
+- Every page has a help chip next to its title: small cards appear next to what the page asks to understand.
+- The fish of the logo comes to life in the bar, in About, on the first start and on the button of the assistant, where it swims on a glass disc.
+- Save as a theme from Home and from the top of Themes, with what will be kept and a name before it saves.
+- Wallpapers: Logo shows the white mark, Dusk has ripples of light and a fish that swims across, and Lamp is new. The particles of Create have depth, with far, sharp and near planes, bubbles and marine snow.
+- Assistant: the wallpaper shows blurred behind its window, and a Modules tab gathers what plugins add.
 - Assistant: the dashboard shows the battery and the Wi-Fi next to the processor and the memory.
 - Assistant: the Settings tab chooses the appearance of lampfish, and the window follows at once. The switch for Windows is now named Windows dark mode.
 - Day mode: screens, seals, dials, the speed gauge, the knob, the battery and the Wi-Fi arcs now have a light version, in the main window and in the assistant.
@@ -46,8 +53,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Mouse: a theme of lampfish made while cursors were changed one by one keeps those cursors.
 - Mouse: less work while the page is open, and old previews and unused made themes are cleared.
 - Magnetic grid: an arrangement says when it turns the grid off. It still has to: Windows would pull the icons back onto its cells.
-- The zoom stays on screen at the foot of the bar on the left, instead of appearing only under the pointer.
+- The zoom and Options sit in a status bar along the foot of the window, always on screen.
 - Day mode: the page is a lighter gray, and the title bar and the tray menu follow it.
+- The window follows Windows 11: Mica behind a light veil tinted by the wallpaper, the type ramp and corners of Windows, settings as separate cards, the switch of Windows and Acrylic on passing surfaces. Cards and dials are flat, and the measures of Tasks, Health and Hardware are bars with the curve of the last minutes.
+- Duplicates opens from Storage, and Assistant and Plugins from Settings. Hardware stays a service of its own in the PC family, and Home keeps four quick actions.
+- Every icon comes from one set, Phosphor, with lampfish drawings in the same style.
+- Every button presses in, and Straighten says what it did, with Undo.
+- The menu of a family in the bar is opaque, the arrow keys move in it and Enter opens the service.
+- Taskbar: the Widgets switch says when Windows keeps it on, with the way to Windows Settings.
+- The installer is under the lampfish name only, with the fish centered and shorter texts.
 - Titles and the clock use Geist, the font of the logo. The rest stays in Segoe.
 - Mouse: the four first cursor themes take back their names from the Bramble days: Bramble Glass, Bramble Night, Bramble Snow and Bramble Berry. The update follows by itself: the pointer in use, the schemes of Windows and the themes of lampfish that use one of them keep the same cursors.
 
@@ -70,6 +84,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Assistant and Plugins pages are centered like the others.
 - Mouse: the buttons of the header wrap instead of leaving the page at a high zoom.
 - French: two messages of the magnetic grid were in English.
+- Wallpapers come back at once when Windows rebuilds its desktop.
+- The window comes back onto a screen when the one it was on is unplugged.
+- Assistant: its button stays on a screen a full-screen app does not cover, and its window opens faster.
+- Tasks: the kinds of program wrap instead of cutting the last one.
+- Storage: a key pressed with nothing selected no longer fails.
 
 ## [0.5.0] - 2026-10-31
 
